@@ -104,7 +104,13 @@ export function PostDetailPage() {
             <User className="w-4 h-4" />
             {post.author.name}
           </Link>
-          {post.location && (
+          {post.location && post.latitude && post.longitude && (
+            <Link to={`/map?lat=${post.latitude}&lng=${post.longitude}&zoom=15`} className="flex items-center gap-1 hover:text-mayday-600">
+              <MapPin className="w-4 h-4" />
+              {post.location}
+            </Link>
+          )}
+          {post.location && (!post.latitude || !post.longitude) && (
             <span className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
               {post.location}

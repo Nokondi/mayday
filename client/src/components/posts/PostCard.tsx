@@ -42,7 +42,17 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
           <User className="w-3 h-3" />
           {post.author.name}
         </span>
-        {post.location && (
+        {post.location && post.latitude && post.longitude && (
+          <Link
+            to={`/map?lat=${post.latitude}&lng=${post.longitude}&zoom=15`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1 hover:text-mayday-600"
+          >
+            <MapPin className="w-3 h-3" />
+            {post.location}
+          </Link>
+        )}
+        {post.location && (!post.latitude || !post.longitude) && (
           <span className="flex items-center gap-1">
             <MapPin className="w-3 h-3" />
             {post.location}

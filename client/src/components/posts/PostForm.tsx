@@ -24,35 +24,71 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Geocoding state
+  interface GeoResult {
+    display_name: string;
+    lat: string;
+    lon: string;
+    address?: {
+      house_number?: string;
+      road?: string;
+      city?: string;
+      town?: string;
+      village?: string;
+      hamlet?: string;
+      state?: string;
+      postcode?: string;
+    };
+    formatted?: string;
+  }
   const [locationQuery, setLocationQuery] = useState('');
-  const [geocodeResults, setGeocodeResults] = useState<{ display_name: string; lat: string; lon: string }[]>([]);
+  const [geocodeResults, setGeocodeResults] = useState<GeoResult[]>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [resolvedLocation, setResolvedLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
   const debouncedLocation = useDebounce(locationQuery, 500);
+
+  function formatAddress(result: GeoResult): string {
+    const a = result.address;
+    if (!a) return result.display_name;
+
+    const street = [a.house_number, a.road].filter(Boolean).join(' ');
+    const city = a.city || a.town || a.village || a.hamlet || '';
+    const state = a.state || '';
+    const zip = a.postcode || '';
+
+    // Build "street, city, state zip"
+    const parts: string[] = [];
+    if (street) parts.push(street);
+    if (city) parts.push(city);
+    if (state || zip) parts.push([state, zip].filter(Boolean).join(' '));
+
+    return parts.length > 0 ? parts.join(', ') : result.display_name;
+  }
 
   // Geocode when debounced query changes
   const lastGeocodedRef = useRef('');
   if (debouncedLocation.length >= 3 && debouncedLocation !== lastGeocodedRef.current && !resolvedLocation) {
     lastGeocodedRef.current = debouncedLocation;
     setIsGeocoding(true);
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(debouncedLocation)}&limit=5`, {
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(debouncedLocation)}&limit=5`, {
       headers: { 'User-Agent': 'MayDay-MutualAid/0.1' },
     })
       .then(r => r.json())
-      .then(data => setGeocodeResults(data))
+      .then((data: GeoResult[]) => {
+        // Pre-compute formatted addresses
+        setGeocodeResults(data.map(r => ({ ...r, formatted: formatAddress(r) })));
+      })
       .catch(() => setGeocodeResults([]))
       .finally(() => setIsGeocoding(false));
   }
 
-  const selectLocation = useCallback((result: { display_name: string; lat: string; lon: string }) => {
+  const selectLocation = useCallback((result: GeoResult) => {
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
-    // Use a shorter display name (first 2 parts of the comma-separated address)
-    const shortName = result.display_name.split(',').slice(0, 2).join(',').trim();
-    setResolvedLocation({ name: shortName, lat, lng });
-    setLocationQuery(shortName);
+    const name = result.formatted || formatAddress(result);
+    setResolvedLocation({ name, lat, lng });
+    setLocationQuery(name);
     setGeocodeResults([]);
-    setValue('location', shortName);
+    setValue('location', name);
     setValue('latitude', lat);
     setValue('longitude', lng);
   }, []);
@@ -237,7 +273,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
                   className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-start gap-2"
                 >
                   <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <span className="line-clamp-2">{result.display_name}</span>
+                  <span className="line-clamp-2">{result.formatted || result.display_name}</span>
                 </button>
               </li>
             ))}

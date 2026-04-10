@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getPosts } from '../api/posts.js';
 import { MapView } from '../components/map/MapView.js';
@@ -7,6 +8,7 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
 import { useGeolocation } from '../hooks/useGeolocation.js';
 
 export function MapPage() {
+  const [searchParams] = useSearchParams();
   const geo = useGeolocation();
   const [type, setType] = useState('');
   const [category, setCategory] = useState('');
@@ -31,12 +33,18 @@ export function MapPage() {
     setBounds(newBounds);
   }, []);
 
-  const center = useMemo<[number, number]>(() =>
-    geo.latitude && geo.longitude
-      ? [geo.latitude, geo.longitude]
-      : [40.7128, -74.006],
-    [geo.latitude, geo.longitude],
-  );
+  // URL params take priority (from location links), then geolocation, then default
+  const paramLat = searchParams.get('lat');
+  const paramLng = searchParams.get('lng');
+  const paramZoom = searchParams.get('zoom');
+
+  const center = useMemo<[number, number]>(() => {
+    if (paramLat && paramLng) return [parseFloat(paramLat), parseFloat(paramLng)];
+    if (geo.latitude && geo.longitude) return [geo.latitude, geo.longitude];
+    return [40.7128, -74.006];
+  }, [paramLat, paramLng, geo.latitude, geo.longitude]);
+
+  const initialZoom = paramZoom ? parseInt(paramZoom) : 13;
 
   return (
     <div className="relative h-[calc(100vh-4rem)]">
@@ -56,7 +64,7 @@ export function MapPage() {
         <MapView
           posts={data?.data || []}
           center={center}
-          zoom={13}
+          zoom={initialZoom}
           onBoundsChange={handleBoundsChange}
           className="h-full rounded-none"
         />

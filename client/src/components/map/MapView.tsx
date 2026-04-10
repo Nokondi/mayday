@@ -1,4 +1,5 @@
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import { useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import type { PostWithAuthor } from '@mayday/shared';
 import { PostCard } from '../posts/PostCard.js';
@@ -36,6 +37,22 @@ interface MapViewProps {
   className?: string;
 }
 
+function MapCenterUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
+  const map = useMap();
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    // Skip the first render — MapContainer already handles initial center/zoom
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    map.setView(center, zoom);
+  }, [center, zoom, map]);
+
+  return null;
+}
+
 function MapEventHandler({ onBoundsChange }: { onBoundsChange?: MapViewProps['onBoundsChange'] }) {
   useMapEvents({
     moveend: (e) => {
@@ -59,6 +76,7 @@ export function MapView({ posts, center = [40.7128, -74.006], zoom = 12, onBound
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <MapCenterUpdater center={center} zoom={zoom} />
       <MapEventHandler onBoundsChange={onBoundsChange} />
       {posts.filter(p => p.latitude && p.longitude).map((post) => (
         <Marker
