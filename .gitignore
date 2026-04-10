@@ -1,0 +1,28 @@
+node_modules/
+dist/
+.env
+*.env.local
+.DS_Store
+Thumbs.db
+
+# Prisma
+server/src/prisma/migrations/**/migration_lock.toml
+
+# Uploads
+server/uploads/
+
+# Vite
+client/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Coverage
+coverage/

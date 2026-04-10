@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PostType {
+  REQUEST
+  OFFER
+}
+
+enum PostStatus {
+  OPEN
+  FULFILLED
+  CLOSED
+}
+
+enum UrgencyLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  bio          String?
+  location     String?
+  latitude     Float?
+  longitude    Float?
+  skills       String[]
+  role         Role     @default(USER)
+  isBanned     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  posts            Post[]
+  sentMessages     Message[]      @relation("sender")
+  receivedMessages Message[]      @relation("receiver")
+  reportsFiled     Report[]       @relation("reporter")
+  reportsAgainst   Report[]       @relation("reportedUser")
+  conversationsAsA Conversation[] @relation("participantA")
+  conversationsAsB Conversation[] @relation("participantB")
+}
+
+model Post {
+  id          String       @id @default(uuid())
+  type        PostType
+  status      PostStatus   @default(OPEN)
+  title       String
+  description String
+  category    String
+  location    String?
+  latitude    Float?
+  longitude   Float?
+  urgency     UrgencyLevel @default(MEDIUM)
+  authorId    String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  author  User        @relation(fields: [authorId], references: [id])
+  reports Report[]
+  images  PostImage[]
+
+  @@index([category])
+  @@index([type])
+  @@index([status])
+  @@index([authorId])
+  @@index([latitude, longitude])
+}
+
+model PostImage {
+  id        String   @id @default(uuid())
+  url       String
+  order     Int      @default(0)
+  postId    String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}
+
+model Conversation {
+  id             String   @id @default(uuid())
+  participantAId String
+  participantBId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  participantA User      @relation("participantA", fields: [participantAId], references: [id])
+  participantB User      @relation("participantB", fields: [participantBId], references: [id])
+  messages     Message[]
+
+  @@unique([participantAId, participantBId])
+}
+
+model Message {
+  id             String    @id @default(uuid())
+  content        String
+  senderId       String
+  receiverId     String
+  conversationId String
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  sender       User         @relation("sender", fields: [senderId], references: [id])
+  receiver     User         @relation("receiver", fields: [receiverId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model Report {
+  id             String       @id @default(uuid())
+  reason         String
+  details        String?
+  status         ReportStatus @default(PENDING)
+  reporterId     String
+  reportedUserId String?
+  postId         String?
+  resolvedById   String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  reporter     User  @relation("reporter", fields: [reporterId], references: [id])
+  reportedUser User? @relation("reportedUser", fields: [reportedUserId], references: [id])
+  post         Post? @relation(fields: [postId], references: [id])
+}

@@ -1,0 +1,107 @@
+import { Router } from 'express';
+import { registerSchema, loginSchema } from '@mayday/shared';
+import { validate } from '../middleware/validate.middleware.js';
+import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
+import { prisma } from '../config/database.js';
+import { hashPassword, comparePassword } from '../utils/password.js';
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt.js';
+import { AppError } from '../middleware/error.middleware.js';
+
+export const authRoutes = Router();
+
+authRoutes.post('/register', validate(registerSchema), async (req, res, next) => {
+  try {
+    const { email, password, name } = req.body;
+
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) throw new AppError(409, 'Email already registered');
+
+    const passwordHash = await hashPassword(password);
+    const user = await prisma.user.create({
+      data: { email, passwordHash, name },
+    });
+
+    const tokenPayload = { id: user.id, email: user.email, role: user.role };
+    const accessToken = signAccessToken(tokenPayload);
+    const refreshToken = signRefreshToken(tokenPayload);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(201).json({
+      accessToken,
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+    });
+  } catch (err) { next(err); }
+});
+
+authRoutes.post('/login', validate(loginSchema), async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) throw new AppError(401, 'Invalid credentials');
+    if (user.isBanned) throw new AppError(403, 'Account is banned');
+
+    const valid = await comparePassword(password, user.passwordHash);
+    if (!valid) throw new AppError(401, 'Invalid credentials');
+
+    const tokenPayload = { id: user.id, email: user.email, role: user.role };
+    const accessToken = signAccessToken(tokenPayload);
+    const refreshToken = signRefreshToken(tokenPayload);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.json({
+      accessToken,
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+    });
+  } catch (err) { next(err); }
+});
+
+authRoutes.post('/refresh', async (req, res, next) => {
+  try {
+    const token = req.cookies?.refreshToken;
+    if (!token) throw new AppError(401, 'No refresh token');
+
+    const payload = verifyRefreshToken(token);
+    if (!payload) throw new AppError(401, 'Invalid refresh token');
+
+    const user = await prisma.user.findUnique({ where: { id: payload.id } });
+    if (!user || user.isBanned) throw new AppError(401, 'User not found or banned');
+
+    const tokenPayload = { id: user.id, email: user.email, role: user.role };
+    const accessToken = signAccessToken(tokenPayload);
+
+    res.json({ accessToken });
+  } catch (err) { next(err); }
+});
+
+authRoutes.post('/logout', (_req, res) => {
+  res.clearCookie('refreshToken');
+  res.json({ message: 'Logged out' });
+});
+
+authRoutes.get('/me', requireAuth, async (req: AuthRequest, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      select: {
+        id: true, email: true, name: true, bio: true,
+        location: true, latitude: true, longitude: true,
+        skills: true, role: true, createdAt: true,
+      },
+    });
+    if (!user) throw new AppError(404, 'User not found');
+    res.json(user);
+  } catch (err) { next(err); }
+});
