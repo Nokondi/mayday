@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createPostSchema, CATEGORIES, type CreatePostRequest } from '@mayday/shared';
-import { ImagePlus, X } from 'lucide-react';
+import { ImagePlus, X, MapPin, Loader2 } from 'lucide-react';
+import { useDebounce } from '../../hooks/useDebounce.js';
 
 interface PostFormProps {
   onSubmit: (data: CreatePostRequest, images: File[]) => Promise<void>;
@@ -10,7 +11,7 @@ interface PostFormProps {
 }
 
 export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
-  const { register, handleSubmit, formState: { errors } } = useForm<CreatePostRequest>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<CreatePostRequest>({
     resolver: zodResolver(createPostSchema),
     defaultValues: {
       type: 'REQUEST',
@@ -21,6 +22,50 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Geocoding state
+  const [locationQuery, setLocationQuery] = useState('');
+  const [geocodeResults, setGeocodeResults] = useState<{ display_name: string; lat: string; lon: string }[]>([]);
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [resolvedLocation, setResolvedLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
+  const debouncedLocation = useDebounce(locationQuery, 500);
+
+  // Geocode when debounced query changes
+  const lastGeocodedRef = useRef('');
+  if (debouncedLocation.length >= 3 && debouncedLocation !== lastGeocodedRef.current && !resolvedLocation) {
+    lastGeocodedRef.current = debouncedLocation;
+    setIsGeocoding(true);
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(debouncedLocation)}&limit=5`, {
+      headers: { 'User-Agent': 'MayDay-MutualAid/0.1' },
+    })
+      .then(r => r.json())
+      .then(data => setGeocodeResults(data))
+      .catch(() => setGeocodeResults([]))
+      .finally(() => setIsGeocoding(false));
+  }
+
+  const selectLocation = useCallback((result: { display_name: string; lat: string; lon: string }) => {
+    const lat = parseFloat(result.lat);
+    const lng = parseFloat(result.lon);
+    // Use a shorter display name (first 2 parts of the comma-separated address)
+    const shortName = result.display_name.split(',').slice(0, 2).join(',').trim();
+    setResolvedLocation({ name: shortName, lat, lng });
+    setLocationQuery(shortName);
+    setGeocodeResults([]);
+    setValue('location', shortName);
+    setValue('latitude', lat);
+    setValue('longitude', lng);
+  }, []);
+
+  const clearLocation = useCallback(() => {
+    setResolvedLocation(null);
+    setLocationQuery('');
+    setGeocodeResults([]);
+    lastGeocodedRef.current = '';
+    setValue('location', undefined as any);
+    setValue('latitude', undefined as any);
+    setValue('longitude', undefined as any);
+  }, []);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -154,13 +199,50 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         </div>
       </div>
 
-      <div>
+      <div className="relative">
         <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-        <input
-          {...register('location')}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-          placeholder="e.g., Downtown, 123 Main St"
-        />
+        {resolvedLocation ? (
+          <div className="flex items-center gap-2 border border-green-300 bg-green-50 rounded-lg px-3 py-2">
+            <MapPin className="w-4 h-4 text-green-600 flex-shrink-0" />
+            <span className="text-sm text-green-800 flex-1">{resolvedLocation.name}</span>
+            <button type="button" onClick={clearLocation} className="text-gray-400 hover:text-gray-600">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="relative">
+            <input
+              type="text"
+              value={locationQuery}
+              onChange={(e) => {
+                setLocationQuery(e.target.value);
+                setResolvedLocation(null);
+              }}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+              placeholder="Search for an address or place..."
+            />
+            {isGeocoding && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 animate-spin" />
+            )}
+          </div>
+        )}
+
+        {geocodeResults.length > 0 && !resolvedLocation && (
+          <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            {geocodeResults.map((result, i) => (
+              <li key={i}>
+                <button
+                  type="button"
+                  onClick={() => selectLocation(result)}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-start gap-2"
+                >
+                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <span className="line-clamp-2">{result.display_name}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <button

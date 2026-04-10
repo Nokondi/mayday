@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useCallback, useMemo } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getPosts } from '../api/posts.js';
 import { MapView } from '../components/map/MapView.js';
 import { PostFilters } from '../components/posts/PostFilters.js';
@@ -23,15 +23,20 @@ export function MapPage() {
       limit: 100,
       ...(bounds || {}),
     }),
+    // Keep showing previous data while fetching new bounds — prevents map unmount/remount
+    placeholderData: keepPreviousData,
   });
 
   const handleBoundsChange = useCallback((newBounds: typeof bounds) => {
     setBounds(newBounds);
   }, []);
 
-  const center: [number, number] = geo.latitude && geo.longitude
-    ? [geo.latitude, geo.longitude]
-    : [40.7128, -74.006];
+  const center = useMemo<[number, number]>(() =>
+    geo.latitude && geo.longitude
+      ? [geo.latitude, geo.longitude]
+      : [40.7128, -74.006],
+    [geo.latitude, geo.longitude],
+  );
 
   return (
     <div className="relative h-[calc(100vh-4rem)]">
