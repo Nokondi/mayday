@@ -41,7 +41,7 @@ export function MapPage() {
   const center = useMemo<[number, number]>(() => {
     if (paramLat && paramLng) return [parseFloat(paramLat), parseFloat(paramLng)];
     if (geo.latitude && geo.longitude) return [geo.latitude, geo.longitude];
-    return [40.7128, -74.006];
+    return [34.7465, -92.2896];
   }, [paramLat, paramLng, geo.latitude, geo.longitude]);
 
   const initialZoom = paramZoom ? parseInt(paramZoom) : 13;
@@ -58,7 +58,7 @@ export function MapPage() {
           <p className="text-xs text-gray-500 mt-2">{data.total} posts in view</p>
         )}
       </div>
-      {isLoading && !data ? (
+      {(isLoading && !data) || geo.loading ? (
         <LoadingSpinner className="h-full" />
       ) : (
         <MapView

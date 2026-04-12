@@ -39,9 +39,11 @@ npm run build:shared
 
 ```sh
 cd server
-npx prisma migrate dev
+npm run db:migrate
 cd ..
 ```
+
+> **Note:** Use `npm run db:migrate` instead of `npx prisma migrate dev`. The npm script loads the root `.env` file via `dotenv-cli`, which Prisma needs to find `DATABASE_URL`.
 
 ### 6. Seed the database (optional)
 

@@ -69,7 +69,7 @@ function MapEventHandler({ onBoundsChange }: { onBoundsChange?: MapViewProps['on
   return null;
 }
 
-export function MapView({ posts, center = [40.7128, -74.006], zoom = 12, onBoundsChange, className = 'h-[600px]' }: MapViewProps) {
+export function MapView({ posts, center = [34.7465, -92.2896], zoom = 12, onBoundsChange, className = 'h-[600px]' }: MapViewProps) {
   return (
     <MapContainer center={center} zoom={zoom} className={`w-full rounded-lg ${className}`}>
       <TileLayer
