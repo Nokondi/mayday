@@ -23,10 +23,10 @@ export function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/posts" className="text-gray-600 hover:text-gray-900">Browse</Link>
-            <Link to="/map" className="text-gray-600 hover:text-gray-900">Map</Link>
             {user ? (
               <>
+                <Link to="/posts" className="text-gray-600 hover:text-gray-900">Browse</Link>
+                <Link to="/map" className="text-gray-600 hover:text-gray-900">Map</Link>
                 <Link to="/posts/new" className="flex items-center gap-1 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600">
                   <Plus className="w-4 h-4" />
                   New Post
@@ -63,10 +63,10 @@ export function Header() {
 
         {menuOpen && (
           <div className="md:hidden pb-4 space-y-2">
-            <Link to="/posts" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Browse</Link>
-            <Link to="/map" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Map</Link>
             {user ? (
               <>
+                <Link to="/posts" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Browse</Link>
+                <Link to="/map" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Map</Link>
                 <Link to="/posts/new" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>New Post</Link>
                 <Link to="/messages" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Messages</Link>
                 <Link to={`/profile/${user.id}`} className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Profile</Link>

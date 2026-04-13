@@ -22,17 +22,27 @@ export function App() {
     <WebSocketProvider>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/posts" element={<PostsPage />} />
-          <Route path="/posts/:id" element={<PostDetailPage />} />
+          <Route path="/" element={
+            <ProtectedRoute><HomePage /></ProtectedRoute>
+          } />
+          <Route path="/posts" element={
+            <ProtectedRoute><PostsPage /></ProtectedRoute>
+          } />
+          <Route path="/posts/:id" element={
+            <ProtectedRoute><PostDetailPage /></ProtectedRoute>
+          } />
           <Route path="/posts/new" element={
             <ProtectedRoute><CreatePostPage /></ProtectedRoute>
           } />
-          <Route path="/map" element={<MapPage />} />
+          <Route path="/map" element={
+            <ProtectedRoute><MapPage /></ProtectedRoute>
+          } />
           <Route path="/messages" element={
             <ProtectedRoute><MessagesPage /></ProtectedRoute>
           } />
-          <Route path="/profile/:id" element={<ProfilePage />} />
+          <Route path="/profile/:id" element={
+            <ProtectedRoute><ProfilePage /></ProtectedRoute>
+          } />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           {user?.role === 'ADMIN' && (
