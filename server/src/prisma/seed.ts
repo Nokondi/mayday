@@ -23,33 +23,33 @@ async function main() {
   // Create sample users
   const userPassword = await hashPassword("password123!");
 
-  const alice = await prisma.user.upsert({
-    where: { email: "alice@example.com" },
+  const emma = await prisma.user.upsert({
+    where: { email: "emma@example.com" },
     update: {},
     create: {
       email: "emma@example.com",
       passwordHash: userPassword,
       name: "Emma Goldman",
-      bio: "Community organizer and mutual aid enthusiast",
+      bio: "Revolutionary, activist, and writer",
       location: "Hillcrest, Little Rock",
       latitude: 34.7381,
       longitude: -92.2816,
-      skills: ["Cooking", "Driving", "Tutoring"],
+      skills: ["Writing", "Sewing", "Nursing"],
     },
   });
 
-  const bob = await prisma.user.upsert({
-    where: { email: "bob@example.com" },
+  const peter = await prisma.user.upsert({
+    where: { email: "peter@example.com" },
     update: {},
     create: {
       email: "peter@example.com",
       passwordHash: userPassword,
       name: "Peter Kropotkin",
-      bio: "Retired teacher, happy to help neighbors",
+      bio: "Retired geographer and mutual aid enthusiast",
       location: "The Heights, Little Rock",
       latitude: 34.7465,
       longitude: -92.3412,
-      skills: ["Teaching", "Gardening", "Home Repair"],
+      skills: ["Teaching", "Writing", "Baking"],
     },
   });
 
@@ -66,7 +66,7 @@ async function main() {
         latitude: 34.7381,
         longitude: -92.2816,
         urgency: "HIGH",
-        authorId: alice.id,
+        authorId: emma.id,
       },
       {
         type: "OFFER",
@@ -78,7 +78,7 @@ async function main() {
         latitude: 34.7465,
         longitude: -92.3412,
         urgency: "LOW",
-        authorId: bob.id,
+        authorId: peter.id,
       },
       {
         type: "OFFER",
@@ -90,7 +90,7 @@ async function main() {
         latitude: 34.7466,
         longitude: -92.2896,
         urgency: "MEDIUM",
-        authorId: bob.id,
+        authorId: peter.id,
       },
       {
         type: "REQUEST",
@@ -102,7 +102,7 @@ async function main() {
         latitude: 34.7695,
         longitude: -92.2671,
         urgency: "CRITICAL",
-        authorId: alice.id,
+        authorId: emma.id,
       },
       {
         type: "OFFER",
@@ -114,7 +114,7 @@ async function main() {
         latitude: 34.7254,
         longitude: -92.358,
         urgency: "LOW",
-        authorId: bob.id,
+        authorId: peter.id,
       },
       {
         type: "REQUEST",
@@ -126,14 +126,14 @@ async function main() {
         latitude: 34.7399,
         longitude: -92.3311,
         urgency: "HIGH",
-        authorId: alice.id,
+        authorId: emma.id,
       },
     ],
   });
 
   console.log("Seed data created:");
   console.log(`  Admin: ${admin.email}`);
-  console.log(`  Users: ${alice.email}, ${bob.email}`);
+  console.log(`  Users: ${emma.email}, ${peter.email}`);
   console.log("  6 sample posts created");
 }
 
