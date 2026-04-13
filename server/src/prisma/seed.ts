@@ -66,7 +66,7 @@ async function main() {
         latitude: 34.7381,
         longitude: -92.2816,
         urgency: "HIGH",
-        authorId: emma.id,
+        authorId: peter.id,
       },
       {
         type: "OFFER",
@@ -78,7 +78,7 @@ async function main() {
         latitude: 34.7465,
         longitude: -92.3412,
         urgency: "LOW",
-        authorId: peter.id,
+        authorId: emma.id,
       },
       {
         type: "OFFER",
@@ -102,7 +102,7 @@ async function main() {
         latitude: 34.7695,
         longitude: -92.2671,
         urgency: "CRITICAL",
-        authorId: emma.id,
+        authorId: peter.id,
       },
       {
         type: "OFFER",
@@ -114,7 +114,7 @@ async function main() {
         latitude: 34.7254,
         longitude: -92.358,
         urgency: "LOW",
-        authorId: peter.id,
+        authorId: emma.id,
       },
       {
         type: "REQUEST",
