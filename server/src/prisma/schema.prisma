@@ -37,6 +37,19 @@ enum ReportStatus {
   DISMISSED
 }
 
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+}
+
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -59,31 +72,37 @@ model User {
   reportsAgainst   Report[]       @relation("reportedUser")
   conversationsAsA Conversation[] @relation("participantA")
   conversationsAsB Conversation[] @relation("participantB")
+  orgMemberships   OrganizationMember[]
+  invitesReceived  OrganizationInvite[] @relation("inviteRecipient")
+  invitesSent      OrganizationInvite[] @relation("inviteSender")
 }
 
 model Post {
-  id          String       @id @default(uuid())
-  type        PostType
-  status      PostStatus   @default(OPEN)
-  title       String
-  description String
-  category    String
-  location    String?
-  latitude    Float?
-  longitude   Float?
-  urgency     UrgencyLevel @default(MEDIUM)
-  authorId    String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id             String       @id @default(uuid())
+  type           PostType
+  status         PostStatus   @default(OPEN)
+  title          String
+  description    String
+  category       String
+  location       String?
+  latitude       Float?
+  longitude      Float?
+  urgency        UrgencyLevel @default(MEDIUM)
+  authorId       String
+  organizationId String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
-  author  User        @relation(fields: [authorId], references: [id])
-  reports Report[]
-  images  PostImage[]
+  author       User          @relation(fields: [authorId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  reports      Report[]
+  images       PostImage[]
 
   @@index([category])
   @@index([type])
   @@index([status])
   @@index([authorId])
+  @@index([organizationId])
   @@index([latitude, longitude])
 }
 
@@ -146,4 +165,55 @@ model Report {
   reporter     User  @relation("reporter", fields: [reporterId], references: [id])
   reportedUser User? @relation("reportedUser", fields: [reportedUserId], references: [id])
   post         Post? @relation(fields: [postId], references: [id])
+}
+
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  location    String?
+  latitude    Float?
+  longitude   Float?
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members OrganizationMember[]
+  invites OrganizationInvite[]
+  posts   Post[]
+
+  @@index([name])
+  @@index([latitude, longitude])
+}
+
+model OrganizationMember {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  role           OrgRole  @default(MEMBER)
+  joinedAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model OrganizationInvite {
+  id              String       @id @default(uuid())
+  organizationId  String
+  invitedUserId   String
+  invitedById     String
+  status          InviteStatus @default(PENDING)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedUser  User         @relation("inviteRecipient", fields: [invitedUserId], references: [id], onDelete: Cascade)
+  invitedBy    User         @relation("inviteSender", fields: [invitedById], references: [id])
+
+  @@unique([organizationId, invitedUserId])
+  @@index([invitedUserId])
+  @@index([status])
 }

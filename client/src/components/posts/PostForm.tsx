@@ -1,9 +1,12 @@
 import { useState, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery } from '@tanstack/react-query';
 import { createPostSchema, CATEGORIES, type CreatePostRequest } from '@mayday/shared';
 import { ImagePlus, X, MapPin, Loader2 } from 'lucide-react';
 import { useDebounce } from '../../hooks/useDebounce.js';
+import { listMyOrganizations } from '../../api/organizations.js';
+import { useAuth } from '../../context/AuthContext.js';
 
 interface PostFormProps {
   onSubmit: (data: CreatePostRequest, images: File[]) => Promise<void>;
@@ -11,12 +14,19 @@ interface PostFormProps {
 }
 
 export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
+  const { user } = useAuth();
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<CreatePostRequest>({
     resolver: zodResolver(createPostSchema),
     defaultValues: {
       type: 'REQUEST',
       urgency: 'MEDIUM',
     },
+  });
+
+  // Organizations the user can post on behalf of
+  const { data: myOrgs } = useQuery({
+    queryKey: ['my-organizations'],
+    queryFn: listMyOrganizations,
   });
 
   const [images, setImages] = useState<File[]>([]);
@@ -122,7 +132,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
   };
 
   const handleFormSubmit = (data: CreatePostRequest) => {
-    return onSubmit(data, images);
+    // The "Post as" select uses '' for "Yourself"; convert to undefined
+    const cleaned: CreatePostRequest = { ...data };
+    if (!cleaned.organizationId) cleaned.organizationId = undefined;
+    return onSubmit(cleaned, images);
   };
 
   return (
@@ -140,6 +153,21 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           </label>
         </div>
       </div>
+
+      {myOrgs && myOrgs.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Post as</label>
+          <select
+            {...register('organizationId')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
+          >
+            <option value="">{user?.name ?? 'Yourself'}</option>
+            {myOrgs.map((org) => (
+              <option key={org.id} value={org.id}>{org.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>

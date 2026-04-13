@@ -1,5 +1,6 @@
 import type { Category } from './category.js';
 import type { UserPublicProfile } from './user.js';
+import type { Organization } from './organization.js';
 
 export type PostType = 'REQUEST' | 'OFFER';
 export type PostStatus = 'OPEN' | 'FULFILLED' | 'CLOSED';
@@ -23,6 +24,7 @@ export interface Post {
   longitude: number | null;
   urgency: UrgencyLevel;
   authorId: string;
+  organizationId: string | null;
   images: PostImage[];
   createdAt: string;
   updatedAt: string;
@@ -30,4 +32,5 @@ export interface Post {
 
 export interface PostWithAuthor extends Post {
   author: UserPublicProfile;
+  organization: Pick<Organization, 'id' | 'name' | 'avatarUrl'> | null;
 }

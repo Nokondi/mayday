@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MapPin, Clock, User, MessageSquare, Flag, Trash2 } from 'lucide-react';
+import { MapPin, Clock, User, MessageSquare, Flag, Trash2, Building2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { getPost, getPostMatches, deletePost } from '../api/posts.js';
@@ -100,10 +100,18 @@ export function PostDetailPage() {
         <p className="text-gray-700 whitespace-pre-wrap mb-6">{post.description}</p>
 
         <div className="flex items-center gap-6 text-sm text-gray-500 mb-6">
-          <Link to={`/profile/${post.author.id}`} className="flex items-center gap-1 hover:text-mayday-600">
-            <User className="w-4 h-4" />
-            {post.author.name}
-          </Link>
+          {post.organization ? (
+            <Link to={`/organizations/${post.organization.id}`} className="flex items-center gap-1 hover:text-mayday-600">
+              <Building2 className="w-4 h-4" />
+              {post.organization.name}
+              <span className="text-gray-400 ml-1">· by {post.author.name}</span>
+            </Link>
+          ) : (
+            <Link to={`/profile/${post.author.id}`} className="flex items-center gap-1 hover:text-mayday-600">
+              <User className="w-4 h-4" />
+              {post.author.name}
+            </Link>
+          )}
           {post.location && post.latitude && post.longitude && (
             <Link to={`/map?lat=${post.latitude}&lng=${post.longitude}&zoom=15`} className="flex items-center gap-1 hover:text-mayday-600">
               <MapPin className="w-4 h-4" />

@@ -1,12 +1,22 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Menu, X, MessageSquare, Shield, LogOut, User, Plus } from 'lucide-react';
+import { Heart, Menu, X, MessageSquare, Shield, LogOut, User, Plus, Mail } from 'lucide-react';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext.js';
+import { getMyInvites } from '../../api/organizations.js';
 
 export function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const { data: invites } = useQuery({
+    queryKey: ['my-invites'],
+    queryFn: getMyInvites,
+    enabled: !!user,
+    refetchInterval: 60_000,
+  });
+  const inviteCount = invites?.length ?? 0;
 
   const handleLogout = async () => {
     await logout();
@@ -27,12 +37,21 @@ export function Header() {
               <>
                 <Link to="/posts" className="text-gray-600 hover:text-gray-900">Browse</Link>
                 <Link to="/map" className="text-gray-600 hover:text-gray-900">Map</Link>
+                <Link to="/organizations" className="text-gray-600 hover:text-gray-900">Orgs</Link>
                 <Link to="/posts/new" className="flex items-center gap-1 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600">
                   <Plus className="w-4 h-4" />
                   New Post
                 </Link>
                 <Link to="/messages" className="text-gray-600 hover:text-gray-900">
                   <MessageSquare className="w-5 h-5" />
+                </Link>
+                <Link to="/invites" className="relative text-gray-600 hover:text-gray-900">
+                  <Mail className="w-5 h-5" />
+                  {inviteCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-mayday-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
+                      {inviteCount}
+                    </span>
+                  )}
                 </Link>
                 {user.role === 'ADMIN' && (
                   <Link to="/admin" className="text-gray-600 hover:text-gray-900">
@@ -67,8 +86,12 @@ export function Header() {
               <>
                 <Link to="/posts" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Browse</Link>
                 <Link to="/map" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Map</Link>
+                <Link to="/organizations" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Organizations</Link>
                 <Link to="/posts/new" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>New Post</Link>
                 <Link to="/messages" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Messages</Link>
+                <Link to="/invites" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>
+                  Invites{inviteCount > 0 ? ` (${inviteCount})` : ''}
+                </Link>
                 <Link to={`/profile/${user.id}`} className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Profile</Link>
                 <button onClick={() => { handleLogout(); setMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100">Log out</button>
               </>

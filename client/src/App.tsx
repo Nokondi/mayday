@@ -12,6 +12,11 @@ import { ProfilePage } from './pages/ProfilePage.js';
 import { LoginPage } from './pages/LoginPage.js';
 import { RegisterPage } from './pages/RegisterPage.js';
 import { AdminPage } from './pages/AdminPage.js';
+import { OrganizationsPage } from './pages/OrganizationsPage.js';
+import { CreateOrganizationPage } from './pages/CreateOrganizationPage.js';
+import { OrganizationDetailPage } from './pages/OrganizationDetailPage.js';
+import { OrganizationManagePage } from './pages/OrganizationManagePage.js';
+import { InvitesPage } from './pages/InvitesPage.js';
 import { NotFoundPage } from './pages/NotFoundPage.js';
 import { useAuth } from './context/AuthContext.js';
 
@@ -42,6 +47,21 @@ export function App() {
           } />
           <Route path="/profile/:id" element={
             <ProtectedRoute><ProfilePage /></ProtectedRoute>
+          } />
+          <Route path="/organizations" element={
+            <ProtectedRoute><OrganizationsPage /></ProtectedRoute>
+          } />
+          <Route path="/organizations/new" element={
+            <ProtectedRoute><CreateOrganizationPage /></ProtectedRoute>
+          } />
+          <Route path="/organizations/:id" element={
+            <ProtectedRoute><OrganizationDetailPage /></ProtectedRoute>
+          } />
+          <Route path="/organizations/:id/manage" element={
+            <ProtectedRoute><OrganizationManagePage /></ProtectedRoute>
+          } />
+          <Route path="/invites" element={
+            <ProtectedRoute><InvitesPage /></ProtectedRoute>
           } />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

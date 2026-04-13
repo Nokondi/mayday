@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, User } from 'lucide-react';
+import { MapPin, Clock, User, Building2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { PostWithAuthor } from '@mayday/shared';
 import { CategoryBadge } from '../common/CategoryBadge.js';
@@ -38,10 +38,18 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
         )}
       </div>
       <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
-        <span className="flex items-center gap-1">
-          <User className="w-3 h-3" />
-          {post.author.name}
-        </span>
+        {post.organization ? (
+          <span className="flex items-center gap-1">
+            <Building2 className="w-3 h-3" />
+            {post.organization.name}
+            <span className="text-gray-400">· by {post.author.name}</span>
+          </span>
+        ) : (
+          <span className="flex items-center gap-1">
+            <User className="w-3 h-3" />
+            {post.author.name}
+          </span>
+        )}
         {post.location && post.latitude && post.longitude && (
           <Link
             to={`/map?lat=${post.latitude}&lng=${post.longitude}&zoom=15`}

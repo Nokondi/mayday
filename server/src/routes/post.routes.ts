@@ -16,11 +16,39 @@ const postInclude = {
   author: {
     select: { id: true, name: true, bio: true, location: true, skills: true, createdAt: true },
   },
+  organization: {
+    select: { id: true, name: true, avatarUrl: true },
+  },
   images: {
     select: { id: true, url: true, order: true },
     orderBy: { order: 'asc' as const },
   },
 };
+
+/**
+ * A user can modify a post if they are:
+ *   - the original author
+ *   - an ADMIN (site-wide)
+ *   - an OWNER or ADMIN of the post's organization (for org posts)
+ */
+async function canModifyPost(
+  post: { authorId: string; organizationId: string | null },
+  user: { id: string; role: string },
+): Promise<boolean> {
+  if (post.authorId === user.id) return true;
+  if (user.role === 'ADMIN') return true;
+  if (post.organizationId) {
+    const membership = await prisma.organizationMember.findUnique({
+      where: {
+        organizationId_userId: { organizationId: post.organizationId, userId: user.id },
+      },
+    });
+    if (membership && (membership.role === 'OWNER' || membership.role === 'ADMIN')) {
+      return true;
+    }
+  }
+  return false;
+}
 
 export const postRoutes = Router();
 
@@ -143,6 +171,21 @@ postRoutes.post('/', requireAuth, uploadPostImages, async (req: AuthRequest, res
       throw new AppError(400, message);
     }
 
+    // If posting on behalf of an organization, verify membership
+    if (parsed.data.organizationId) {
+      const membership = await prisma.organizationMember.findUnique({
+        where: {
+          organizationId_userId: {
+            organizationId: parsed.data.organizationId,
+            userId: req.user!.id,
+          },
+        },
+      });
+      if (!membership) {
+        throw new AppError(403, 'You are not a member of this organization');
+      }
+    }
+
     const post = await prisma.post.create({
       data: { ...parsed.data, authorId: req.user!.id },
     });
@@ -173,13 +216,16 @@ postRoutes.put('/:id', requireAuth, validate(updatePostSchema), async (req: Auth
   try {
     const existing = await prisma.post.findUnique({ where: { id: req.params.id as string } });
     if (!existing) throw new AppError(404, 'Post not found');
-    if (existing.authorId !== req.user!.id && req.user!.role !== 'ADMIN') {
+    if (!(await canModifyPost(existing, req.user!))) {
       throw new AppError(403, 'Not authorized');
     }
 
+    // Don't let editors change the org link via update
+    const { organizationId: _ignore, ...updateData } = req.body;
+
     const post = await prisma.post.update({
       where: { id: req.params.id as string },
-      data: req.body,
+      data: updateData,
       include: postInclude,
     });
     res.json(post);
@@ -193,7 +239,7 @@ postRoutes.delete('/:id', requireAuth, async (req: AuthRequest, res, next) => {
       include: { images: true },
     });
     if (!existing) throw new AppError(404, 'Post not found');
-    if (existing.authorId !== req.user!.id && req.user!.role !== 'ADMIN') {
+    if (!(await canModifyPost(existing, req.user!))) {
       throw new AppError(403, 'Not authorized');
     }
 
@@ -216,7 +262,7 @@ postRoutes.delete('/:postId/images/:imageId', requireAuth, async (req: AuthReque
       include: { post: true },
     });
     if (!image) throw new AppError(404, 'Image not found');
-    if (image.post.authorId !== req.user!.id && req.user!.role !== 'ADMIN') {
+    if (!(await canModifyPost(image.post, req.user!))) {
       throw new AppError(403, 'Not authorized');
     }
 

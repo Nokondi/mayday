@@ -36,6 +36,7 @@ export const createPostSchema = z.object({
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
   urgency: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).default('MEDIUM'),
+  organizationId: z.string().uuid().optional(),
 });
 
 export const updatePostSchema = createPostSchema.partial().extend({
@@ -79,6 +80,37 @@ export const createReportSchema = z.object({
 });
 
 export type CreateReportRequest = z.infer<typeof createReportSchema>;
+
+// Organizations
+export const createOrganizationSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  description: z.string().max(2000).optional(),
+  location: z.string().max(200).optional(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+  // Accept empty string as "not provided" so a blank optional input doesn't fail URL validation
+  avatarUrl: z
+    .string()
+    .max(500)
+    .url('Must be a valid URL')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+});
+
+export const updateOrganizationSchema = createOrganizationSchema.partial();
+
+export const inviteToOrganizationSchema = z.object({
+  email: z.string().email(),
+});
+
+export const updateMemberRoleSchema = z.object({
+  role: z.enum(['ADMIN', 'MEMBER']),
+});
+
+export type CreateOrganizationRequest = z.infer<typeof createOrganizationSchema>;
+export type UpdateOrganizationRequest = z.infer<typeof updateOrganizationSchema>;
+export type InviteToOrganizationRequest = z.infer<typeof inviteToOrganizationSchema>;
+export type UpdateMemberRoleRequest = z.infer<typeof updateMemberRoleSchema>;
 
 // Pagination
 export interface PaginatedResponse<T> {
