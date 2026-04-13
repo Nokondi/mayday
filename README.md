@@ -55,11 +55,11 @@ npm run db:seed
 
 **Test accounts:**
 
-| Role  | Email               | Password       |
-|-------|---------------------|----------------|
-| Admin | admin@mayday.local  | admin123!      |
-| User  | alice@example.com   | password123!   |
-| User  | bob@example.com     | password123!   |
+| Role  | Email              | Password     |
+| ----- | ------------------ | ------------ |
+| Admin | admin@mayday.local | admin123!    |
+| User  | emma@example.com   | password123! |
+| User  | peter@example.com  | password123! |
 
 ### 7. Start the development servers
 
@@ -87,16 +87,16 @@ mayday/
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev:client` | Start the Vite dev server |
-| `npm run dev:server` | Start the Express dev server with hot reload |
-| `npm run build:shared` | Build the shared types package |
-| `npm run build:client` | Build the client for production |
-| `npm run build:server` | Build the server for production |
-| `npm run build` | Build all packages |
-| `npm run db:migrate` | Run Prisma migrations |
-| `npm run db:seed` | Seed the database with sample data |
+| Command                | Description                                  |
+| ---------------------- | -------------------------------------------- |
+| `npm run dev:client`   | Start the Vite dev server                    |
+| `npm run dev:server`   | Start the Express dev server with hot reload |
+| `npm run build:shared` | Build the shared types package               |
+| `npm run build:client` | Build the client for production              |
+| `npm run build:server` | Build the server for production              |
+| `npm run build`        | Build all packages                           |
+| `npm run db:migrate`   | Run Prisma migrations                        |
+| `npm run db:seed`      | Seed the database with sample data           |
 
 ## Tech Stack
 
