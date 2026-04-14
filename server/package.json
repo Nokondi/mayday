@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "prisma generate && prisma migrate deploy && tsc",
-    "start": "node dist/index.js",
+    "build": "DATABASE_URL=\"postgresql://placeholder:placeholder@localhost:5432/placeholder\" prisma generate && tsc",
+    "start": "prisma migrate deploy && node dist/index.js",
     "db:migrate": "dotenv -e ../.env -- prisma migrate dev",
     "db:seed": "dotenv -e ../.env -- tsx src/prisma/seed.ts",
     "db:clear": "dotenv -e ../.env -- tsx src/prisma/clear.ts",
