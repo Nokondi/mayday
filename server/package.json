@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "prisma generate && tsc",
+    "build": "prisma generate && prisma migrate deploy && tsc",
     "start": "node dist/index.js",
     "db:migrate": "dotenv -e ../.env -- prisma migrate dev",
     "db:seed": "dotenv -e ../.env -- tsx src/prisma/seed.ts",
