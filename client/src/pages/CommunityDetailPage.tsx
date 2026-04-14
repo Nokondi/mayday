@@ -1,8 +1,8 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Users, MapPin, Settings, LogOut, Trash2 } from 'lucide-react';
-import { getCommunity, removeCommunityMember, deleteCommunity } from '../api/communities.js';
+import { Users, MapPin, Settings, LogOut, Trash2, UserPlus, Clock, X } from 'lucide-react';
+import { getCommunity, removeCommunityMember, deleteCommunity, requestToJoinCommunity, withdrawJoinRequest } from '../api/communities.js';
 import { PostList } from '../components/posts/PostList.js';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
 import { useAuth } from '../context/AuthContext.js';
@@ -50,11 +50,30 @@ export function CommunityDetailPage() {
     onError: () => toast.error('Failed to delete community'),
   });
 
+  const joinRequestMutation = useMutation({
+    mutationFn: () => requestToJoinCommunity(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['community', id] });
+      toast.success('Join request sent');
+    },
+    onError: (e: any) => toast.error(e?.response?.data?.message || 'Failed to send request'),
+  });
+
+  const withdrawMutation = useMutation({
+    mutationFn: () => withdrawJoinRequest(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['community', id] });
+      toast.success('Request withdrawn');
+    },
+    onError: (e: any) => toast.error(e?.response?.data?.message || 'Failed to withdraw request'),
+  });
+
   if (isLoading) return <LoadingSpinner className="py-12" />;
   if (!community) return <div className="max-w-3xl mx-auto px-4 py-8">Community not found.</div>;
 
   const isOwner = community.myRole === 'OWNER';
   const isAdminOrOwner = isOwner || community.myRole === 'ADMIN';
+  const hasPendingRequest = community.myJoinRequestStatus === 'PENDING';
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -113,6 +132,32 @@ export function CommunityDetailPage() {
                 <Trash2 className="w-4 h-4" />
                 Delete
               </button>
+            )}
+            {!isMember && !hasPendingRequest && (
+              <button
+                onClick={() => joinRequestMutation.mutate()}
+                disabled={joinRequestMutation.isPending}
+                className="flex items-center gap-1 px-3 py-2 bg-mayday-500 text-white rounded-lg text-sm hover:bg-mayday-600 disabled:opacity-50"
+              >
+                <UserPlus className="w-4 h-4" />
+                Request to Join
+              </button>
+            )}
+            {!isMember && hasPendingRequest && (
+              <div className="flex flex-col gap-2">
+                <span className="flex items-center gap-1 px-3 py-2 border border-yellow-300 bg-yellow-50 rounded-lg text-sm text-yellow-800">
+                  <Clock className="w-4 h-4" />
+                  Request Pending
+                </span>
+                <button
+                  onClick={() => withdrawMutation.mutate()}
+                  disabled={withdrawMutation.isPending}
+                  className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  <X className="w-4 h-4" />
+                  Withdraw
+                </button>
+              </div>
             )}
           </div>
         </div>

@@ -3,10 +3,12 @@ import type {
   UpdateCommunityRequest,
   InviteToCommunityRequest,
   UpdateMemberRoleRequest,
+  CommunityJoinRequestInput,
   Community,
   CommunityDetail,
   CommunityMember,
   CommunityInvite,
+  CommunityJoinRequest,
   CommunityWithMembership,
   PaginatedResponse,
 } from '@mayday/shared';
@@ -83,4 +85,28 @@ export async function acceptCommunityInvite(inviteId: string): Promise<void> {
 
 export async function declineCommunityInvite(inviteId: string): Promise<void> {
   await api.post(`/communities/me/invites/${inviteId}/decline`);
+}
+
+// Join requests (user-side)
+export async function requestToJoinCommunity(id: string, data?: CommunityJoinRequestInput): Promise<CommunityJoinRequest> {
+  const res = await api.post(`/communities/${id}/join-requests`, data ?? {});
+  return res.data;
+}
+
+export async function withdrawJoinRequest(id: string): Promise<void> {
+  await api.delete(`/communities/${id}/join-requests`);
+}
+
+// Join requests (community-side)
+export async function getCommunityJoinRequests(id: string): Promise<CommunityJoinRequest[]> {
+  const res = await api.get(`/communities/${id}/join-requests`);
+  return res.data;
+}
+
+export async function approveJoinRequest(communityId: string, requestId: string): Promise<void> {
+  await api.post(`/communities/${communityId}/join-requests/${requestId}/approve`);
+}
+
+export async function rejectJoinRequest(communityId: string, requestId: string): Promise<void> {
+  await api.post(`/communities/${communityId}/join-requests/${requestId}/reject`);
 }

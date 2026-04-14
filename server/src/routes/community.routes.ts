@@ -4,6 +4,7 @@ import {
   updateCommunitySchema,
   inviteToCommunitySchema,
   updateMemberRoleSchema,
+  communityJoinRequestSchema,
 } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
@@ -44,6 +45,7 @@ communityRoutes.get('/', async (req: AuthRequest, res, next) => {
         include: {
           _count: { select: { members: true } },
           members: { where: { userId: req.user!.id }, select: { role: true } },
+          joinRequests: { where: { userId: req.user!.id, status: 'PENDING' }, select: { status: true }, take: 1 },
         },
         orderBy: { createdAt: 'desc' },
         skip: (pageNum - 1) * limitNum,
@@ -52,10 +54,11 @@ communityRoutes.get('/', async (req: AuthRequest, res, next) => {
       prisma.community.count({ where }),
     ]);
 
-    const data = items.map(({ _count, members, ...c }) => ({
+    const data = items.map(({ _count, members, joinRequests, ...c }) => ({
       ...c,
       memberCount: _count.members,
       myRole: members[0]?.role ?? null,
+      myJoinRequestStatus: joinRequests[0]?.status ?? null,
     }));
 
     res.json({ data, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) });
@@ -148,13 +151,20 @@ communityRoutes.get('/:id', async (req: AuthRequest, res, next) => {
       include: {
         _count: { select: { members: true } },
         members: { include: memberInclude, orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }] },
+        joinRequests: { where: { userId: req.user!.id, status: 'PENDING' }, select: { status: true }, take: 1 },
       },
     });
     if (!community) throw new AppError(404, 'Community not found');
 
     const myMembership = community.members.find((m) => m.userId === req.user!.id);
-    const { _count, members, ...rest } = community;
-    res.json({ ...rest, memberCount: _count.members, myRole: myMembership?.role ?? null, members });
+    const { _count, members, joinRequests, ...rest } = community;
+    res.json({
+      ...rest,
+      memberCount: _count.members,
+      myRole: myMembership?.role ?? null,
+      myJoinRequestStatus: joinRequests[0]?.status ?? null,
+      members,
+    });
   } catch (err) { next(err); }
 });
 
@@ -340,5 +350,128 @@ communityRoutes.delete('/:id/invites/:inviteId', async (req: AuthRequest, res, n
 
     await prisma.communityInvite.update({ where: { id: inviteId }, data: { status: 'REVOKED' } });
     res.json({ message: 'Invite revoked' });
+  } catch (err) { next(err); }
+});
+
+// ----- Join requests -----
+
+// POST /api/communities/:id/join-requests  — user requests to join
+communityRoutes.post('/:id/join-requests', validate(communityJoinRequestSchema), async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const userId = req.user!.id;
+
+    const community = await prisma.community.findUnique({ where: { id: cid } });
+    if (!community) throw new AppError(404, 'Community not found');
+
+    const existingMember = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId } },
+    });
+    if (existingMember) throw new AppError(409, 'You are already a member');
+
+    const existing = await prisma.communityJoinRequest.findUnique({
+      where: { communityId_userId: { communityId: cid, userId } },
+    });
+
+    let request;
+    if (existing) {
+      if (existing.status === 'PENDING') throw new AppError(409, 'You already have a pending request');
+      // Re-submit a previously declined/revoked request
+      request = await prisma.communityJoinRequest.update({
+        where: { id: existing.id },
+        data: { status: 'PENDING', message: req.body.message ?? null },
+      });
+    } else {
+      request = await prisma.communityJoinRequest.create({
+        data: { communityId: cid, userId, message: req.body.message ?? null },
+      });
+    }
+    res.status(201).json(request);
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/communities/:id/join-requests  — user withdraws their own request
+communityRoutes.delete('/:id/join-requests', async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const userId = req.user!.id;
+
+    const request = await prisma.communityJoinRequest.findUnique({
+      where: { communityId_userId: { communityId: cid, userId } },
+    });
+    if (!request || request.status !== 'PENDING') throw new AppError(404, 'No pending request found');
+
+    await prisma.communityJoinRequest.update({
+      where: { id: request.id },
+      data: { status: 'REVOKED' },
+    });
+    res.json({ message: 'Request withdrawn' });
+  } catch (err) { next(err); }
+});
+
+// GET /api/communities/:id/join-requests  — OWNER/ADMIN lists pending requests
+communityRoutes.get('/:id/join-requests', async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const membership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+    });
+    if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+      throw new AppError(403, 'Not authorized');
+    }
+
+    const requests = await prisma.communityJoinRequest.findMany({
+      where: { communityId: cid, status: 'PENDING' },
+      include: { user: { select: publicUserSelect } },
+      orderBy: { createdAt: 'asc' },
+    });
+    res.json(requests);
+  } catch (err) { next(err); }
+});
+
+// POST /api/communities/:id/join-requests/:requestId/approve
+communityRoutes.post('/:id/join-requests/:requestId/approve', async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const requestId = req.params.requestId as string;
+
+    const membership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+    });
+    if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+      throw new AppError(403, 'Not authorized');
+    }
+
+    const joinReq = await prisma.communityJoinRequest.findUnique({ where: { id: requestId } });
+    if (!joinReq || joinReq.communityId !== cid) throw new AppError(404, 'Request not found');
+    if (joinReq.status !== 'PENDING') throw new AppError(400, 'Request is no longer pending');
+
+    await prisma.$transaction([
+      prisma.communityMember.create({ data: { communityId: cid, userId: joinReq.userId, role: 'MEMBER' } }),
+      prisma.communityJoinRequest.update({ where: { id: requestId }, data: { status: 'ACCEPTED' } }),
+    ]);
+    res.json({ message: 'Request approved' });
+  } catch (err) { next(err); }
+});
+
+// POST /api/communities/:id/join-requests/:requestId/reject
+communityRoutes.post('/:id/join-requests/:requestId/reject', async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const requestId = req.params.requestId as string;
+
+    const membership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+    });
+    if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+      throw new AppError(403, 'Not authorized');
+    }
+
+    const joinReq = await prisma.communityJoinRequest.findUnique({ where: { id: requestId } });
+    if (!joinReq || joinReq.communityId !== cid) throw new AppError(404, 'Request not found');
+    if (joinReq.status !== 'PENDING') throw new AppError(400, 'Request is no longer pending');
+
+    await prisma.communityJoinRequest.update({ where: { id: requestId }, data: { status: 'DECLINED' } });
+    res.json({ message: 'Request rejected' });
   } catch (err) { next(err); }
 });

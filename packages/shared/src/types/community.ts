@@ -25,9 +25,24 @@ export interface CommunityMember {
   user: UserPublicProfile;
 }
 
+export type CommunityJoinRequestStatus = InviteStatus;
+
+export interface CommunityJoinRequest {
+  id: string;
+  communityId: string;
+  userId: string;
+  status: CommunityJoinRequestStatus;
+  message: string | null;
+  createdAt: string;
+  updatedAt: string;
+  community?: Community;
+  user?: UserPublicProfile;
+}
+
 export interface CommunityWithMembership extends Community {
   memberCount: number;
   myRole: CommunityRole | null;
+  myJoinRequestStatus: CommunityJoinRequestStatus | null;
 }
 
 export interface CommunityDetail extends CommunityWithMembership {

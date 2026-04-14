@@ -134,9 +134,14 @@ export const inviteToCommunitySchema = z.object({
   email: z.string().email(),
 });
 
+export const communityJoinRequestSchema = z.object({
+  message: z.string().max(500).optional(),
+});
+
 export type CreateCommunityRequest = z.infer<typeof createCommunitySchema>;
 export type UpdateCommunityRequest = z.infer<typeof updateCommunitySchema>;
 export type InviteToCommunityRequest = z.infer<typeof inviteToCommunitySchema>;
+export type CommunityJoinRequestInput = z.infer<typeof communityJoinRequestSchema>;
 
 // Pagination
 export interface PaginatedResponse<T> {

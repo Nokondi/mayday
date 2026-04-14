@@ -78,6 +78,7 @@ model User {
   communityMemberships  CommunityMember[]
   communityInvitesRecv  CommunityInvite[]     @relation("communityInviteRecipient")
   communityInvitesSent  CommunityInvite[]     @relation("communityInviteSender")
+  communityJoinRequests CommunityJoinRequest[]
 }
 
 model Post {
@@ -235,9 +236,10 @@ model Community {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members CommunityMember[]
-  invites CommunityInvite[]
-  posts   Post[]
+  members      CommunityMember[]
+  invites      CommunityInvite[]
+  joinRequests CommunityJoinRequest[]
+  posts        Post[]
 
   @@index([name])
   @@index([latitude, longitude])
@@ -272,5 +274,22 @@ model CommunityInvite {
 
   @@unique([communityId, invitedUserId])
   @@index([invitedUserId])
+  @@index([status])
+}
+
+model CommunityJoinRequest {
+  id          String       @id @default(uuid())
+  communityId String
+  userId      String
+  status      InviteStatus @default(PENDING)
+  message     String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, userId])
+  @@index([userId])
   @@index([status])
 }

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Trash2, UserPlus, ArrowLeft } from 'lucide-react';
+import { Trash2, UserPlus, ArrowLeft, UserCheck, UserX } from 'lucide-react';
 import {
   inviteToCommunitySchema,
   updateCommunitySchema,
@@ -18,6 +18,9 @@ import {
   removeCommunityMember,
   updateCommunityMemberRole,
   updateCommunity,
+  getCommunityJoinRequests,
+  approveJoinRequest,
+  rejectJoinRequest,
 } from '../api/communities.js';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
 import { useAuth } from '../context/AuthContext.js';
@@ -38,6 +41,31 @@ export function CommunityManagePage() {
     queryKey: ['community', id, 'invites'],
     queryFn: () => getCommunityInvites(id!),
     enabled: !!id && (community?.myRole === 'OWNER' || community?.myRole === 'ADMIN'),
+  });
+
+  const { data: joinRequests } = useQuery({
+    queryKey: ['community', id, 'join-requests'],
+    queryFn: () => getCommunityJoinRequests(id!),
+    enabled: !!id && (community?.myRole === 'OWNER' || community?.myRole === 'ADMIN'),
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: (requestId: string) => approveJoinRequest(id!, requestId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['community', id] });
+      queryClient.invalidateQueries({ queryKey: ['community', id, 'join-requests'] });
+      toast.success('Request approved');
+    },
+    onError: (e: any) => toast.error(e?.response?.data?.message || 'Failed to approve'),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (requestId: string) => rejectJoinRequest(id!, requestId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['community', id, 'join-requests'] });
+      toast.success('Request rejected');
+    },
+    onError: (e: any) => toast.error(e?.response?.data?.message || 'Failed to reject'),
   });
 
   const inviteForm = useForm<InviteToCommunityRequest>({
@@ -203,6 +231,45 @@ export function CommunityManagePage() {
           </div>
         )}
       </div>
+
+      {/* Join Requests */}
+      {joinRequests && joinRequests.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Join Requests</h2>
+          <ul className="divide-y divide-gray-100">
+            {joinRequests.map((jr) => (
+              <li key={jr.id} className="py-3 flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <Link to={`/profile/${jr.userId}`} className="text-gray-900 hover:text-mayday-600">
+                    {jr.user?.name ?? 'Unknown user'}
+                  </Link>
+                  {jr.message && (
+                    <p className="text-sm text-gray-500 mt-1 truncate">{jr.message}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => approveMutation.mutate(jr.id)}
+                    disabled={approveMutation.isPending}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 disabled:opacity-50"
+                  >
+                    <UserCheck className="w-4 h-4" />
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => rejectMutation.mutate(jr.id)}
+                    disabled={rejectMutation.isPending}
+                    className="flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    <UserX className="w-4 h-4" />
+                    Reject
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Members */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
