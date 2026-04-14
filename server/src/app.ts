@@ -13,6 +13,7 @@ import { adminRoutes } from './routes/admin.routes.js';
 import { searchRoutes } from './routes/search.routes.js';
 import { reportRoutes } from './routes/report.routes.js';
 import { organizationRoutes } from './routes/organization.routes.js';
+import { communityRoutes } from './routes/community.routes.js';
 
 export function createApp() {
   const app = express();
@@ -42,6 +43,7 @@ export function createApp() {
   app.use('/api/search', searchRoutes);
   app.use('/api/reports', reportRoutes);
   app.use('/api/organizations', organizationRoutes);
+  app.use('/api/communities', communityRoutes);
 
   // Error handler (must be last)
   app.use(errorMiddleware);

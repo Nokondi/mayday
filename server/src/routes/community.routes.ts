@@ -1,0 +1,344 @@
+import { Router } from 'express';
+import {
+  createCommunitySchema,
+  updateCommunitySchema,
+  inviteToCommunitySchema,
+  updateMemberRoleSchema,
+} from '@mayday/shared';
+import { validate } from '../middleware/validate.middleware.js';
+import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
+import { prisma } from '../config/database.js';
+import { AppError } from '../middleware/error.middleware.js';
+import type { Prisma } from '@prisma/client';
+
+const publicUserSelect = {
+  id: true, name: true, bio: true, location: true, skills: true, createdAt: true,
+} as const;
+
+const memberInclude = { user: { select: publicUserSelect } } as const;
+
+export const communityRoutes = Router();
+
+communityRoutes.use(requireAuth);
+
+// ----- Listing & current-user invites -----
+
+// GET /api/communities
+communityRoutes.get('/', async (req: AuthRequest, res, next) => {
+  try {
+    const { q, page = '1', limit = '20' } = req.query;
+    const pageNum = Math.max(1, parseInt(page as string));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
+
+    const where: Prisma.CommunityWhereInput = {};
+    if (q) {
+      where.OR = [
+        { name: { contains: q as string, mode: 'insensitive' } },
+        { description: { contains: q as string, mode: 'insensitive' } },
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      prisma.community.findMany({
+        where,
+        include: {
+          _count: { select: { members: true } },
+          members: { where: { userId: req.user!.id }, select: { role: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum,
+      }),
+      prisma.community.count({ where }),
+    ]);
+
+    const data = items.map(({ _count, members, ...c }) => ({
+      ...c,
+      memberCount: _count.members,
+      myRole: members[0]?.role ?? null,
+    }));
+
+    res.json({ data, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) });
+  } catch (err) { next(err); }
+});
+
+// GET /api/communities/mine
+communityRoutes.get('/mine', async (req: AuthRequest, res, next) => {
+  try {
+    const memberships = await prisma.communityMember.findMany({
+      where: { userId: req.user!.id },
+      include: { community: { include: { _count: { select: { members: true } } } } },
+      orderBy: { joinedAt: 'desc' },
+    });
+
+    const data = memberships.map((m) => ({
+      ...m.community,
+      memberCount: m.community._count.members,
+      myRole: m.role,
+    }));
+    res.json(data);
+  } catch (err) { next(err); }
+});
+
+// GET /api/communities/me/invites
+communityRoutes.get('/me/invites', async (req: AuthRequest, res, next) => {
+  try {
+    const invites = await prisma.communityInvite.findMany({
+      where: { invitedUserId: req.user!.id, status: 'PENDING' },
+      include: { community: true, invitedBy: { select: publicUserSelect } },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(invites);
+  } catch (err) { next(err); }
+});
+
+// POST /api/communities/me/invites/:inviteId/accept
+communityRoutes.post('/me/invites/:inviteId/accept', async (req: AuthRequest, res, next) => {
+  try {
+    const invite = await prisma.communityInvite.findUnique({ where: { id: req.params.inviteId as string } });
+    if (!invite || invite.invitedUserId !== req.user!.id) throw new AppError(404, 'Invite not found');
+    if (invite.status !== 'PENDING') throw new AppError(400, 'Invite is no longer pending');
+
+    await prisma.$transaction([
+      prisma.communityMember.create({ data: { communityId: invite.communityId, userId: req.user!.id, role: 'MEMBER' } }),
+      prisma.communityInvite.update({ where: { id: invite.id }, data: { status: 'ACCEPTED' } }),
+    ]);
+    res.json({ message: 'Invite accepted' });
+  } catch (err) { next(err); }
+});
+
+// POST /api/communities/me/invites/:inviteId/decline
+communityRoutes.post('/me/invites/:inviteId/decline', async (req: AuthRequest, res, next) => {
+  try {
+    const invite = await prisma.communityInvite.findUnique({ where: { id: req.params.inviteId as string } });
+    if (!invite || invite.invitedUserId !== req.user!.id) throw new AppError(404, 'Invite not found');
+    if (invite.status !== 'PENDING') throw new AppError(400, 'Invite is no longer pending');
+
+    await prisma.communityInvite.update({ where: { id: invite.id }, data: { status: 'DECLINED' } });
+    res.json({ message: 'Invite declined' });
+  } catch (err) { next(err); }
+});
+
+// ----- Community CRUD -----
+
+// POST /api/communities
+communityRoutes.post('/', validate(createCommunitySchema), async (req: AuthRequest, res, next) => {
+  try {
+    const community = await prisma.community.create({
+      data: {
+        ...req.body,
+        members: { create: { userId: req.user!.id, role: 'OWNER' } },
+      },
+      include: {
+        _count: { select: { members: true } },
+        members: { where: { userId: req.user!.id }, select: { role: true } },
+      },
+    });
+
+    const { _count, members, ...rest } = community;
+    res.status(201).json({ ...rest, memberCount: _count.members, myRole: members[0]?.role ?? null });
+  } catch (err) { next(err); }
+});
+
+// GET /api/communities/:id
+communityRoutes.get('/:id', async (req: AuthRequest, res, next) => {
+  try {
+    const community = await prisma.community.findUnique({
+      where: { id: req.params.id as string },
+      include: {
+        _count: { select: { members: true } },
+        members: { include: memberInclude, orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }] },
+      },
+    });
+    if (!community) throw new AppError(404, 'Community not found');
+
+    const myMembership = community.members.find((m) => m.userId === req.user!.id);
+    const { _count, members, ...rest } = community;
+    res.json({ ...rest, memberCount: _count.members, myRole: myMembership?.role ?? null, members });
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/communities/:id
+communityRoutes.patch('/:id', validate(updateCommunitySchema), async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const membership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+    });
+    if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+      throw new AppError(403, 'Not authorized');
+    }
+    const updated = await prisma.community.update({ where: { id: cid }, data: req.body });
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/communities/:id
+communityRoutes.delete('/:id', async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const membership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+    });
+    if (!membership || membership.role !== 'OWNER') {
+      throw new AppError(403, 'Only the owner can delete the community');
+    }
+
+    // Detach posts — make them public rather than deleting them
+    await prisma.post.updateMany({ where: { communityId: cid }, data: { communityId: null } });
+    await prisma.community.delete({ where: { id: cid } });
+    res.json({ message: 'Community deleted' });
+  } catch (err) { next(err); }
+});
+
+// ----- Members -----
+
+communityRoutes.get('/:id/members', async (req: AuthRequest, res, next) => {
+  try {
+    const members = await prisma.communityMember.findMany({
+      where: { communityId: req.params.id as string },
+      include: memberInclude,
+      orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
+    });
+    res.json(members);
+  } catch (err) { next(err); }
+});
+
+communityRoutes.patch('/:id/members/:userId', validate(updateMemberRoleSchema), async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const targetUserId = req.params.userId as string;
+
+    const myMembership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+    });
+    if (!myMembership || myMembership.role !== 'OWNER') {
+      throw new AppError(403, 'Only the owner can change roles');
+    }
+    if (targetUserId === req.user!.id) throw new AppError(400, 'Cannot change your own role');
+
+    const updated = await prisma.communityMember.update({
+      where: { communityId_userId: { communityId: cid, userId: targetUserId } },
+      data: { role: req.body.role },
+      include: memberInclude,
+    });
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+communityRoutes.delete('/:id/members/:userId', async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const targetUserId = req.params.userId as string;
+    const isSelf = targetUserId === req.user!.id;
+
+    const myMembership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+    });
+    if (!myMembership) throw new AppError(403, 'Not a member of this community');
+
+    const targetMembership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: targetUserId } },
+    });
+    if (!targetMembership) throw new AppError(404, 'Member not found');
+
+    if (!isSelf) {
+      if (myMembership.role !== 'OWNER' && myMembership.role !== 'ADMIN') {
+        throw new AppError(403, 'Not authorized to remove members');
+      }
+      if (targetMembership.role === 'OWNER') throw new AppError(403, 'Cannot remove the owner');
+      if (targetMembership.role === 'ADMIN' && myMembership.role !== 'OWNER') {
+        throw new AppError(403, 'Only the owner can remove admins');
+      }
+    } else if (myMembership.role === 'OWNER') {
+      throw new AppError(400, 'Owners cannot leave; transfer ownership or delete the community');
+    }
+
+    await prisma.communityMember.delete({
+      where: { communityId_userId: { communityId: cid, userId: targetUserId } },
+    });
+    res.json({ message: isSelf ? 'Left community' : 'Member removed' });
+  } catch (err) { next(err); }
+});
+
+// ----- Invites (community-side) -----
+
+communityRoutes.get('/:id/invites', async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const membership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+    });
+    if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+      throw new AppError(403, 'Not authorized');
+    }
+
+    const invites = await prisma.communityInvite.findMany({
+      where: { communityId: cid, status: 'PENDING' },
+      include: { invitedUser: { select: publicUserSelect }, invitedBy: { select: publicUserSelect } },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(invites);
+  } catch (err) { next(err); }
+});
+
+communityRoutes.post('/:id/invites', validate(inviteToCommunitySchema), async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const membership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+    });
+    if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+      throw new AppError(403, 'Not authorized to invite');
+    }
+
+    const targetUser = await prisma.user.findUnique({ where: { email: req.body.email }, select: { id: true } });
+    if (!targetUser) throw new AppError(404, 'No user found with that email');
+
+    const existingMember = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: targetUser.id } },
+    });
+    if (existingMember) throw new AppError(409, 'User is already a member');
+
+    const existingInvite = await prisma.communityInvite.findUnique({
+      where: { communityId_invitedUserId: { communityId: cid, invitedUserId: targetUser.id } },
+    });
+
+    let invite;
+    if (existingInvite) {
+      if (existingInvite.status === 'PENDING') throw new AppError(409, 'An invite is already pending for this user');
+      invite = await prisma.communityInvite.update({
+        where: { id: existingInvite.id },
+        data: { status: 'PENDING', invitedById: req.user!.id },
+        include: { invitedUser: { select: publicUserSelect }, invitedBy: { select: publicUserSelect } },
+      });
+    } else {
+      invite = await prisma.communityInvite.create({
+        data: { communityId: cid, invitedUserId: targetUser.id, invitedById: req.user!.id },
+        include: { invitedUser: { select: publicUserSelect }, invitedBy: { select: publicUserSelect } },
+      });
+    }
+    res.status(201).json(invite);
+  } catch (err) { next(err); }
+});
+
+communityRoutes.delete('/:id/invites/:inviteId', async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const inviteId = req.params.inviteId as string;
+
+    const membership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+    });
+    if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+      throw new AppError(403, 'Not authorized');
+    }
+
+    const invite = await prisma.communityInvite.findUnique({ where: { id: inviteId } });
+    if (!invite || invite.communityId !== cid) throw new AppError(404, 'Invite not found');
+    if (invite.status !== 'PENDING') throw new AppError(400, 'Invite is no longer pending');
+
+    await prisma.communityInvite.update({ where: { id: inviteId }, data: { status: 'REVOKED' } });
+    res.json({ message: 'Invite revoked' });
+  } catch (err) { next(err); }
+});

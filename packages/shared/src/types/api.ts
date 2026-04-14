@@ -36,7 +36,8 @@ export const createPostSchema = z.object({
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
   urgency: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).default('MEDIUM'),
-  organizationId: z.string().uuid().optional(),
+  organizationId: z.string().uuid().optional().or(z.literal('').transform(() => undefined)),
+  communityId: z.string().uuid().optional().or(z.literal('').transform(() => undefined)),
 });
 
 export const updatePostSchema = createPostSchema.partial().extend({
@@ -112,6 +113,31 @@ export type UpdateOrganizationRequest = z.infer<typeof updateOrganizationSchema>
 export type InviteToOrganizationRequest = z.infer<typeof inviteToOrganizationSchema>;
 export type UpdateMemberRoleRequest = z.infer<typeof updateMemberRoleSchema>;
 
+// Communities
+export const createCommunitySchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  description: z.string().max(2000).optional(),
+  location: z.string().max(200).optional(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+  avatarUrl: z
+    .string()
+    .max(500)
+    .url('Must be a valid URL')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+});
+
+export const updateCommunitySchema = createCommunitySchema.partial();
+
+export const inviteToCommunitySchema = z.object({
+  email: z.string().email(),
+});
+
+export type CreateCommunityRequest = z.infer<typeof createCommunitySchema>;
+export type UpdateCommunityRequest = z.infer<typeof updateCommunitySchema>;
+export type InviteToCommunityRequest = z.infer<typeof inviteToCommunitySchema>;
+
 // Pagination
 export interface PaginatedResponse<T> {
   data: T[];
@@ -135,6 +161,7 @@ export interface PostQueryParams {
   neLng?: number;
   swLat?: number;
   swLng?: number;
+  communityId?: string;
   page?: number;
   limit?: number;
   sort?: 'recent' | 'urgency';

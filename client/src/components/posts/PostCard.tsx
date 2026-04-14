@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, User, Building2 } from 'lucide-react';
+import { MapPin, Clock, User, Building2, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { PostWithAuthor } from '@mayday/shared';
 import { CategoryBadge } from '../common/CategoryBadge.js';
@@ -25,6 +25,12 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             </span>
             <CategoryBadge category={post.category} />
             <UrgencyBadge urgency={post.urgency} />
+            {post.community && (
+              <span className="flex items-center gap-0.5 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
+                <Lock className="w-3 h-3" />
+                {post.community.name}
+              </span>
+            )}
           </div>
           <h3 className="font-semibold text-gray-900 truncate">{post.title}</h3>
           <p className="text-sm text-gray-600 mt-1 line-clamp-2">{post.description}</p>

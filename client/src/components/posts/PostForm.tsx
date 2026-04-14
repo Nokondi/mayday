@@ -6,6 +6,7 @@ import { createPostSchema, CATEGORIES, type CreatePostRequest } from '@mayday/sh
 import { ImagePlus, X, MapPin, Loader2 } from 'lucide-react';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { listMyOrganizations } from '../../api/organizations.js';
+import { listMyCommunities } from '../../api/communities.js';
 import { useAuth } from '../../context/AuthContext.js';
 
 interface PostFormProps {
@@ -27,6 +28,12 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
   const { data: myOrgs } = useQuery({
     queryKey: ['my-organizations'],
     queryFn: listMyOrganizations,
+  });
+
+  // Communities the user can scope posts to
+  const { data: myCommunities } = useQuery({
+    queryKey: ['my-communities'],
+    queryFn: listMyCommunities,
   });
 
   const [images, setImages] = useState<File[]>([]);
@@ -132,9 +139,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
   };
 
   const handleFormSubmit = (data: CreatePostRequest) => {
-    // The "Post as" select uses '' for "Yourself"; convert to undefined
     const cleaned: CreatePostRequest = { ...data };
+    // Selects use '' for "none" — convert to undefined
     if (!cleaned.organizationId) cleaned.organizationId = undefined;
+    if (!cleaned.communityId) cleaned.communityId = undefined;
     return onSubmit(cleaned, images);
   };
 
@@ -164,6 +172,21 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             <option value="">{user?.name ?? 'Yourself'}</option>
             {myOrgs.map((org) => (
               <option key={org.id} value={org.id}>{org.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {myCommunities && myCommunities.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
+          <select
+            {...register('communityId')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
+          >
+            <option value="">Public (visible to everyone)</option>
+            {myCommunities.map((c) => (
+              <option key={c.id} value={c.id}>{c.name} members only</option>
             ))}
           </select>
         </div>

@@ -72,9 +72,12 @@ model User {
   reportsAgainst   Report[]       @relation("reportedUser")
   conversationsAsA Conversation[] @relation("participantA")
   conversationsAsB Conversation[] @relation("participantB")
-  orgMemberships   OrganizationMember[]
-  invitesReceived  OrganizationInvite[] @relation("inviteRecipient")
-  invitesSent      OrganizationInvite[] @relation("inviteSender")
+  orgMemberships        OrganizationMember[]
+  invitesReceived       OrganizationInvite[]  @relation("inviteRecipient")
+  invitesSent           OrganizationInvite[]  @relation("inviteSender")
+  communityMemberships  CommunityMember[]
+  communityInvitesRecv  CommunityInvite[]     @relation("communityInviteRecipient")
+  communityInvitesSent  CommunityInvite[]     @relation("communityInviteSender")
 }
 
 model Post {
@@ -90,11 +93,13 @@ model Post {
   urgency        UrgencyLevel @default(MEDIUM)
   authorId       String
   organizationId String?
+  communityId    String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
   author       User          @relation(fields: [authorId], references: [id])
   organization Organization? @relation(fields: [organizationId], references: [id])
+  community    Community?    @relation(fields: [communityId], references: [id])
   reports      Report[]
   images       PostImage[]
 
@@ -103,6 +108,7 @@ model Post {
   @@index([status])
   @@index([authorId])
   @@index([organizationId])
+  @@index([communityId])
   @@index([latitude, longitude])
 }
 
@@ -214,6 +220,57 @@ model OrganizationInvite {
   invitedBy    User         @relation("inviteSender", fields: [invitedById], references: [id])
 
   @@unique([organizationId, invitedUserId])
+  @@index([invitedUserId])
+  @@index([status])
+}
+
+model Community {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  location    String?
+  latitude    Float?
+  longitude   Float?
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members CommunityMember[]
+  invites CommunityInvite[]
+  posts   Post[]
+
+  @@index([name])
+  @@index([latitude, longitude])
+}
+
+model CommunityMember {
+  id          String   @id @default(uuid())
+  communityId String
+  userId      String
+  role        OrgRole  @default(MEMBER)
+  joinedAt    DateTime @default(now())
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, userId])
+  @@index([userId])
+}
+
+model CommunityInvite {
+  id            String       @id @default(uuid())
+  communityId   String
+  invitedUserId String
+  invitedById   String
+  status        InviteStatus @default(PENDING)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  invitedUser User      @relation("communityInviteRecipient", fields: [invitedUserId], references: [id], onDelete: Cascade)
+  invitedBy   User      @relation("communityInviteSender", fields: [invitedById], references: [id])
+
+  @@unique([communityId, invitedUserId])
   @@index([invitedUserId])
   @@index([status])
 }

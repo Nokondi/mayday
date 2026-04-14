@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MapPin, Clock, User, MessageSquare, Flag, Trash2, Building2 } from 'lucide-react';
+import { MapPin, Clock, User, MessageSquare, Flag, Trash2, Building2, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { getPost, getPostMatches, deletePost } from '../api/posts.js';
@@ -73,6 +73,12 @@ export function PostDetailPage() {
           }`}>
             {post.status}
           </span>
+          {post.community && (
+            <Link to={`/communities/${post.community.id}`} className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-100">
+              <Lock className="w-3 h-3" />
+              {post.community.name}
+            </Link>
+          )}
         </div>
 
         <h1 className="text-2xl font-bold text-gray-900 mb-3">{post.title}</h1>

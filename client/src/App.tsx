@@ -16,7 +16,12 @@ import { OrganizationsPage } from './pages/OrganizationsPage.js';
 import { CreateOrganizationPage } from './pages/CreateOrganizationPage.js';
 import { OrganizationDetailPage } from './pages/OrganizationDetailPage.js';
 import { OrganizationManagePage } from './pages/OrganizationManagePage.js';
+import { CommunitiesPage } from './pages/CommunitiesPage.js';
+import { CreateCommunityPage } from './pages/CreateCommunityPage.js';
+import { CommunityDetailPage } from './pages/CommunityDetailPage.js';
+import { CommunityManagePage } from './pages/CommunityManagePage.js';
 import { InvitesPage } from './pages/InvitesPage.js';
+import { AboutPage } from './pages/AboutPage.js';
 import { NotFoundPage } from './pages/NotFoundPage.js';
 import { useAuth } from './context/AuthContext.js';
 
@@ -28,7 +33,7 @@ export function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={
-            <ProtectedRoute><HomePage /></ProtectedRoute>
+            user ? <HomePage /> : <AboutPage />
           } />
           <Route path="/posts" element={
             <ProtectedRoute><PostsPage /></ProtectedRoute>
@@ -60,9 +65,22 @@ export function App() {
           <Route path="/organizations/:id/manage" element={
             <ProtectedRoute><OrganizationManagePage /></ProtectedRoute>
           } />
+          <Route path="/communities" element={
+            <ProtectedRoute><CommunitiesPage /></ProtectedRoute>
+          } />
+          <Route path="/communities/new" element={
+            <ProtectedRoute><CreateCommunityPage /></ProtectedRoute>
+          } />
+          <Route path="/communities/:id" element={
+            <ProtectedRoute><CommunityDetailPage /></ProtectedRoute>
+          } />
+          <Route path="/communities/:id/manage" element={
+            <ProtectedRoute><CommunityManagePage /></ProtectedRoute>
+          } />
           <Route path="/invites" element={
             <ProtectedRoute><InvitesPage /></ProtectedRoute>
           } />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           {user?.role === 'ADMIN' && (

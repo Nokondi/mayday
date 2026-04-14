@@ -4,19 +4,26 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext.js';
 import { getMyInvites } from '../../api/organizations.js';
+import { getMyCommunityInvites } from '../../api/communities.js';
 
 export function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const { data: invites } = useQuery({
+  const { data: orgInvites } = useQuery({
     queryKey: ['my-invites'],
     queryFn: getMyInvites,
     enabled: !!user,
     refetchInterval: 60_000,
   });
-  const inviteCount = invites?.length ?? 0;
+  const { data: communityInvites } = useQuery({
+    queryKey: ['my-community-invites'],
+    queryFn: getMyCommunityInvites,
+    enabled: !!user,
+    refetchInterval: 60_000,
+  });
+  const inviteCount = (orgInvites?.length ?? 0) + (communityInvites?.length ?? 0);
 
   const handleLogout = async () => {
     await logout();
@@ -38,6 +45,8 @@ export function Header() {
                 <Link to="/posts" className="text-gray-600 hover:text-gray-900">Browse</Link>
                 <Link to="/map" className="text-gray-600 hover:text-gray-900">Map</Link>
                 <Link to="/organizations" className="text-gray-600 hover:text-gray-900">Orgs</Link>
+                <Link to="/communities" className="text-gray-600 hover:text-gray-900">Communities</Link>
+                <Link to="/about" className="text-gray-600 hover:text-gray-900">About</Link>
                 <Link to="/posts/new" className="flex items-center gap-1 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600">
                   <Plus className="w-4 h-4" />
                   New Post
@@ -67,6 +76,7 @@ export function Header() {
               </>
             ) : (
               <>
+                <Link to="/about" className="text-gray-600 hover:text-gray-900">About</Link>
                 <Link to="/login" className="text-gray-600 hover:text-gray-900">Log in</Link>
                 <Link to="/register" className="bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600">
                   Sign up
@@ -87,6 +97,8 @@ export function Header() {
                 <Link to="/posts" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Browse</Link>
                 <Link to="/map" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Map</Link>
                 <Link to="/organizations" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Organizations</Link>
+                <Link to="/communities" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Communities</Link>
+                <Link to="/about" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>About</Link>
                 <Link to="/posts/new" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>New Post</Link>
                 <Link to="/messages" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Messages</Link>
                 <Link to="/invites" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>
@@ -97,6 +109,7 @@ export function Header() {
               </>
             ) : (
               <>
+                <Link to="/about" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>About</Link>
                 <Link to="/login" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Log in</Link>
                 <Link to="/register" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Sign up</Link>
               </>

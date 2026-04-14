@@ -19,11 +19,23 @@ const postInclude = {
   organization: {
     select: { id: true, name: true, avatarUrl: true },
   },
+  community: {
+    select: { id: true, name: true },
+  },
   images: {
     select: { id: true, url: true, order: true },
     orderBy: { order: 'asc' as const },
   },
 };
+
+/** Returns the IDs of communities the user belongs to. */
+async function getUserCommunityIds(userId: string): Promise<string[]> {
+  const memberships = await prisma.communityMember.findMany({
+    where: { userId },
+    select: { communityId: true },
+  });
+  return memberships.map((m) => m.communityId);
+}
 
 /**
  * A user can modify a post if they are:
@@ -52,12 +64,13 @@ async function canModifyPost(
 
 export const postRoutes = Router();
 
-postRoutes.get('/', async (req, res, next) => {
+postRoutes.get('/', requireAuth, async (req: AuthRequest, res, next) => {
   try {
     const {
       type, category, status, urgency, q,
       neLat, neLng, swLat, swLng,
       page = '1', limit = '20', sort = 'recent',
+      communityId,
     } = req.query;
 
     const pageNum = Math.max(1, parseInt(page as string));
@@ -80,11 +93,27 @@ postRoutes.get('/', async (req, res, next) => {
       };
     }
 
+    // Text search (AND'd with other filters)
     if (q) {
-      where.OR = [
-        { title: { contains: q as string, mode: 'insensitive' } },
-        { description: { contains: q as string, mode: 'insensitive' } },
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : []),
+        { OR: [
+          { title: { contains: q as string, mode: 'insensitive' } },
+          { description: { contains: q as string, mode: 'insensitive' } },
+        ] },
       ];
+    }
+
+    // Community visibility: if filtering by a specific community, only show that
+    // community's posts. Otherwise show public posts + posts from user's communities.
+    if (communityId) {
+      where.communityId = communityId as string;
+    } else {
+      const myCommunityIds = await getUserCommunityIds(req.user!.id);
+      const visibilityFilter: Prisma.PostWhereInput = myCommunityIds.length > 0
+        ? { OR: [{ communityId: null }, { communityId: { in: myCommunityIds } }] }
+        : { communityId: null };
+      where.AND = [...(Array.isArray(where.AND) ? where.AND : []), visibilityFilter];
     }
 
     const orderBy: Prisma.PostOrderByWithRelationInput =
@@ -113,13 +142,24 @@ postRoutes.get('/', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-postRoutes.get('/:id', async (req, res, next) => {
+postRoutes.get('/:id', requireAuth, async (req: AuthRequest, res, next) => {
   try {
     const post = await prisma.post.findUnique({
       where: { id: req.params.id as string },
       include: postInclude,
     });
     if (!post) throw new AppError(404, 'Post not found');
+
+    // Check community visibility
+    if (post.communityId) {
+      const membership = await prisma.communityMember.findUnique({
+        where: { communityId_userId: { communityId: post.communityId, userId: req.user!.id } },
+      });
+      if (!membership && req.user!.role !== 'ADMIN') {
+        throw new AppError(403, 'This post is only visible to community members');
+      }
+    }
+
     res.json(post);
   } catch (err) { next(err); }
 });
@@ -186,6 +226,21 @@ postRoutes.post('/', requireAuth, uploadPostImages, async (req: AuthRequest, res
       }
     }
 
+    // If scoping to a community, verify membership
+    if (parsed.data.communityId) {
+      const membership = await prisma.communityMember.findUnique({
+        where: {
+          communityId_userId: {
+            communityId: parsed.data.communityId,
+            userId: req.user!.id,
+          },
+        },
+      });
+      if (!membership) {
+        throw new AppError(403, 'You are not a member of this community');
+      }
+    }
+
     const post = await prisma.post.create({
       data: { ...parsed.data, authorId: req.user!.id },
     });
@@ -220,8 +275,8 @@ postRoutes.put('/:id', requireAuth, validate(updatePostSchema), async (req: Auth
       throw new AppError(403, 'Not authorized');
     }
 
-    // Don't let editors change the org link via update
-    const { organizationId: _ignore, ...updateData } = req.body;
+    // Don't let editors change the org/community link via update
+    const { organizationId: _ignoreOrg, communityId: _ignoreCommunity, ...updateData } = req.body;
 
     const post = await prisma.post.update({
       where: { id: req.params.id as string },
