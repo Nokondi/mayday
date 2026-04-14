@@ -30,15 +30,17 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Type a message..."
+        aria-label="Type a message"
         disabled={disabled}
         className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
       />
       <button
         type="submit"
         disabled={!content.trim() || sending || disabled}
+        aria-label="Send message"
         className="bg-mayday-500 text-white p-2 rounded-full hover:bg-mayday-600 disabled:opacity-50"
       >
-        <Send className="w-5 h-5" />
+        <Send className="w-5 h-5" aria-hidden="true" />
       </button>
     </form>
   );

@@ -90,12 +90,12 @@ export function CommunityDetailPage() {
               )}
               <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500">
                 <span className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
+                  <Users className="w-4 h-4" aria-hidden="true" />
                   {community.memberCount} member{community.memberCount !== 1 ? 's' : ''}
                 </span>
                 {community.location && (
                   <span className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
+                    <MapPin className="w-4 h-4" aria-hidden="true" />
                     {community.location}
                   </span>
                 )}

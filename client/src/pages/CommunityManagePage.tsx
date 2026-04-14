@@ -200,6 +200,7 @@ export function CommunityManagePage() {
             type="email"
             {...inviteForm.register('email')}
             placeholder="user@example.com"
+            aria-label="Email address to invite"
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2"
           />
           <button
@@ -207,7 +208,7 @@ export function CommunityManagePage() {
             disabled={inviteMutation.isPending}
             className="flex items-center gap-1 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600 disabled:opacity-50"
           >
-            <UserPlus className="w-4 h-4" />
+            <UserPlus className="w-4 h-4" aria-hidden="true" />
             Invite
           </button>
         </form>
@@ -293,6 +294,7 @@ export function CommunityManagePage() {
                     <select
                       value={m.role}
                       onChange={(e) => roleMutation.mutate({ userId: m.userId, role: e.target.value as 'ADMIN' | 'MEMBER' })}
+                      aria-label={`Role for ${m.user.name}`}
                       className="text-xs border border-gray-300 rounded px-2 py-1"
                     >
                       <option value="MEMBER">Member</option>
@@ -304,9 +306,10 @@ export function CommunityManagePage() {
                   {canRemove && (
                     <button
                       onClick={() => { if (confirm(`Remove ${m.user.name}?`)) removeMutation.mutate(m.userId); }}
+                      aria-label={`Remove ${m.user.name}`}
                       className="text-gray-400 hover:text-red-600"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>
                   )}
                 </div>

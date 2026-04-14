@@ -22,6 +22,8 @@ export function ConversationList({ conversations, activeId, onSelect }: Conversa
         <button
           key={conv.id}
           onClick={() => onSelect(conv.id)}
+          aria-label={`Conversation with ${conv.otherParticipant.name}${conv.unreadCount > 0 ? `, ${conv.unreadCount} unread` : ''}`}
+          aria-current={activeId === conv.id ? 'true' : undefined}
           className={`w-full text-left p-4 hover:bg-gray-50 transition-colors ${
             activeId === conv.id ? 'bg-mayday-50' : ''
           }`}
@@ -29,7 +31,7 @@ export function ConversationList({ conversations, activeId, onSelect }: Conversa
           <div className="flex items-center justify-between">
             <span className="font-medium text-gray-900">{conv.otherParticipant.name}</span>
             {conv.unreadCount > 0 && (
-              <span className="bg-mayday-500 text-white text-xs px-2 py-0.5 rounded-full">
+              <span aria-hidden="true" className="bg-mayday-500 text-white text-xs px-2 py-0.5 rounded-full">
                 {conv.unreadCount}
               </span>
             )}

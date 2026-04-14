@@ -27,7 +27,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             <UrgencyBadge urgency={post.urgency} />
             {post.community && (
               <span className="flex items-center gap-0.5 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
-                <Lock className="w-3 h-3" />
+                <Lock className="w-3 h-3" aria-hidden="true" />
                 {post.community.name}
               </span>
             )}
@@ -38,7 +38,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
         {post.images?.length > 0 && (
           <img
             src={post.images[0].url}
-            alt=""
+            alt={`Image for ${post.title}`}
             className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
           />
         )}
@@ -46,13 +46,13 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
       <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
         {post.organization ? (
           <span className="flex items-center gap-1">
-            <Building2 className="w-3 h-3" />
+            <Building2 className="w-3 h-3" aria-hidden="true" />
             {post.organization.name}
             <span className="text-gray-400">· by {post.author.name}</span>
           </span>
         ) : (
           <span className="flex items-center gap-1">
-            <User className="w-3 h-3" />
+            <User className="w-3 h-3" aria-hidden="true" />
             {post.author.name}
           </span>
         )}
@@ -62,18 +62,18 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             onClick={(e) => e.stopPropagation()}
             className="flex items-center gap-1 hover:text-mayday-600"
           >
-            <MapPin className="w-3 h-3" />
+            <MapPin className="w-3 h-3" aria-hidden="true" />
             {post.location}
           </Link>
         )}
         {post.location && (!post.latitude || !post.longitude) && (
           <span className="flex items-center gap-1">
-            <MapPin className="w-3 h-3" />
+            <MapPin className="w-3 h-3" aria-hidden="true" />
             {post.location}
           </span>
         )}
         <span className="flex items-center gap-1">
-          <Clock className="w-3 h-3" />
+          <Clock className="w-3 h-3" aria-hidden="true" />
           {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
         </span>
       </div>

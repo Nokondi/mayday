@@ -49,7 +49,7 @@ export function AdminPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
-        <Shield className="w-6 h-6 text-mayday-600" />
+        <Shield className="w-6 h-6 text-mayday-600" aria-hidden="true" />
         <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
       </div>
 
@@ -93,24 +93,24 @@ export function AdminPage() {
                   <button
                     onClick={() => resolveReport.mutate({ id: report.id, status: 'RESOLVED' })}
                     className="p-2 text-green-600 hover:bg-green-50 rounded"
-                    title="Resolve"
+                    aria-label="Resolve report"
                   >
-                    <Check className="w-4 h-4" />
+                    <Check className="w-4 h-4" aria-hidden="true" />
                   </button>
                   <button
                     onClick={() => resolveReport.mutate({ id: report.id, status: 'DISMISSED' })}
                     className="p-2 text-gray-600 hover:bg-gray-50 rounded"
-                    title="Dismiss"
+                    aria-label="Dismiss report"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-4 h-4" aria-hidden="true" />
                   </button>
                   {report.reportedUser && (
                     <button
                       onClick={() => banUser.mutate({ id: report.reportedUser!.id, banned: true })}
                       className="p-2 text-red-600 hover:bg-red-50 rounded"
-                      title="Ban user"
+                      aria-label={`Ban ${report.reportedUser.name}`}
                     >
-                      <Ban className="w-4 h-4" />
+                      <Ban className="w-4 h-4" aria-hidden="true" />
                     </button>
                   )}
                 </div>

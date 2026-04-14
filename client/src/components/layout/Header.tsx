@@ -35,11 +35,11 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 text-mayday-600 font-bold text-xl">
-            <Heart className="w-6 h-6 fill-mayday-500" />
+            <Heart className="w-6 h-6 fill-mayday-500" aria-hidden="true" />
             MayDay
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6">
+          <nav aria-label="Main navigation" className="hidden md:flex items-center gap-6">
             {user ? (
               <>
                 <Link to="/posts" className="text-gray-600 hover:text-gray-900">Browse</Link>
@@ -48,30 +48,30 @@ export function Header() {
                 <Link to="/communities" className="text-gray-600 hover:text-gray-900">Communities</Link>
                 <Link to="/about" className="text-gray-600 hover:text-gray-900">About</Link>
                 <Link to="/posts/new" className="flex items-center gap-1 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600">
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4" aria-hidden="true" />
                   New Post
                 </Link>
-                <Link to="/messages" className="text-gray-600 hover:text-gray-900">
-                  <MessageSquare className="w-5 h-5" />
+                <Link to="/messages" aria-label="Messages" className="text-gray-600 hover:text-gray-900">
+                  <MessageSquare className="w-5 h-5" aria-hidden="true" />
                 </Link>
-                <Link to="/invites" className="relative text-gray-600 hover:text-gray-900">
-                  <Mail className="w-5 h-5" />
+                <Link to="/invites" aria-label={inviteCount > 0 ? `Invites (${inviteCount} pending)` : 'Invites'} className="relative text-gray-600 hover:text-gray-900">
+                  <Mail className="w-5 h-5" aria-hidden="true" />
                   {inviteCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-mayday-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
+                    <span aria-hidden="true" className="absolute -top-1 -right-1 bg-mayday-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
                       {inviteCount}
                     </span>
                   )}
                 </Link>
                 {user.role === 'ADMIN' && (
-                  <Link to="/admin" className="text-gray-600 hover:text-gray-900">
-                    <Shield className="w-5 h-5" />
+                  <Link to="/admin" aria-label="Admin panel" className="text-gray-600 hover:text-gray-900">
+                    <Shield className="w-5 h-5" aria-hidden="true" />
                   </Link>
                 )}
-                <Link to={`/profile/${user.id}`} className="text-gray-600 hover:text-gray-900">
-                  <User className="w-5 h-5" />
+                <Link to={`/profile/${user.id}`} aria-label="Your profile" className="text-gray-600 hover:text-gray-900">
+                  <User className="w-5 h-5" aria-hidden="true" />
                 </Link>
-                <button onClick={handleLogout} className="text-gray-600 hover:text-gray-900">
-                  <LogOut className="w-5 h-5" />
+                <button onClick={handleLogout} aria-label="Log out" className="text-gray-600 hover:text-gray-900">
+                  <LogOut className="w-5 h-5" aria-hidden="true" />
                 </button>
               </>
             ) : (
@@ -85,13 +85,13 @@ export function Header() {
             )}
           </nav>
 
-          <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Toggle menu">
+            {menuOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
           </button>
         </div>
 
         {menuOpen && (
-          <div className="md:hidden pb-4 space-y-2">
+          <nav aria-label="Mobile navigation" className="md:hidden pb-4 space-y-2">
             {user ? (
               <>
                 <Link to="/posts" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Browse</Link>
@@ -114,7 +114,7 @@ export function Header() {
                 <Link to="/register" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Sign up</Link>
               </>
             )}
-          </div>
+          </nav>
         )}
       </div>
     </header>

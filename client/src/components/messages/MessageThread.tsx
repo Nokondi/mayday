@@ -15,7 +15,7 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+    <div className="flex-1 overflow-y-auto p-4 space-y-3" aria-live="polite" aria-label="Message history">
       {messages.map((msg) => {
         const isMine = msg.senderId === currentUserId;
         return (

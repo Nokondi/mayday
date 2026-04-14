@@ -223,13 +223,14 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           <div className="flex flex-wrap gap-3 mb-3">
             {previews.map((src, i) => (
               <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 group">
-                <img src={src} alt="" className="w-full h-full object-cover" />
+                <img src={src} alt={`Preview of image ${i + 1}`} className="w-full h-full object-cover" />
                 <button
                   type="button"
                   onClick={() => removeImage(i)}
-                  className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label={`Remove image ${i + 1}`}
+                  className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -290,10 +291,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
         {resolvedLocation ? (
           <div className="flex items-center gap-2 border border-green-300 bg-green-50 rounded-lg px-3 py-2">
-            <MapPin className="w-4 h-4 text-green-600 flex-shrink-0" />
+            <MapPin className="w-4 h-4 text-green-600 flex-shrink-0" aria-hidden="true" />
             <span className="text-sm text-green-800 flex-1">{resolvedLocation.name}</span>
-            <button type="button" onClick={clearLocation} className="text-gray-400 hover:text-gray-600">
-              <X className="w-4 h-4" />
+            <button type="button" onClick={clearLocation} aria-label="Clear location" className="text-gray-400 hover:text-gray-600">
+              <X className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         ) : (
@@ -315,15 +316,15 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         )}
 
         {geocodeResults.length > 0 && !resolvedLocation && (
-          <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          <ul role="listbox" aria-label="Location suggestions" className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
             {geocodeResults.map((result, i) => (
-              <li key={i}>
+              <li key={i} role="option" aria-selected={false}>
                 <button
                   type="button"
                   onClick={() => selectLocation(result)}
                   className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-start gap-2"
                 >
-                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <span className="line-clamp-2">{result.formatted || result.display_name}</span>
                 </button>
               </li>

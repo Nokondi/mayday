@@ -1,27 +1,28 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Plus, Users, MapPin } from 'lucide-react';
-import type { CommunityWithMembership } from '@mayday/shared';
-import { listCommunities, listMyCommunities } from '../api/communities.js';
-import { SearchBar } from '../components/common/SearchBar.js';
-import { Pagination } from '../components/common/Pagination.js';
-import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
-import { useDebounce } from '../hooks/useDebounce.js';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { Plus, Users, MapPin } from "lucide-react";
+import type { CommunityWithMembership } from "@mayday/shared";
+import { listCommunities, listMyCommunities } from "../api/communities.js";
+import { SearchBar } from "../components/common/SearchBar.js";
+import { Pagination } from "../components/common/Pagination.js";
+import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
+import { useDebounce } from "../hooks/useDebounce.js";
 
 export function CommunitiesPage() {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 300);
 
   const { data: myCommunities, isLoading: myLoading } = useQuery({
-    queryKey: ['my-communities'],
+    queryKey: ["my-communities"],
     queryFn: () => listMyCommunities(),
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['communities', { q: debouncedSearch, page }],
-    queryFn: () => listCommunities({ q: debouncedSearch || undefined, page, limit: 20 }),
+    queryKey: ["communities", { q: debouncedSearch, page }],
+    queryFn: () =>
+      listCommunities({ q: debouncedSearch || undefined, page, limit: 20 }),
   });
 
   const myIds = new Set(myCommunities?.map((c) => c.id));
@@ -44,19 +45,24 @@ export function CommunitiesPage() {
       <div className="mb-6">
         <SearchBar
           value={search}
-          onChange={(v) => { setSearch(v); setPage(1); }}
+          onChange={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
           placeholder="Search communities..."
         />
       </div>
 
-      {(isLoading || myLoading) ? (
+      {isLoading || myLoading ? (
         <LoadingSpinner className="py-12" />
       ) : (
         <>
           {/* Your Communities */}
           {!isSearching && myCommunities && myCommunities.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">Your Communities</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-3">
+                Your Communities
+              </h2>
               <div className="space-y-3">
                 {myCommunities.map((c) => (
                   <CommunityCard key={c.id} community={c} />
@@ -69,17 +75,25 @@ export function CommunitiesPage() {
           {data && (
             <div>
               <h2 className="text-lg font-semibold text-gray-900 mb-1">
-                {isSearching ? 'Search Results' : 'All Communities'}
+                {isSearching ? "Search Results" : "All Communities"}
               </h2>
               <p className="text-sm text-gray-500 mb-3">
-                {data.total} communit{data.total !== 1 ? 'ies' : 'y'} found
+                {data.total - (myCommunities?.length || 0)} communit
+                {data.total - (myCommunities?.length || 0) !== 1
+                  ? "ies"
+                  : "y"}{" "}
+                found
               </p>
               <div className="space-y-3">
                 {(isSearching ? data.data : otherCommunities)?.map((c) => (
                   <CommunityCard key={c.id} community={c} />
                 ))}
               </div>
-              <Pagination page={data.page} totalPages={data.totalPages} onPageChange={setPage} />
+              <Pagination
+                page={data.page}
+                totalPages={data.totalPages}
+                onPageChange={setPage}
+              />
             </div>
           )}
         </>
@@ -88,7 +102,11 @@ export function CommunitiesPage() {
   );
 }
 
-function CommunityCard({ community: c }: { community: CommunityWithMembership }) {
+function CommunityCard({
+  community: c,
+}: {
+  community: CommunityWithMembership;
+}) {
   return (
     <Link
       to={`/communities/${c.id}`}
@@ -98,12 +116,14 @@ function CommunityCard({ community: c }: { community: CommunityWithMembership })
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-gray-900">{c.name}</h3>
           {c.description && (
-            <p className="text-sm text-gray-600 mt-1 line-clamp-2">{c.description}</p>
+            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+              {c.description}
+            </p>
           )}
           <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
             <span className="flex items-center gap-1">
               <Users className="w-3 h-3" />
-              {c.memberCount} member{c.memberCount !== 1 ? 's' : ''}
+              {c.memberCount} member{c.memberCount !== 1 ? "s" : ""}
             </span>
             {c.location && (
               <span className="flex items-center gap-1">
@@ -112,12 +132,18 @@ function CommunityCard({ community: c }: { community: CommunityWithMembership })
               </span>
             )}
             {c.myRole && (
-              <span className="text-mayday-600 font-medium">You: {c.myRole.toLowerCase()}</span>
+              <span className="text-mayday-600 font-medium">
+                You: {c.myRole.toLowerCase()}
+              </span>
             )}
           </div>
         </div>
         {c.avatarUrl && (
-          <img src={c.avatarUrl} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
+          <img
+            src={c.avatarUrl}
+            alt=""
+            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+          />
         )}
       </div>
     </Link>
