@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { sendMessageSchema, startConversationSchema } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
-import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
+import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.middleware.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/error.middleware.js';
 import { sendToUser } from '../websocket/index.js';
@@ -9,6 +9,7 @@ import { sendToUser } from '../websocket/index.js';
 export const messageRoutes = Router();
 
 messageRoutes.use(requireAuth);
+messageRoutes.use(rejectBanned);
 
 messageRoutes.get('/conversations', async (req: AuthRequest, res, next) => {
   try {

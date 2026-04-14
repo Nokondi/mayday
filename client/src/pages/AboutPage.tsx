@@ -17,7 +17,9 @@ export function AboutPage() {
           </p>
           <p className="text-md text-mayday-100">
             ― Dean Spade,{" "}
-            <i>Mutual Aid: Building Solidarity During This Crisis</i>
+            <i>
+              Mutual Aid: Building Solidarity During This Crisis (And the Next)
+            </i>
           </p>
         </div>
       </section>

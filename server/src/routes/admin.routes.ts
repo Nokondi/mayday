@@ -14,7 +14,10 @@ adminRoutes.get('/reports', async (req, res, next) => {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
 
-    const where = status ? { status: status as any } : {};
+    const VALID_REPORT_STATUSES = ['PENDING', 'REVIEWED', 'RESOLVED', 'DISMISSED'];
+    const where = (status && VALID_REPORT_STATUSES.includes(status))
+      ? { status: status as 'PENDING' | 'REVIEWED' | 'RESOLVED' | 'DISMISSED' }
+      : {};
 
     const [data, total] = await Promise.all([
       prisma.report.findMany({

@@ -9,6 +9,16 @@ import { AppError } from '../middleware/error.middleware.js';
 
 export const authRoutes = Router();
 
+function setRefreshCookie(res: import('express').Response, token: string) {
+  res.cookie('refreshToken', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
 authRoutes.post('/register', validate(registerSchema), async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
@@ -25,12 +35,7 @@ authRoutes.post('/register', validate(registerSchema), async (req, res, next) =>
     const accessToken = signAccessToken(tokenPayload);
     const refreshToken = signRefreshToken(tokenPayload);
 
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setRefreshCookie(res, refreshToken);
 
     res.status(201).json({
       accessToken,
@@ -54,12 +59,7 @@ authRoutes.post('/login', validate(loginSchema), async (req, res, next) => {
     const accessToken = signAccessToken(tokenPayload);
     const refreshToken = signRefreshToken(tokenPayload);
 
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setRefreshCookie(res, refreshToken);
 
     res.json({
       accessToken,
@@ -81,6 +81,9 @@ authRoutes.post('/refresh', async (req, res, next) => {
 
     const tokenPayload = { id: user.id, email: user.email, role: user.role };
     const accessToken = signAccessToken(tokenPayload);
+    // Rotate: issue a fresh refresh token and overwrite the old cookie
+    const newRefreshToken = signRefreshToken(tokenPayload);
+    setRefreshCookie(res, newRefreshToken);
 
     res.json({ accessToken });
   } catch (err) { next(err); }

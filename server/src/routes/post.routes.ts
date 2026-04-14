@@ -11,6 +11,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const uploadsRoot = path.resolve(__dirname, '../../uploads');
+
+/** Resolve an image URL to a safe file path within the uploads directory. */
+function safeImagePath(imageUrl: string): string | null {
+  const resolved = path.resolve(__dirname, '../..', imageUrl);
+  if (!resolved.startsWith(uploadsRoot)) return null; // path traversal attempt
+  return resolved;
+}
 
 const postInclude = {
   author: {
@@ -77,10 +85,13 @@ postRoutes.get('/', requireAuth, async (req: AuthRequest, res, next) => {
     const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
 
     const where: Prisma.PostWhereInput = {};
-    if (type) where.type = type as 'REQUEST' | 'OFFER';
+    if (type && ['REQUEST', 'OFFER'].includes(type as string))
+      where.type = type as 'REQUEST' | 'OFFER';
     if (category) where.category = category as string;
-    if (status) where.status = status as 'OPEN' | 'FULFILLED' | 'CLOSED';
-    if (urgency) where.urgency = urgency as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    if (status && ['OPEN', 'FULFILLED', 'CLOSED'].includes(status as string))
+      where.status = status as 'OPEN' | 'FULFILLED' | 'CLOSED';
+    if (urgency && ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(urgency as string))
+      where.urgency = urgency as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
     if (neLat && neLng && swLat && swLng) {
       where.latitude = {
@@ -300,8 +311,8 @@ postRoutes.delete('/:id', requireAuth, async (req: AuthRequest, res, next) => {
 
     // Delete image files from disk
     for (const image of existing.images) {
-      const filePath = path.join(__dirname, '../..', image.url);
-      await fs.unlink(filePath).catch(() => {});
+      const filePath = safeImagePath(image.url);
+      if (filePath) await fs.unlink(filePath).catch(() => {});
     }
 
     await prisma.post.delete({ where: { id: req.params.id as string } });
@@ -322,8 +333,8 @@ postRoutes.delete('/:postId/images/:imageId', requireAuth, async (req: AuthReque
     }
 
     // Delete file from disk
-    const filePath = path.join(__dirname, '../..', image.url);
-    await fs.unlink(filePath).catch(() => {});
+    const filePath = safeImagePath(image.url);
+    if (filePath) await fs.unlink(filePath).catch(() => {});
 
     await prisma.postImage.delete({ where: { id: image.id } });
     res.json({ message: 'Image deleted' });

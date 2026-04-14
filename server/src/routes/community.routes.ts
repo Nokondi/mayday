@@ -7,7 +7,7 @@ import {
   communityJoinRequestSchema,
 } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
-import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
+import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.middleware.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/error.middleware.js';
 import type { Prisma } from '@prisma/client';
@@ -21,6 +21,7 @@ const memberInclude = { user: { select: publicUserSelect } } as const;
 export const communityRoutes = Router();
 
 communityRoutes.use(requireAuth);
+communityRoutes.use(rejectBanned);
 
 // ----- Listing & current-user invites -----
 
@@ -179,7 +180,8 @@ communityRoutes.patch('/:id', validate(updateCommunitySchema), async (req: AuthR
     if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
       throw new AppError(403, 'Not authorized');
     }
-    const updated = await prisma.community.update({ where: { id: cid }, data: req.body });
+    const { name, description, location, latitude, longitude, avatarUrl } = req.body;
+    const updated = await prisma.community.update({ where: { id: cid }, data: { name, description, location, latitude, longitude, avatarUrl } });
     res.json(updated);
   } catch (err) { next(err); }
 });

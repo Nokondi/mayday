@@ -1,25 +1,57 @@
 import { Router } from 'express';
+import { requireAuth } from '../middleware/auth.middleware.js';
 import { prisma } from '../config/database.js';
 
+const VALID_TYPES = ['REQUEST', 'OFFER'];
+const VALID_CATEGORIES = [
+  'Food', 'Housing', 'Transportation', 'Healthcare', 'Legal Aid',
+  'Childcare', 'Education', 'Employment', 'Clothing', 'Household Items',
+  'Emotional Support', 'Other',
+];
+
 export const searchRoutes = Router();
+
+searchRoutes.use(requireAuth);
 
 searchRoutes.get('/', async (req, res, next) => {
   try {
     const { q, type, category, page = '1', limit = '20' } = req.query;
-    const pageNum = Math.max(1, parseInt(page as string));
-    const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
+    const pageNum = Math.max(1, parseInt(page as string) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit as string) || 20));
 
     if (!q || typeof q !== 'string' || q.trim().length === 0) {
       res.json({ data: [], total: 0, page: pageNum, limit: limitNum, totalPages: 0 });
       return;
     }
 
-    // Use PostgreSQL full-text search via raw query
-    const searchQuery = q.trim().split(/\s+/).join(' & ');
+    // Validate type and category against allowlists
+    const safeType = (typeof type === 'string' && VALID_TYPES.includes(type)) ? type : null;
+    const safeCategory = (typeof category === 'string' && VALID_CATEGORIES.includes(category)) ? category : null;
 
-    const typeFilter = type ? `AND "type" = '${type}'` : '';
-    const categoryFilter = category ? `AND "category" = '${category}'` : '';
     const offset = (pageNum - 1) * limitNum;
+
+    // Build parameterized query dynamically
+    const conditions: string[] = ['"searchVector" @@ plainto_tsquery(\'english\', $1)'];
+    const params: (string | number)[] = [q];
+    let paramIndex = 2;
+
+    if (safeType) {
+      conditions.push(`"type" = $${paramIndex}`);
+      params.push(safeType);
+      paramIndex++;
+    }
+    if (safeCategory) {
+      conditions.push(`"category" = $${paramIndex}`);
+      params.push(safeCategory);
+      paramIndex++;
+    }
+
+    const whereClause = conditions.join(' AND ');
+    const limitParam = `$${paramIndex}`;
+    params.push(limitNum);
+    paramIndex++;
+    const offsetParam = `$${paramIndex}`;
+    params.push(offset);
 
     const data = await prisma.$queryRawUnsafe<any[]>(`
       SELECT p.*,
@@ -30,17 +62,15 @@ searchRoutes.get('/', async (req, res, next) => {
         ) as author
       FROM "Post" p
       JOIN "User" u ON p."authorId" = u.id
-      WHERE "searchVector" @@ plainto_tsquery('english', $1)
-        ${typeFilter} ${categoryFilter}
+      WHERE ${whereClause}
       ORDER BY rank DESC, p."createdAt" DESC
-      LIMIT $2 OFFSET $3
-    `, q, limitNum, offset);
+      LIMIT ${limitParam} OFFSET ${offsetParam}
+    `, ...params);
 
     const countResult = await prisma.$queryRawUnsafe<[{ count: bigint }]>(`
       SELECT count(*) FROM "Post"
-      WHERE "searchVector" @@ plainto_tsquery('english', $1)
-        ${typeFilter} ${categoryFilter}
-    `, q);
+      WHERE ${whereClause}
+    `, ...params.slice(0, -2)); // exclude LIMIT/OFFSET params
 
     const total = Number(countResult[0].count);
 

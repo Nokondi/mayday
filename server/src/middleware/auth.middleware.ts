@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/jwt.js';
+import { prisma } from '../config/database.js';
 import { AppError } from './error.middleware.js';
 
 export interface AuthRequest extends Request {
@@ -27,4 +28,18 @@ export function requireAdmin(req: AuthRequest, _res: Response, next: NextFunctio
     throw new AppError(403, 'Admin access required');
   }
   next();
+}
+
+/** Rejects requests from banned users. Apply after requireAuth. */
+export async function rejectBanned(req: AuthRequest, _res: Response, next: NextFunction) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      select: { isBanned: true },
+    });
+    if (user?.isBanned) {
+      throw new AppError(403, 'Your account has been suspended');
+    }
+    next();
+  } catch (err) { next(err); }
 }

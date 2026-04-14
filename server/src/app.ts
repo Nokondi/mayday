@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
@@ -18,12 +20,24 @@ import { communityRoutes } from './routes/community.routes.js';
 export function createApp() {
   const app = express();
 
+  // Security headers
+  app.use(helmet());
+
   app.use(cors({
     origin: env.CLIENT_URL,
     credentials: true,
   }));
   app.use(express.json());
   app.use(cookieParser());
+
+  // Rate limiting for auth endpoints (brute-force protection)
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20, // 20 attempts per window
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Too many requests, please try again later' },
+  });
 
   // Serve uploaded files
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -35,7 +49,7 @@ export function createApp() {
   });
 
   // Routes
-  app.use('/api/auth', authRoutes);
+  app.use('/api/auth', authLimiter, authRoutes);
   app.use('/api/posts', postRoutes);
   app.use('/api/users', userRoutes);
   app.use('/api/messages', messageRoutes);

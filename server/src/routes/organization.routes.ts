@@ -6,7 +6,7 @@ import {
   updateMemberRoleSchema,
 } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
-import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
+import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.middleware.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/error.middleware.js';
 import type { Prisma } from '@prisma/client';
@@ -28,6 +28,7 @@ export const organizationRoutes = Router();
 
 // All organization routes require authentication
 organizationRoutes.use(requireAuth);
+organizationRoutes.use(rejectBanned);
 
 // ----- Org listing & current-user invites -----
 
@@ -232,9 +233,10 @@ organizationRoutes.patch('/:id', validate(updateOrganizationSchema), async (req:
       throw new AppError(403, 'Not authorized');
     }
 
+    const { name, description, location, latitude, longitude, avatarUrl } = req.body;
     const org = await prisma.organization.update({
       where: { id: orgId },
-      data: req.body,
+      data: { name, description, location, latitude, longitude, avatarUrl },
     });
     res.json(org);
   } catch (err) { next(err); }
