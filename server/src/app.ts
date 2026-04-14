@@ -20,6 +20,11 @@ import { communityRoutes } from './routes/community.routes.js';
 export function createApp() {
   const app = express();
 
+  // Trust proxy in production (behind DO load balancer)
+  if (env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+  }
+
   // Security headers
   app.use(helmet());
 
