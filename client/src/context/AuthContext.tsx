@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { setAccessToken, getAccessToken } from '../api/client.js';
 import * as authApi from '../api/auth.js';
 import axios from 'axios';
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const init = async () => {
@@ -57,20 +59,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (data: LoginRequest) => {
     const res = await authApi.login(data);
     setAccessToken(res.accessToken);
+    queryClient.clear();
     setUser(res.user);
-  }, []);
+  }, [queryClient]);
 
   const register = useCallback(async (data: RegisterRequest) => {
     const res = await authApi.register(data);
     setAccessToken(res.accessToken);
+    queryClient.clear();
     setUser(res.user);
-  }, []);
+  }, [queryClient]);
 
   const logout = useCallback(async () => {
     await authApi.logout();
     setAccessToken(null);
+    queryClient.clear();
     setUser(null);
-  }, []);
+  }, [queryClient]);
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
