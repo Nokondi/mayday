@@ -78,6 +78,7 @@ communityRoutes.get('/mine', async (req: AuthRequest, res, next) => {
       ...m.community,
       memberCount: m.community._count.members,
       myRole: m.role,
+      myJoinRequestStatus: null,
     }));
     res.json(data);
   } catch (err) { next(err); }

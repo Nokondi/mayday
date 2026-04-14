@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { setAccessToken } from '../api/client.js';
+import { setAccessToken, getAccessToken } from '../api/client.js';
 import * as authApi from '../api/auth.js';
+import axios from 'axios';
 import type { RegisterRequest, LoginRequest } from '@mayday/shared';
 
 interface AuthUser {
@@ -25,15 +26,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    authApi.getMe()
-      .then((data) => {
+    const init = async () => {
+      // If there's no access token in memory (e.g. after a page refresh),
+      // try to obtain one using the refresh token cookie.
+      if (!getAccessToken()) {
+        try {
+          const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+          setAccessToken(data.accessToken);
+        } catch {
+          // No valid refresh token — user is not logged in
+          setUser(null);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      try {
+        const data = await authApi.getMe();
         setUser(data);
-      })
-      .catch(() => {
+      } catch {
         setUser(null);
         setAccessToken(null);
-      })
-      .finally(() => setIsLoading(false));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    init();
   }, []);
 
   const login = useCallback(async (data: LoginRequest) => {
