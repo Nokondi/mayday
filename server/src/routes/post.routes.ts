@@ -4,21 +4,9 @@ import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
 import { uploadPostImages } from '../middleware/upload.middleware.js';
 import { prisma } from '../config/database.js';
+import { deleteObjectByUrl } from '../config/storage.js';
 import { AppError } from '../middleware/error.middleware.js';
 import type { Prisma } from '@prisma/client';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadsRoot = path.resolve(__dirname, '../../uploads');
-
-/** Resolve an image URL to a safe file path within the uploads directory. */
-function safeImagePath(imageUrl: string): string | null {
-  const resolved = path.resolve(__dirname, '../..', imageUrl);
-  if (!resolved.startsWith(uploadsRoot)) return null; // path traversal attempt
-  return resolved;
-}
 
 const postInclude = {
   author: {
@@ -257,12 +245,12 @@ postRoutes.post('/', requireAuth, uploadPostImages, async (req: AuthRequest, res
     });
 
     // Create PostImage records for uploaded files
-    const files = (req.files as Express.Multer.File[]) || [];
+    const files = (req.files as Express.MulterS3.File[]) || [];
     if (files.length > 0) {
       await prisma.postImage.createMany({
         data: files.map((file, index) => ({
           postId: post.id,
-          url: `/uploads/posts/${file.filename}`,
+          url: file.location,
           order: index,
         })),
       });
@@ -309,10 +297,9 @@ postRoutes.delete('/:id', requireAuth, async (req: AuthRequest, res, next) => {
       throw new AppError(403, 'Not authorized');
     }
 
-    // Delete image files from disk
+    // Delete image files from Spaces
     for (const image of existing.images) {
-      const filePath = safeImagePath(image.url);
-      if (filePath) await fs.unlink(filePath).catch(() => {});
+      await deleteObjectByUrl(image.url).catch(() => {});
     }
 
     await prisma.post.delete({ where: { id: req.params.id as string } });
@@ -332,9 +319,8 @@ postRoutes.delete('/:postId/images/:imageId', requireAuth, async (req: AuthReque
       throw new AppError(403, 'Not authorized');
     }
 
-    // Delete file from disk
-    const filePath = safeImagePath(image.url);
-    if (filePath) await fs.unlink(filePath).catch(() => {});
+    // Delete file from Spaces
+    await deleteObjectByUrl(image.url).catch(() => {});
 
     await prisma.postImage.delete({ where: { id: image.id } });
     res.json({ message: 'Image deleted' });

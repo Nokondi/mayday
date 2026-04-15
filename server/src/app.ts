@@ -44,10 +44,6 @@ export function createApp() {
     message: { message: 'Too many requests, please try again later' },
   });
 
-  // Serve uploaded files
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
   // Health check
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok' });
@@ -66,6 +62,7 @@ export function createApp() {
 
   // Serve client static files in production
   if (env.NODE_ENV === 'production') {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const clientDist = path.join(__dirname, '../../client/dist');
     app.use(express.static(clientDist));
 

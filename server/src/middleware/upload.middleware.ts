@@ -1,25 +1,9 @@
 import multer from 'multer';
+import multerS3 from 'multer-s3';
 import path from 'path';
 import crypto from 'crypto';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadsDir = path.join(__dirname, '../../uploads/posts');
-
-// Ensure uploads directory exists
-fs.mkdirSync(uploadsDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const name = crypto.randomUUID() + ext;
-    cb(null, name);
-  },
-});
+import { s3Client } from '../config/storage.js';
+import { env } from '../config/env.js';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
@@ -32,7 +16,16 @@ const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
 };
 
 export const uploadPostImages = multer({
-  storage,
+  storage: multerS3({
+    s3: s3Client,
+    bucket: env.SPACES_BUCKET,
+    acl: 'public-read',
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    key: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      cb(null, `posts/${crypto.randomUUID()}${ext}`);
+    },
+  }),
   fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB per file
