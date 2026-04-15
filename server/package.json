@@ -10,7 +10,9 @@
     "db:migrate": "dotenv -e ../.env -- prisma migrate dev",
     "db:seed": "dotenv -e ../.env -- tsx src/prisma/seed.ts",
     "db:clear": "dotenv -e ../.env -- tsx src/prisma/clear.ts",
-    "db:generate": "dotenv -e ../.env -- prisma generate"
+    "db:generate": "dotenv -e ../.env -- prisma generate",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1030.0",
@@ -39,11 +41,14 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/multer": "^2.1.0",
     "@types/multer-s3": "^3.0.3",
+    "@types/supertest": "^7.2.0",
     "@types/ws": "^8.5.13",
     "dotenv-cli": "^11.0.0",
     "prisma": "^6.2.0",
+    "supertest": "^7.2.2",
     "tsx": "^4.19.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.4"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma"
