@@ -22,8 +22,9 @@ export function RegisterForm({ onSubmit, isSubmitting, error }: RegisterFormProp
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+        <label htmlFor="register-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
         <input
+          id="register-name"
           {...register('name')}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
         />
@@ -31,8 +32,9 @@ export function RegisterForm({ onSubmit, isSubmitting, error }: RegisterFormProp
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <label htmlFor="register-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
         <input
+          id="register-email"
           type="email"
           {...register('email')}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
@@ -41,8 +43,9 @@ export function RegisterForm({ onSubmit, isSubmitting, error }: RegisterFormProp
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <label htmlFor="register-password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
         <input
+          id="register-password"
           type="password"
           {...register('password')}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
