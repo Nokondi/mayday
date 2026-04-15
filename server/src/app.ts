@@ -46,6 +46,9 @@ export function createApp() {
           ],
         },
       },
+      // Send origin on cross-origin requests so OSM can identify the app
+      // (its tile usage policy requires a Referer header).
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     }),
   );
 
