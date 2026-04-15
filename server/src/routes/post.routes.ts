@@ -10,7 +10,7 @@ import type { Prisma } from '@prisma/client';
 
 const postInclude = {
   author: {
-    select: { id: true, name: true, bio: true, location: true, skills: true, createdAt: true },
+    select: { id: true, name: true, bio: true, location: true, skills: true, avatarUrl: true, createdAt: true },
   },
   organization: {
     select: { id: true, name: true, avatarUrl: true },

@@ -9,6 +9,7 @@ export interface User {
   latitude: number | null;
   longitude: number | null;
   skills: string[];
+  avatarUrl: string | null;
   role: Role;
   isBanned: boolean;
   createdAt: string;
@@ -21,5 +22,6 @@ export interface UserPublicProfile {
   bio: string | null;
   location: string | null;
   skills: string[];
+  avatarUrl: string | null;
   createdAt: string;
 }

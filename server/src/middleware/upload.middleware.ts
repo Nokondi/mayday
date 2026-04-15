@@ -15,20 +15,32 @@ const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
   }
 };
 
-export const uploadPostImages = multer({
-  storage: multerS3({
+function makeS3Storage(folder: string) {
+  return multerS3({
     s3: s3Client,
     bucket: env.SPACES_BUCKET,
     acl: 'public-read',
     contentType: multerS3.AUTO_CONTENT_TYPE,
     key: (_req, file, cb) => {
       const ext = path.extname(file.originalname).toLowerCase();
-      cb(null, `posts/${crypto.randomUUID()}${ext}`);
+      cb(null, `${folder}/${crypto.randomUUID()}${ext}`);
     },
-  }),
+  });
+}
+
+export const uploadPostImages = multer({
+  storage: makeS3Storage('post_images'),
   fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB per file
     files: 5,
   },
 }).array('images', 5);
+
+export const uploadAvatar = multer({
+  storage: makeS3Storage('avatars'),
+  fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+}).single('avatar');

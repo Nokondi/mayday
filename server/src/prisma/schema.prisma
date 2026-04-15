@@ -60,6 +60,7 @@ model User {
   latitude     Float?
   longitude    Float?
   skills       String[]
+  avatarUrl    String?
   role         Role     @default(USER)
   isBanned     Boolean  @default(false)
   createdAt    DateTime @default(now())

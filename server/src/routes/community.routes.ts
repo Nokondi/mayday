@@ -8,12 +8,14 @@ import {
 } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.middleware.js';
+import { uploadAvatar } from '../middleware/upload.middleware.js';
 import { prisma } from '../config/database.js';
+import { deleteObjectByUrl } from '../config/storage.js';
 import { AppError } from '../middleware/error.middleware.js';
 import type { Prisma } from '@prisma/client';
 
 const publicUserSelect = {
-  id: true, name: true, bio: true, location: true, skills: true, createdAt: true,
+  id: true, name: true, bio: true, location: true, skills: true, avatarUrl: true, createdAt: true,
 } as const;
 
 const memberInclude = { user: { select: publicUserSelect } } as const;
@@ -182,6 +184,37 @@ communityRoutes.patch('/:id', validate(updateCommunitySchema), async (req: AuthR
     }
     const { name, description, location, latitude, longitude, avatarUrl } = req.body;
     const updated = await prisma.community.update({ where: { id: cid }, data: { name, description, location, latitude, longitude, avatarUrl } });
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+// POST /api/communities/:id/avatar — upload a new avatar (OWNER/ADMIN)
+communityRoutes.post('/:id/avatar', uploadAvatar, async (req: AuthRequest, res, next) => {
+  try {
+    const cid = req.params.id as string;
+    const membership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+    });
+    if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+      throw new AppError(403, 'Not authorized');
+    }
+    const file = req.file as Express.MulterS3.File | undefined;
+    if (!file) throw new AppError(400, 'No file uploaded');
+
+    const existing = await prisma.community.findUnique({
+      where: { id: cid },
+      select: { avatarUrl: true },
+    });
+
+    const updated = await prisma.community.update({
+      where: { id: cid },
+      data: { avatarUrl: file.location },
+    });
+
+    if (existing?.avatarUrl) {
+      await deleteObjectByUrl(existing.avatarUrl).catch(() => {});
+    }
+
     res.json(updated);
   } catch (err) { next(err); }
 });

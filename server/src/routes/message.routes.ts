@@ -23,8 +23,8 @@ messageRoutes.get('/conversations', async (req: AuthRequest, res, next) => {
         ],
       },
       include: {
-        participantA: { select: { id: true, name: true, bio: true, location: true, skills: true, createdAt: true } },
-        participantB: { select: { id: true, name: true, bio: true, location: true, skills: true, createdAt: true } },
+        participantA: { select: { id: true, name: true, bio: true, location: true, skills: true, avatarUrl: true, createdAt: true } },
+        participantB: { select: { id: true, name: true, bio: true, location: true, skills: true, avatarUrl: true, createdAt: true } },
         messages: { orderBy: { createdAt: 'desc' }, take: 1 },
       },
       orderBy: { updatedAt: 'desc' },

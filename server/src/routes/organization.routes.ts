@@ -7,7 +7,9 @@ import {
 } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.middleware.js';
+import { uploadAvatar } from '../middleware/upload.middleware.js';
 import { prisma } from '../config/database.js';
+import { deleteObjectByUrl } from '../config/storage.js';
 import { AppError } from '../middleware/error.middleware.js';
 import type { Prisma } from '@prisma/client';
 
@@ -17,6 +19,7 @@ const publicUserSelect = {
   bio: true,
   location: true,
   skills: true,
+  avatarUrl: true,
   createdAt: true,
 } as const;
 
@@ -238,6 +241,37 @@ organizationRoutes.patch('/:id', validate(updateOrganizationSchema), async (req:
       where: { id: orgId },
       data: { name, description, location, latitude, longitude, avatarUrl },
     });
+    res.json(org);
+  } catch (err) { next(err); }
+});
+
+// POST /api/organizations/:id/avatar — upload a new avatar (OWNER/ADMIN)
+organizationRoutes.post('/:id/avatar', uploadAvatar, async (req: AuthRequest, res, next) => {
+  try {
+    const orgId = req.params.id as string;
+    const membership = await prisma.organizationMember.findUnique({
+      where: { organizationId_userId: { organizationId: orgId, userId: req.user!.id } },
+    });
+    if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+      throw new AppError(403, 'Not authorized');
+    }
+    const file = req.file as Express.MulterS3.File | undefined;
+    if (!file) throw new AppError(400, 'No file uploaded');
+
+    const existing = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { avatarUrl: true },
+    });
+
+    const org = await prisma.organization.update({
+      where: { id: orgId },
+      data: { avatarUrl: file.location },
+    });
+
+    if (existing?.avatarUrl) {
+      await deleteObjectByUrl(existing.avatarUrl).catch(() => {});
+    }
+
     res.json(org);
   } catch (err) { next(err); }
 });
