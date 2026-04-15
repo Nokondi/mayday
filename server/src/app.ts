@@ -25,8 +25,24 @@ export function createApp() {
     app.set('trust proxy', 1);
   }
 
-  // Security headers
-  app.use(helmet());
+  // Security headers — extend default CSP to allow OSM tiles and Spaces-hosted images
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+          'img-src': [
+            "'self'",
+            'data:',
+            'blob:',
+            'https://*.tile.openstreetmap.org',
+            'https://*.digitaloceanspaces.com',
+            'https://*.cdn.digitaloceanspaces.com',
+          ],
+        },
+      },
+    }),
+  );
 
   app.use(cors({
     origin: env.CLIENT_URL,
