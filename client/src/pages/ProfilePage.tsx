@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { User as UserIcon, MapPin, Calendar, Edit2, Save, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
-import { getUser, updateProfile, getUserPosts } from '../api/users.js';
+import { getUser, updateProfile, getUserPosts, uploadUserAvatar } from '../api/users.js';
 import { useAuth } from '../context/AuthContext.js';
 import { PostList } from '../components/posts/PostList.js';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
+import { AvatarUploader } from '../components/common/AvatarUploader.js';
 
 export function ProfilePage() {
   const { id } = useParams<{ id: string }>();
@@ -68,9 +69,23 @@ export function ProfilePage() {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-mayday-100 rounded-full flex items-center justify-center">
-              <UserIcon className="w-8 h-8 text-mayday-600" />
-            </div>
+            {isOwnProfile ? (
+              <AvatarUploader
+                currentUrl={profile.avatarUrl}
+                fallback={<UserIcon className="w-8 h-8 text-mayday-600" />}
+                onUpload={async (file) => {
+                  await uploadUserAvatar(id!, file);
+                  queryClient.invalidateQueries({ queryKey: ['user', id] });
+                }}
+                size={64}
+              />
+            ) : profile.avatarUrl ? (
+              <img src={profile.avatarUrl} alt="" className="w-16 h-16 rounded-full object-cover" />
+            ) : (
+              <div className="w-16 h-16 bg-mayday-100 rounded-full flex items-center justify-center">
+                <UserIcon className="w-8 h-8 text-mayday-600" />
+              </div>
+            )}
             <div>
               {editing ? (
                 <input

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Trash2, UserPlus, ArrowLeft, UserCheck, UserX } from 'lucide-react';
+import { Trash2, UserPlus, ArrowLeft, UserCheck, UserX, Users as UsersIcon } from 'lucide-react';
 import {
   inviteToCommunitySchema,
   updateCommunitySchema,
@@ -18,11 +18,13 @@ import {
   removeCommunityMember,
   updateCommunityMemberRole,
   updateCommunity,
+  uploadCommunityAvatar,
   getCommunityJoinRequests,
   approveJoinRequest,
   rejectJoinRequest,
 } from '../api/communities.js';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
+import { AvatarUploader } from '../components/common/AvatarUploader.js';
 import { useAuth } from '../context/AuthContext.js';
 
 export function CommunityManagePage() {
@@ -149,13 +151,27 @@ export function CommunityManagePage() {
       {/* Edit details */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Details</h2>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Avatar</label>
+          <AvatarUploader
+            currentUrl={community.avatarUrl}
+            fallback={<UsersIcon className="w-8 h-8 text-gray-400" />}
+            onUpload={async (file) => {
+              await uploadCommunityAvatar(id!, file);
+              queryClient.invalidateQueries({ queryKey: ['community', id] });
+              queryClient.invalidateQueries({ queryKey: ['communities'] });
+            }}
+            shape="square"
+          />
+        </div>
+
         <form
           onSubmit={editForm.handleSubmit((data) => {
             const clean: UpdateCommunityRequest = {};
             if (data.name) clean.name = data.name;
             clean.description = data.description || undefined;
             clean.location = data.location || undefined;
-            clean.avatarUrl = data.avatarUrl || undefined;
             editMutation.mutate(clean);
           })}
           className="space-y-4"
@@ -171,13 +187,6 @@ export function CommunityManagePage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
             <input {...editForm.register('location')} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Avatar URL</label>
-            <input {...editForm.register('avatarUrl')} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
-            {editForm.formState.errors.avatarUrl && (
-              <p className="text-red-500 text-sm mt-1">{editForm.formState.errors.avatarUrl.message}</p>
-            )}
           </div>
           <button
             type="submit"

@@ -37,6 +37,15 @@ export async function updateOrganization(id: string, data: UpdateOrganizationReq
   return res.data;
 }
 
+export async function uploadOrganizationAvatar(id: string, file: File): Promise<Organization> {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  const res = await api.post(`/organizations/${id}/avatar`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
 export async function deleteOrganization(id: string): Promise<void> {
   await api.delete(`/organizations/${id}`);
 }

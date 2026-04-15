@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Trash2, UserPlus, ArrowLeft } from 'lucide-react';
+import { Trash2, UserPlus, ArrowLeft, Building2 } from 'lucide-react';
 import {
   inviteToOrganizationSchema,
   updateOrganizationSchema,
@@ -18,8 +18,10 @@ import {
   removeMember,
   updateMemberRole,
   updateOrganization,
+  uploadOrganizationAvatar,
 } from '../api/organizations.js';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
+import { AvatarUploader } from '../components/common/AvatarUploader.js';
 import { useAuth } from '../context/AuthContext.js';
 
 export function OrganizationManagePage() {
@@ -121,13 +123,27 @@ export function OrganizationManagePage() {
       {/* Edit org details */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Organization Details</h2>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Avatar</label>
+          <AvatarUploader
+            currentUrl={org.avatarUrl}
+            fallback={<Building2 className="w-8 h-8 text-gray-400" />}
+            onUpload={async (file) => {
+              await uploadOrganizationAvatar(id!, file);
+              queryClient.invalidateQueries({ queryKey: ['organization', id] });
+              queryClient.invalidateQueries({ queryKey: ['organizations'] });
+            }}
+            shape="square"
+          />
+        </div>
+
         <form
           onSubmit={editForm.handleSubmit((data) => {
             const clean: UpdateOrganizationRequest = {};
             if (data.name) clean.name = data.name;
             clean.description = data.description || undefined;
             clean.location = data.location || undefined;
-            clean.avatarUrl = data.avatarUrl || undefined;
             editMutation.mutate(clean);
           })}
           className="space-y-4"
@@ -153,16 +169,6 @@ export function OrganizationManagePage() {
               {...editForm.register('location')}
               className="w-full border border-gray-300 rounded-lg px-3 py-2"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Avatar URL</label>
-            <input
-              {...editForm.register('avatarUrl')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-            {editForm.formState.errors.avatarUrl && (
-              <p className="text-red-500 text-sm mt-1">{editForm.formState.errors.avatarUrl.message}</p>
-            )}
           </div>
           <button
             type="submit"

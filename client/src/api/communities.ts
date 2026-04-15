@@ -39,6 +39,15 @@ export async function updateCommunity(id: string, data: UpdateCommunityRequest):
   return res.data;
 }
 
+export async function uploadCommunityAvatar(id: string, file: File): Promise<Community> {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  const res = await api.post(`/communities/${id}/avatar`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
 export async function deleteCommunity(id: string): Promise<void> {
   await api.delete(`/communities/${id}`);
 }

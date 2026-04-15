@@ -11,6 +11,15 @@ export async function updateProfile(id: string, data: UpdateProfileRequest) {
   return res.data;
 }
 
+export async function uploadUserAvatar(id: string, file: File): Promise<UserPublicProfile> {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  const res = await api.post(`/users/${id}/avatar`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
 export async function getUserPosts(id: string, page = 1): Promise<PaginatedResponse<PostWithAuthor>> {
   const res = await api.get(`/users/${id}/posts`, { params: { page } });
   return res.data;
