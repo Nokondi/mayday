@@ -39,6 +39,11 @@ export function createApp() {
             'https://*.digitaloceanspaces.com',
             'https://*.cdn.digitaloceanspaces.com',
           ],
+          'connect-src': [
+            "'self'",
+            'https://nominatim.openstreetmap.org',
+            'wss:',
+          ],
         },
       },
     }),
