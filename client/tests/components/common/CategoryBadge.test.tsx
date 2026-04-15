@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { CategoryBadge } from './CategoryBadge.js';
+import { CategoryBadge } from '../../../src/components/common/CategoryBadge.js';
 
 describe('CategoryBadge', () => {
   it('renders the category label', () => {

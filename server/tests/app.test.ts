@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { createApp } from './app.js';
+import { createApp } from '../src/app.js';
 
 describe('createApp', () => {
   it('exposes a working /api/health endpoint', async () => {

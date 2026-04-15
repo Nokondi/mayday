@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { LoginForm } from './LoginForm.js';
+import { LoginForm } from '../../../src/components/auth/LoginForm.js';
 
 function renderForm(overrides: Partial<Parameters<typeof LoginForm>[0]> = {}) {
   const onSubmit = vi.fn().mockResolvedValue(undefined);

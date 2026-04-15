@@ -3,11 +3,10 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "outDir": "./dist",
-    "rootDir": "./src",
     "noEmit": true,
     "declaration": false,
     "declarationMap": false,
     "types": ["vitest/globals", "@testing-library/jest-dom"]
   },
-  "include": ["src"]
+  "include": ["src", "tests"]
 }
