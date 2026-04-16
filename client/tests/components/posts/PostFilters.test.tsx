@@ -4,11 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CATEGORIES } from '@mayday/shared';
 import { PostFilters } from '../../../src/components/posts/PostFilters.js';
 
+type Handler = ReturnType<typeof vi.fn<(v: string) => void>>;
 type Handlers = {
-  onTypeChange: ReturnType<typeof vi.fn>;
-  onCategoryChange: ReturnType<typeof vi.fn>;
-  onUrgencyChange: ReturnType<typeof vi.fn>;
-  onSortChange: ReturnType<typeof vi.fn>;
+  onTypeChange: Handler;
+  onCategoryChange: Handler;
+  onUrgencyChange: Handler;
+  onSortChange: Handler;
 };
 
 function renderFilters(

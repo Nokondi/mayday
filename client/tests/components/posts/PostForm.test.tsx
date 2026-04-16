@@ -72,7 +72,7 @@ beforeEach(() => {
   (URL.createObjectURL as unknown) = vi.fn((f: Blob) => `blob:${(f as File).name ?? 'x'}`);
   (URL.revokeObjectURL as unknown) = vi.fn();
   // No geocoding during tests unless a specific test sets this up.
-  global.fetch = vi.fn().mockResolvedValue({ json: async () => [] }) as never;
+  globalThis.fetch = vi.fn().mockResolvedValue({ json: async () => [] }) as never;
 });
 
 afterEach(() => {
