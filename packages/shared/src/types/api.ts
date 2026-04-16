@@ -45,8 +45,17 @@ export const updatePostSchema = createPostSchema.partial().extend({
   status: z.enum(['OPEN', 'FULFILLED', 'CLOSED']).optional(),
 });
 
+export const fulfillPostSchema = z.object({
+  fulfillers: z.array(z.object({
+    name: z.string().min(1, 'Name is required').max(100),
+    userId: z.string().uuid().optional(),
+    organizationId: z.string().uuid().optional(),
+  })).min(1, 'At least one fulfiller is required').max(20),
+});
+
 export type CreatePostRequest = z.infer<typeof createPostSchema>;
 export type UpdatePostRequest = z.infer<typeof updatePostSchema>;
+export type FulfillPostRequest = z.infer<typeof fulfillPostSchema>;
 
 // User profile
 export const updateProfileSchema = z.object({

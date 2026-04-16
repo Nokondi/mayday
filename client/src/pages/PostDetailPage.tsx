@@ -1,9 +1,10 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MapPin, Clock, User, MessageSquare, Flag, Trash2, Building2, Lock } from 'lucide-react';
+import { useState } from 'react';
+import { MapPin, Clock, User, MessageSquare, Flag, Trash2, Building2, Lock, CheckCircle, RotateCcw } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
-import { getPost, getPostMatches, deletePost } from '../api/posts.js';
+import { getPost, getPostMatches, deletePost, reopenPost } from '../api/posts.js';
 import { startConversation } from '../api/messages.js';
 import { createReport } from '../api/users.js';
 import { useAuth } from '../context/AuthContext.js';
@@ -11,12 +12,14 @@ import { CategoryBadge } from '../components/common/CategoryBadge.js';
 import { UrgencyBadge } from '../components/common/UrgencyBadge.js';
 import { PostCard } from '../components/posts/PostCard.js';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
+import { FulfillModal } from '../components/posts/FulfillModal.js';
 
 export function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [showFulfillModal, setShowFulfillModal] = useState(false);
 
   const { data: post, isLoading } = useQuery({
     queryKey: ['post', id],
@@ -43,6 +46,16 @@ export function PostDetailPage() {
       toast.success('Post deleted');
       navigate('/posts');
     },
+  });
+
+  const reopenMutation = useMutation({
+    mutationFn: () => reopenPost(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['post', id] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      toast.success('Post reopened');
+    },
+    onError: () => toast.error('Failed to reopen post'),
   });
 
   const reportMutation = useMutation({
@@ -105,6 +118,32 @@ export function PostDetailPage() {
 
         <p className="text-gray-700 whitespace-pre-wrap mb-6">{post.description}</p>
 
+        {post.status === 'FULFILLED' && post.fulfillments?.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle className="w-5 h-5 text-blue-600" />
+              <span className="font-semibold text-blue-900">Fulfilled by</span>
+            </div>
+            <ul className="space-y-1">
+              {post.fulfillments.map((f) => (
+                <li key={f.id} className="text-sm text-blue-800">
+                  {f.userId ? (
+                    <Link to={`/profile/${f.userId}`} className="hover:underline font-medium">
+                      {f.name}
+                    </Link>
+                  ) : f.organizationId ? (
+                    <Link to={`/organizations/${f.organizationId}`} className="hover:underline font-medium">
+                      {f.name}
+                    </Link>
+                  ) : (
+                    <span className="font-medium">{f.name}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="flex items-center gap-6 text-sm text-gray-500 mb-6">
           {post.organization ? (
             <Link to={`/organizations/${post.organization.id}`} className="flex items-center gap-1 hover:text-mayday-600">
@@ -157,6 +196,25 @@ export function PostDetailPage() {
               </button>
             </>
           )}
+          {(isOwner || isAdmin) && post.status === 'OPEN' && (
+            <button
+              onClick={() => setShowFulfillModal(true)}
+              className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+            >
+              <CheckCircle className="w-4 h-4" />
+              Mark as Fulfilled
+            </button>
+          )}
+          {(isOwner || isAdmin) && post.status === 'FULFILLED' && (
+            <button
+              onClick={() => reopenMutation.mutate()}
+              disabled={reopenMutation.isPending}
+              className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reopen
+            </button>
+          )}
           {(isOwner || isAdmin) && (
             <button
               onClick={() => deleteMutation.mutate()}
@@ -182,6 +240,12 @@ export function PostDetailPage() {
           </div>
         </div>
       )}
+
+      <FulfillModal
+        postId={id!}
+        open={showFulfillModal}
+        onClose={() => setShowFulfillModal(false)}
+      />
     </div>
   );
 }

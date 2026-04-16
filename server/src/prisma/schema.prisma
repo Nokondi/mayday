@@ -80,6 +80,7 @@ model User {
   communityInvitesRecv  CommunityInvite[]     @relation("communityInviteRecipient")
   communityInvitesSent  CommunityInvite[]     @relation("communityInviteSender")
   communityJoinRequests CommunityJoinRequest[]
+  fulfillments          PostFulfillment[]
 }
 
 model Post {
@@ -104,6 +105,7 @@ model Post {
   community    Community?    @relation(fields: [communityId], references: [id])
   reports      Report[]
   images       PostImage[]
+  fulfillments PostFulfillment[]
 
   @@index([category])
   @@index([type])
@@ -124,6 +126,23 @@ model PostImage {
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([postId])
+}
+
+model PostFulfillment {
+  id             String   @id @default(uuid())
+  postId         String
+  name           String
+  userId         String?
+  organizationId String?
+  createdAt      DateTime @default(now())
+
+  post         Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  @@index([postId])
+  @@index([userId])
+  @@index([organizationId])
 }
 
 model Conversation {
@@ -186,9 +205,10 @@ model Organization {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members OrganizationMember[]
-  invites OrganizationInvite[]
-  posts   Post[]
+  members      OrganizationMember[]
+  invites      OrganizationInvite[]
+  posts        Post[]
+  fulfillments PostFulfillment[]
 
   @@index([name])
   @@index([latitude, longitude])

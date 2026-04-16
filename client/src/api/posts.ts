@@ -1,4 +1,4 @@
-import type { CreatePostRequest, UpdatePostRequest, PostQueryParams, PaginatedResponse, PostWithAuthor } from '@mayday/shared';
+import type { CreatePostRequest, UpdatePostRequest, FulfillPostRequest, PostQueryParams, PaginatedResponse, PostWithAuthor } from '@mayday/shared';
 import { api } from './client.js';
 
 export async function getPosts(params?: PostQueryParams): Promise<PaginatedResponse<PostWithAuthor>> {
@@ -50,5 +50,23 @@ export async function deletePost(id: string): Promise<void> {
 
 export async function searchPosts(params: { q: string; type?: string; category?: string; page?: number; limit?: number }): Promise<PaginatedResponse<PostWithAuthor>> {
   const res = await api.get('/search', { params });
+  return res.data;
+}
+
+export async function fulfillPost(id: string, data: FulfillPostRequest): Promise<PostWithAuthor> {
+  const res = await api.post(`/posts/${id}/fulfill`, data);
+  return res.data;
+}
+
+export async function reopenPost(id: string): Promise<PostWithAuthor> {
+  const res = await api.post(`/posts/${id}/reopen`);
+  return res.data;
+}
+
+export async function searchFulfillers(q: string): Promise<{
+  users: Array<{ id: string; name: string; avatarUrl: string | null }>;
+  organizations: Array<{ id: string; name: string; avatarUrl: string | null }>;
+}> {
+  const res = await api.get('/posts/fulfiller-search', { params: { q } });
   return res.data;
 }

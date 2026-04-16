@@ -13,6 +13,15 @@ export interface PostImage {
   order: number;
 }
 
+export interface PostFulfillment {
+  id: string;
+  postId: string;
+  name: string;
+  userId: string | null;
+  organizationId: string | null;
+  createdAt: string;
+}
+
 export interface Post {
   id: string;
   type: PostType;
@@ -28,6 +37,7 @@ export interface Post {
   organizationId: string | null;
   communityId: string | null;
   images: PostImage[];
+  fulfillments: PostFulfillment[];
   createdAt: string;
   updatedAt: string;
 }

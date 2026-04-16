@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createPostSchema, updatePostSchema } from '@mayday/shared';
+import { createPostSchema, updatePostSchema, fulfillPostSchema } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
 import { uploadPostImages } from '../middleware/upload.middleware.js';
@@ -21,6 +21,10 @@ const postInclude = {
   images: {
     select: { id: true, url: true, order: true },
     orderBy: { order: 'asc' as const },
+  },
+  fulfillments: {
+    select: { id: true, postId: true, name: true, userId: true, organizationId: true, createdAt: true },
+    orderBy: { createdAt: 'asc' as const },
   },
 };
 
@@ -138,6 +142,31 @@ postRoutes.get('/', requireAuth, async (req: AuthRequest, res, next) => {
       limit: limitNum,
       totalPages: Math.ceil(total / limitNum),
     });
+  } catch (err) { next(err); }
+});
+
+postRoutes.get('/fulfiller-search', requireAuth, async (req: AuthRequest, res, next) => {
+  try {
+    const q = req.query.q as string;
+    if (!q || q.length < 2) {
+      res.json({ users: [], organizations: [] });
+      return;
+    }
+
+    const [users, organizations] = await Promise.all([
+      prisma.user.findMany({
+        where: { name: { contains: q, mode: 'insensitive' }, isBanned: false },
+        select: { id: true, name: true, avatarUrl: true },
+        take: 5,
+      }),
+      prisma.organization.findMany({
+        where: { name: { contains: q, mode: 'insensitive' } },
+        select: { id: true, name: true, avatarUrl: true },
+        take: 5,
+      }),
+    ]);
+
+    res.json({ users, organizations });
   } catch (err) { next(err); }
 });
 
@@ -282,6 +311,68 @@ postRoutes.put('/:id', requireAuth, validate(updatePostSchema), async (req: Auth
       data: updateData,
       include: postInclude,
     });
+    res.json(post);
+  } catch (err) { next(err); }
+});
+
+postRoutes.post('/:id/fulfill', requireAuth, validate(fulfillPostSchema), async (req: AuthRequest, res, next) => {
+  try {
+    const existing = await prisma.post.findUnique({ where: { id: req.params.id as string } });
+    if (!existing) throw new AppError(404, 'Post not found');
+    if (!(await canModifyPost(existing, req.user!))) {
+      throw new AppError(403, 'Not authorized');
+    }
+    if (existing.status !== 'OPEN') {
+      throw new AppError(400, 'Only open posts can be marked as fulfilled');
+    }
+
+    const { fulfillers } = req.body;
+
+    const post = await prisma.$transaction(async (tx) => {
+      await tx.post.update({
+        where: { id: req.params.id as string },
+        data: { status: 'FULFILLED' },
+      });
+
+      await tx.postFulfillment.createMany({
+        data: fulfillers.map((f: { name: string; userId?: string; organizationId?: string }) => ({
+          postId: req.params.id as string,
+          name: f.name,
+          userId: f.userId || null,
+          organizationId: f.organizationId || null,
+        })),
+      });
+
+      return tx.post.findUnique({
+        where: { id: req.params.id as string },
+        include: postInclude,
+      });
+    });
+
+    res.json(post);
+  } catch (err) { next(err); }
+});
+
+postRoutes.post('/:id/reopen', requireAuth, async (req: AuthRequest, res, next) => {
+  try {
+    const existing = await prisma.post.findUnique({ where: { id: req.params.id as string } });
+    if (!existing) throw new AppError(404, 'Post not found');
+    if (!(await canModifyPost(existing, req.user!))) {
+      throw new AppError(403, 'Not authorized');
+    }
+    if (existing.status !== 'FULFILLED') {
+      throw new AppError(400, 'Only fulfilled posts can be reopened');
+    }
+
+    const post = await prisma.$transaction(async (tx) => {
+      await tx.postFulfillment.deleteMany({ where: { postId: req.params.id as string } });
+      return tx.post.update({
+        where: { id: req.params.id as string },
+        data: { status: 'OPEN' },
+        include: postInclude,
+      });
+    });
+
     res.json(post);
   } catch (err) { next(err); }
 });

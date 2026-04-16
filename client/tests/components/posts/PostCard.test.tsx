@@ -20,6 +20,7 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
     organizationId: null,
     communityId: null,
     images: [],
+    fulfillments: [],
     createdAt: '2020-01-01T00:00:00Z',
     updatedAt: '2020-01-01T00:00:00Z',
     author: {
@@ -124,6 +125,24 @@ describe('PostCard — author vs organization attribution', () => {
     );
     expect(screen.getByText('Red Cross')).toBeInTheDocument();
     expect(screen.getByText(/by Alice/i)).toBeInTheDocument();
+  });
+});
+
+describe('PostCard — status badges', () => {
+  it('shows a "Fulfilled" badge when the post status is FULFILLED', () => {
+    renderCard(makePost({ status: 'FULFILLED' }));
+    expect(screen.getByText('Fulfilled')).toBeInTheDocument();
+  });
+
+  it('shows a "Closed" badge when the post status is CLOSED', () => {
+    renderCard(makePost({ status: 'CLOSED' }));
+    expect(screen.getByText('Closed')).toBeInTheDocument();
+  });
+
+  it('does not show a status badge when the post is OPEN', () => {
+    renderCard(makePost({ status: 'OPEN' }));
+    expect(screen.queryByText('Fulfilled')).not.toBeInTheDocument();
+    expect(screen.queryByText('Closed')).not.toBeInTheDocument();
   });
 });
 
