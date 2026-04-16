@@ -12,7 +12,7 @@ import { AvatarUploader } from '../components/common/AvatarUploader.js';
 
 export function ProfilePage() {
   const { id } = useParams<{ id: string }>();
-  const { user: authUser } = useAuth();
+  const { user: authUser, refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', bio: '', location: '', skills: '' });
@@ -72,18 +72,19 @@ export function ProfilePage() {
             {isOwnProfile ? (
               <AvatarUploader
                 currentUrl={profile.avatarUrl}
-                fallback={<UserIcon className="w-8 h-8 text-mayday-600" />}
+                fallback={<UserIcon className="w-16 h-16 text-mayday-600" />}
                 onUpload={async (file) => {
                   await uploadUserAvatar(id!, file);
                   queryClient.invalidateQueries({ queryKey: ['user', id] });
+                  await refreshUser();
                 }}
-                size={64}
+                size={128}
               />
             ) : profile.avatarUrl ? (
-              <img src={profile.avatarUrl} alt="" className="w-16 h-16 rounded-full object-cover" />
+              <img src={profile.avatarUrl} alt="" className="w-32 h-32 rounded-full object-cover" />
             ) : (
-              <div className="w-16 h-16 bg-mayday-100 rounded-full flex items-center justify-center">
-                <UserIcon className="w-8 h-8 text-mayday-600" />
+              <div className="w-32 h-32 bg-mayday-100 rounded-full flex items-center justify-center">
+                <UserIcon className="w-16 h-16 text-mayday-600" />
               </div>
             )}
             <div>

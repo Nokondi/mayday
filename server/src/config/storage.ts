@@ -1,14 +1,16 @@
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { env } from './env.js';
 
-export const s3Client = new S3Client({
-  endpoint: env.SPACES_ENDPOINT,
-  region: env.SPACES_REGION,
-  credentials: {
-    accessKeyId: env.SPACES_KEY,
-    secretAccessKey: env.SPACES_SECRET,
-  },
-});
+export const s3Client = env.SPACES_ENDPOINT
+  ? new S3Client({
+      endpoint: env.SPACES_ENDPOINT,
+      region: env.SPACES_REGION!,
+      credentials: {
+        accessKeyId: env.SPACES_KEY!,
+        secretAccessKey: env.SPACES_SECRET!,
+      },
+    })
+  : (undefined as unknown as S3Client);
 
 /** Extract the object key from a Spaces URL. */
 export function getKeyFromUrl(url: string): string | null {
@@ -23,8 +25,9 @@ export function getKeyFromUrl(url: string): string | null {
   }
 }
 
-/** Delete an object from Spaces by its public URL. No-op if URL is invalid. */
+/** Delete an object from Spaces by its public URL. No-op if storage is not configured or URL is invalid. */
 export async function deleteObjectByUrl(url: string): Promise<void> {
+  if (!s3Client || !env.SPACES_BUCKET) return;
   const key = getKeyFromUrl(url);
   if (!key) return;
   await s3Client.send(

@@ -24,11 +24,12 @@ const mockedListMyCommunities = vi.mocked(listMyCommunities);
 
 function setAuth(user: { id: string; name: string } | null = { id: 'u1', name: 'Alice' }) {
   mockedUseAuth.mockReturnValue({
-    user: user && { ...user, email: 'a@b.com', role: 'USER' },
+    user: user && { ...user, email: 'a@b.com', role: 'USER', avatarUrl: null },
     isLoading: false,
     login: vi.fn(),
     register: vi.fn(),
     logout: vi.fn(),
+    refreshUser: vi.fn(),
   } as ReturnType<typeof useAuth>);
 }
 

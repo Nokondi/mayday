@@ -73,14 +73,14 @@ describe('AvatarUploader — rendering', () => {
     expect(screen.queryByTestId('fallback')).not.toBeInTheDocument();
   });
 
-  it('shows "Upload" label when there is no current avatar', () => {
+  it('renders a clickable avatar button when there is no current avatar', () => {
     renderUploader();
-    expect(screen.getByRole('button', { name: /upload/i })).toBeInTheDocument();
+    expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
-  it('shows "Change" label when a current avatar exists', () => {
+  it('renders a clickable avatar button when a current avatar exists', () => {
     renderUploader({ currentUrl: 'https://example.com/avatar.jpg' });
-    expect(screen.getByRole('button', { name: /change/i })).toBeInTheDocument();
+    expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
   it('disables the button when disabled prop is true', () => {
@@ -163,15 +163,15 @@ describe('AvatarUploader — upload flow', () => {
 
     await user.upload(getHiddenFileInput(), makeImage());
 
-    // In-flight: "Uploading..." is shown and the button is disabled.
-    const uploadingBtn = await screen.findByRole('button', { name: /uploading/i });
+    // In-flight: the button is disabled.
+    const uploadingBtn = screen.getByRole('button');
     expect(uploadingBtn).toBeDisabled();
 
     resolve();
 
-    // After completion: label reverts and the button is enabled again.
+    // After completion: the button is enabled again.
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /upload/i })).toBeEnabled();
+      expect(screen.getByRole('button')).toBeEnabled();
     });
   });
 
@@ -216,7 +216,7 @@ describe('AvatarUploader — upload flow', () => {
     await user.upload(getHiddenFileInput(), makeImage());
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /upload/i })).toBeEnabled();
+      expect(screen.getByRole('button')).toBeEnabled();
     });
   });
 

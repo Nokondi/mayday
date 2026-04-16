@@ -32,6 +32,7 @@ function setAuth(state: AuthState = {}) {
     login: vi.fn(),
     register: vi.fn(),
     logout: vi.fn(),
+    refreshUser: vi.fn(),
     ...state,
   } as ReturnType<typeof useAuth>);
 }
@@ -118,7 +119,7 @@ describe('Header — logged-out state', () => {
 });
 
 describe('Header — logged-in state', () => {
-  const user = { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER' };
+  const user = { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null };
 
   beforeEach(() => {
     setAuth({ user });
@@ -155,7 +156,7 @@ describe('Header — logged-in state', () => {
 
 describe('Header — admin link visibility', () => {
   it('renders the Admin panel link when the user has role="ADMIN"', () => {
-    setAuth({ user: { id: 'admin', email: 'a@b.com', name: 'A', role: 'ADMIN' } });
+    setAuth({ user: { id: 'admin', email: 'a@b.com', name: 'A', role: 'ADMIN', avatarUrl: null } });
     renderHeader();
     const nav = getDesktopNav();
     const admin = within(nav).getByRole('link', { name: /admin panel/i });
@@ -164,7 +165,7 @@ describe('Header — admin link visibility', () => {
 });
 
 describe('Header — invite badge', () => {
-  const user = { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER' };
+  const user = { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null };
 
   it('uses the plain "Invites" label when there are no pending invites', async () => {
     setAuth({ user });
@@ -201,7 +202,7 @@ describe('Header — logout flow', () => {
   it('awaits logout and then navigates to "/"', async () => {
     const logout = vi.fn().mockResolvedValue(undefined);
     setAuth({
-      user: { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER' },
+      user: { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null },
       logout,
     });
     const user = userEvent.setup();
@@ -245,7 +246,7 @@ describe('Header — mobile menu toggle', () => {
   });
 
   it('renders authenticated links inside the mobile nav when a user is signed in', async () => {
-    setAuth({ user: { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER' } });
+    setAuth({ user: { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null } });
     const user = userEvent.setup();
     renderHeader();
 
@@ -282,7 +283,7 @@ describe('Header — mobile menu toggle', () => {
   });
 
   it('collapses the mobile nav when a nav link inside it is clicked', async () => {
-    setAuth({ user: { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER' } });
+    setAuth({ user: { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null } });
     const user = userEvent.setup();
     renderHeader();
 
@@ -300,7 +301,7 @@ describe('Header — mobile menu toggle', () => {
   });
 
   it('includes the invite count in the mobile Invites label when there are pending invites', async () => {
-    setAuth({ user: { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER' } });
+    setAuth({ user: { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null } });
     mockedGetMyInvites.mockResolvedValue([{ id: 'i1' }] as never);
     mockedGetMyCommunityInvites.mockResolvedValue([{ id: 'c1' }] as never);
     const user = userEvent.setup();

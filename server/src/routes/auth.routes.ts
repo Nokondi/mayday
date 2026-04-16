@@ -39,7 +39,7 @@ authRoutes.post('/register', validate(registerSchema), async (req, res, next) =>
 
     res.status(201).json({
       accessToken,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, avatarUrl: user.avatarUrl },
     });
   } catch (err) { next(err); }
 });
@@ -63,7 +63,7 @@ authRoutes.post('/login', validate(loginSchema), async (req, res, next) => {
 
     res.json({
       accessToken,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, avatarUrl: user.avatarUrl },
     });
   } catch (err) { next(err); }
 });
@@ -101,7 +101,7 @@ authRoutes.get('/me', requireAuth, async (req: AuthRequest, res, next) => {
       select: {
         id: true, email: true, name: true, bio: true,
         location: true, latitude: true, longitude: true,
-        skills: true, role: true, createdAt: true,
+        skills: true, role: true, avatarUrl: true, createdAt: true,
       },
     });
     if (!user) throw new AppError(404, 'User not found');

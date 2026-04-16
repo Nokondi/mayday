@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Upload, Loader2 } from 'lucide-react';
+import { Camera, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
@@ -48,9 +48,23 @@ export function AvatarUploader({
   const radius = shape === 'circle' ? 'rounded-full' : 'rounded-lg';
 
   return (
-    <div className="flex items-center gap-4">
-      <div
-        className={`${radius} bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0`}
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={ALLOWED_TYPES.join(',')}
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFile(file);
+          e.target.value = '';
+        }}
+      />
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={disabled || uploading}
+        className={`${radius} bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0 relative group cursor-pointer disabled:cursor-not-allowed`}
         style={{ width: size, height: size }}
       >
         {currentUrl ? (
@@ -58,39 +72,14 @@ export function AvatarUploader({
         ) : (
           fallback
         )}
-      </div>
-      <div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={ALLOWED_TYPES.join(',')}
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleFile(file);
-            e.target.value = '';
-          }}
-        />
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={disabled || uploading}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-        >
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
           {uploading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Uploading...
-            </>
+            <Loader2 className="w-6 h-6 text-white animate-spin" />
           ) : (
-            <>
-              <Upload className="w-4 h-4" />
-              {currentUrl ? 'Change' : 'Upload'}
-            </>
+            <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
           )}
-        </button>
-        <p className="text-xs text-gray-500 mt-1">JPEG, PNG, GIF, or WebP up to 5MB</p>
-      </div>
-    </div>
+        </div>
+      </button>
+    </>
   );
 }

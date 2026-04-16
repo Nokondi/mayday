@@ -68,7 +68,11 @@ export function Header() {
                   </Link>
                 )}
                 <Link to={`/profile/${user.id}`} aria-label="Your profile" className="text-gray-600 hover:text-gray-900">
-                  <User className="w-5 h-5" aria-hidden="true" />
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
+                  ) : (
+                    <User className="w-5 h-5" aria-hidden="true" />
+                  )}
                 </Link>
                 <button onClick={handleLogout} aria-label="Log out" className="text-gray-600 hover:text-gray-900">
                   <LogOut className="w-5 h-5" aria-hidden="true" />

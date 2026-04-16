@@ -23,6 +23,7 @@ export interface AuthResponse {
     email: string;
     name: string;
     role: string;
+    avatarUrl: string | null;
   };
 }
 

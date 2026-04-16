@@ -15,6 +15,7 @@ function mockAuth(state: { user: unknown; isLoading: boolean }) {
     login: vi.fn(),
     register: vi.fn(),
     logout: vi.fn(),
+    refreshUser: vi.fn(),
   } as ReturnType<typeof useAuth>);
 }
 
