@@ -16,13 +16,15 @@ interface PostFormProps {
 
 export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
   const { user } = useAuth();
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<CreatePostRequest>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CreatePostRequest>({
     resolver: zodResolver(createPostSchema),
     defaultValues: {
       type: 'REQUEST',
       urgency: 'MEDIUM',
     },
   });
+
+  const recurrenceFreq = watch('recurrenceFreq');
 
   // Organizations the user can post on behalf of
   const { data: myOrgs } = useQuery({
@@ -145,6 +147,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
     if (!cleaned.communityId) cleaned.communityId = undefined;
     if (!cleaned.startAt) cleaned.startAt = undefined;
     if (!cleaned.endAt) cleaned.endAt = undefined;
+    if (!cleaned.recurrenceFreq) {
+      cleaned.recurrenceFreq = undefined;
+      cleaned.recurrenceInterval = undefined;
+    }
     return onSubmit(cleaned, images);
   };
 
@@ -312,6 +318,32 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           />
           {errors.endAt && <p className="text-red-500 text-sm mt-1">{errors.endAt.message}</p>}
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Repeats</label>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">every</span>
+          <input
+            type="number"
+            min={1}
+            max={365}
+            {...register('recurrenceInterval')}
+            disabled={!recurrenceFreq}
+            className="w-20 border border-gray-300 rounded-lg px-3 py-2 disabled:bg-gray-100 disabled:text-gray-400"
+          />
+          <select
+            {...register('recurrenceFreq')}
+            className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
+          >
+            <option value="">Does not repeat</option>
+            <option value="DAY">day(s)</option>
+            <option value="WEEK">week(s)</option>
+            <option value="MONTH">month(s)</option>
+          </select>
+        </div>
+        {errors.recurrenceFreq && <p className="text-red-500 text-sm mt-1">{errors.recurrenceFreq.message}</p>}
+        {errors.recurrenceInterval && <p className="text-red-500 text-sm mt-1">{errors.recurrenceInterval.message}</p>}
       </div>
 
       <div className="relative">

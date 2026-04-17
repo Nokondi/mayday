@@ -6,6 +6,7 @@ import type { Community } from './community.js';
 export type PostType = 'REQUEST' | 'OFFER';
 export type PostStatus = 'OPEN' | 'FULFILLED' | 'CLOSED';
 export type UrgencyLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export type RecurrenceFrequency = 'DAY' | 'WEEK' | 'MONTH';
 
 export interface PostImage {
   id: string;
@@ -38,6 +39,8 @@ export interface Post {
   communityId: string | null;
   startAt: string | null;
   endAt: string | null;
+  recurrenceFreq: RecurrenceFrequency | null;
+  recurrenceInterval: number | null;
   images: PostImage[];
   fulfillments: PostFulfillment[];
   createdAt: string;

@@ -13,8 +13,10 @@ import {
   CheckCircle,
   RotateCcw,
   Calendar,
+  Repeat,
 } from "lucide-react";
 import { formatDistanceToNow, format, isSameDay } from "date-fns";
+import { formatRecurrence } from "../components/posts/PostCard.js";
 import { toast } from "sonner";
 import {
   getPost,
@@ -236,6 +238,15 @@ export function PostDetailPage() {
                 {label}
               </span>
             );
+          })()}
+          {(() => {
+            const repeat = formatRecurrence(post.recurrenceFreq, post.recurrenceInterval);
+            return repeat ? (
+              <span className="flex items-center gap-1">
+                <Repeat className="w-4 h-4" />
+                {repeat}
+              </span>
+            ) : null;
           })()}
           <span className="flex items-center gap-1">
             <Clock className="w-4 h-4" />

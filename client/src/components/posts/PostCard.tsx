@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, User, Building2, Lock, CheckCircle, Calendar } from 'lucide-react';
+import { MapPin, Clock, User, Building2, Lock, CheckCircle, Calendar, Repeat } from 'lucide-react';
 import { formatDistanceToNow, format, isSameDay } from 'date-fns';
-import type { PostWithAuthor } from '@mayday/shared';
+import type { PostWithAuthor, RecurrenceFrequency } from '@mayday/shared';
 import { CategoryBadge } from '../common/CategoryBadge.js';
 import { UrgencyBadge } from '../common/UrgencyBadge.js';
 
@@ -17,6 +17,12 @@ function formatSchedule(startAt: string | null, endAt: string | null): string | 
   }
   if (startAt) return `Starts ${format(new Date(startAt), dateFmt)}`;
   return `Ends ${format(new Date(endAt!), dateFmt)}`;
+}
+
+export function formatRecurrence(freq: RecurrenceFrequency | null, interval: number | null): string | null {
+  if (!freq || !interval) return null;
+  const unit = freq === 'DAY' ? 'day' : freq === 'WEEK' ? 'week' : 'month';
+  return interval === 1 ? `every ${unit}` : `every ${interval} ${unit}s`;
 }
 
 export function PostCard({ post }: { post: PostWithAuthor }) {
@@ -103,6 +109,15 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             <span className="flex items-center gap-1">
               <Calendar className="w-3 h-3" aria-hidden="true" />
               {schedule}
+            </span>
+          ) : null;
+        })()}
+        {(() => {
+          const repeat = formatRecurrence(post.recurrenceFreq, post.recurrenceInterval);
+          return repeat ? (
+            <span className="flex items-center gap-1">
+              <Repeat className="w-3 h-3" aria-hidden="true" />
+              {repeat}
             </span>
           ) : null;
         })()}

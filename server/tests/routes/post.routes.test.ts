@@ -87,6 +87,8 @@ function dbPost(overrides: Partial<Record<string, unknown>> = {}) {
     communityId: null,
     startAt: null,
     endAt: null,
+    recurrenceFreq: null,
+    recurrenceInterval: null,
     images: [],
     fulfillments: [],
     createdAt: new Date(),

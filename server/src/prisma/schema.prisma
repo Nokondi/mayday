@@ -30,6 +30,12 @@ enum UrgencyLevel {
   CRITICAL
 }
 
+enum RecurrenceFrequency {
+  DAY
+  WEEK
+  MONTH
+}
+
 enum ReportStatus {
   PENDING
   REVIEWED
@@ -99,6 +105,8 @@ model Post {
   communityId    String?
   startAt        DateTime?
   endAt          DateTime?
+  recurrenceFreq     RecurrenceFrequency?
+  recurrenceInterval Int?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 

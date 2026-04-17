@@ -85,6 +85,8 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
     communityId: null,
     startAt: null,
     endAt: null,
+    recurrenceFreq: null,
+    recurrenceInterval: null,
     images: [],
     fulfillments: [],
     createdAt: '2020-01-01T00:00:00Z',

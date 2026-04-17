@@ -48,19 +48,45 @@ const postFields = {
   communityId: z.string().uuid().optional().or(z.literal('').transform(() => undefined)),
   startAt: optionalDateTime,
   endAt: optionalDateTime,
+  recurrenceFreq: z
+    .enum(['DAY', 'WEEK', 'MONTH'])
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  recurrenceInterval: z.preprocess(
+    (v) => (v === '' || v == null ? undefined : v),
+    z.coerce.number().int().min(1).max(365).optional(),
+  ),
 };
 
-const dateRangeCheck = (data: { startAt?: string; endAt?: string }) =>
-  !data.startAt || !data.endAt || new Date(data.endAt) >= new Date(data.startAt);
-const dateRangeMessage = { message: 'End must be after start', path: ['endAt'] };
+type PostFieldsData = {
+  startAt?: string;
+  endAt?: string;
+  recurrenceFreq?: 'DAY' | 'WEEK' | 'MONTH';
+  recurrenceInterval?: number;
+};
 
-export const createPostSchema = z.object(postFields).refine(dateRangeCheck, dateRangeMessage);
+function checkPostFields(data: PostFieldsData, ctx: z.RefinementCtx) {
+  if (data.startAt && data.endAt && new Date(data.endAt) < new Date(data.startAt)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'End must be after start', path: ['endAt'] });
+  }
+  if (data.recurrenceFreq && data.recurrenceInterval == null) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Interval is required for recurring posts', path: ['recurrenceInterval'] });
+  }
+  if (data.recurrenceInterval != null && !data.recurrenceFreq) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Frequency is required for recurring posts', path: ['recurrenceFreq'] });
+  }
+  if (data.recurrenceFreq && !data.startAt) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Recurring posts need a start date', path: ['startAt'] });
+  }
+}
+
+export const createPostSchema = z.object(postFields).superRefine(checkPostFields);
 
 export const updatePostSchema = z
   .object(postFields)
   .partial()
   .extend({ status: z.enum(['OPEN', 'FULFILLED', 'CLOSED']).optional() })
-  .refine(dateRangeCheck, dateRangeMessage);
+  .superRefine(checkPostFields);
 
 export const fulfillPostSchema = z.object({
   fulfillers: z.array(z.object({

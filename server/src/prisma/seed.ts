@@ -437,6 +437,8 @@ async function main() {
         authorId: emma.id,
         startAt: nextWeekdayAt(3, 14, 0),
         endAt: nextWeekdayAt(3, 17, 0),
+        recurrenceFreq: "WEEK",
+        recurrenceInterval: 1,
       },
       // Capitol View
       {
@@ -562,6 +564,8 @@ async function main() {
         organizationId: foodNotBombs.id,
         startAt: nextWeekdayAt(6, 12, 0),
         endAt: nextWeekdayAt(6, 14, 0),
+        recurrenceFreq: "WEEK",
+        recurrenceInterval: 1,
       },
       {
         type: "REQUEST",
@@ -577,6 +581,8 @@ async function main() {
         organizationId: foodNotBombs.id,
         startAt: nextWeekdayAt(5, 18, 0),
         endAt: nextWeekdayAt(5, 21, 0),
+        recurrenceFreq: "WEEK",
+        recurrenceInterval: 1,
       },
       // Baseline Free Clinic
       {
@@ -649,6 +655,8 @@ async function main() {
         organizationId: capitolViewToolLibrary.id,
         startAt: nextWeekdayAt(6, 9, 0),
         endAt: nextWeekdayAt(6, 12, 0),
+        recurrenceFreq: "WEEK",
+        recurrenceInterval: 1,
       },
       {
         type: "REQUEST",
@@ -734,6 +742,8 @@ async function main() {
         organizationId: meadowbrookPantry.id,
         startAt: nextWeekdayAt(6, 8, 0),
         endAt: nextWeekdayAt(6, 10, 0),
+        recurrenceFreq: "WEEK",
+        recurrenceInterval: 1,
       },
     ],
   });
@@ -894,6 +904,8 @@ async function main() {
         communityId: downtownCommunity.id,
         startAt: nextWeekdayAt(4, 18, 0),
         endAt: nextWeekdayAt(4, 20, 0),
+        recurrenceFreq: "WEEK",
+        recurrenceInterval: 1,
       },
       {
         type: "REQUEST",
