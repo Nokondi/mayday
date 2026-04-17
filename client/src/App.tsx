@@ -7,6 +7,7 @@ import { PostsPage } from './pages/PostsPage.js';
 import { PostDetailPage } from './pages/PostDetailPage.js';
 import { CreatePostPage } from './pages/CreatePostPage.js';
 import { MapPage } from './pages/MapPage.js';
+import { CalendarPage } from './pages/CalendarPage.js';
 import { MessagesPage } from './pages/MessagesPage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { LoginPage } from './pages/LoginPage.js';
@@ -46,6 +47,9 @@ export function App() {
           } />
           <Route path="/map" element={
             <ProtectedRoute><MapPage /></ProtectedRoute>
+          } />
+          <Route path="/calendar" element={
+            <ProtectedRoute><CalendarPage /></ProtectedRoute>
           } />
           <Route path="/messages" element={
             <ProtectedRoute><MessagesPage /></ProtectedRoute>

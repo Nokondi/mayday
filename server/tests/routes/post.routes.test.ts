@@ -108,6 +108,48 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe('GET /api/posts — scheduled filter', () => {
+  it('passes startAt: { not: null } to prisma when scheduled=true', async () => {
+    vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([] as never);
+    mockedPost.findMany.mockResolvedValueOnce([dbPost()] as never);
+    mockedPost.count.mockResolvedValueOnce(1 as never);
+
+    const res = await request(makeApp())
+      .get('/api/posts?scheduled=true&status=OPEN')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: Record<string, unknown> }])[0].where;
+    expect(whereArg.startAt).toEqual({ not: null });
+  });
+
+  it('omits the startAt filter when scheduled is not set', async () => {
+    vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([] as never);
+    mockedPost.findMany.mockResolvedValueOnce([] as never);
+    mockedPost.count.mockResolvedValueOnce(0 as never);
+
+    await request(makeApp())
+      .get('/api/posts')
+      .set('Authorization', authHeader());
+
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: Record<string, unknown> }])[0].where;
+    expect(whereArg.startAt).toBeUndefined();
+  });
+
+  it('does not treat scheduled=false as a truthy filter', async () => {
+    vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([] as never);
+    mockedPost.findMany.mockResolvedValueOnce([] as never);
+    mockedPost.count.mockResolvedValueOnce(0 as never);
+
+    await request(makeApp())
+      .get('/api/posts?scheduled=false')
+      .set('Authorization', authHeader());
+
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: Record<string, unknown> }])[0].where;
+    expect(whereArg.startAt).toBeUndefined();
+  });
+});
+
 describe('GET /api/posts/fulfiller-search', () => {
   it('returns empty arrays when query is missing', async () => {
     const res = await request(makeApp())

@@ -270,3 +270,98 @@ describe('PostCard — location rendering', () => {
     expect(findCardLink(container)).toHaveAttribute('href', '/posts/p1');
   });
 });
+
+describe('PostCard — schedule rendering', () => {
+  it('does not render a schedule when both startAt and endAt are null', () => {
+    renderCard(makePost({ startAt: null, endAt: null }));
+    // No "Starts" / "Ends" / en-dash range text anywhere.
+    expect(screen.queryByText(/starts/i)).toBeNull();
+    expect(screen.queryByText(/ends/i)).toBeNull();
+    expect(screen.queryByText(/–/)).toBeNull();
+  });
+
+  it('renders "Starts <date>" when only startAt is set', () => {
+    renderCard(makePost({ startAt: '2026-06-10T14:00:00Z', endAt: null }));
+    expect(screen.getByText(/starts jun 10/i)).toBeInTheDocument();
+  });
+
+  it('renders "Ends <date>" when only endAt is set', () => {
+    renderCard(makePost({ startAt: null, endAt: '2026-06-10T14:00:00Z' }));
+    expect(screen.getByText(/ends jun 10/i)).toBeInTheDocument();
+  });
+
+  it('renders a single-day range as "Jun 10, 10:00 AM – 12:00 PM" when start and end are on the same day', () => {
+    renderCard(
+      makePost({
+        // Pick times that land on the same calendar day in every US timezone.
+        startAt: '2026-06-10T16:00:00Z',
+        endAt: '2026-06-10T18:00:00Z',
+      }),
+    );
+    // Both times on the same day → only one date prefix in the output.
+    const matches = screen.getAllByText(/jun 10/i);
+    expect(matches).toHaveLength(1);
+    expect(matches[0].textContent).toMatch(/jun 10.*–/i);
+  });
+
+  it('renders a multi-day range with both dates when start and end are on different days', () => {
+    renderCard(
+      makePost({
+        startAt: '2026-06-10T16:00:00Z',
+        endAt: '2026-06-12T16:00:00Z',
+      }),
+    );
+    const el = screen.getByText(/jun 10/i);
+    expect(el.textContent).toMatch(/jun 10/i);
+    expect(el.textContent).toMatch(/jun 12/i);
+  });
+});
+
+describe('PostCard — recurrence rendering', () => {
+  it('renders "every week" when freq is WEEK and interval is 1', () => {
+    renderCard(
+      makePost({
+        startAt: '2026-06-10T14:00:00Z',
+        recurrenceFreq: 'WEEK',
+        recurrenceInterval: 1,
+      }),
+    );
+    expect(screen.getByText('every week')).toBeInTheDocument();
+  });
+
+  it('pluralizes the unit when the interval is greater than 1', () => {
+    renderCard(
+      makePost({
+        startAt: '2026-06-10T14:00:00Z',
+        recurrenceFreq: 'WEEK',
+        recurrenceInterval: 2,
+      }),
+    );
+    expect(screen.getByText('every 2 weeks')).toBeInTheDocument();
+  });
+
+  it('handles DAY and MONTH units', () => {
+    const { unmount } = renderCard(
+      makePost({
+        startAt: '2026-06-10T14:00:00Z',
+        recurrenceFreq: 'DAY',
+        recurrenceInterval: 3,
+      }),
+    );
+    expect(screen.getByText('every 3 days')).toBeInTheDocument();
+    unmount();
+    renderCard(
+      makePost({
+        startAt: '2026-06-10T14:00:00Z',
+        recurrenceFreq: 'MONTH',
+        recurrenceInterval: 1,
+      }),
+    );
+    expect(screen.getByText('every month')).toBeInTheDocument();
+  });
+
+  it('does not render recurrence text when freq is null', () => {
+    renderCard(makePost({ startAt: '2026-06-10T14:00:00Z', recurrenceFreq: null, recurrenceInterval: null }));
+    expect(screen.queryByText(/every /)).toBeNull();
+  });
+});

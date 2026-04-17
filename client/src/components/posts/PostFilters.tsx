@@ -4,13 +4,13 @@ interface PostFiltersProps {
   type: string;
   category: string;
   urgency: string;
-  sort: string;
+  sort?: string;
   community?: string;
   communities?: Array<{ id: string; name: string }>;
   onTypeChange: (v: string) => void;
   onCategoryChange: (v: string) => void;
   onUrgencyChange: (v: string) => void;
-  onSortChange: (v: string) => void;
+  onSortChange?: (v: string) => void;
   onCommunityChange?: (v: string) => void;
 }
 
@@ -66,14 +66,16 @@ export function PostFilters({
         <option value="CRITICAL">Critical</option>
       </select>
 
-      <select
-        value={sort}
-        onChange={(e) => onSortChange(e.target.value)}
-        className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
-      >
-        <option value="recent">Most Recent</option>
-        <option value="urgency">Most Urgent</option>
-      </select>
+      {onSortChange && (
+        <select
+          value={sort ?? 'recent'}
+          onChange={(e) => onSortChange(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+        >
+          <option value="recent">Most Recent</option>
+          <option value="urgency">Most Urgent</option>
+        </select>
+      )}
     </div>
   );
 }

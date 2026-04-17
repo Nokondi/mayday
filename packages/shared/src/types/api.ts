@@ -220,6 +220,7 @@ export interface PostQueryParams {
   swLat?: number;
   swLng?: number;
   communityId?: string;
+  scheduled?: boolean;
   page?: number;
   limit?: number;
   sort?: 'recent' | 'urgency';

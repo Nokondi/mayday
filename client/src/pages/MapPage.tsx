@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getPosts } from '../api/posts.js';
+import { listMyCommunities } from '../api/communities.js';
 import { MapView } from '../components/map/MapView.js';
 import { PostFilters } from '../components/posts/PostFilters.js';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
@@ -13,14 +14,21 @@ export function MapPage() {
   const [type, setType] = useState('');
   const [category, setCategory] = useState('');
   const [urgency, setUrgency] = useState('');
+  const [community, setCommunity] = useState('');
   const [bounds, setBounds] = useState<{ neLat: number; neLng: number; swLat: number; swLng: number } | null>(null);
 
+  const { data: myCommunities } = useQuery({
+    queryKey: ['my-communities'],
+    queryFn: listMyCommunities,
+  });
+
   const { data, isLoading } = useQuery({
-    queryKey: ['posts', 'map', { type, category, urgency, bounds }],
+    queryKey: ['posts', 'map', { type, category, urgency, community, bounds }],
     queryFn: () => getPosts({
       type: type as any || undefined,
       category: category || undefined,
       urgency: urgency as any || undefined,
+      communityId: community || undefined,
       status: 'OPEN',
       limit: 100,
       ...(bounds || {}),
@@ -50,9 +58,10 @@ export function MapPage() {
     <div className="relative h-[calc(100vh-4rem)]">
       <div className="absolute top-4 left-4 z-[1000] bg-white rounded-lg shadow-lg p-4">
         <PostFilters
-          type={type} category={category} urgency={urgency} sort="recent"
+          type={type} category={category} urgency={urgency}
+          community={community} communities={myCommunities}
           onTypeChange={setType} onCategoryChange={setCategory}
-          onUrgencyChange={setUrgency} onSortChange={() => {}}
+          onUrgencyChange={setUrgency} onCommunityChange={setCommunity}
         />
         {data && (
           <p className="text-xs text-gray-500 mt-2">{data.total} posts in view</p>

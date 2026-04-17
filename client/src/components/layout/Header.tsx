@@ -44,6 +44,7 @@ export function Header() {
               <>
                 <Link to="/posts" className="text-gray-600 hover:text-gray-900">Browse</Link>
                 <Link to="/map" className="text-gray-600 hover:text-gray-900">Map</Link>
+                <Link to="/calendar" className="text-gray-600 hover:text-gray-900">Calendar</Link>
                 <Link to="/organizations" className="text-gray-600 hover:text-gray-900">Orgs</Link>
                 <Link to="/communities" className="text-gray-600 hover:text-gray-900">Communities</Link>
                 <Link to="/about" className="text-gray-600 hover:text-gray-900">About</Link>
@@ -100,6 +101,7 @@ export function Header() {
               <>
                 <Link to="/posts" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Browse</Link>
                 <Link to="/map" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Map</Link>
+                <Link to="/calendar" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Calendar</Link>
                 <Link to="/organizations" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Organizations</Link>
                 <Link to="/communities" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Communities</Link>
                 <Link to="/about" className="block px-3 py-2 rounded hover:bg-gray-100" onClick={() => setMenuOpen(false)}>About</Link>

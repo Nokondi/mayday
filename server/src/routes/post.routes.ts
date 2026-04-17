@@ -70,7 +70,7 @@ postRoutes.get('/', requireAuth, async (req: AuthRequest, res, next) => {
       type, category, status, urgency, q,
       neLat, neLng, swLat, swLng,
       page = '1', limit = '20', sort = 'recent',
-      communityId,
+      communityId, scheduled,
     } = req.query;
 
     const pageNum = Math.max(1, parseInt(page as string));
@@ -84,6 +84,7 @@ postRoutes.get('/', requireAuth, async (req: AuthRequest, res, next) => {
       where.status = status as 'OPEN' | 'FULFILLED' | 'CLOSED';
     if (urgency && ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(urgency as string))
       where.urgency = urgency as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    if (scheduled === 'true') where.startAt = { not: null };
 
     if (neLat && neLng && swLat && swLng) {
       where.latitude = {

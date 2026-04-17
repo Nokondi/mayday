@@ -150,3 +150,105 @@ describe('PostFilters — change handlers', () => {
     expect(handlers.onTypeChange).toHaveBeenCalledWith('');
   });
 });
+
+describe('PostFilters — community select', () => {
+  const communities = [
+    { id: 'c1', name: 'Meadowbrook Neighbors' },
+    { id: 'c2', name: 'Downtown Community' },
+  ];
+
+  it('does not render a community select when no communities prop is provided', () => {
+    render(
+      <PostFilters
+        type="" category="" urgency="" sort="recent"
+        onTypeChange={vi.fn()} onCategoryChange={vi.fn()}
+        onUrgencyChange={vi.fn()} onSortChange={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole('option', { name: 'All Communities' })).toBeNull();
+  });
+
+  it('does not render a community select when the communities list is empty', () => {
+    render(
+      <PostFilters
+        type="" category="" urgency="" sort="recent"
+        communities={[]}
+        onTypeChange={vi.fn()} onCategoryChange={vi.fn()}
+        onUrgencyChange={vi.fn()} onSortChange={vi.fn()}
+        onCommunityChange={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole('option', { name: 'All Communities' })).toBeNull();
+  });
+
+  it('renders an option for each community plus "All Communities"', () => {
+    render(
+      <PostFilters
+        type="" category="" urgency="" sort="recent"
+        community="" communities={communities}
+        onTypeChange={vi.fn()} onCategoryChange={vi.fn()}
+        onUrgencyChange={vi.fn()} onSortChange={vi.fn()}
+        onCommunityChange={vi.fn()}
+      />,
+    );
+    const selects = screen.getAllByRole('combobox') as HTMLSelectElement[];
+    const communitySelect = selects.find(
+      (s) => within(s).queryByRole('option', { name: 'All Communities' }) !== null,
+    )!;
+    expect(communitySelect).toBeDefined();
+    expect(within(communitySelect).getByRole('option', { name: 'Meadowbrook Neighbors' })).toHaveValue('c1');
+    expect(within(communitySelect).getByRole('option', { name: 'Downtown Community' })).toHaveValue('c2');
+  });
+
+  it('reflects the controlled community value', () => {
+    render(
+      <PostFilters
+        type="" category="" urgency="" sort="recent"
+        community="c2" communities={communities}
+        onTypeChange={vi.fn()} onCategoryChange={vi.fn()}
+        onUrgencyChange={vi.fn()} onSortChange={vi.fn()}
+        onCommunityChange={vi.fn()}
+      />,
+    );
+    const selects = screen.getAllByRole('combobox') as HTMLSelectElement[];
+    const communitySelect = selects.find(
+      (s) => within(s).queryByRole('option', { name: 'All Communities' }) !== null,
+    )!;
+    expect(communitySelect).toHaveValue('c2');
+  });
+
+  it('calls onCommunityChange with the selected community id', async () => {
+    const user = userEvent.setup();
+    const onCommunityChange = vi.fn();
+    render(
+      <PostFilters
+        type="" category="" urgency="" sort="recent"
+        community="" communities={communities}
+        onTypeChange={vi.fn()} onCategoryChange={vi.fn()}
+        onUrgencyChange={vi.fn()} onSortChange={vi.fn()}
+        onCommunityChange={onCommunityChange}
+      />,
+    );
+    const selects = screen.getAllByRole('combobox') as HTMLSelectElement[];
+    const communitySelect = selects.find(
+      (s) => within(s).queryByRole('option', { name: 'All Communities' }) !== null,
+    )!;
+    await user.selectOptions(communitySelect, 'c1');
+    expect(onCommunityChange).toHaveBeenCalledWith('c1');
+  });
+});
+
+describe('PostFilters — optional sort', () => {
+  it('omits the sort select when onSortChange is not provided', () => {
+    render(
+      <PostFilters
+        type="" category="" urgency=""
+        onTypeChange={vi.fn()} onCategoryChange={vi.fn()}
+        onUrgencyChange={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole('option', { name: 'Most Recent' })).toBeNull();
+    // Without community, only 3 selects remain (type, category, urgency).
+    expect(screen.getAllByRole('combobox')).toHaveLength(3);
+  });
+});
