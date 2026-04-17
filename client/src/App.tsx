@@ -23,6 +23,7 @@ import { CommunityDetailPage } from './pages/CommunityDetailPage.js';
 import { CommunityManagePage } from './pages/CommunityManagePage.js';
 import { InvitesPage } from './pages/InvitesPage.js';
 import { AboutPage } from './pages/AboutPage.js';
+import { BugReportPage } from './pages/BugReportPage.js';
 import { NotFoundPage } from './pages/NotFoundPage.js';
 import { useAuth } from './context/AuthContext.js';
 
@@ -85,6 +86,9 @@ export function App() {
             <ProtectedRoute><InvitesPage /></ProtectedRoute>
           } />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/bug-report" element={
+            <ProtectedRoute><BugReportPage /></ProtectedRoute>
+          } />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           {user?.role === 'ADMIN' && (

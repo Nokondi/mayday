@@ -43,6 +43,13 @@ enum ReportStatus {
   DISMISSED
 }
 
+enum BugReportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
 enum OrgRole {
   OWNER
   ADMIN
@@ -87,6 +94,7 @@ model User {
   communityInvitesSent  CommunityInvite[]     @relation("communityInviteSender")
   communityJoinRequests CommunityJoinRequest[]
   fulfillments          PostFulfillment[]
+  bugReports            BugReport[]
 }
 
 model Post {
@@ -202,6 +210,21 @@ model Report {
   reporter     User  @relation("reporter", fields: [reporterId], references: [id])
   reportedUser User? @relation("reportedUser", fields: [reportedUserId], references: [id])
   post         Post? @relation(fields: [postId], references: [id])
+}
+
+model BugReport {
+  id          String          @id @default(uuid())
+  title       String
+  description String
+  status      BugReportStatus @default(OPEN)
+  reporterId  String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  reporter User @relation(fields: [reporterId], references: [id])
+
+  @@index([status])
+  @@index([reporterId])
 }
 
 model Organization {

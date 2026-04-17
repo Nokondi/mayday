@@ -1,6 +1,9 @@
+import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext.js';
 
 export function Footer() {
+  const { user } = useAuth();
   return (
     <footer className="bg-white border-t border-gray-200 py-8 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
@@ -8,6 +11,11 @@ export function Footer() {
           Built with <Heart className="w-4 h-4 text-mayday-500 fill-mayday-500" aria-hidden="true" /><span className="sr-only">love</span> for community
         </p>
         <p className="mt-1">MayDay Mutual Aid Hub</p>
+        {user && (
+          <p className="mt-2">
+            <Link to="/bug-report" className="text-mayday-600 hover:underline">Report a bug</Link>
+          </p>
+        )}
       </div>
     </footer>
   );

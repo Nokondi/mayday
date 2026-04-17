@@ -135,6 +135,19 @@ export const createReportSchema = z.object({
 
 export type CreateReportRequest = z.infer<typeof createReportSchema>;
 
+// Bug Reports
+export const createBugReportSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200),
+  description: z.string().min(1, 'Description is required').max(5000),
+});
+
+export const updateBugReportSchema = z.object({
+  status: z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']),
+});
+
+export type CreateBugReportRequest = z.infer<typeof createBugReportSchema>;
+export type UpdateBugReportRequest = z.infer<typeof updateBugReportSchema>;
+
 // Organizations
 export const createOrganizationSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
