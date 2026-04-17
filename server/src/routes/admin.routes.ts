@@ -59,6 +59,56 @@ adminRoutes.put('/reports/:id', async (req: AuthRequest, res, next) => {
   } catch (err) { next(err); }
 });
 
+adminRoutes.get('/users', async (req, res, next) => {
+  try {
+    const q = (req.query.q as string | undefined)?.trim();
+    const role = req.query.role as string | undefined;
+    const bannedParam = req.query.banned as string | undefined;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
+
+    const where: Record<string, unknown> = {};
+    if (q) {
+      where.OR = [
+        { name: { contains: q, mode: 'insensitive' } },
+        { email: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+    if (role === 'USER' || role === 'ADMIN') {
+      where.role = role;
+    }
+    if (bannedParam === 'true') where.isBanned = true;
+    else if (bannedParam === 'false') where.isBanned = false;
+
+    const [data, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isBanned: true,
+          avatarUrl: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    res.json({
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (err) { next(err); }
+});
+
 adminRoutes.put('/users/:id/ban', async (req, res, next) => {
   try {
     const { banned } = req.body;

@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Shield, Flag, Users, Check, X, Ban, Bug } from 'lucide-react';
+import { Shield, Flag, Users, Check, X, Ban, Bug, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '../api/client.js';
 import { getBugReports, updateBugReportStatus, type BugReport } from '../api/bugReports.js';
+import { searchUsers, setUserBanned, type AdminUserRow } from '../api/adminUsers.js';
 
 interface Report {
   id: string;
@@ -21,7 +23,21 @@ const BUG_STATUSES: BugReport['status'][] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 
 export function AdminPage() {
   const [tab, setTab] = useState<'reports' | 'bugs' | 'users'>('reports');
   const [bugStatusFilter, setBugStatusFilter] = useState<BugReport['status'] | 'ALL'>('OPEN');
+  const [userQuery, setUserQuery] = useState('');
+  const [debouncedUserQuery, setDebouncedUserQuery] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState<'ALL' | 'USER' | 'ADMIN'>('ALL');
+  const [userBannedFilter, setUserBannedFilter] = useState<'ALL' | 'BANNED' | 'ACTIVE'>('ALL');
+  const [userPage, setUserPage] = useState(1);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedUserQuery(userQuery.trim()), 300);
+    return () => clearTimeout(id);
+  }, [userQuery]);
+
+  useEffect(() => {
+    setUserPage(1);
+  }, [debouncedUserQuery, userRoleFilter, userBannedFilter]);
 
   const { data: reports } = useQuery({
     queryKey: ['admin', 'reports'],
@@ -35,6 +51,20 @@ export function AdminPage() {
     queryKey: ['admin', 'bug-reports', bugStatusFilter],
     queryFn: () => getBugReports(bugStatusFilter === 'ALL' ? undefined : bugStatusFilter),
     enabled: tab === 'bugs',
+  });
+
+  const { data: users, isFetching: isFetchingUsers } = useQuery({
+    queryKey: ['admin', 'users', debouncedUserQuery, userRoleFilter, userBannedFilter, userPage],
+    queryFn: () =>
+      searchUsers({
+        q: debouncedUserQuery || undefined,
+        role: userRoleFilter === 'ALL' ? undefined : userRoleFilter,
+        banned: userBannedFilter === 'ALL' ? undefined : userBannedFilter === 'BANNED',
+        page: userPage,
+        limit: 20,
+      }),
+    enabled: tab === 'users',
+    placeholderData: (prev) => prev,
   });
 
   const resolveReport = useMutation({
@@ -58,12 +88,12 @@ export function AdminPage() {
   });
 
   const banUser = useMutation({
-    mutationFn: async ({ id, banned }: { id: string; banned: boolean }) => {
-      await api.put(`/admin/users/${id}/ban`, { banned });
+    mutationFn: ({ id, banned }: { id: string; banned: boolean }) => setUserBanned(id, banned),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      toast.success(vars.banned ? 'User banned' : 'User unbanned');
     },
-    onSuccess: () => {
-      toast.success('User status updated');
-    },
+    onError: () => toast.error('Failed to update user'),
   });
 
   return (
@@ -200,8 +230,115 @@ export function AdminPage() {
       )}
 
       {tab === 'users' && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 text-center text-gray-500">
-          User search and management coming soon.
+        <div>
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
+              <label htmlFor="user-search" className="sr-only">Search users</label>
+              <input
+                id="user-search"
+                type="search"
+                value={userQuery}
+                onChange={(e) => setUserQuery(e.target.value)}
+                placeholder="Search by name or email"
+                className="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+              />
+            </div>
+            <label className="sr-only" htmlFor="user-role-filter">Role</label>
+            <select
+              id="user-role-filter"
+              value={userRoleFilter}
+              onChange={(e) => setUserRoleFilter(e.target.value as 'ALL' | 'USER' | 'ADMIN')}
+              className="border border-gray-300 rounded-lg px-2 py-2 text-sm"
+            >
+              <option value="ALL">All roles</option>
+              <option value="USER">User</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+            <label className="sr-only" htmlFor="user-banned-filter">Status</label>
+            <select
+              id="user-banned-filter"
+              value={userBannedFilter}
+              onChange={(e) => setUserBannedFilter(e.target.value as 'ALL' | 'BANNED' | 'ACTIVE')}
+              className="border border-gray-300 rounded-lg px-2 py-2 text-sm"
+            >
+              <option value="ALL">All users</option>
+              <option value="ACTIVE">Active</option>
+              <option value="BANNED">Banned</option>
+            </select>
+          </div>
+
+          <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+            {isFetchingUsers && !users && (
+              <p className="text-center py-8 text-gray-500">Loading...</p>
+            )}
+            {users?.data.length === 0 && (
+              <p className="text-center py-8 text-gray-500">No users found</p>
+            )}
+            {users?.data.map((u: AdminUserRow) => (
+              <div key={u.id} className="flex items-center justify-between gap-4 p-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  {u.avatarUrl ? (
+                    <img src={u.avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-medium">
+                      {u.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Link to={`/profile/${u.id}`} className="font-medium text-gray-900 hover:underline truncate">
+                        {u.name}
+                      </Link>
+                      {u.role === 'ADMIN' && (
+                        <span className="text-xs bg-mayday-100 text-mayday-700 px-1.5 py-0.5 rounded">Admin</span>
+                      )}
+                      {u.isBanned && (
+                        <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">Banned</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500 truncate">{u.email}</p>
+                    <p className="text-xs text-gray-400">Joined {new Date(u.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => banUser.mutate({ id: u.id, banned: !u.isBanned })}
+                  disabled={banUser.isPending}
+                  className={`text-sm px-3 py-1.5 rounded border disabled:opacity-50 ${
+                    u.isBanned
+                      ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                      : 'border-red-300 text-red-700 hover:bg-red-50'
+                  }`}
+                >
+                  {u.isBanned ? 'Unban' : 'Ban'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {users && users.totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 text-sm">
+              <p className="text-gray-500">
+                Page {users.page} of {users.totalPages} ({users.total} users)
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setUserPage((p) => Math.max(1, p - 1))}
+                  disabled={userPage <= 1}
+                  className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setUserPage((p) => p + 1)}
+                  disabled={userPage >= users.totalPages}
+                  className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
