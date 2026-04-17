@@ -270,7 +270,12 @@ postRoutes.post('/', requireAuth, uploadPostImages, async (req: AuthRequest, res
     }
 
     const post = await prisma.post.create({
-      data: { ...parsed.data, authorId: req.user!.id },
+      data: {
+        ...parsed.data,
+        startAt: parsed.data.startAt ? new Date(parsed.data.startAt) : undefined,
+        endAt: parsed.data.endAt ? new Date(parsed.data.endAt) : undefined,
+        authorId: req.user!.id,
+      },
     });
 
     // Create PostImage records for uploaded files
@@ -305,6 +310,9 @@ postRoutes.put('/:id', requireAuth, validate(updatePostSchema), async (req: Auth
 
     // Don't let editors change the org/community link via update
     const { organizationId: _ignoreOrg, communityId: _ignoreCommunity, ...updateData } = req.body;
+
+    if (updateData.startAt) updateData.startAt = new Date(updateData.startAt);
+    if (updateData.endAt) updateData.endAt = new Date(updateData.endAt);
 
     const post = await prisma.post.update({
       where: { id: req.params.id as string },

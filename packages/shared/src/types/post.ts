@@ -36,6 +36,8 @@ export interface Post {
   authorId: string;
   organizationId: string | null;
   communityId: string | null;
+  startAt: string | null;
+  endAt: string | null;
   images: PostImage[];
   fulfillments: PostFulfillment[];
   createdAt: string;

@@ -3,6 +3,15 @@ import { hashPassword } from "../utils/password.js";
 
 const prisma = new PrismaClient();
 
+// Next occurrence of a weekday at a given time (0=Sun..6=Sat). Always in the future.
+function nextWeekdayAt(day: number, hour: number, minute = 0): Date {
+  const d = new Date();
+  d.setHours(hour, minute, 0, 0);
+  const diff = (day - d.getDay() + 7) % 7;
+  d.setDate(d.getDate() + (diff === 0 ? 7 : diff));
+  return d;
+}
+
 // Little Rock neighborhood coordinates
 const neighborhoods = {
   meadowbrook: { location: "Meadowbrook, Little Rock", lat: 34.7211, lng: -92.2766 },
@@ -426,6 +435,8 @@ async function main() {
         longitude: neighborhoods.baseline.lng,
         urgency: "LOW",
         authorId: emma.id,
+        startAt: nextWeekdayAt(3, 14, 0),
+        endAt: nextWeekdayAt(3, 17, 0),
       },
       // Capitol View
       {
@@ -514,6 +525,8 @@ async function main() {
         longitude: neighborhoods.riverdale.lng,
         urgency: "LOW",
         authorId: ursula.id,
+        startAt: nextWeekdayAt(6, 9, 0),
+        endAt: nextWeekdayAt(6, 12, 0),
       },
       {
         type: "REQUEST",
@@ -547,6 +560,8 @@ async function main() {
         urgency: "LOW",
         authorId: david.id,
         organizationId: foodNotBombs.id,
+        startAt: nextWeekdayAt(6, 12, 0),
+        endAt: nextWeekdayAt(6, 14, 0),
       },
       {
         type: "REQUEST",
@@ -560,6 +575,8 @@ async function main() {
         urgency: "MEDIUM",
         authorId: david.id,
         organizationId: foodNotBombs.id,
+        startAt: nextWeekdayAt(5, 18, 0),
+        endAt: nextWeekdayAt(5, 21, 0),
       },
       // Baseline Free Clinic
       {
@@ -601,6 +618,8 @@ async function main() {
         urgency: "MEDIUM",
         authorId: emma.id,
         organizationId: littleRockMutualAid.id,
+        startAt: nextWeekdayAt(6, 10, 0),
+        endAt: nextWeekdayAt(6, 13, 0),
       },
       {
         type: "REQUEST",
@@ -628,6 +647,8 @@ async function main() {
         urgency: "LOW",
         authorId: peter.id,
         organizationId: capitolViewToolLibrary.id,
+        startAt: nextWeekdayAt(6, 9, 0),
+        endAt: nextWeekdayAt(6, 12, 0),
       },
       {
         type: "REQUEST",
@@ -669,6 +690,8 @@ async function main() {
         urgency: "LOW",
         authorId: ursula.id,
         organizationId: riverdaleRepairCafe.id,
+        startAt: nextWeekdayAt(0, 13, 0),
+        endAt: nextWeekdayAt(0, 16, 0),
       },
       {
         type: "REQUEST",
@@ -709,6 +732,8 @@ async function main() {
         urgency: "LOW",
         authorId: emma.id,
         organizationId: meadowbrookPantry.id,
+        startAt: nextWeekdayAt(6, 8, 0),
+        endAt: nextWeekdayAt(6, 10, 0),
       },
     ],
   });
@@ -811,6 +836,8 @@ async function main() {
         urgency: "MEDIUM",
         authorId: david.id,
         communityId: capitolViewNeighbors.id,
+        startAt: nextWeekdayAt(6, 10, 0),
+        endAt: nextWeekdayAt(6, 11, 0),
       },
       {
         type: "OFFER",
@@ -865,6 +892,8 @@ async function main() {
         urgency: "LOW",
         authorId: david.id,
         communityId: downtownCommunity.id,
+        startAt: nextWeekdayAt(4, 18, 0),
+        endAt: nextWeekdayAt(4, 20, 0),
       },
       {
         type: "REQUEST",

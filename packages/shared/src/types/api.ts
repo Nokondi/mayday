@@ -28,7 +28,14 @@ export interface AuthResponse {
 }
 
 // Posts
-export const createPostSchema = z.object({
+// Accept "" (empty input), undefined, or a datetime-parseable string. Output is ISO string or undefined.
+const optionalDateTime = z
+  .string()
+  .optional()
+  .transform((v) => (v === '' || v == null ? undefined : v))
+  .refine((v) => v === undefined || !Number.isNaN(Date.parse(v)), { message: 'Invalid date/time' });
+
+const postFields = {
   type: z.enum(['REQUEST', 'OFFER']),
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().min(1, 'Description is required').max(5000),
@@ -39,11 +46,21 @@ export const createPostSchema = z.object({
   urgency: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).default('MEDIUM'),
   organizationId: z.string().uuid().optional().or(z.literal('').transform(() => undefined)),
   communityId: z.string().uuid().optional().or(z.literal('').transform(() => undefined)),
-});
+  startAt: optionalDateTime,
+  endAt: optionalDateTime,
+};
 
-export const updatePostSchema = createPostSchema.partial().extend({
-  status: z.enum(['OPEN', 'FULFILLED', 'CLOSED']).optional(),
-});
+const dateRangeCheck = (data: { startAt?: string; endAt?: string }) =>
+  !data.startAt || !data.endAt || new Date(data.endAt) >= new Date(data.startAt);
+const dateRangeMessage = { message: 'End must be after start', path: ['endAt'] };
+
+export const createPostSchema = z.object(postFields).refine(dateRangeCheck, dateRangeMessage);
+
+export const updatePostSchema = z
+  .object(postFields)
+  .partial()
+  .extend({ status: z.enum(['OPEN', 'FULFILLED', 'CLOSED']).optional() })
+  .refine(dateRangeCheck, dateRangeMessage);
 
 export const fulfillPostSchema = z.object({
   fulfillers: z.array(z.object({

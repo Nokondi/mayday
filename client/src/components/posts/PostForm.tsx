@@ -140,9 +140,11 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
   const handleFormSubmit = (data: CreatePostRequest) => {
     const cleaned: CreatePostRequest = { ...data };
-    // Selects use '' for "none" — convert to undefined
+    // Selects/inputs use '' for "none" — convert to undefined
     if (!cleaned.organizationId) cleaned.organizationId = undefined;
     if (!cleaned.communityId) cleaned.communityId = undefined;
+    if (!cleaned.startAt) cleaned.startAt = undefined;
+    if (!cleaned.endAt) cleaned.endAt = undefined;
     return onSubmit(cleaned, images);
   };
 
@@ -284,6 +286,31 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             <option value="HIGH">High</option>
             <option value="CRITICAL">Critical</option>
           </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Starts <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+          <input
+            type="datetime-local"
+            {...register('startAt')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+          />
+          {errors.startAt && <p className="text-red-500 text-sm mt-1">{errors.startAt.message}</p>}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Ends <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+          <input
+            type="datetime-local"
+            {...register('endAt')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+          />
+          {errors.endAt && <p className="text-red-500 text-sm mt-1">{errors.endAt.message}</p>}
         </div>
       </div>
 

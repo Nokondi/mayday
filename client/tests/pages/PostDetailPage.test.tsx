@@ -64,6 +64,8 @@ function makePost(overrides: Record<string, unknown> = {}) {
     authorId: 'u1',
     organizationId: null,
     communityId: null,
+    startAt: null,
+    endAt: null,
     images: [],
     fulfillments: [],
     createdAt: '2020-01-01T00:00:00Z',

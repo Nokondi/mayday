@@ -85,6 +85,8 @@ function dbPost(overrides: Partial<Record<string, unknown>> = {}) {
     authorId: USER_ID,
     organizationId: null,
     communityId: null,
+    startAt: null,
+    endAt: null,
     images: [],
     fulfillments: [],
     createdAt: new Date(),

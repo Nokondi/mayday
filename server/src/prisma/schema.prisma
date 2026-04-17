@@ -97,6 +97,8 @@ model Post {
   authorId       String
   organizationId String?
   communityId    String?
+  startAt        DateTime?
+  endAt          DateTime?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 

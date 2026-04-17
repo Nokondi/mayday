@@ -12,8 +12,9 @@ import {
   Lock,
   CheckCircle,
   RotateCcw,
+  Calendar,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format, isSameDay } from "date-fns";
 import { toast } from "sonner";
 import {
   getPost,
@@ -213,6 +214,29 @@ export function PostDetailPage() {
               {post.location}
             </span>
           )}
+          {(() => {
+            if (!post.startAt && !post.endAt) return null;
+            const dateFmt = 'MMM d, yyyy h:mm a';
+            const timeFmt = 'h:mm a';
+            let label: string;
+            if (post.startAt && post.endAt) {
+              const start = new Date(post.startAt);
+              const end = new Date(post.endAt);
+              label = isSameDay(start, end)
+                ? `${format(start, dateFmt)} – ${format(end, timeFmt)}`
+                : `${format(start, dateFmt)} – ${format(end, dateFmt)}`;
+            } else if (post.startAt) {
+              label = `Starts ${format(new Date(post.startAt), dateFmt)}`;
+            } else {
+              label = `Ends ${format(new Date(post.endAt!), dateFmt)}`;
+            }
+            return (
+              <span className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                {label}
+              </span>
+            );
+          })()}
           <span className="flex items-center gap-1">
             <Clock className="w-4 h-4" />
             {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}

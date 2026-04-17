@@ -1,9 +1,23 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, User, Building2, Lock, CheckCircle } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { MapPin, Clock, User, Building2, Lock, CheckCircle, Calendar } from 'lucide-react';
+import { formatDistanceToNow, format, isSameDay } from 'date-fns';
 import type { PostWithAuthor } from '@mayday/shared';
 import { CategoryBadge } from '../common/CategoryBadge.js';
 import { UrgencyBadge } from '../common/UrgencyBadge.js';
+
+function formatSchedule(startAt: string | null, endAt: string | null): string | null {
+  if (!startAt && !endAt) return null;
+  const dateFmt = 'MMM d, h:mm a';
+  const timeFmt = 'h:mm a';
+  if (startAt && endAt) {
+    const start = new Date(startAt);
+    const end = new Date(endAt);
+    if (isSameDay(start, end)) return `${format(start, dateFmt)} – ${format(end, timeFmt)}`;
+    return `${format(start, dateFmt)} – ${format(end, dateFmt)}`;
+  }
+  if (startAt) return `Starts ${format(new Date(startAt), dateFmt)}`;
+  return `Ends ${format(new Date(endAt!), dateFmt)}`;
+}
 
 export function PostCard({ post }: { post: PostWithAuthor }) {
   const typeColor = post.type === 'REQUEST'
@@ -83,6 +97,15 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             {post.location}
           </span>
         )}
+        {(() => {
+          const schedule = formatSchedule(post.startAt, post.endAt);
+          return schedule ? (
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3 h-3" aria-hidden="true" />
+              {schedule}
+            </span>
+          ) : null;
+        })()}
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3" aria-hidden="true" />
           {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
