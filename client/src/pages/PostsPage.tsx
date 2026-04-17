@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { getPosts } from '../api/posts.js';
+import { listMyCommunities } from '../api/communities.js';
 import { PostList } from '../components/posts/PostList.js';
 import { PostFilters } from '../components/posts/PostFilters.js';
 import { SearchBar } from '../components/common/SearchBar.js';
@@ -15,17 +16,24 @@ export function PostsPage() {
   const [category, setCategory] = useState('');
   const [urgency, setUrgency] = useState('');
   const [sort, setSort] = useState('recent');
+  const [community, setCommunity] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 300);
 
+  const { data: myCommunities } = useQuery({
+    queryKey: ['my-communities'],
+    queryFn: listMyCommunities,
+  });
+
   const { data, isLoading } = useQuery({
-    queryKey: ['posts', { type, category, urgency, sort, q: debouncedSearch, page }],
+    queryKey: ['posts', { type, category, urgency, sort, community, q: debouncedSearch, page }],
     queryFn: () => getPosts({
       type: type as any || undefined,
       category: category || undefined,
       urgency: urgency as any || undefined,
       sort: sort as any,
+      communityId: community || undefined,
       q: debouncedSearch || undefined,
       page,
       limit: 20,
@@ -45,10 +53,12 @@ export function PostsPage() {
         />
         <PostFilters
           type={type} category={category} urgency={urgency} sort={sort}
+          community={community} communities={myCommunities}
           onTypeChange={(v) => { setType(v); setPage(1); }}
           onCategoryChange={(v) => { setCategory(v); setPage(1); }}
           onUrgencyChange={(v) => { setUrgency(v); setPage(1); }}
           onSortChange={(v) => { setSort(v); setPage(1); }}
+          onCommunityChange={(v) => { setCommunity(v); setPage(1); }}
         />
       </div>
 

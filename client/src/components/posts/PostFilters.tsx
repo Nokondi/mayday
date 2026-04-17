@@ -5,15 +5,18 @@ interface PostFiltersProps {
   category: string;
   urgency: string;
   sort: string;
+  community?: string;
+  communities?: Array<{ id: string; name: string }>;
   onTypeChange: (v: string) => void;
   onCategoryChange: (v: string) => void;
   onUrgencyChange: (v: string) => void;
   onSortChange: (v: string) => void;
+  onCommunityChange?: (v: string) => void;
 }
 
 export function PostFilters({
-  type, category, urgency, sort,
-  onTypeChange, onCategoryChange, onUrgencyChange, onSortChange,
+  type, category, urgency, sort, community, communities,
+  onTypeChange, onCategoryChange, onUrgencyChange, onSortChange, onCommunityChange,
 }: PostFiltersProps) {
   return (
     <div className="flex flex-wrap gap-3">
@@ -37,6 +40,19 @@ export function PostFilters({
           <option key={cat} value={cat}>{cat}</option>
         ))}
       </select>
+
+      {communities && communities.length > 0 && onCommunityChange && (
+        <select
+          value={community ?? ''}
+          onChange={(e) => onCommunityChange(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+        >
+          <option value="">All Communities</option>
+          {communities.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      )}
 
       <select
         value={urgency}
