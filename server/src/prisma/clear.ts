@@ -7,6 +7,7 @@ async function main() {
   await prisma.message.deleteMany();
   await prisma.conversation.deleteMany();
   await prisma.report.deleteMany();
+  await prisma.postFulfillment.deleteMany();
   await prisma.postImage.deleteMany();
   await prisma.post.deleteMany();
   await prisma.community.deleteMany();
