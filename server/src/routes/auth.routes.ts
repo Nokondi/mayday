@@ -1,24 +1,20 @@
 import { Router } from 'express';
-import { randomBytes } from 'crypto';
 import { registerSchema, loginSchema, resendVerificationSchema } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
 import { prisma } from '../config/database.js';
 import { hashPassword, comparePassword } from '../utils/password.js';
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt.js';
+import {
+  signAccessToken,
+  signRefreshToken,
+  signVerificationToken,
+  verifyRefreshToken,
+  verifyVerificationToken,
+} from '../utils/jwt.js';
 import { AppError } from '../middleware/error.middleware.js';
 import { sendVerificationEmail } from '../services/mail.service.js';
 
 export const authRoutes = Router();
-
-const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
-
-function generateVerificationToken(): { token: string; expiresAt: Date } {
-  return {
-    token: randomBytes(32).toString('hex'),
-    expiresAt: new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS),
-  };
-}
 
 function dispatchVerificationEmail(email: string, token: string) {
   sendVerificationEmail(email, token).catch((err) => {
@@ -44,18 +40,11 @@ authRoutes.post('/register', validate(registerSchema), async (req, res, next) =>
     if (existing) throw new AppError(409, 'Email already registered');
 
     const passwordHash = await hashPassword(password);
-    const { token, expiresAt } = generateVerificationToken();
     const user = await prisma.user.create({
-      data: {
-        email,
-        passwordHash,
-        name,
-        verificationToken: token,
-        verificationTokenExpiresAt: expiresAt,
-      },
+      data: { email, passwordHash, name },
     });
 
-    dispatchVerificationEmail(user.email, token);
+    dispatchVerificationEmail(user.email, signVerificationToken(user.id));
 
     res.status(201).json({
       message: 'Account created. Check your email to confirm your address before logging in.',
@@ -97,19 +86,20 @@ authRoutes.post('/verify-email', async (req, res, next) => {
     const token = typeof req.body?.token === 'string' ? req.body.token : '';
     if (!token) throw new AppError(400, 'Missing verification token');
 
-    const user = await prisma.user.findUnique({ where: { verificationToken: token } });
+    const payload = verifyVerificationToken(token);
+    if (!payload) throw new AppError(400, 'Invalid or expired verification token');
+
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
     if (!user) throw new AppError(400, 'Invalid or expired verification token');
-    if (user.verificationTokenExpiresAt && user.verificationTokenExpiresAt < new Date()) {
-      throw new AppError(400, 'Verification token has expired. Request a new one.');
+
+    if (user.emailVerified) {
+      res.json({ message: 'Email already verified. You can now log in.' });
+      return;
     }
 
     await prisma.user.update({
       where: { id: user.id },
-      data: {
-        emailVerified: true,
-        verificationToken: null,
-        verificationTokenExpiresAt: null,
-      },
+      data: { emailVerified: true },
     });
 
     res.json({ message: 'Email verified. You can now log in.' });
@@ -129,13 +119,7 @@ authRoutes.post('/resend-verification', validate(resendVerificationSchema), asyn
       return;
     }
 
-    const { token, expiresAt } = generateVerificationToken();
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { verificationToken: token, verificationTokenExpiresAt: expiresAt },
-    });
-
-    dispatchVerificationEmail(user.email, token);
+    dispatchVerificationEmail(user.email, signVerificationToken(user.id));
     res.json(genericResponse);
   } catch (err) { next(err); }
 });

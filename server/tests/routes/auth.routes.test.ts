@@ -26,6 +26,7 @@ import { sendVerificationEmail } from '../../src/services/mail.service.js';
 import {
   signAccessToken,
   signRefreshToken,
+  signVerificationToken,
   verifyAccessToken,
   verifyRefreshToken,
 } from '../../src/utils/jwt.js';
@@ -52,8 +53,6 @@ function dbUser(overrides: Partial<Record<string, unknown>> = {}) {
     role: 'USER',
     isBanned: false,
     emailVerified: true,
-    verificationToken: null,
-    verificationTokenExpiresAt: null,
     bio: null,
     location: null,
     latitude: null,
@@ -99,16 +98,18 @@ describe('POST /api/auth/register', () => {
     expect(res.body.accessToken).toBeUndefined();
     expect(res.headers['set-cookie']).toBeUndefined();
 
-    // A verification token + expiry were persisted on the new user.
+    // Verification tokens are stateless JWTs — nothing is stored on the user.
     const createArgs = mockedUser.create.mock.calls[0][0] as { data: Record<string, unknown> };
-    expect(createArgs.data.verificationToken).toEqual(expect.any(String));
-    expect(createArgs.data.verificationTokenExpiresAt).toBeInstanceOf(Date);
+    expect(createArgs.data).not.toHaveProperty('verificationToken');
+    expect(createArgs.data).not.toHaveProperty('verificationTokenExpiresAt');
 
-    // The verification email was dispatched with the same token that was stored.
-    expect(mockedSendVerificationEmail).toHaveBeenCalledWith(
-      'alice@example.com',
-      createArgs.data.verificationToken,
-    );
+    // The dispatched token is a signed JWT that resolves back to the user's id.
+    expect(mockedSendVerificationEmail).toHaveBeenCalledTimes(1);
+    const [dispatchedTo, dispatchedToken] = mockedSendVerificationEmail.mock.calls[0];
+    expect(dispatchedTo).toBe('alice@example.com');
+    expect(typeof dispatchedToken).toBe('string');
+    const { verifyVerificationToken } = await import('../../src/utils/jwt.js');
+    expect(verifyVerificationToken(dispatchedToken as string)).toEqual({ userId: 'u1' });
   });
 
   it('hashes the submitted password before persisting it', async () => {
@@ -240,31 +241,38 @@ describe('POST /api/auth/login', () => {
 });
 
 describe('POST /api/auth/verify-email', () => {
-  it('verifies the user and clears the token when the token is valid', async () => {
-    const future = new Date(Date.now() + 60 * 60 * 1000);
+  it('verifies the user when the JWT token is valid', async () => {
     mockedUser.findUnique.mockResolvedValueOnce(
-      dbUser({
-        emailVerified: false,
-        verificationToken: 'valid-token',
-        verificationTokenExpiresAt: future,
-      }) as never,
+      dbUser({ emailVerified: false }) as never,
     );
     mockedUser.update.mockResolvedValueOnce(dbUser({ emailVerified: true }) as never);
 
+    const token = signVerificationToken('u1');
     const res = await request(makeApp())
       .post('/api/auth/verify-email')
-      .send({ token: 'valid-token' });
+      .send({ token });
 
     expect(res.status).toBe(200);
     expect(res.body.message).toMatch(/verified/i);
     expect(mockedUser.update).toHaveBeenCalledWith({
       where: { id: 'u1' },
-      data: {
-        emailVerified: true,
-        verificationToken: null,
-        verificationTokenExpiresAt: null,
-      },
+      data: { emailVerified: true },
     });
+  });
+
+  it('returns success idempotently when the user is already verified', async () => {
+    mockedUser.findUnique.mockResolvedValueOnce(
+      dbUser({ emailVerified: true }) as never,
+    );
+
+    const token = signVerificationToken('u1');
+    const res = await request(makeApp())
+      .post('/api/auth/verify-email')
+      .send({ token });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/already verified|verified/i);
+    expect(mockedUser.update).not.toHaveBeenCalled();
   });
 
   it('returns 400 when no token is provided', async () => {
@@ -273,40 +281,41 @@ describe('POST /api/auth/verify-email', () => {
     expect(mockedUser.findUnique).not.toHaveBeenCalled();
   });
 
-  it('returns 400 when the token does not match any user', async () => {
-    mockedUser.findUnique.mockResolvedValueOnce(null as never);
+  it('returns 400 when the token is not a valid JWT', async () => {
     const res = await request(makeApp())
       .post('/api/auth/verify-email')
-      .send({ token: 'nope' });
+      .send({ token: 'not-a-jwt' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/invalid or expired/i);
+    expect(mockedUser.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 when the JWT is valid but the user no longer exists', async () => {
+    mockedUser.findUnique.mockResolvedValueOnce(null as never);
+    const token = signVerificationToken('ghost');
+    const res = await request(makeApp())
+      .post('/api/auth/verify-email')
+      .send({ token });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/invalid or expired/i);
   });
 
-  it('returns 400 when the token has expired', async () => {
-    const past = new Date(Date.now() - 60 * 1000);
-    mockedUser.findUnique.mockResolvedValueOnce(
-      dbUser({
-        emailVerified: false,
-        verificationToken: 'expired',
-        verificationTokenExpiresAt: past,
-      }) as never,
-    );
-
+  it('rejects an access token being used as a verification token', async () => {
+    const accessToken = signAccessToken({ id: 'u1', email: 'alice@example.com', role: 'USER' });
     const res = await request(makeApp())
       .post('/api/auth/verify-email')
-      .send({ token: 'expired' });
+      .send({ token: accessToken });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/expired/i);
-    expect(mockedUser.update).not.toHaveBeenCalled();
+    expect(res.body.error).toMatch(/invalid or expired/i);
+    expect(mockedUser.findUnique).not.toHaveBeenCalled();
   });
 });
 
 describe('POST /api/auth/resend-verification', () => {
-  it('issues a fresh token and dispatches an email for an unverified user', async () => {
+  it('dispatches a fresh JWT verification email for an unverified user without touching the DB', async () => {
     mockedUser.findUnique.mockResolvedValueOnce(
       dbUser({ emailVerified: false }) as never,
     );
-    mockedUser.update.mockResolvedValueOnce(dbUser({ emailVerified: false }) as never);
 
     const res = await request(makeApp())
       .post('/api/auth/resend-verification')
@@ -315,14 +324,15 @@ describe('POST /api/auth/resend-verification', () => {
     expect(res.status).toBe(200);
     expect(res.body.message).toMatch(/confirmation email/i);
 
-    const updateArgs = mockedUser.update.mock.calls[0][0] as { data: Record<string, unknown> };
-    expect(updateArgs.data.verificationToken).toEqual(expect.any(String));
-    expect(updateArgs.data.verificationTokenExpiresAt).toBeInstanceOf(Date);
+    // Stateless flow: no DB write on resend.
+    expect(mockedUser.update).not.toHaveBeenCalled();
 
-    expect(mockedSendVerificationEmail).toHaveBeenCalledWith(
-      'alice@example.com',
-      updateArgs.data.verificationToken,
-    );
+    // The dispatched token resolves back to the user's id.
+    expect(mockedSendVerificationEmail).toHaveBeenCalledTimes(1);
+    const [dispatchedTo, dispatchedToken] = mockedSendVerificationEmail.mock.calls[0];
+    expect(dispatchedTo).toBe('alice@example.com');
+    const { verifyVerificationToken } = await import('../../src/utils/jwt.js');
+    expect(verifyVerificationToken(dispatchedToken as string)).toEqual({ userId: 'u1' });
   });
 
   it('returns the same generic message and skips sending when the user is already verified', async () => {

@@ -76,9 +76,7 @@ model User {
   avatarUrl    String?
   role         Role     @default(USER)
   isBanned     Boolean  @default(false)
-  emailVerified              Boolean   @default(false)
-  verificationToken          String?   @unique
-  verificationTokenExpiresAt DateTime?
+  emailVerified Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
