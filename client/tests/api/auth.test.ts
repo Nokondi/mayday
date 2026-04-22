@@ -81,13 +81,13 @@ describe('auth api', () => {
   });
 
   describe('verifyEmail', () => {
-    it('GETs /auth/verify-email with the token as a query param', async () => {
+    it('POSTs /auth/verify-email with the token in the body', async () => {
       const response = { message: 'Email verified. You can now log in.' };
-      mockedApi.get.mockResolvedValueOnce({ data: response });
+      mockedApi.post.mockResolvedValueOnce({ data: response });
 
       const result = await verifyEmail('abc123');
 
-      expect(mockedApi.get).toHaveBeenCalledWith('/auth/verify-email', { params: { token: 'abc123' } });
+      expect(mockedApi.post).toHaveBeenCalledWith('/auth/verify-email', { token: 'abc123' });
       expect(result).toEqual(response);
     });
   });

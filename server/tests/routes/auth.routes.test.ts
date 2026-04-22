@@ -239,7 +239,7 @@ describe('POST /api/auth/login', () => {
   });
 });
 
-describe('GET /api/auth/verify-email', () => {
+describe('POST /api/auth/verify-email', () => {
   it('verifies the user and clears the token when the token is valid', async () => {
     const future = new Date(Date.now() + 60 * 60 * 1000);
     mockedUser.findUnique.mockResolvedValueOnce(
@@ -251,7 +251,9 @@ describe('GET /api/auth/verify-email', () => {
     );
     mockedUser.update.mockResolvedValueOnce(dbUser({ emailVerified: true }) as never);
 
-    const res = await request(makeApp()).get('/api/auth/verify-email?token=valid-token');
+    const res = await request(makeApp())
+      .post('/api/auth/verify-email')
+      .send({ token: 'valid-token' });
 
     expect(res.status).toBe(200);
     expect(res.body.message).toMatch(/verified/i);
@@ -266,14 +268,16 @@ describe('GET /api/auth/verify-email', () => {
   });
 
   it('returns 400 when no token is provided', async () => {
-    const res = await request(makeApp()).get('/api/auth/verify-email');
+    const res = await request(makeApp()).post('/api/auth/verify-email').send({});
     expect(res.status).toBe(400);
     expect(mockedUser.findUnique).not.toHaveBeenCalled();
   });
 
   it('returns 400 when the token does not match any user', async () => {
     mockedUser.findUnique.mockResolvedValueOnce(null as never);
-    const res = await request(makeApp()).get('/api/auth/verify-email?token=nope');
+    const res = await request(makeApp())
+      .post('/api/auth/verify-email')
+      .send({ token: 'nope' });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/invalid or expired/i);
   });
@@ -288,7 +292,9 @@ describe('GET /api/auth/verify-email', () => {
       }) as never,
     );
 
-    const res = await request(makeApp()).get('/api/auth/verify-email?token=expired');
+    const res = await request(makeApp())
+      .post('/api/auth/verify-email')
+      .send({ token: 'expired' });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/expired/i);
     expect(mockedUser.update).not.toHaveBeenCalled();

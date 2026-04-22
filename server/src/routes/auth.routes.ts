@@ -92,9 +92,9 @@ authRoutes.post('/login', validate(loginSchema), async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-authRoutes.get('/verify-email', async (req, res, next) => {
+authRoutes.post('/verify-email', async (req, res, next) => {
   try {
-    const token = typeof req.query.token === 'string' ? req.query.token : '';
+    const token = typeof req.body?.token === 'string' ? req.body.token : '';
     if (!token) throw new AppError(400, 'Missing verification token');
 
     const user = await prisma.user.findUnique({ where: { verificationToken: token } });

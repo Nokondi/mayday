@@ -30,7 +30,7 @@ export async function getMe() {
 }
 
 export async function verifyEmail(token: string): Promise<MessageResponse> {
-  const res = await api.get('/auth/verify-email', { params: { token } });
+  const res = await api.post('/auth/verify-email', { token });
   return res.data;
 }
 
