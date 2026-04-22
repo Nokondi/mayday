@@ -17,7 +17,7 @@ interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
   login: (data: LoginRequest) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<{ message: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -67,10 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (data: RegisterRequest) => {
     const res = await authApi.register(data);
-    setAccessToken(res.accessToken);
-    queryClient.clear();
-    setUser(res.user);
-  }, [queryClient]);
+    // Registration does not log the user in — they must confirm their email first.
+    return { message: res.message };
+  }, []);
 
   const logout = useCallback(async () => {
     await authApi.logout();

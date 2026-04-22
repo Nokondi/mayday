@@ -9,13 +9,20 @@ vi.mock('../../src/config/database.js', () => ({
     user: {
       findUnique: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
     },
   },
+}));
+
+// Mock the mail service so tests don't attempt real SMTP calls.
+vi.mock('../../src/services/mail.service.js', () => ({
+  sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { prisma } from '../../src/config/database.js';
 import { errorMiddleware } from '../../src/middleware/error.middleware.js';
 import { authRoutes } from '../../src/routes/auth.routes.js';
+import { sendVerificationEmail } from '../../src/services/mail.service.js';
 import {
   signAccessToken,
   signRefreshToken,
@@ -25,6 +32,7 @@ import {
 import { hashPassword } from '../../src/utils/password.js';
 
 const mockedUser = vi.mocked(prisma.user);
+const mockedSendVerificationEmail = vi.mocked(sendVerificationEmail);
 
 function makeApp() {
   const app = express();
@@ -43,6 +51,9 @@ function dbUser(overrides: Partial<Record<string, unknown>> = {}) {
     passwordHash: 'placeholder',
     role: 'USER',
     isBanned: false,
+    emailVerified: true,
+    verificationToken: null,
+    verificationTokenExpiresAt: null,
     bio: null,
     location: null,
     latitude: null,
@@ -63,10 +74,14 @@ afterEach(() => {
 });
 
 describe('POST /api/auth/register', () => {
-  it('creates a user, returns an access token, and sets a refresh cookie', async () => {
+  it('creates an unverified user and dispatches a verification email', async () => {
     mockedUser.findUnique.mockResolvedValueOnce(null as never);
     mockedUser.create.mockImplementationOnce(async ({ data }: { data: Record<string, unknown> }) => {
-      return dbUser({ email: data.email as string, name: data.name as string }) as never;
+      return dbUser({
+        email: data.email as string,
+        name: data.name as string,
+        emailVerified: false,
+      }) as never;
     });
 
     const res = await request(makeApp())
@@ -78,18 +93,22 @@ describe('POST /api/auth/register', () => {
       id: 'u1',
       email: 'alice@example.com',
       name: 'Alice',
-      role: 'USER',
     });
-    // Access token is a verifiable JWT carrying the user identity.
-    const decoded = verifyAccessToken(res.body.accessToken);
-    expect(decoded).toMatchObject({ id: 'u1', email: 'alice@example.com', role: 'USER' });
+    expect(res.body.message).toMatch(/confirm/i);
+    // Register no longer issues tokens — login is blocked until verification.
+    expect(res.body.accessToken).toBeUndefined();
+    expect(res.headers['set-cookie']).toBeUndefined();
 
-    // Refresh token is delivered as an httpOnly cookie.
-    const cookies = res.headers['set-cookie'] as unknown as string[] | undefined;
-    expect(cookies).toBeDefined();
-    const refreshCookie = cookies!.find((c) => c.startsWith('refreshToken='))!;
-    expect(refreshCookie).toMatch(/HttpOnly/i);
-    expect(refreshCookie).toMatch(/SameSite=Strict/i);
+    // A verification token + expiry were persisted on the new user.
+    const createArgs = mockedUser.create.mock.calls[0][0] as { data: Record<string, unknown> };
+    expect(createArgs.data.verificationToken).toEqual(expect.any(String));
+    expect(createArgs.data.verificationTokenExpiresAt).toBeInstanceOf(Date);
+
+    // The verification email was dispatched with the same token that was stored.
+    expect(mockedSendVerificationEmail).toHaveBeenCalledWith(
+      'alice@example.com',
+      createArgs.data.verificationToken,
+    );
   });
 
   it('hashes the submitted password before persisting it', async () => {
@@ -121,6 +140,7 @@ describe('POST /api/auth/register', () => {
     expect(res.status).toBe(409);
     expect(res.body).toEqual({ error: 'Email already registered' });
     expect(mockedUser.create).not.toHaveBeenCalled();
+    expect(mockedSendVerificationEmail).not.toHaveBeenCalled();
   });
 
   it('returns 400 when the body fails schema validation', async () => {
@@ -195,12 +215,136 @@ describe('POST /api/auth/login', () => {
     expect(res.body).toEqual({ error: 'Account is banned' });
   });
 
+  it('returns 403 when the email has not been verified', async () => {
+    const hash = await hashPassword('hunter2pw');
+    mockedUser.findUnique.mockResolvedValueOnce(
+      dbUser({ passwordHash: hash, emailVerified: false }) as never,
+    );
+
+    const res = await request(makeApp())
+      .post('/api/auth/login')
+      .send({ email: 'alice@example.com', password: 'hunter2pw' });
+
+    expect(res.status).toBe(403);
+    expect(res.body.error).toMatch(/confirm your email/i);
+    expect(res.headers['set-cookie']).toBeUndefined();
+  });
+
   it('returns 400 when the body fails schema validation', async () => {
     const res = await request(makeApp())
       .post('/api/auth/login')
       .send({ email: 'not-an-email' });
 
     expect(res.status).toBe(400);
+  });
+});
+
+describe('GET /api/auth/verify-email', () => {
+  it('verifies the user and clears the token when the token is valid', async () => {
+    const future = new Date(Date.now() + 60 * 60 * 1000);
+    mockedUser.findUnique.mockResolvedValueOnce(
+      dbUser({
+        emailVerified: false,
+        verificationToken: 'valid-token',
+        verificationTokenExpiresAt: future,
+      }) as never,
+    );
+    mockedUser.update.mockResolvedValueOnce(dbUser({ emailVerified: true }) as never);
+
+    const res = await request(makeApp()).get('/api/auth/verify-email?token=valid-token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/verified/i);
+    expect(mockedUser.update).toHaveBeenCalledWith({
+      where: { id: 'u1' },
+      data: {
+        emailVerified: true,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+      },
+    });
+  });
+
+  it('returns 400 when no token is provided', async () => {
+    const res = await request(makeApp()).get('/api/auth/verify-email');
+    expect(res.status).toBe(400);
+    expect(mockedUser.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 when the token does not match any user', async () => {
+    mockedUser.findUnique.mockResolvedValueOnce(null as never);
+    const res = await request(makeApp()).get('/api/auth/verify-email?token=nope');
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/invalid or expired/i);
+  });
+
+  it('returns 400 when the token has expired', async () => {
+    const past = new Date(Date.now() - 60 * 1000);
+    mockedUser.findUnique.mockResolvedValueOnce(
+      dbUser({
+        emailVerified: false,
+        verificationToken: 'expired',
+        verificationTokenExpiresAt: past,
+      }) as never,
+    );
+
+    const res = await request(makeApp()).get('/api/auth/verify-email?token=expired');
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/expired/i);
+    expect(mockedUser.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('POST /api/auth/resend-verification', () => {
+  it('issues a fresh token and dispatches an email for an unverified user', async () => {
+    mockedUser.findUnique.mockResolvedValueOnce(
+      dbUser({ emailVerified: false }) as never,
+    );
+    mockedUser.update.mockResolvedValueOnce(dbUser({ emailVerified: false }) as never);
+
+    const res = await request(makeApp())
+      .post('/api/auth/resend-verification')
+      .send({ email: 'alice@example.com' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/confirmation email/i);
+
+    const updateArgs = mockedUser.update.mock.calls[0][0] as { data: Record<string, unknown> };
+    expect(updateArgs.data.verificationToken).toEqual(expect.any(String));
+    expect(updateArgs.data.verificationTokenExpiresAt).toBeInstanceOf(Date);
+
+    expect(mockedSendVerificationEmail).toHaveBeenCalledWith(
+      'alice@example.com',
+      updateArgs.data.verificationToken,
+    );
+  });
+
+  it('returns the same generic message and skips sending when the user is already verified', async () => {
+    mockedUser.findUnique.mockResolvedValueOnce(
+      dbUser({ emailVerified: true }) as never,
+    );
+
+    const res = await request(makeApp())
+      .post('/api/auth/resend-verification')
+      .send({ email: 'alice@example.com' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/confirmation email/i);
+    expect(mockedUser.update).not.toHaveBeenCalled();
+    expect(mockedSendVerificationEmail).not.toHaveBeenCalled();
+  });
+
+  it('returns the same generic message when the email is not registered', async () => {
+    mockedUser.findUnique.mockResolvedValueOnce(null as never);
+
+    const res = await request(makeApp())
+      .post('/api/auth/resend-verification')
+      .send({ email: 'ghost@example.com' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/confirmation email/i);
+    expect(mockedUser.update).not.toHaveBeenCalled();
+    expect(mockedSendVerificationEmail).not.toHaveBeenCalled();
   });
 });
 

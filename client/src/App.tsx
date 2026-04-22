@@ -12,6 +12,7 @@ import { MessagesPage } from './pages/MessagesPage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { LoginPage } from './pages/LoginPage.js';
 import { RegisterPage } from './pages/RegisterPage.js';
+import { VerifyEmailPage } from './pages/VerifyEmailPage.js';
 import { AdminPage } from './pages/AdminPage.js';
 import { OrganizationsPage } from './pages/OrganizationsPage.js';
 import { CreateOrganizationPage } from './pages/CreateOrganizationPage.js';
@@ -91,6 +92,7 @@ export function App() {
           } />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           {user?.role === 'ADMIN' && (
             <Route path="/admin" element={
               <ProtectedRoute><AdminPage /></ProtectedRoute>

@@ -16,6 +16,11 @@ const envSchema = z.object({
   SPACES_KEY: z.string().optional(),
   SPACES_SECRET: z.string().optional(),
   SPACES_BUCKET: z.string().optional(),
+  SMTP_HOST: z.string().default('smtp.gmail.com'),
+  SMTP_PORT: z.coerce.number().default(587),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

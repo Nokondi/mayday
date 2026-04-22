@@ -13,8 +13,13 @@ export const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+export const resendVerificationSchema = z.object({
+  email: z.string().email(),
+});
+
 export type RegisterRequest = z.infer<typeof registerSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
+export type ResendVerificationRequest = z.infer<typeof resendVerificationSchema>;
 
 export interface AuthResponse {
   accessToken: string;
