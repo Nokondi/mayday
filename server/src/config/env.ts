@@ -24,3 +24,13 @@ const envSchema = z.object({
 });
 
 export const env = envSchema.parse(process.env);
+
+// Guardrail: in production, CLIENT_URL must be the real public domain.
+// If it's left as the dev default, verification emails and CORS will be
+// broken in ways that fail silently for users.
+if (env.NODE_ENV === 'production' && /localhost|127\.0\.0\.1/i.test(env.CLIENT_URL)) {
+  throw new Error(
+    `CLIENT_URL must be set to the production domain when NODE_ENV=production (got ${env.CLIENT_URL}). ` +
+    `Set CLIENT_URL=https://your-domain on the deployment and redeploy.`,
+  );
+}
