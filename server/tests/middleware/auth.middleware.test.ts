@@ -147,10 +147,15 @@ describe('rejectBanned', () => {
     expect(next).toHaveBeenCalledWith(dbErr);
   });
 
-  it('passes through when no user record is found (no ban flag to check)', async () => {
+  it('passes next(AppError(401)) when the user record no longer exists', async () => {
+    // Prevents FK-violation leaks for actions taken with a stale access token
+    // whose user was deleted mid-session.
     mockedFindUnique.mockResolvedValueOnce(null as never);
     const req = { user } as AuthRequest;
     await rejectBanned(req, res, next);
-    expect(next).toHaveBeenCalledWith();
+    const err = (next as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(err).toBeInstanceOf(AppError);
+    expect(err.statusCode).toBe(401);
+    expect(err.message).toMatch(/no longer exists/i);
   });
 });

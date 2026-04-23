@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -31,12 +31,14 @@ vi.mock('../../src/api/users.js', () => ({
 
 import { useAuth } from '../../src/context/AuthContext.js';
 import { getPost, getPostMatches, reopenPost } from '../../src/api/posts.js';
+import { createReport } from '../../src/api/users.js';
 import { PostDetailPage } from '../../src/pages/PostDetailPage.js';
 
 const mockedUseAuth = vi.mocked(useAuth);
 const mockedGetPost = vi.mocked(getPost);
 const mockedGetPostMatches = vi.mocked(getPostMatches);
 const mockedReopenPost = vi.mocked(reopenPost);
+const mockedCreateReport = vi.mocked(createReport);
 
 function setAuth(user: { id: string; email: string; name: string; role: string; avatarUrl: string | null } | null) {
   mockedUseAuth.mockReturnValue({
@@ -286,5 +288,131 @@ describe('PostDetailPage — fulfill modal integration', () => {
 
     // The modal should now be visible with its input
     expect(await screen.findByPlaceholderText(/type a name/i)).toBeInTheDocument();
+  });
+});
+
+describe('PostDetailPage — report flag', () => {
+  it('shows a compact flag (icon-only) in the corner — not a text Report button — for non-owners', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    renderPage();
+
+    const flag = await screen.findByRole('button', { name: /report post/i });
+    expect(flag).toBeInTheDocument();
+    // The old text-style Report button is gone.
+    expect(screen.queryByRole('button', { name: /^report$/i })).not.toBeInTheDocument();
+  });
+
+  it('is hidden for the post\'s author', async () => {
+    setAuth({ id: 'u1', email: 'a@b.com', name: 'Alice', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    expect(screen.queryByRole('button', { name: /report post/i })).not.toBeInTheDocument();
+  });
+
+  it('is hidden when no one is logged in', async () => {
+    setAuth(null);
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    expect(screen.queryByRole('button', { name: /report post/i })).not.toBeInTheDocument();
+  });
+
+  it('opens a confirmation dialog instead of submitting immediately', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: /report post/i }));
+
+    // The confirmation dialog is shown; no report submitted yet.
+    expect(await screen.findByRole('heading', { name: /report this post\?/i })).toBeInTheDocument();
+    expect(mockedCreateReport).not.toHaveBeenCalled();
+  });
+
+  it('cancels without submitting when the Cancel button is clicked', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: /report post/i }));
+    await user.click(await screen.findByRole('button', { name: /cancel/i }));
+
+    expect(mockedCreateReport).not.toHaveBeenCalled();
+    // The confirmation heading should no longer be in the accessibility tree once the dialog closes.
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: /report this post\?/i })).not.toBeInTheDocument(),
+    );
+  });
+
+  it('submits a report tied to the post only after confirmation', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    mockedCreateReport.mockResolvedValueOnce({ id: 'r1' } as never);
+
+    const user = userEvent.setup();
+    renderPage();
+
+    // Open dialog.
+    await user.click(await screen.findByRole('button', { name: /report post/i }));
+    // Confirm — scope to the dialog since the flag in the post corner shares the "Report post" name.
+    const dialog = await screen.findByRole('dialog', { name: /report this post\?/i });
+    await user.click(within(dialog).getByRole('button', { name: /^report post$/i }));
+
+    await waitFor(() => expect(mockedCreateReport).toHaveBeenCalled());
+    expect(mockedCreateReport.mock.calls[0][0]).toEqual({
+      reason: 'Inappropriate content',
+      postId: 'p1',
+    });
+  });
+
+  it('includes the reporter\'s additional details in the submitted report', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    mockedCreateReport.mockResolvedValueOnce({ id: 'r1' } as never);
+
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: /report post/i }));
+    const dialog = await screen.findByRole('dialog', { name: /report this post\?/i });
+    await user.type(
+      within(dialog).getByLabelText(/additional details/i),
+      'This is a phishing link.',
+    );
+    await user.click(within(dialog).getByRole('button', { name: /^report post$/i }));
+
+    await waitFor(() => expect(mockedCreateReport).toHaveBeenCalled());
+    expect(mockedCreateReport.mock.calls[0][0]).toEqual({
+      reason: 'Inappropriate content',
+      postId: 'p1',
+      details: 'This is a phishing link.',
+    });
+  });
+
+  it('trims whitespace-only details back to an absent field', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    mockedCreateReport.mockResolvedValueOnce({ id: 'r1' } as never);
+
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: /report post/i }));
+    const dialog = await screen.findByRole('dialog', { name: /report this post\?/i });
+    await user.type(within(dialog).getByLabelText(/additional details/i), '   ');
+    await user.click(within(dialog).getByRole('button', { name: /^report post$/i }));
+
+    await waitFor(() => expect(mockedCreateReport).toHaveBeenCalled());
+    const call = mockedCreateReport.mock.calls[0][0];
+    expect(call).toEqual({ reason: 'Inappropriate content', postId: 'p1' });
+    expect(call).not.toHaveProperty('details', expect.any(String));
   });
 });

@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
-import { Bug, BookOpen, LifeBuoy, ShieldAlert } from "lucide-react";
+import { Bug, BookOpen, LifeBuoy } from "lucide-react";
 import { BugReportForm } from "../components/support/BugReportForm.js";
-import { ReportUserForm } from "../components/support/ReportUserForm.js";
 
 interface Topic {
   question: string;
@@ -43,8 +42,8 @@ const topics: Topic[] = [
         Click <span className="font-medium">New Post</span> in the header. Pick
         Request or Offer, give it a title and description, choose a category and
         urgency, and optionally attach photos, a location, and a start/end time.
-        You can also scope a post to a community you belong to so it only
-        surfaces to those members, and if you are a member of an organization,
+        You can also scope a post to a community you belong to so it is only
+        visible to those members, and if you are a member of an organization,
         you can choose to post on behalf of the organization.
       </p>
     ),
@@ -97,12 +96,12 @@ const topics: Topic[] = [
     question: "Someone is acting abusively — what do I do?",
     answer: (
       <p>
-        Every post has a <span className="font-medium">Report</span> option if
-        you come across a request or offer that is inappropriate. Alternately,
-        if a user is behaving inappropriately, you can report them here on the
-        support page, along with any details you want to share. Reports go to
-        the admin team for review. If someone is in immediate danger, please
-        contact local emergency services first.
+        Every post and user profile has a small red flag at the top right
+        corner. If you come across a request or offer that is inappropriate, or
+        if a user is behaving inappropriately, click on the flag and include any
+        details you want to share. Reports go to the admin team for review. If
+        someone is in immediate danger, please contact local emergency services
+        first.
       </p>
     ),
   },
@@ -164,26 +163,6 @@ export function SupportPage() {
               </div>
             </details>
           ))}
-        </div>
-      </section>
-
-      <section aria-labelledby="report-user-heading">
-        <div className="flex items-center gap-2 mb-3">
-          <ShieldAlert className="w-5 h-5 text-mayday-600" aria-hidden="true" />
-          <h2
-            id="report-user-heading"
-            className="text-xl font-semibold text-gray-900"
-          >
-            Report a user
-          </h2>
-        </div>
-        <p className="text-gray-600 mb-4">
-          If someone is acting abusively or violating community norms, let the
-          admin team know. If someone is in immediate danger, contact local
-          emergency services first.
-        </p>
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <ReportUserForm />
         </div>
       </section>
 

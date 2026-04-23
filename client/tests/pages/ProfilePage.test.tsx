@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -18,6 +18,7 @@ vi.mock('../../src/api/users.js', () => ({
   updateProfile: vi.fn(),
   uploadUserAvatar: vi.fn(),
   deleteProfile: vi.fn(),
+  createReport: vi.fn(),
 }));
 
 vi.mock('../../src/api/messages.js', () => ({
@@ -25,7 +26,7 @@ vi.mock('../../src/api/messages.js', () => ({
 }));
 
 import { useAuth } from '../../src/context/AuthContext.js';
-import { getUser, getUserPosts, deleteProfile } from '../../src/api/users.js';
+import { getUser, getUserPosts, deleteProfile, createReport } from '../../src/api/users.js';
 import { startConversation } from '../../src/api/messages.js';
 import { toast } from 'sonner';
 import { ProfilePage } from '../../src/pages/ProfilePage.js';
@@ -35,6 +36,7 @@ const mockedGetUser = vi.mocked(getUser);
 const mockedGetUserPosts = vi.mocked(getUserPosts);
 const mockedStartConversation = vi.mocked(startConversation);
 const mockedDeleteProfile = vi.mocked(deleteProfile);
+const mockedCreateReport = vi.mocked(createReport);
 const mockedToast = vi.mocked(toast);
 
 const VIEWER_ID = 'viewer-1';
@@ -78,6 +80,15 @@ function renderProfile(path = `/profile/${OWNER_ID}`) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
+
+  // jsdom doesn't implement HTMLDialogElement.showModal / .close natively.
+  HTMLDialogElement.prototype.showModal = vi.fn(function (this: HTMLDialogElement) {
+    this.setAttribute('open', '');
+  });
+  HTMLDialogElement.prototype.close = vi.fn(function (this: HTMLDialogElement) {
+    this.removeAttribute('open');
+  });
+
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[path]}>
@@ -260,5 +271,122 @@ describe('ProfilePage delete account', () => {
     expect(confirm).toHaveTextContent(/deleting/i);
 
     resolve();
+  });
+});
+
+describe('ProfilePage report flag', () => {
+  it('shows a compact flag (icon-only) in the corner for other users\' profiles', async () => {
+    setAuth(VIEWER_ID);
+    renderProfile();
+    expect(await screen.findByRole('button', { name: /report user/i })).toBeInTheDocument();
+  });
+
+  it('is hidden on your own profile (can\'t report yourself)', async () => {
+    setAuth(OWNER_ID);
+    renderProfile();
+    await screen.findByRole('heading', { level: 1, name: /Peter Kropotkin/i });
+    expect(screen.queryByRole('button', { name: /report user/i })).not.toBeInTheDocument();
+  });
+
+  it('opens a confirmation dialog instead of submitting immediately', async () => {
+    setAuth(VIEWER_ID);
+    const user = userEvent.setup();
+    renderProfile();
+
+    await user.click(await screen.findByRole('button', { name: /report user/i }));
+
+    expect(await screen.findByRole('heading', { name: /report this user\?/i })).toBeInTheDocument();
+    expect(mockedCreateReport).not.toHaveBeenCalled();
+  });
+
+  it('cancels without submitting when the Cancel button is clicked', async () => {
+    setAuth(VIEWER_ID);
+    const user = userEvent.setup();
+    renderProfile();
+
+    await user.click(await screen.findByRole('button', { name: /report user/i }));
+    const dialog = await screen.findByRole('dialog', { name: /report this user\?/i });
+    await user.click(within(dialog).getByRole('button', { name: /cancel/i }));
+
+    expect(mockedCreateReport).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: /report this user\?/i })).not.toBeInTheDocument(),
+    );
+  });
+
+  it('submits a report tied to the profile user only after confirmation', async () => {
+    setAuth(VIEWER_ID);
+    mockedCreateReport.mockResolvedValueOnce({ id: 'r1' } as never);
+    const user = userEvent.setup();
+    renderProfile();
+
+    await user.click(await screen.findByRole('button', { name: /report user/i }));
+    const dialog = await screen.findByRole('dialog', { name: /report this user\?/i });
+    await user.click(within(dialog).getByRole('button', { name: /^report user$/i }));
+
+    await waitFor(() => expect(mockedCreateReport).toHaveBeenCalled());
+    expect(mockedCreateReport.mock.calls[0][0]).toEqual({
+      reason: 'Inappropriate conduct',
+      reportedUserId: OWNER_ID,
+    });
+    expect(mockedToast.success).toHaveBeenCalledWith(expect.stringMatching(/submitted/i));
+  });
+
+  it('includes the reporter\'s additional details in the submitted report', async () => {
+    setAuth(VIEWER_ID);
+    mockedCreateReport.mockResolvedValueOnce({ id: 'r1' } as never);
+    const user = userEvent.setup();
+    renderProfile();
+
+    await user.click(await screen.findByRole('button', { name: /report user/i }));
+    const dialog = await screen.findByRole('dialog', { name: /report this user\?/i });
+    await user.type(
+      within(dialog).getByLabelText(/additional details/i),
+      'Sent threatening messages after I declined an offer.',
+    );
+    await user.click(within(dialog).getByRole('button', { name: /^report user$/i }));
+
+    await waitFor(() => expect(mockedCreateReport).toHaveBeenCalled());
+    expect(mockedCreateReport.mock.calls[0][0]).toEqual({
+      reason: 'Inappropriate conduct',
+      reportedUserId: OWNER_ID,
+      details: 'Sent threatening messages after I declined an offer.',
+    });
+  });
+
+  it('clears the details textarea after the dialog closes', async () => {
+    setAuth(VIEWER_ID);
+    mockedCreateReport.mockResolvedValueOnce({ id: 'r1' } as never);
+    const user = userEvent.setup();
+    renderProfile();
+
+    // First pass: type and submit.
+    await user.click(await screen.findByRole('button', { name: /report user/i }));
+    const firstDialog = await screen.findByRole('dialog', { name: /report this user\?/i });
+    const firstTextarea = within(firstDialog).getByLabelText(/additional details/i) as HTMLTextAreaElement;
+    await user.type(firstTextarea, 'first attempt');
+    await user.click(within(firstDialog).getByRole('button', { name: /^report user$/i }));
+    await waitFor(() => expect(mockedCreateReport).toHaveBeenCalled());
+
+    // Reopen the dialog — the textarea should be empty again.
+    await user.click(screen.getByRole('button', { name: /report user/i }));
+    const secondDialog = await screen.findByRole('dialog', { name: /report this user\?/i });
+    const secondTextarea = within(secondDialog).getByLabelText(/additional details/i) as HTMLTextAreaElement;
+    expect(secondTextarea.value).toBe('');
+  });
+
+  it('toasts an error and closes the dialog if submission fails', async () => {
+    setAuth(VIEWER_ID);
+    mockedCreateReport.mockRejectedValueOnce(new Error('boom'));
+    const user = userEvent.setup();
+    renderProfile();
+
+    await user.click(await screen.findByRole('button', { name: /report user/i }));
+    const dialog = await screen.findByRole('dialog', { name: /report this user\?/i });
+    await user.click(within(dialog).getByRole('button', { name: /^report user$/i }));
+
+    await waitFor(() =>
+      expect(mockedToast.error).toHaveBeenCalledWith(expect.stringMatching(/failed to submit/i)),
+    );
   });
 });

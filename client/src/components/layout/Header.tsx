@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Heart,
+  LifeBuoy,
   Menu,
   X,
   MessageSquare,
@@ -49,7 +49,7 @@ export function Header() {
             to="/"
             className="flex items-center gap-2 text-mayday-600 font-bold text-xl"
           >
-            <Heart className="w-6 h-6 fill-mayday-500" aria-hidden="true" />
+            <LifeBuoy className="w-6 h-6 text-mayday-500" aria-hidden="true" />
             MayDay
           </Link>
 

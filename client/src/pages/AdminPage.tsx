@@ -143,8 +143,28 @@ export function AdminPage() {
                   {report.details && <p className="text-sm text-gray-600 mt-1">{report.details}</p>}
                   <div className="text-xs text-gray-500 mt-2 space-y-1">
                     <p>Reported by: {report.reporter.name} ({report.reporter.email})</p>
-                    {report.reportedUser && <p>Against: {report.reportedUser.name}</p>}
-                    {report.post && <p>Post: {report.post.title}</p>}
+                    {report.reportedUser && (
+                      <p>
+                        Against:{' '}
+                        <Link
+                          to={`/profile/${report.reportedUser.id}`}
+                          className="text-mayday-600 hover:underline"
+                        >
+                          {report.reportedUser.name}
+                        </Link>
+                      </p>
+                    )}
+                    {report.post && (
+                      <p>
+                        Post:{' '}
+                        <Link
+                          to={`/posts/${report.post.id}`}
+                          className="text-mayday-600 hover:underline"
+                        >
+                          {report.post.title}
+                        </Link>
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2">

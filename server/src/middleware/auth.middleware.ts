@@ -30,14 +30,21 @@ export function requireAdmin(req: AuthRequest, _res: Response, next: NextFunctio
   next();
 }
 
-/** Rejects requests from banned users. Apply after requireAuth. */
+/**
+ * Rejects requests from banned users OR from users whose record no longer
+ * exists (e.g. account was deleted but the access token is still within its
+ * 15-minute TTL). Apply after requireAuth.
+ */
 export async function rejectBanned(req: AuthRequest, _res: Response, next: NextFunction) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user!.id },
       select: { isBanned: true },
     });
-    if (user?.isBanned) {
+    if (!user) {
+      throw new AppError(401, 'Account no longer exists');
+    }
+    if (user.isBanned) {
       throw new AppError(403, 'Your account has been suspended');
     }
     next();

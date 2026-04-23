@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MapPin,
   Clock,
@@ -39,6 +39,29 @@ export function PostDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showFulfillModal, setShowFulfillModal] = useState(false);
+  const [showReportConfirm, setShowReportConfirm] = useState(false);
+  const [reportDetails, setReportDetails] = useState("");
+  const reportDialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = reportDialogRef.current;
+    if (!dialog) return;
+    if (showReportConfirm && !dialog.open) dialog.showModal();
+    else if (!showReportConfirm && dialog.open) dialog.close();
+  }, [showReportConfirm]);
+
+  useEffect(() => {
+    const dialog = reportDialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => setShowReportConfirm(false);
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, []);
+
+  // Reset the details field whenever the dialog is closed, for any reason.
+  useEffect(() => {
+    if (!showReportConfirm) setReportDetails("");
+  }, [showReportConfirm]);
 
   const { data: post, isLoading } = useQuery({
     queryKey: ["post", id],
@@ -79,9 +102,19 @@ export function PostDetailPage() {
 
   const reportMutation = useMutation({
     mutationFn: () =>
-      createReport({ reason: "Inappropriate content", postId: id }),
-    onSuccess: () => toast.success("Report submitted"),
-    onError: () => toast.error("Failed to submit report"),
+      createReport({
+        reason: "Inappropriate content",
+        postId: id,
+        details: reportDetails.trim() || undefined,
+      }),
+    onSuccess: () => {
+      toast.success("Report submitted");
+      setShowReportConfirm(false);
+    },
+    onError: () => {
+      toast.error("Failed to submit report");
+      setShowReportConfirm(false);
+    },
   });
 
   if (isLoading) return <LoadingSpinner className="py-20" />;
@@ -95,7 +128,18 @@ export function PostDetailPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="relative bg-white rounded-lg border border-gray-200 p-6">
+        {user && !isOwner && (
+          <button
+            type="button"
+            onClick={() => setShowReportConfirm(true)}
+            aria-label="Report post"
+            title="Report post"
+            className="absolute top-3 right-3 p-1.5 text-red-600 hover:bg-red-50 rounded"
+          >
+            <Flag className="w-4 h-4" aria-hidden="true" />
+          </button>
+        )}
         <div className="flex items-center gap-2 mb-3">
           <span
             className={`text-sm font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-600" : "text-green-600"}`}
@@ -256,24 +300,14 @@ export function PostDetailPage() {
 
         <div className="flex gap-3">
           {user && !isOwner && (
-            <>
-              <button
-                onClick={() => contactMutation.mutate()}
-                disabled={contactMutation.isPending}
-                className="flex items-center gap-2 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600"
-              >
-                <MessageSquare className="w-4 h-4" />
-                Contact
-              </button>
-              <button
-                onClick={() => reportMutation.mutate()}
-                disabled={reportMutation.isPending}
-                className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50"
-              >
-                <Flag className="w-4 h-4" />
-                Report
-              </button>
-            </>
+            <button
+              onClick={() => contactMutation.mutate()}
+              disabled={contactMutation.isPending}
+              className="flex items-center gap-2 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600"
+            >
+              <MessageSquare className="w-4 h-4" />
+              Contact
+            </button>
           )}
           {(isOwner || isAdmin) &&
             post.status === "OPEN" &&
@@ -327,6 +361,63 @@ export function PostDetailPage() {
         open={showFulfillModal}
         onClose={() => setShowFulfillModal(false)}
       />
+
+      <dialog
+        ref={reportDialogRef}
+        aria-labelledby="report-confirm-title"
+        className="rounded-lg p-0 backdrop:bg-black/50 max-w-md w-full"
+      >
+        <div className="p-6">
+          <h2
+            id="report-confirm-title"
+            className="text-lg font-semibold text-gray-900 flex items-center gap-2"
+          >
+            <Flag className="w-5 h-5 text-red-600" aria-hidden="true" />
+            Report this post?
+          </h2>
+          <p className="mt-3 text-sm text-gray-700">
+            The admin team will review this post for inappropriate content. You
+            can't undo a report, but you can file a new one later if needed.
+          </p>
+          <div className="mt-4">
+            <label
+              htmlFor="report-post-details"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Additional details{" "}
+              <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <textarea
+              id="report-post-details"
+              value={reportDetails}
+              onChange={(e) => setReportDetails(e.target.value)}
+              rows={4}
+              maxLength={2000}
+              placeholder="What's wrong with this post? Any context that will help the admin team is welcome."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+            />
+          </div>
+          <div className="mt-6 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setShowReportConfirm(false)}
+              disabled={reportMutation.isPending}
+              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => reportMutation.mutate()}
+              disabled={reportMutation.isPending}
+              className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
+            >
+              <Flag className="w-4 h-4" aria-hidden="true" />
+              {reportMutation.isPending ? "Submitting…" : "Report post"}
+            </button>
+          </div>
+        </div>
+      </dialog>
     </div>
   );
 }
