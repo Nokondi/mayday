@@ -39,3 +39,28 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
     `,
   });
 }
+
+export async function sendPasswordResetEmail(to: string, token: string): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(`[mail] SMTP not configured; skipping password reset email to ${to}`);
+    return;
+  }
+
+  const resetUrl = `${env.CLIENT_URL}/reset-password?token=${encodeURIComponent(token)}`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+
+  await t.sendMail({
+    from,
+    to,
+    subject: 'Reset your Mayday password',
+    text: `Someone requested a password reset for your Mayday account.\n\nIf that was you, open this link to choose a new password:\n${resetUrl}\n\nThis link expires in 1 hour. If you didn't request a reset, you can safely ignore this email.`,
+    html: `
+      <p>Someone requested a password reset for your Mayday account.</p>
+      <p>If that was you, click the link below to choose a new password:</p>
+      <p><a href="${resetUrl}">Reset my password</a></p>
+      <p>Or paste this URL into your browser:<br><code>${resetUrl}</code></p>
+      <p>This link expires in 1 hour. If you didn't request a reset, you can safely ignore this email.</p>
+    `,
+  });
+}

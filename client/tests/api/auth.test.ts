@@ -11,7 +11,16 @@ vi.mock('../../src/api/client.js', () => ({
 }));
 
 import { api } from '../../src/api/client.js';
-import { getMe, login, logout, register, resendVerification, verifyEmail } from '../../src/api/auth.js';
+import {
+  forgotPassword,
+  getMe,
+  login,
+  logout,
+  register,
+  resendVerification,
+  resetPassword,
+  verifyEmail,
+} from '../../src/api/auth.js';
 
 const mockedApi = api as unknown as {
   get: ReturnType<typeof vi.fn>;
@@ -100,6 +109,33 @@ describe('auth api', () => {
       const result = await resendVerification({ email: 'a@b.com' });
 
       expect(mockedApi.post).toHaveBeenCalledWith('/auth/resend-verification', { email: 'a@b.com' });
+      expect(result).toEqual(response);
+    });
+  });
+
+  describe('forgotPassword', () => {
+    it('POSTs /auth/forgot-password with the email', async () => {
+      const response = { message: 'If that account exists, a password reset email has been sent.' };
+      mockedApi.post.mockResolvedValueOnce({ data: response });
+
+      const result = await forgotPassword({ email: 'a@b.com' });
+
+      expect(mockedApi.post).toHaveBeenCalledWith('/auth/forgot-password', { email: 'a@b.com' });
+      expect(result).toEqual(response);
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('POSTs /auth/reset-password with token and new password', async () => {
+      const response = { message: 'Password updated. You can now log in.' };
+      mockedApi.post.mockResolvedValueOnce({ data: response });
+
+      const result = await resetPassword({ token: 't', password: 'new-password' });
+
+      expect(mockedApi.post).toHaveBeenCalledWith('/auth/reset-password', {
+        token: 't',
+        password: 'new-password',
+      });
       expect(result).toEqual(response);
     });
   });

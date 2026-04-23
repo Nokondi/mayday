@@ -71,6 +71,11 @@ export function LoginPage() {
           </div>
         )}
         <p className="text-center text-sm text-gray-500 mt-4">
+          <Link to="/forgot-password" className="text-mayday-600 hover:text-mayday-700 font-medium">
+            Forgot your password?
+          </Link>
+        </p>
+        <p className="text-center text-sm text-gray-500 mt-2">
           Don't have an account?{' '}
           <Link to="/register" className="text-mayday-600 hover:text-mayday-700 font-medium">Sign up</Link>
         </p>

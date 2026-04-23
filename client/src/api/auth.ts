@@ -1,4 +1,11 @@
-import type { RegisterRequest, LoginRequest, AuthResponse, ResendVerificationRequest } from '@mayday/shared';
+import type {
+  RegisterRequest,
+  LoginRequest,
+  AuthResponse,
+  ResendVerificationRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+} from '@mayday/shared';
 import { api } from './client.js';
 
 export interface RegisterResponse {
@@ -36,5 +43,15 @@ export async function verifyEmail(token: string): Promise<MessageResponse> {
 
 export async function resendVerification(data: ResendVerificationRequest): Promise<MessageResponse> {
   const res = await api.post('/auth/resend-verification', data);
+  return res.data;
+}
+
+export async function forgotPassword(data: ForgotPasswordRequest): Promise<MessageResponse> {
+  const res = await api.post('/auth/forgot-password', data);
+  return res.data;
+}
+
+export async function resetPassword(data: ResetPasswordRequest): Promise<MessageResponse> {
+  const res = await api.post('/auth/reset-password', data);
   return res.data;
 }

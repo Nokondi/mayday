@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { registerSchema, loginSchema, resendVerificationSchema } from '@mayday/shared';
+import {
+  registerSchema,
+  loginSchema,
+  resendVerificationSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
 import { prisma } from '../config/database.js';
@@ -8,13 +14,22 @@ import {
   signAccessToken,
   signRefreshToken,
   signVerificationToken,
+  signPasswordResetToken,
   verifyRefreshToken,
   verifyVerificationToken,
+  verifyPasswordResetToken,
+  passwordFingerprint,
 } from '../utils/jwt.js';
 import { AppError } from '../middleware/error.middleware.js';
-import { sendVerificationEmail } from '../services/mail.service.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../services/mail.service.js';
 
 export const authRoutes = Router();
+
+function dispatchPasswordResetEmail(email: string, token: string) {
+  sendPasswordResetEmail(email, token).catch((err) => {
+    console.error(`[auth] Failed to send password reset email to ${email}:`, err);
+  });
+}
 
 function dispatchVerificationEmail(email: string, token: string) {
   sendVerificationEmail(email, token).catch((err) => {
@@ -121,6 +136,51 @@ authRoutes.post('/resend-verification', validate(resendVerificationSchema), asyn
 
     dispatchVerificationEmail(user.email, signVerificationToken(user.id));
     res.json(genericResponse);
+  } catch (err) { next(err); }
+});
+
+// POST /api/auth/forgot-password — issue a reset link if the email matches.
+// Always returns the same generic response to avoid leaking which emails exist.
+authRoutes.post('/forgot-password', validate(forgotPasswordSchema), async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const genericResponse = {
+      message: 'If that account exists, a password reset email has been sent.',
+    };
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || user.isBanned) {
+      res.json(genericResponse);
+      return;
+    }
+
+    dispatchPasswordResetEmail(user.email, signPasswordResetToken(user));
+    res.json(genericResponse);
+  } catch (err) { next(err); }
+});
+
+// POST /api/auth/reset-password — consume a reset token and set a new password.
+// The token is single-use in practice: we verify its `pv` claim still matches
+// the user's current password hash fingerprint, which changes on success.
+authRoutes.post('/reset-password', validate(resetPasswordSchema), async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+    const payload = verifyPasswordResetToken(token);
+    if (!payload) throw new AppError(400, 'Invalid or expired reset link');
+
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+    if (!user) throw new AppError(400, 'Invalid or expired reset link');
+    if (passwordFingerprint(user.passwordHash) !== payload.pv) {
+      throw new AppError(400, 'Invalid or expired reset link');
+    }
+
+    const passwordHash = await hashPassword(password);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash },
+    });
+
+    res.json({ message: 'Password updated. You can now log in.' });
   } catch (err) { next(err); }
 });
 

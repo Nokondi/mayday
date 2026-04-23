@@ -17,9 +17,20 @@ export const resendVerificationSchema = z.object({
   email: z.string().email(),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Missing reset token'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
 export type RegisterRequest = z.infer<typeof registerSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type ResendVerificationRequest = z.infer<typeof resendVerificationSchema>;
+export type ForgotPasswordRequest = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordRequest = z.infer<typeof resetPasswordSchema>;
 
 export interface AuthResponse {
   accessToken: string;

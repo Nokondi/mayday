@@ -17,23 +17,28 @@ vi.mock('../../src/config/database.js', () => ({
 // Mock the mail service so tests don't attempt real SMTP calls.
 vi.mock('../../src/services/mail.service.js', () => ({
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
+  sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { prisma } from '../../src/config/database.js';
 import { errorMiddleware } from '../../src/middleware/error.middleware.js';
 import { authRoutes } from '../../src/routes/auth.routes.js';
-import { sendVerificationEmail } from '../../src/services/mail.service.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../../src/services/mail.service.js';
 import {
   signAccessToken,
   signRefreshToken,
   signVerificationToken,
+  signPasswordResetToken,
   verifyAccessToken,
   verifyRefreshToken,
+  verifyPasswordResetToken,
+  passwordFingerprint,
 } from '../../src/utils/jwt.js';
 import { hashPassword } from '../../src/utils/password.js';
 
 const mockedUser = vi.mocked(prisma.user);
 const mockedSendVerificationEmail = vi.mocked(sendVerificationEmail);
+const mockedSendPasswordResetEmail = vi.mocked(sendPasswordResetEmail);
 
 function makeApp() {
   const app = express();
@@ -361,6 +366,135 @@ describe('POST /api/auth/resend-verification', () => {
     expect(res.body.message).toMatch(/confirmation email/i);
     expect(mockedUser.update).not.toHaveBeenCalled();
     expect(mockedSendVerificationEmail).not.toHaveBeenCalled();
+  });
+});
+
+describe('POST /api/auth/forgot-password', () => {
+  it('dispatches a reset email for a matching account', async () => {
+    mockedUser.findUnique.mockResolvedValueOnce(
+      dbUser({ passwordHash: 'hashed-password-abc' }) as never,
+    );
+
+    const res = await request(makeApp())
+      .post('/api/auth/forgot-password')
+      .send({ email: 'alice@example.com' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/password reset email/i);
+
+    // The dispatched token is a signed JWT bound to the user's current hash fingerprint.
+    expect(mockedSendPasswordResetEmail).toHaveBeenCalledTimes(1);
+    const [to, token] = mockedSendPasswordResetEmail.mock.calls[0];
+    expect(to).toBe('alice@example.com');
+    const decoded = verifyPasswordResetToken(token as string);
+    expect(decoded).toEqual({ userId: 'u1', pv: passwordFingerprint('hashed-password-abc') });
+  });
+
+  it('returns the same generic response when the email is not registered (no enumeration)', async () => {
+    mockedUser.findUnique.mockResolvedValueOnce(null as never);
+
+    const res = await request(makeApp())
+      .post('/api/auth/forgot-password')
+      .send({ email: 'ghost@example.com' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/password reset email/i);
+    expect(mockedSendPasswordResetEmail).not.toHaveBeenCalled();
+  });
+
+  it('does not dispatch for banned accounts (but returns the same message)', async () => {
+    mockedUser.findUnique.mockResolvedValueOnce(
+      dbUser({ isBanned: true }) as never,
+    );
+
+    const res = await request(makeApp())
+      .post('/api/auth/forgot-password')
+      .send({ email: 'alice@example.com' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/password reset email/i);
+    expect(mockedSendPasswordResetEmail).not.toHaveBeenCalled();
+  });
+
+  it('rejects malformed email', async () => {
+    const res = await request(makeApp())
+      .post('/api/auth/forgot-password')
+      .send({ email: 'not-an-email' });
+    expect(res.status).toBe(400);
+  });
+});
+
+describe('POST /api/auth/reset-password', () => {
+  it('updates the password when the token and fingerprint are valid', async () => {
+    const currentHash = 'hashed-password-abc';
+    mockedUser.findUnique.mockResolvedValueOnce(
+      dbUser({ passwordHash: currentHash }) as never,
+    );
+    mockedUser.update.mockResolvedValueOnce(dbUser() as never);
+    const token = signPasswordResetToken({ id: 'u1', passwordHash: currentHash });
+
+    const res = await request(makeApp())
+      .post('/api/auth/reset-password')
+      .send({ token, password: 'new-password-123' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/password updated/i);
+    // The stored hash is bcrypt-ish and is NOT the raw password.
+    const updateArgs = mockedUser.update.mock.calls[0][0] as { data: { passwordHash: string } };
+    expect(updateArgs.data.passwordHash).not.toBe('new-password-123');
+    expect(updateArgs.data.passwordHash).toMatch(/^\$2[ab]\$12\$/);
+  });
+
+  it('rejects when the password hash fingerprint no longer matches (e.g. link already used)', async () => {
+    const oldHash = 'hashed-password-abc';
+    const newHash = 'hashed-password-xyz';
+    mockedUser.findUnique.mockResolvedValueOnce(
+      dbUser({ passwordHash: newHash }) as never,
+    );
+    const staleToken = signPasswordResetToken({ id: 'u1', passwordHash: oldHash });
+
+    const res = await request(makeApp())
+      .post('/api/auth/reset-password')
+      .send({ token: staleToken, password: 'doesnt-matter-123' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/invalid or expired/i);
+    expect(mockedUser.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects when the token is not a valid reset JWT', async () => {
+    const res = await request(makeApp())
+      .post('/api/auth/reset-password')
+      .send({ token: 'not-a-jwt', password: 'new-password-123' });
+    expect(res.status).toBe(400);
+    expect(mockedUser.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('rejects when the user has been deleted', async () => {
+    mockedUser.findUnique.mockResolvedValueOnce(null as never);
+    const token = signPasswordResetToken({ id: 'u1', passwordHash: 'hashed' });
+
+    const res = await request(makeApp())
+      .post('/api/auth/reset-password')
+      .send({ token, password: 'new-password-123' });
+    expect(res.status).toBe(400);
+    expect(mockedUser.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects an access token being used as a reset token', async () => {
+    const accessToken = signAccessToken({ id: 'u1', email: 'a@b.com', role: 'USER' });
+    const res = await request(makeApp())
+      .post('/api/auth/reset-password')
+      .send({ token: accessToken, password: 'new-password-123' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a password shorter than 8 characters', async () => {
+    const res = await request(makeApp())
+      .post('/api/auth/reset-password')
+      .send({ token: 'any', password: 'short' });
+    expect(res.status).toBe(400);
+    expect(mockedUser.findUnique).not.toHaveBeenCalled();
   });
 });
 

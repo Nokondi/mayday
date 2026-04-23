@@ -90,3 +90,35 @@ describe('sendVerificationEmail', () => {
     expect(createTransportMock).toHaveBeenCalledWith(expect.objectContaining({ port: 465, secure: true }));
   });
 });
+
+describe('sendPasswordResetEmail', () => {
+  it('no-ops when SMTP credentials are not configured', async () => {
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { sendPasswordResetEmail } = await import('../../src/services/mail.service.js');
+    await sendPasswordResetEmail('to@example.com', 'tok');
+
+    expect(sendMailMock).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/SMTP not configured/));
+    warn.mockRestore();
+  });
+
+  it('sends via SMTP with a reset link pointing at /reset-password and URL-encodes the token', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendPasswordResetEmail } = await import('../../src/services/mail.service.js');
+    await sendPasswordResetEmail('to@example.com', 'tok with space');
+
+    expect(sendMailMock).toHaveBeenCalledTimes(1);
+    const mail = sendMailMock.mock.calls[0][0] as {
+      to: string; subject: string; text: string; html: string;
+    };
+    expect(mail.to).toBe('to@example.com');
+    expect(mail.subject).toMatch(/reset.*password/i);
+    expect(mail.text).toContain('https://mayday.test/reset-password?token=tok%20with%20space');
+    expect(mail.html).toContain('https://mayday.test/reset-password?token=tok%20with%20space');
+  });
+});

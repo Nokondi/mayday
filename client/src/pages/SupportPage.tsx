@@ -109,13 +109,40 @@ const topics: Topic[] = [
     question: "I forgot my password or never confirmed my email — what now?",
     answer: (
       <p>
-        On the{" "}
-        <Link to="/login" className="text-mayday-600 hover:underline">
-          login page
+        If you forgot your password, use{" "}
+        <Link to="/forgot-password" className="text-mayday-600 hover:underline">
+          Forgot your password?
+        </Link>{" "}
+        on the login page to get a reset link by email. If you never received
+        your confirmation email, log in and click{" "}
+        <span className="font-medium">Resend confirmation email</span>.
+      </p>
+    ),
+  },
+  {
+    question: "What is mutual aid?",
+    answer: (
+      <p>
+        Mutual aid is a voluntary relationship in which people in community
+        exchange resources and services for mutual benefit. It differs from
+        charity in that, while charity is a one-way transaction that reinforces
+        existing assumptions about power and privilege, mutual aid is based on
+        the assumption that everyone has needs that they can not meet on their
+        own, and that everyone has something to offer. Mutual aid is not
+        transactional, but relational. While the last person you helped may not
+        be the one who helps you, you are building a network of care and support
+        that benefits everyone involved. Mutual aid is not based on love or pity
+        or any other emotional response, but on the understanding that we are
+        all interdependent and that our survival and flourishing depends on
+        taking care of each other. It is a practice of freedom that prefigures
+        the world we want to live in, and a strategy for getting there. For more
+        information, visit{" "}
+        <Link
+          to="https://theanarchistlibrary.org/"
+          className="text-mayday-600 hover:underline"
+        >
+          The Anarchist Library
         </Link>
-        , use <span className="font-medium">Resend confirmation email</span> to
-        get a fresh verification link. Password reset isn't self-serve yet —
-        submit a bug report below and we'll sort it out.
       </p>
     ),
   },
