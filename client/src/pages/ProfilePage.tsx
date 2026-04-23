@@ -1,10 +1,10 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { User as UserIcon, MapPin, Calendar, Edit2, Save, X, MessageSquare } from 'lucide-react';
+import { User as UserIcon, MapPin, Calendar, Edit2, Save, X, MessageSquare, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
-import { getUser, updateProfile, getUserPosts, uploadUserAvatar } from '../api/users.js';
+import { getUser, updateProfile, getUserPosts, uploadUserAvatar, deleteProfile } from '../api/users.js';
 import { startConversation } from '../api/messages.js';
 import { useAuth } from '../context/AuthContext.js';
 import { PostList } from '../components/posts/PostList.js';
@@ -14,10 +14,11 @@ import { AvatarUploader } from '../components/common/AvatarUploader.js';
 export function ProfilePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user: authUser, refreshUser } = useAuth();
+  const { user: authUser, refreshUser, logout } = useAuth();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', bio: '', location: '', skills: '' });
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const isOwnProfile = authUser?.id === id;
 
@@ -28,6 +29,18 @@ export function ProfilePage() {
       navigate(`/messages?conversation=${conversation.id}`);
     },
     onError: () => toast.error('Could not start a conversation'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteProfile(id!),
+    onSuccess: async () => {
+      queryClient.clear();
+      // Clear client-side session state; the server has already cleared the refresh cookie.
+      await logout().catch(() => {});
+      toast.success('Your account has been deleted.');
+      navigate('/');
+    },
+    onError: () => toast.error('Failed to delete account'),
   });
 
   const { data: profile, isLoading } = useQuery({
@@ -198,6 +211,49 @@ export function ProfilePage() {
         <PostList posts={postsData.data} />
       ) : (
         <LoadingSpinner />
+      )}
+
+      {isOwnProfile && (
+        <div className="mt-12 border border-red-200 bg-red-50 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-red-800 mb-2">Danger zone</h2>
+          <p className="text-sm text-red-700 mb-4">
+            Deleting your account removes your profile, posts, messages, and reports.
+            Communities and organizations you own will be handed off to the next member, or
+            deleted if you're the only member.
+          </p>
+          {confirmingDelete ? (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-red-800">
+                This cannot be undone. Are you sure?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => deleteMutation.mutate()}
+                  disabled={deleteMutation.isPending}
+                  className="flex items-center gap-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                >
+                  <Trash2 className="w-4 h-4" aria-hidden="true" />
+                  {deleteMutation.isPending ? 'Deleting…' : 'Yes, delete my account'}
+                </button>
+                <button
+                  onClick={() => setConfirmingDelete(false)}
+                  disabled={deleteMutation.isPending}
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmingDelete(true)}
+              className="flex items-center gap-1 border border-red-300 bg-white text-red-700 px-4 py-2 rounded-lg hover:bg-red-100"
+            >
+              <Trash2 className="w-4 h-4" aria-hidden="true" />
+              Delete my account
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

@@ -17,6 +17,7 @@ vi.mock('../../src/api/users.js', () => ({
   getUserPosts: vi.fn(),
   updateProfile: vi.fn(),
   uploadUserAvatar: vi.fn(),
+  deleteProfile: vi.fn(),
 }));
 
 vi.mock('../../src/api/messages.js', () => ({
@@ -24,7 +25,7 @@ vi.mock('../../src/api/messages.js', () => ({
 }));
 
 import { useAuth } from '../../src/context/AuthContext.js';
-import { getUser, getUserPosts } from '../../src/api/users.js';
+import { getUser, getUserPosts, deleteProfile } from '../../src/api/users.js';
 import { startConversation } from '../../src/api/messages.js';
 import { toast } from 'sonner';
 import { ProfilePage } from '../../src/pages/ProfilePage.js';
@@ -33,10 +34,13 @@ const mockedUseAuth = vi.mocked(useAuth);
 const mockedGetUser = vi.mocked(getUser);
 const mockedGetUserPosts = vi.mocked(getUserPosts);
 const mockedStartConversation = vi.mocked(startConversation);
+const mockedDeleteProfile = vi.mocked(deleteProfile);
 const mockedToast = vi.mocked(toast);
 
 const VIEWER_ID = 'viewer-1';
 const OWNER_ID = 'owner-2';
+
+const mockedLogout = vi.fn().mockResolvedValue(undefined);
 
 function setAuth(id: string | null) {
   mockedUseAuth.mockReturnValue({
@@ -44,7 +48,7 @@ function setAuth(id: string | null) {
     isLoading: false,
     login: vi.fn(),
     register: vi.fn(),
-    logout: vi.fn(),
+    logout: mockedLogout,
     refreshUser: vi.fn(),
   } as ReturnType<typeof useAuth>);
 }
@@ -80,6 +84,7 @@ function renderProfile(path = `/profile/${OWNER_ID}`) {
         <Routes>
           <Route path="/profile/:id" element={<><ProfilePage /><LocationProbe /></>} />
           <Route path="/messages" element={<><div>MESSAGES PAGE</div><LocationProbe /></>} />
+          <Route path="/" element={<><div>HOME PAGE</div><LocationProbe /></>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -171,5 +176,89 @@ describe('ProfilePage message button', () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     } as never);
+  });
+});
+
+describe('ProfilePage delete account', () => {
+  it('does not show the Danger zone on another user\'s profile', async () => {
+    setAuth(VIEWER_ID);
+    renderProfile();
+    await screen.findByRole('heading', { level: 1, name: /Peter Kropotkin/i });
+    expect(screen.queryByText(/danger zone/i)).not.toBeInTheDocument();
+  });
+
+  it('shows the Danger zone on your own profile', async () => {
+    setAuth(OWNER_ID);
+    renderProfile();
+    expect(await screen.findByText(/danger zone/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /delete my account/i })).toBeInTheDocument();
+  });
+
+  it('requires a confirmation click before calling the API', async () => {
+    setAuth(OWNER_ID);
+    const user = userEvent.setup();
+    renderProfile();
+
+    await user.click(await screen.findByRole('button', { name: /delete my account/i }));
+
+    // The confirm button replaces the initial Delete button; no API call yet.
+    expect(screen.getByRole('button', { name: /yes, delete my account/i })).toBeInTheDocument();
+    expect(mockedDeleteProfile).not.toHaveBeenCalled();
+
+    // Cancel returns to the initial state.
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(screen.queryByRole('button', { name: /yes, delete my account/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^delete my account$/i })).toBeInTheDocument();
+  });
+
+  it('confirms deletion, logs out, toasts, and navigates home', async () => {
+    setAuth(OWNER_ID);
+    mockedDeleteProfile.mockResolvedValueOnce(undefined);
+
+    const user = userEvent.setup();
+    renderProfile();
+
+    await user.click(await screen.findByRole('button', { name: /delete my account/i }));
+    await user.click(screen.getByRole('button', { name: /yes, delete my account/i }));
+
+    await waitFor(() => expect(mockedDeleteProfile).toHaveBeenCalledWith(OWNER_ID));
+    await waitFor(() => expect(mockedLogout).toHaveBeenCalled());
+    expect(mockedToast.success).toHaveBeenCalledWith(expect.stringMatching(/deleted/i));
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(/^\/$/));
+  });
+
+  it('shows an error toast and stays on the profile if deletion fails', async () => {
+    setAuth(OWNER_ID);
+    mockedDeleteProfile.mockRejectedValueOnce(new Error('boom'));
+
+    const user = userEvent.setup();
+    renderProfile();
+
+    await user.click(await screen.findByRole('button', { name: /delete my account/i }));
+    await user.click(screen.getByRole('button', { name: /yes, delete my account/i }));
+
+    await waitFor(() =>
+      expect(mockedToast.error).toHaveBeenCalledWith(expect.stringMatching(/failed to delete/i)),
+    );
+    expect(mockedLogout).not.toHaveBeenCalled();
+    expect(screen.getByTestId('location')).toHaveTextContent(`/profile/${OWNER_ID}`);
+  });
+
+  it('disables the confirm button while the request is in flight', async () => {
+    setAuth(OWNER_ID);
+    let resolve: (() => void) = () => {};
+    mockedDeleteProfile.mockImplementationOnce(() => new Promise<void>((r) => { resolve = () => r(); }));
+
+    const user = userEvent.setup();
+    renderProfile();
+
+    await user.click(await screen.findByRole('button', { name: /delete my account/i }));
+    const confirm = screen.getByRole('button', { name: /yes, delete my account/i });
+    await user.click(confirm);
+
+    await waitFor(() => expect(confirm).toBeDisabled());
+    expect(confirm).toHaveTextContent(/deleting/i);
+
+    resolve();
   });
 });

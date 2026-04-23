@@ -34,3 +34,7 @@ export async function reportUser(data: { email: string; reason: string; details?
   const res = await api.post('/reports/user', data);
   return res.data;
 }
+
+export async function deleteProfile(id: string): Promise<void> {
+  await api.delete(`/users/${id}`);
+}

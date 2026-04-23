@@ -13,6 +13,7 @@ vi.mock('../../src/api/client.js', () => ({
 import { api } from '../../src/api/client.js';
 import {
   createReport,
+  deleteProfile,
   getUser,
   getUserPosts,
   reportUser,
@@ -24,6 +25,7 @@ const mockedApi = api as unknown as {
   get: ReturnType<typeof vi.fn>;
   post: ReturnType<typeof vi.fn>;
   put: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
 };
 
 beforeEach(() => {
@@ -127,6 +129,14 @@ describe('users api', () => {
 
       expect(mockedApi.post).toHaveBeenCalledWith('/reports/user', payload);
       expect(result).toEqual({ id: 'r1' });
+    });
+  });
+
+  describe('deleteProfile', () => {
+    it('DELETEs /users/:id and resolves to undefined', async () => {
+      mockedApi.delete.mockResolvedValueOnce({ data: { message: 'Account deleted' } });
+      await expect(deleteProfile('u1')).resolves.toBeUndefined();
+      expect(mockedApi.delete).toHaveBeenCalledWith('/users/u1');
     });
   });
 });
