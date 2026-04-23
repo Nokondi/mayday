@@ -140,6 +140,14 @@ export const createReportSchema = z.object({
 
 export type CreateReportRequest = z.infer<typeof createReportSchema>;
 
+export const reportUserSchema = z.object({
+  email: z.string().email(),
+  reason: z.string().min(1, 'Reason is required').max(200),
+  details: z.string().max(2000).optional(),
+});
+
+export type ReportUserRequest = z.infer<typeof reportUserSchema>;
+
 // Bug Reports
 export const createBugReportSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),

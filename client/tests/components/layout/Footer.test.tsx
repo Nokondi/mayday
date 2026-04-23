@@ -57,17 +57,17 @@ describe('Footer', () => {
     expect(screen.getByText('MayDay Mutual Aid Hub')).toBeInTheDocument();
   });
 
-  it('hides the "Report a bug" link when logged out', () => {
+  it('hides the support link when logged out', () => {
     renderFooter();
-    expect(screen.queryByRole('link', { name: /report a bug/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /help|bug report/i })).not.toBeInTheDocument();
   });
 
-  it('shows the "Report a bug" link when logged in', () => {
+  it('shows the support link pointing to /support when logged in', () => {
     setAuth({
       user: { id: 'u1', email: 'a@b.com', name: 'Alice', role: 'USER', avatarUrl: null } as never,
     });
     renderFooter();
-    const link = screen.getByRole('link', { name: /report a bug/i });
-    expect(link).toHaveAttribute('href', '/bug-report');
+    const link = screen.getByRole('link', { name: /help.*bug report/i });
+    expect(link).toHaveAttribute('href', '/support');
   });
 });

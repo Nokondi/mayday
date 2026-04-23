@@ -15,6 +15,7 @@ import {
   createReport,
   getUser,
   getUserPosts,
+  reportUser,
   updateProfile,
   uploadUserAvatar,
 } from '../../src/api/users.js';
@@ -114,6 +115,18 @@ describe('users api', () => {
       mockedApi.post.mockResolvedValueOnce({ data: { id: 'r1' } });
       await createReport({ reason: 'spam' });
       expect(mockedApi.post).toHaveBeenCalledWith('/reports', { reason: 'spam' });
+    });
+  });
+
+  describe('reportUser', () => {
+    it('POSTs /reports/user with email + reason + optional details', async () => {
+      const payload = { email: 'bad@example.com', reason: 'Harassment', details: 'context' };
+      mockedApi.post.mockResolvedValueOnce({ data: { id: 'r1' } });
+
+      const result = await reportUser(payload);
+
+      expect(mockedApi.post).toHaveBeenCalledWith('/reports/user', payload);
+      expect(result).toEqual({ id: 'r1' });
     });
   });
 });

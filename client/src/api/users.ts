@@ -29,3 +29,8 @@ export async function createReport(data: { reason: string; details?: string; rep
   const res = await api.post('/reports', data);
   return res.data;
 }
+
+export async function reportUser(data: { email: string; reason: string; details?: string }) {
+  const res = await api.post('/reports/user', data);
+  return res.data;
+}

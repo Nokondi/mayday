@@ -1,10 +1,11 @@
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { User as UserIcon, MapPin, Calendar, Edit2, Save, X } from 'lucide-react';
+import { User as UserIcon, MapPin, Calendar, Edit2, Save, X, MessageSquare } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { getUser, updateProfile, getUserPosts, uploadUserAvatar } from '../api/users.js';
+import { startConversation } from '../api/messages.js';
 import { useAuth } from '../context/AuthContext.js';
 import { PostList } from '../components/posts/PostList.js';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
@@ -12,12 +13,22 @@ import { AvatarUploader } from '../components/common/AvatarUploader.js';
 
 export function ProfilePage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user: authUser, refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', bio: '', location: '', skills: '' });
 
   const isOwnProfile = authUser?.id === id;
+
+  const messageMutation = useMutation({
+    mutationFn: () => startConversation({ participantId: id! }),
+    onSuccess: (conversation) => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      navigate(`/messages?conversation=${conversation.id}`);
+    },
+    onError: () => toast.error('Could not start a conversation'),
+  });
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['user', id],
@@ -117,7 +128,7 @@ export function ProfilePage() {
               </div>
             </div>
           </div>
-          {isOwnProfile && (
+          {isOwnProfile ? (
             <div>
               {editing ? (
                 <div className="flex gap-2">
@@ -134,6 +145,15 @@ export function ProfilePage() {
                 </button>
               )}
             </div>
+          ) : (
+            <button
+              onClick={() => messageMutation.mutate()}
+              disabled={messageMutation.isPending}
+              className="flex items-center gap-1 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600 disabled:opacity-50"
+            >
+              <MessageSquare className="w-4 h-4" aria-hidden="true" />
+              {messageMutation.isPending ? 'Starting…' : 'Message'}
+            </button>
           )}
         </div>
 

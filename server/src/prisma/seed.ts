@@ -29,7 +29,7 @@ async function main() {
   const adminPassword = await hashPassword("admin123!");
   const admin = await prisma.user.upsert({
     where: { email: "admin@mayday.local" },
-    update: {},
+    update: { emailVerified: true },
     create: {
       email: "admin@mayday.local",
       passwordHash: adminPassword,
@@ -38,6 +38,7 @@ async function main() {
       bio: "Platform administrator",
       location: "Little Rock, AR",
       skills: ["Community Organization", "Moderation"],
+      emailVerified: true,
     },
   });
 
@@ -45,7 +46,7 @@ async function main() {
 
   const emma = await prisma.user.upsert({
     where: { email: "emma@example.com" },
-    update: {},
+    update: { emailVerified: true },
     create: {
       email: "emma@example.com",
       passwordHash: userPassword,
@@ -55,12 +56,13 @@ async function main() {
       latitude: neighborhoods.midtown.lat,
       longitude: neighborhoods.midtown.lng,
       skills: ["Writing", "Sewing", "Nursing"],
+      emailVerified: true,
     },
   });
 
   const peter = await prisma.user.upsert({
     where: { email: "peter@example.com" },
-    update: {},
+    update: { emailVerified: true },
     create: {
       email: "peter@example.com",
       passwordHash: userPassword,
@@ -70,12 +72,13 @@ async function main() {
       latitude: neighborhoods.meadowbrook.lat,
       longitude: neighborhoods.meadowbrook.lng,
       skills: ["Teaching", "Writing", "Baking"],
+      emailVerified: true,
     },
   });
 
   const david = await prisma.user.upsert({
     where: { email: "david@example.com" },
-    update: {},
+    update: { emailVerified: true },
     create: {
       email: "david@example.com",
       passwordHash: userPassword,
@@ -85,12 +88,13 @@ async function main() {
       latitude: neighborhoods.downtown.lat,
       longitude: neighborhoods.downtown.lng,
       skills: ["Research", "Writing", "Organizing", "Teaching"],
+      emailVerified: true,
     },
   });
 
   const ursula = await prisma.user.upsert({
     where: { email: "ursula@example.com" },
-    update: {},
+    update: { emailVerified: true },
     create: {
       email: "ursula@example.com",
       passwordHash: userPassword,
@@ -100,6 +104,7 @@ async function main() {
       latitude: neighborhoods.riverdale.lat,
       longitude: neighborhoods.riverdale.lng,
       skills: ["Writing", "Gardening", "Storytelling", "Cooking"],
+      emailVerified: true,
     },
   });
 

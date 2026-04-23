@@ -76,3 +76,80 @@ describe('POST /api/reports', () => {
     expect(res.status).toBe(403);
   });
 });
+
+describe('POST /api/reports/user', () => {
+  it('resolves email to userId and creates a report', async () => {
+    mockedUser.findUnique
+      .mockResolvedValueOnce({ id: USER_ID, isBanned: false } as never) // rejectBanned
+      .mockResolvedValueOnce({ id: REPORTED_ID } as never); // target lookup by email
+    mockedReport.create.mockResolvedValueOnce({ id: 'r1' } as never);
+
+    const res = await request(makeApp())
+      .post('/api/reports/user')
+      .set('Authorization', authHeader())
+      .send({ email: 'target@example.com', reason: 'Harassment', details: 'Sent threats' });
+
+    expect(res.status).toBe(201);
+    expect(mockedReport.create).toHaveBeenCalledWith({
+      data: {
+        reason: 'Harassment',
+        details: 'Sent threats',
+        reportedUserId: REPORTED_ID,
+        reporterId: USER_ID,
+      },
+    });
+  });
+
+  it('returns 404 when no user matches the email', async () => {
+    mockedUser.findUnique
+      .mockResolvedValueOnce({ id: USER_ID, isBanned: false } as never) // rejectBanned
+      .mockResolvedValueOnce(null as never); // target lookup misses
+
+    const res = await request(makeApp())
+      .post('/api/reports/user')
+      .set('Authorization', authHeader())
+      .send({ email: 'ghost@example.com', reason: 'Spam' });
+
+    expect(res.status).toBe(404);
+    expect(mockedReport.create).not.toHaveBeenCalled();
+  });
+
+  it('forbids reporting yourself', async () => {
+    mockedUser.findUnique
+      .mockResolvedValueOnce({ id: USER_ID, isBanned: false } as never) // rejectBanned
+      .mockResolvedValueOnce({ id: USER_ID } as never); // target is the caller
+
+    const res = await request(makeApp())
+      .post('/api/reports/user')
+      .set('Authorization', authHeader())
+      .send({ email: 'a@b.com', reason: 'Self' });
+
+    expect(res.status).toBe(400);
+    expect(mockedReport.create).not.toHaveBeenCalled();
+  });
+
+  it('validates that email is well-formed', async () => {
+    const res = await request(makeApp())
+      .post('/api/reports/user')
+      .set('Authorization', authHeader())
+      .send({ email: 'not-an-email', reason: 'Spam' });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('validates that reason is present', async () => {
+    const res = await request(makeApp())
+      .post('/api/reports/user')
+      .set('Authorization', authHeader())
+      .send({ email: 'target@example.com' });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('requires authentication', async () => {
+    const res = await request(makeApp())
+      .post('/api/reports/user')
+      .send({ email: 'target@example.com', reason: 'Spam' });
+    expect(res.status).toBe(401);
+  });
+});

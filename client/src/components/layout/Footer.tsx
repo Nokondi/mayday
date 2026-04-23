@@ -13,7 +13,7 @@ export function Footer() {
         <p className="mt-1">MayDay Mutual Aid Hub</p>
         {user && (
           <p className="mt-2">
-            <Link to="/bug-report" className="text-mayday-600 hover:underline">Report a bug</Link>
+            <Link to="/support" className="text-mayday-600 hover:underline">Help &amp; bug reports</Link>
           </p>
         )}
       </div>
