@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { Heart, Users, MapPin, HandHeart } from "lucide-react";
+import { WaveDivider } from "../components/common/WaveDivider.js";
 
 export function AboutPage() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-mayday-500 to-mayday-700 text-white py-20">
-        <div className="max-w-4xl mx-auto px-4 text-center">
+      <section className="relative overflow-hidden bg-gradient-to-br from-mayday-500 to-mayday-700 text-white py-20">
+        <WaveDivider />
+        <div className="relative max-w-4xl mx-auto px-4 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">
             Welcome to MayDay
           </h1>
