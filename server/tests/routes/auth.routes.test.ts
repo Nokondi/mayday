@@ -18,12 +18,17 @@ vi.mock('../../src/config/database.js', () => ({
 vi.mock('../../src/services/mail.service.js', () => ({
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
   sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
+  sendRegistrationCollisionEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { prisma } from '../../src/config/database.js';
 import { errorMiddleware } from '../../src/middleware/error.middleware.js';
 import { authRoutes } from '../../src/routes/auth.routes.js';
-import { sendVerificationEmail, sendPasswordResetEmail } from '../../src/services/mail.service.js';
+import {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+  sendRegistrationCollisionEmail,
+} from '../../src/services/mail.service.js';
 import {
   signAccessToken,
   signRefreshToken,
@@ -39,6 +44,7 @@ import { hashPassword } from '../../src/utils/password.js';
 const mockedUser = vi.mocked(prisma.user);
 const mockedSendVerificationEmail = vi.mocked(sendVerificationEmail);
 const mockedSendPasswordResetEmail = vi.mocked(sendPasswordResetEmail);
+const mockedSendRegistrationCollisionEmail = vi.mocked(sendRegistrationCollisionEmail);
 
 function makeApp() {
   const app = express();
@@ -93,13 +99,12 @@ describe('POST /api/auth/register', () => {
       .send({ email: 'alice@example.com', password: 'hunter2pw', name: 'Alice' });
 
     expect(res.status).toBe(201);
-    expect(res.body.user).toEqual({
-      id: 'u1',
-      email: 'alice@example.com',
-      name: 'Alice',
-    });
     expect(res.body.message).toMatch(/confirm/i);
-    // Register no longer issues tokens — login is blocked until verification.
+    // The response deliberately excludes any user identifier — the success
+    // and collision branches must be byte-identical so the endpoint can't
+    // be used to enumerate accounts.
+    expect(res.body.user).toBeUndefined();
+    // Register does not issue tokens — login is blocked until verification.
     expect(res.body.accessToken).toBeUndefined();
     expect(res.headers['set-cookie']).toBeUndefined();
 
@@ -136,17 +141,27 @@ describe('POST /api/auth/register', () => {
     expect(createArgs.data.passwordHash as string).toMatch(/^\$2[ab]\$12\$/);
   });
 
-  it('returns 409 when the email is already registered', async () => {
+  it('returns the same generic response when the email is already registered (no enumeration)', async () => {
     mockedUser.findUnique.mockResolvedValueOnce(dbUser() as never);
 
     const res = await request(makeApp())
       .post('/api/auth/register')
       .send({ email: 'alice@example.com', password: 'hunter2pw', name: 'Alice' });
 
-    expect(res.status).toBe(409);
-    expect(res.body).toEqual({ error: 'Email already registered' });
+    // Status and body must match the success branch exactly.
+    expect(res.status).toBe(201);
+    expect(res.body.message).toMatch(/confirm/i);
+    expect(res.body.user).toBeUndefined();
+
+    // No new account is created and no verification email is sent to the caller.
     expect(mockedUser.create).not.toHaveBeenCalled();
     expect(mockedSendVerificationEmail).not.toHaveBeenCalled();
+
+    // The existing account is notified that someone tried to re-register with
+    // their email. This gives a real account owner a chance to notice and
+    // react, without revealing to the caller whether the email existed.
+    expect(mockedSendRegistrationCollisionEmail).toHaveBeenCalledTimes(1);
+    expect(mockedSendRegistrationCollisionEmail).toHaveBeenCalledWith('alice@example.com');
   });
 
   it('returns 400 when the body fails schema validation', async () => {

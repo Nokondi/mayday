@@ -21,7 +21,11 @@ import {
   passwordFingerprint,
 } from '../utils/jwt.js';
 import { AppError } from '../middleware/error.middleware.js';
-import { sendVerificationEmail, sendPasswordResetEmail } from '../services/mail.service.js';
+import {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+  sendRegistrationCollisionEmail,
+} from '../services/mail.service.js';
 
 export const authRoutes = Router();
 
@@ -37,6 +41,12 @@ function dispatchVerificationEmail(email: string, token: string) {
   });
 }
 
+function dispatchRegistrationCollisionEmail(email: string) {
+  sendRegistrationCollisionEmail(email).catch((err) => {
+    console.error(`[auth] Failed to send registration-collision email to ${email}:`, err);
+  });
+}
+
 function setRefreshCookie(res: import('express').Response, token: string) {
   res.cookie('refreshToken', token, {
     httpOnly: true,
@@ -47,12 +57,26 @@ function setRefreshCookie(res: import('express').Response, token: string) {
   });
 }
 
+// Registration always returns the same generic 201 response regardless of
+// whether the email was already registered, so the endpoint can't be used
+// to enumerate accounts. On collision we notify the existing account (so a
+// real owner knows someone tried to sign up with their address) and run a
+// throwaway bcrypt hash so the response time of both branches is within
+// bcrypt's variance.
 authRoutes.post('/register', validate(registerSchema), async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
+    const genericResponse = {
+      message: 'Check your email to confirm your address before logging in.',
+    };
 
     const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) throw new AppError(409, 'Email already registered');
+    if (existing) {
+      dispatchRegistrationCollisionEmail(existing.email);
+      await hashPassword(password);
+      res.status(201).json(genericResponse);
+      return;
+    }
 
     const passwordHash = await hashPassword(password);
     const user = await prisma.user.create({
@@ -61,10 +85,7 @@ authRoutes.post('/register', validate(registerSchema), async (req, res, next) =>
 
     dispatchVerificationEmail(user.email, signVerificationToken(user.id));
 
-    res.status(201).json({
-      message: 'Account created. Check your email to confirm your address before logging in.',
-      user: { id: user.id, email: user.email, name: user.name },
-    });
+    res.status(201).json(genericResponse);
   } catch (err) { next(err); }
 });
 

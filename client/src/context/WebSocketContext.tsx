@@ -25,7 +25,13 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     if (!token || !user) return;
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws?token=${token}`);
+    // The JWT is sent as a WebSocket subprotocol rather than a URL query
+    // string so it doesn't leak into proxy/access logs. Keep the sentinel
+    // in sync with server/src/websocket/index.ts.
+    const ws = new WebSocket(
+      `${protocol}//${window.location.host}/ws`,
+      ['mayday.auth.bearer', token],
+    );
 
     ws.onopen = () => setIsConnected(true);
 

@@ -31,9 +31,13 @@ function waitFor<T>(
   });
 }
 
+const AUTH_SUBPROTOCOL = 'mayday.auth.bearer';
+
 function openWs(token: string | null): WebSocket {
-  const suffix = token === null ? '' : `?token=${encodeURIComponent(token)}`;
-  return new WebSocket(`ws://localhost:${port}/ws${suffix}`);
+  if (token === null) {
+    return new WebSocket(`ws://localhost:${port}/ws`);
+  }
+  return new WebSocket(`ws://localhost:${port}/ws`, [AUTH_SUBPROTOCOL, token]);
 }
 
 function closedCode(ws: WebSocket): Promise<number> {

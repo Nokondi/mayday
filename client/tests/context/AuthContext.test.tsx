@@ -126,7 +126,6 @@ describe('AuthProvider actions', () => {
 
     mockedAuthApi.register.mockResolvedValueOnce({
       message: 'Check your email',
-      user: { id: 'u1', email: 'alice@example.com', name: 'Alice' },
     });
 
     await userEvent.click(screen.getByText('register'));

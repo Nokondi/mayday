@@ -40,6 +40,38 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
   });
 }
 
+export async function sendRegistrationCollisionEmail(to: string): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(`[mail] SMTP not configured; skipping registration-collision email to ${to}`);
+    return;
+  }
+
+  const loginUrl = `${env.CLIENT_URL}/login`;
+  const resetUrl = `${env.CLIENT_URL}/forgot-password`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+
+  await t.sendMail({
+    from,
+    to,
+    subject: 'Someone tried to sign up with your Mayday email',
+    text: `Someone just tried to create a new Mayday account with this email address.
+
+You already have an account here. If it was you and you've forgotten your password, reset it:
+${resetUrl}
+
+If it wasn't you, no action is needed — your account wasn't changed.
+
+Sign in: ${loginUrl}`,
+    html: `
+      <p>Someone just tried to create a new Mayday account with this email address.</p>
+      <p>You already have an account here. If it was you and you've forgotten your password, you can <a href="${resetUrl}">reset it</a>.</p>
+      <p>If it wasn't you, no action is needed — your account wasn't changed.</p>
+      <p><a href="${loginUrl}">Sign in to Mayday</a></p>
+    `,
+  });
+}
+
 export async function sendPasswordResetEmail(to: string, token: string): Promise<void> {
   const t = getTransporter();
   if (!t) {
