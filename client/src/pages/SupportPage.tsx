@@ -7,18 +7,97 @@ interface Topic {
   answer: React.ReactNode;
 }
 
-const topics: Topic[] = [
+const generalTopics: Topic[] = [
   {
-    question: "What is MayDay, and how do Requests and Offers work?",
+    question: "What is MayDay?",
+    answer: (
+      <p>
+        MayDay is a different kind of social network, where the objective isn't
+        just communication, but making real-world connections between people who
+        need help and people who can provide it. It's a tool to help communities
+        coordinate and keep track of{" "}
+        <span className="font-medium">mutual aid</span> efforts, and to connect
+        people to the resources they need to survive and thrive.
+      </p>
+    ),
+  },
+  {
+    question: "What is mutual aid?",
+    answer: (
+      <p>
+        Mutual aid is a voluntary relationship in which people in community
+        exchange resources and services for mutual benefit. It differs from
+        charity in that, while charity is a one-way transaction that reinforces
+        existing assumptions about power and privilege, mutual aid is based on
+        the assumption that everyone has needs that they can not meet on their
+        own, and that everyone has something to offer. Mutual aid is not
+        transactional, but relational. While the last person you helped may not
+        be the one who helps you, you are building a network of care and support
+        that benefits everyone involved. Mutual aid is not based on love or pity
+        or any other emotional response, but on the understanding that we are
+        all interdependent and that our survival and flourishing depends on
+        taking care of each other. It is a practice of freedom that prefigures
+        the world we want to live in, and a strategy for getting there.
+      </p>
+    ),
+  },
+  {
+    question:
+      "Where can I learn more about mutual aid and the philosophy behind MayDay?",
+    answer: (
+      <p>
+        There are a lot of great texts that cover mutual aid and other aspects
+        of anarchist philosophy. A few good places to start include:
+        <ul className="list-disc list-inside mt-2 space-y-1">
+          <li>
+            <Link
+              to="https://www.thriftbooks.com/w/mutual-aid--building-solidarity-during-this-crisis-and-the-next-one/26690066/item/42249298/"
+              className="text-mayday-600 hover:underline"
+            >
+              Mutual Aid: Building Solidarity During This Crisis (and the Next),
+              by Dean Spade
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="https://theanarchistlibrary.org/library/petr-kropotkin-mutual-aid-a-factor-of-evolution"
+              className="text-mayday-600 hover:underline"
+            >
+              Mutual Aid: A Factor of Evolution, by Peter Kropotkin
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="https://theanarchistlibrary.org/library/david-graeber-are-you-an-anarchist-the-answer-may-surprise-you"
+              className="text-mayday-600 hover:underline"
+            >
+              Are You An Anarchist? The Answer May Surprise You, by David
+              Graeber
+            </Link>
+          </li>
+        </ul>
+        For even more resources, visit{" "}
+        <Link
+          to="https://theanarchistlibrary.org/"
+          className="text-mayday-600 hover:underline"
+        >
+          The Anarchist Library
+        </Link>
+      </p>
+    ),
+  },
+];
+
+const techTopics: Topic[] = [
+  {
+    question: "How do Requests and Offers work?",
     answer: (
       <>
         <p>
-          MayDay is a different kind of social network, where the objective
-          isn't just communication, but making real world connections between
-          people who need help and people who can provide it. Anything you post
-          is either a <span className="font-medium">Request</span> (you need
-          help) or an <span className="font-medium">Offer</span> (you have
-          something to give). Both are browsable on the{" "}
+          Anything you post is either a{" "}
+          <span className="font-medium">Request</span> (you need help) or an{" "}
+          <span className="font-medium">Offer</span> (you have something to
+          give). Both are browsable on the{" "}
           <Link to="/posts" className="text-mayday-600 hover:underline">
             Browse
           </Link>{" "}
@@ -119,33 +198,6 @@ const topics: Topic[] = [
       </p>
     ),
   },
-  {
-    question: "What is mutual aid?",
-    answer: (
-      <p>
-        Mutual aid is a voluntary relationship in which people in community
-        exchange resources and services for mutual benefit. It differs from
-        charity in that, while charity is a one-way transaction that reinforces
-        existing assumptions about power and privilege, mutual aid is based on
-        the assumption that everyone has needs that they can not meet on their
-        own, and that everyone has something to offer. Mutual aid is not
-        transactional, but relational. While the last person you helped may not
-        be the one who helps you, you are building a network of care and support
-        that benefits everyone involved. Mutual aid is not based on love or pity
-        or any other emotional response, but on the understanding that we are
-        all interdependent and that our survival and flourishing depends on
-        taking care of each other. It is a practice of freedom that prefigures
-        the world we want to live in, and a strategy for getting there. For more
-        information, visit{" "}
-        <Link
-          to="https://theanarchistlibrary.org/"
-          className="text-mayday-600 hover:underline"
-        >
-          The Anarchist Library
-        </Link>
-      </p>
-    ),
-  },
 ];
 
 export function SupportPage() {
@@ -174,7 +226,36 @@ export function SupportPage() {
           </h2>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
-          {topics.map((topic) => (
+          {techTopics.map((topic) => (
+            <details key={topic.question} className="group">
+              <summary className="flex justify-between items-center cursor-pointer list-none px-4 py-3 font-medium text-gray-800 hover:bg-gray-50">
+                <span>{topic.question}</span>
+                <span
+                  className="text-gray-400 group-open:rotate-90 transition-transform"
+                  aria-hidden="true"
+                >
+                  ›
+                </span>
+              </summary>
+              <div className="px-4 pb-4 text-gray-700 space-y-2">
+                {topic.answer}
+              </div>
+            </details>
+          ))}
+        </div>
+      </section>
+      <section aria-labelledby="general-questions-heading">
+        <div className="flex items-center gap-2 mb-3">
+          <BookOpen className="w-5 h-5 text-mayday-600" aria-hidden="true" />
+          <h2
+            id="general-questions-heading"
+            className="text-xl font-semibold text-gray-900"
+          >
+            General questions about MayDay
+          </h2>
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+          {generalTopics.map((topic) => (
             <details key={topic.question} className="group">
               <summary className="flex justify-between items-center cursor-pointer list-none px-4 py-3 font-medium text-gray-800 hover:bg-gray-50">
                 <span>{topic.question}</span>
