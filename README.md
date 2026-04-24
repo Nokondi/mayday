@@ -47,7 +47,15 @@ cd ..
 
 ### 6. Seed the database (optional)
 
-This creates an admin account, two sample users, and six sample posts.
+This creates the following:
+
+- 1 admin account
+- 4 sample users
+- 7 sample organizations
+- 7 sample communities
+- 14 public posts
+- 14 organization posts
+- 14 community posts
 
 ```sh
 npm run db:seed
