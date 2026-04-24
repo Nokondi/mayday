@@ -60,6 +60,8 @@ npm run db:seed
 | Admin | admin@mayday.local | admin123!    |
 | User  | emma@example.com   | password123! |
 | User  | peter@example.com  | password123! |
+| User  | david@example.com  | password123! |
+| User  | ursula@example.com | password123! |
 
 ### 7. Start the development servers
 
@@ -97,6 +99,7 @@ mayday/
 | `npm run build`        | Build all packages                           |
 | `npm run db:migrate`   | Run Prisma migrations                        |
 | `npm run db:seed`      | Seed the database with sample data           |
+| `npm run db:clear`     | Delete all data from the database            |
 
 ## Tech Stack
 
