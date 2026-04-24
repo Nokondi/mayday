@@ -42,6 +42,53 @@ const generalTopics: Topic[] = [
     ),
   },
   {
+    question: "What do you do with my data?",
+    answer: (
+      <p>
+        MayDay is designed to collect as little data as possible and to keep
+        what we do collect as secure as possible. We use industry-standard
+        encryption to protect your data, and we never sell or share it with
+        third parties. If you ever want to delete your account, you can do so
+        from your profile page, and all of your data will be permanently deleted
+        from our servers.
+      </p>
+    ),
+  },
+  {
+    question: "Is there anything I can do to help?",
+    answer: (
+      <p>
+        MayDay is a passion project built by one guy in his spare time, and
+        there are a lot of ways you can help out if you're interested! I've made
+        all of the code open source, so if you're a developer or designer, you
+        can check out the repository at{" "}
+        <Link
+          to="https://github.com/Nokondi/mayday"
+          className="text-mayday-600 hover:underline"
+        >
+          github.com/Nokondi/mayday
+        </Link>{" "}
+        and submit a pull request. Hosting the app also costs money, and
+        maintenance requires ongoing support, so if you are able to provide
+        financial assistance, you can donate through the{" "}
+        <Link
+          to="https://www.patreon.com/c/MayDayCreative"
+          className="text-mayday-600 hover:underline"
+        >
+          MayDay Patreon
+        </Link>
+        . Donation tiers start at $1, and every contribution helps keep MayDay
+        running. I'll be using the Patreon to keep folks informed about project
+        development, and there will be opportunities for supporters to help
+        decide on future features and updates. If you're not a developer and
+        don't have money to contribute, you can still help by sharing MayDay
+        with your friends and family, giving feedback on how to make it better,
+        or even just posting your needs and offers to help build the community.
+        The more people use it, the more useful it becomes!
+      </p>
+    ),
+  },
+  {
     question:
       "Where can I learn more about mutual aid and the philosophy behind MayDay?",
     answer: (
@@ -54,8 +101,11 @@ const generalTopics: Topic[] = [
               to="https://www.thriftbooks.com/w/mutual-aid--building-solidarity-during-this-crisis-and-the-next-one/26690066/item/42249298/"
               className="text-mayday-600 hover:underline"
             >
-              Mutual Aid: Building Solidarity During This Crisis (and the Next),
-              by Dean Spade
+              <i>
+                Mutual Aid: Building Solidarity During This Crisis (and the
+                Next)
+              </i>
+              , by Dean Spade
             </Link>
           </li>
           <li>
@@ -63,7 +113,7 @@ const generalTopics: Topic[] = [
               to="https://theanarchistlibrary.org/library/petr-kropotkin-mutual-aid-a-factor-of-evolution"
               className="text-mayday-600 hover:underline"
             >
-              Mutual Aid: A Factor of Evolution, by Peter Kropotkin
+              <i>Mutual Aid: A Factor of Evolution</i>, by Peter Kropotkin
             </Link>
           </li>
           <li>
@@ -71,7 +121,7 @@ const generalTopics: Topic[] = [
               to="https://theanarchistlibrary.org/library/david-graeber-are-you-an-anarchist-the-answer-may-surprise-you"
               className="text-mayday-600 hover:underline"
             >
-              Are You An Anarchist? The Answer May Surprise You, by David
+              <i>Are You An Anarchist? The Answer May Surprise You</i>, by David
               Graeber
             </Link>
           </li>
