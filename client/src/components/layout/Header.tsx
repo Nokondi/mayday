@@ -239,6 +239,12 @@ export function Header() {
                   About
                 </Link>
                 <Link
+                  to="/support"
+                  className="block px-3 py-2 rounded hover:bg-gray-100"
+                >
+                  Support
+                </Link>
+                <Link
                   to="/posts/new"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
@@ -266,6 +272,15 @@ export function Header() {
                 >
                   Profile
                 </Link>
+                {user.role === "ADMIN" && (
+                  <Link
+                    to="/admin"
+                    aria-label="Admin panel"
+                    className="block px-3 py-2 rounded hover:bg-gray-100"
+                  >
+                    Admin
+                  </Link>
+                )}
                 <button
                   onClick={() => {
                     handleLogout();
