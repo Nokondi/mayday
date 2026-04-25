@@ -12,7 +12,56 @@ import { uploadAvatar } from '../middleware/upload.middleware.js';
 import { prisma } from '../config/database.js';
 import { deleteObjectByUrl } from '../config/storage.js';
 import { AppError } from '../middleware/error.middleware.js';
+import { sendCommunityJoinRequestEmail } from '../services/mail.service.js';
 import type { Prisma } from '@prisma/client';
+
+async function notifyAdminsOfJoinRequest(params: {
+  communityId: string;
+  requesterId: string;
+  message: string | null;
+}): Promise<void> {
+  try {
+    const [community, requester, admins] = await Promise.all([
+      prisma.community.findUnique({
+        where: { id: params.communityId },
+        select: { name: true },
+      }),
+      prisma.user.findUnique({
+        where: { id: params.requesterId },
+        select: { name: true },
+      }),
+      prisma.communityMember.findMany({
+        where: {
+          communityId: params.communityId,
+          role: { in: ['OWNER', 'ADMIN'] },
+        },
+        select: {
+          user: {
+            select: { id: true, email: true, emailNotificationsEnabled: true, emailVerified: true },
+          },
+        },
+      }),
+    ]);
+    if (!community || !requester) return;
+
+    await Promise.all(
+      admins
+        .filter((m) => m.user.id !== params.requesterId)
+        .filter((m) => m.user.emailNotificationsEnabled && m.user.emailVerified)
+        .map((m) =>
+          sendCommunityJoinRequestEmail(
+            m.user.email,
+            requester.name,
+            community.name,
+            params.communityId,
+            params.message,
+          ),
+        ),
+    );
+  } catch (err) {
+    console.error('[mail] failed to send community-join-request email', err);
+  }
+}
 
 const publicUserSelect = {
   id: true, name: true, bio: true, location: true, skills: true, avatarUrl: true, createdAt: true,
@@ -422,6 +471,13 @@ communityRoutes.post('/:id/join-requests', validate(communityJoinRequestSchema),
         data: { communityId: cid, userId, message: req.body.message ?? null },
       });
     }
+
+    void notifyAdminsOfJoinRequest({
+      communityId: cid,
+      requesterId: userId,
+      message: request.message,
+    });
+
     res.status(201).json(request);
   } catch (err) { next(err); }
 });

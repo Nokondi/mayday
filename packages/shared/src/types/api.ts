@@ -128,6 +128,13 @@ export const updateProfileSchema = z.object({
 
 export type UpdateProfileRequest = z.infer<typeof updateProfileSchema>;
 
+// User settings (private — not exposed via public profile)
+export const updateUserSettingsSchema = z.object({
+  emailNotificationsEnabled: z.boolean().optional(),
+});
+
+export type UpdateUserSettingsRequest = z.infer<typeof updateUserSettingsSchema>;
+
 // Messages
 export const sendMessageSchema = z.object({
   content: z.string().min(1, 'Message cannot be empty').max(5000),

@@ -5,6 +5,47 @@ import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/error.middleware.js';
 import { sendToUser } from '../websocket/index.js';
+import { sendNewMessageEmail } from '../services/mail.service.js';
+
+async function notifyReceiverByEmail(params: {
+  messageId: string;
+  receiverId: string;
+  senderId: string;
+  conversationId: string;
+  content: string;
+}): Promise<void> {
+  try {
+    // Only notify if the receiver has no other unread messages in this conversation —
+    // avoids spamming during an active back-and-forth.
+    const priorUnread = await prisma.message.count({
+      where: {
+        conversationId: params.conversationId,
+        receiverId: params.receiverId,
+        readAt: null,
+        NOT: { id: params.messageId },
+      },
+    });
+    if (priorUnread > 0) return;
+
+    const [receiver, sender] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: params.receiverId },
+        select: { email: true, emailNotificationsEnabled: true, emailVerified: true },
+      }),
+      prisma.user.findUnique({
+        where: { id: params.senderId },
+        select: { name: true },
+      }),
+    ]);
+    if (!receiver || !sender) return;
+    if (!receiver.emailNotificationsEnabled) return;
+    if (!receiver.emailVerified) return;
+
+    await sendNewMessageEmail(receiver.email, sender.name, params.content);
+  } catch (err) {
+    console.error('[mail] failed to send new-message email', err);
+  }
+}
 
 export const messageRoutes = Router();
 
@@ -133,6 +174,14 @@ messageRoutes.post('/conversations', validate(startConversationSchema), async (r
       });
 
       sendToUser(participantId, { type: 'NEW_MESSAGE', payload: msg as any });
+
+      void notifyReceiverByEmail({
+        messageId: msg.id,
+        receiverId: participantId,
+        senderId: userId,
+        conversationId: conversation.id,
+        content: msg.content,
+      });
     }
 
     res.status(201).json(conversation);
@@ -169,6 +218,14 @@ messageRoutes.post('/conversations/:id/messages', validate(sendMessageSchema), a
     });
 
     sendToUser(receiverId, { type: 'NEW_MESSAGE', payload: message as any });
+
+    void notifyReceiverByEmail({
+      messageId: message.id,
+      receiverId,
+      senderId: userId,
+      conversationId: conv.id,
+      content: message.content,
+    });
 
     res.status(201).json(message);
   } catch (err) { next(err); }

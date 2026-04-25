@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Bug, BookOpen, LifeBuoy } from "lucide-react";
+import { Bug, BookOpen, LifeBuoy, Settings } from "lucide-react";
 import { BugReportForm } from "../components/support/BugReportForm.js";
 
 interface Topic {
@@ -245,6 +245,16 @@ const techTopics: Topic[] = [
         on the login page to get a reset link by email. If you never received
         your confirmation email, log in and click{" "}
         <span className="font-medium">Resend confirmation email</span>.
+      </p>
+    ),
+  },
+  {
+    question: "Is there a way to disable email notifications?",
+    answer: (
+      <p>
+        You can manage your email notification preferences by clicking the{" "}
+        <span className="font-medium">Settings</span> button in the top right of
+        your profile.
       </p>
     ),
   },

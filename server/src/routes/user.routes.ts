@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { updateProfileSchema } from '@mayday/shared';
+import { updateProfileSchema, updateUserSettingsSchema } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
 import { uploadAvatar } from '../middleware/upload.middleware.js';
@@ -12,6 +12,19 @@ export const userRoutes = Router();
 const publicUserSelect = {
   id: true, name: true, bio: true, location: true, skills: true, avatarUrl: true, createdAt: true,
 } as const;
+
+// PUT /api/users/me/settings — update private settings for the current user
+userRoutes.put('/me/settings', requireAuth, validate(updateUserSettingsSchema), async (req: AuthRequest, res, next) => {
+  try {
+    const { emailNotificationsEnabled } = req.body as { emailNotificationsEnabled?: boolean };
+    const user = await prisma.user.update({
+      where: { id: req.user!.id },
+      data: { emailNotificationsEnabled },
+      select: { id: true, emailNotificationsEnabled: true },
+    });
+    res.json(user);
+  } catch (err) { next(err); }
+});
 
 userRoutes.get('/:id', async (req, res, next) => {
   try {

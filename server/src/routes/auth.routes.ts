@@ -239,6 +239,7 @@ authRoutes.get('/me', requireAuth, async (req: AuthRequest, res, next) => {
         id: true, email: true, name: true, bio: true,
         location: true, latitude: true, longitude: true,
         skills: true, role: true, avatarUrl: true, createdAt: true,
+        emailNotificationsEnabled: true,
       },
     });
     if (!user) throw new AppError(404, 'User not found');

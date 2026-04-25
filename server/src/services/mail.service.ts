@@ -72,6 +72,83 @@ Sign in: ${loginUrl}`,
   });
 }
 
+export async function sendNewMessageEmail(
+  to: string,
+  senderName: string,
+  messagePreview: string,
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(`[mail] SMTP not configured; skipping new-message email to ${to}`);
+    return;
+  }
+
+  const inboxUrl = `${env.CLIENT_URL}/messages`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const safePreview = messagePreview.length > 280
+    ? messagePreview.slice(0, 280) + '…'
+    : messagePreview;
+  const escapedPreview = safePreview
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  const escapedSender = senderName
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `New message from ${senderName} on Mayday`,
+    text: `${senderName} sent you a message on Mayday:\n\n"${safePreview}"\n\nReply: ${inboxUrl}`,
+    html: `
+      <p><strong>${escapedSender}</strong> sent you a message on Mayday:</p>
+      <blockquote style="border-left:3px solid #ccc;padding-left:12px;color:#444;">${escapedPreview}</blockquote>
+      <p><a href="${inboxUrl}">Open your inbox</a> to reply.</p>
+    `,
+  });
+}
+
+export async function sendCommunityJoinRequestEmail(
+  to: string,
+  requesterName: string,
+  communityName: string,
+  communityId: string,
+  requestMessage: string | null,
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(`[mail] SMTP not configured; skipping community-join-request email to ${to}`);
+    return;
+  }
+
+  const requestsUrl = `${env.CLIENT_URL}/communities/${communityId}/manage`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escape = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  const escapedRequester = escape(requesterName);
+  const escapedCommunity = escape(communityName);
+  const messageBlockHtml = requestMessage
+    ? `<p>They wrote:</p><blockquote style="border-left:3px solid #ccc;padding-left:12px;color:#444;">${escape(requestMessage)}</blockquote>`
+    : '';
+  const messageBlockText = requestMessage ? `\n\nThey wrote:\n"${requestMessage}"` : '';
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `${requesterName} wants to join ${communityName}`,
+    text: `${requesterName} has requested to join the "${communityName}" community on Mayday.${messageBlockText}\n\nReview pending requests: ${requestsUrl}`,
+    html: `
+      <p><strong>${escapedRequester}</strong> has requested to join the <strong>${escapedCommunity}</strong> community on Mayday.</p>
+      ${messageBlockHtml}
+      <p><a href="${requestsUrl}">Review pending requests</a></p>
+    `,
+  });
+}
+
 export async function sendPasswordResetEmail(to: string, token: string): Promise<void> {
   const t = getTransporter();
   if (!t) {

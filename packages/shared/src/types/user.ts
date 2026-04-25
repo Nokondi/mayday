@@ -12,6 +12,7 @@ export interface User {
   avatarUrl: string | null;
   role: Role;
   isBanned: boolean;
+  emailNotificationsEnabled: boolean;
   createdAt: string;
   updatedAt: string;
 }

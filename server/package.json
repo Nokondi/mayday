@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "concurrently -k -n shared,server -c blue,green \"npm run dev -w @mayday/shared\" \"tsx watch src/index.ts\"",
     "build": "DATABASE_URL=\"postgresql://placeholder:placeholder@localhost:5432/placeholder\" prisma generate && tsc",
     "start": "prisma migrate deploy && node dist/index.js",
     "db:migrate": "dotenv -e ../.env -- prisma migrate dev",
@@ -45,6 +45,7 @@
     "@types/nodemailer": "^8.0.0",
     "@types/supertest": "^7.2.0",
     "@types/ws": "^8.5.13",
+    "concurrently": "^9.2.1",
     "dotenv-cli": "^11.0.0",
     "prisma": "^6.2.0",
     "supertest": "^7.2.2",

@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import { User as UserIcon, MapPin, Calendar, Edit2, Save, X, MessageSquare, Trash2, Flag } from 'lucide-react';
+import { User as UserIcon, MapPin, Calendar, Edit2, Save, X, MessageSquare, Trash2, Flag, Settings } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { getUser, updateProfile, getUserPosts, uploadUserAvatar, deleteProfile, createReport } from '../api/users.js';
@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext.js';
 import { PostList } from '../components/posts/PostList.js';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
 import { AvatarUploader } from '../components/common/AvatarUploader.js';
+import { SettingsModal } from '../components/common/SettingsModal.js';
 
 export function ProfilePage() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +20,7 @@ export function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', bio: '', location: '', skills: '' });
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [showReportConfirm, setShowReportConfirm] = useState(false);
   const [reportDetails, setReportDetails] = useState('');
   const reportDialogRef = useRef<HTMLDialogElement>(null);
@@ -204,9 +206,14 @@ export function ProfilePage() {
                   </button>
                 </div>
               ) : (
-                <button onClick={startEditing} className="flex items-center gap-1 text-gray-600 hover:text-gray-700">
-                  <Edit2 className="w-4 h-4" /> Edit
-                </button>
+                <div className="flex gap-3">
+                  <button onClick={startEditing} className="flex items-center gap-1 text-gray-600 hover:text-gray-700">
+                    <Edit2 className="w-4 h-4" /> Edit
+                  </button>
+                  <button onClick={() => setShowSettings(true)} className="flex items-center gap-1 text-gray-600 hover:text-gray-700">
+                    <Settings className="w-4 h-4" /> Settings
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -310,6 +317,8 @@ export function ProfilePage() {
           )}
         </div>
       )}
+
+      <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
 
       <dialog
         ref={reportDialogRef}

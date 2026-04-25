@@ -1,4 +1,4 @@
-import type { UserPublicProfile, UpdateProfileRequest, PaginatedResponse, PostWithAuthor } from '@mayday/shared';
+import type { UserPublicProfile, UpdateProfileRequest, UpdateUserSettingsRequest, PaginatedResponse, PostWithAuthor } from '@mayday/shared';
 import { api } from './client.js';
 
 export async function getUser(id: string): Promise<UserPublicProfile> {
@@ -37,4 +37,9 @@ export async function reportUser(data: { email: string; reason: string; details?
 
 export async function deleteProfile(id: string): Promise<void> {
   await api.delete(`/users/${id}`);
+}
+
+export async function updateUserSettings(data: UpdateUserSettingsRequest): Promise<{ id: string; emailNotificationsEnabled: boolean }> {
+  const res = await api.put('/users/me/settings', data);
+  return res.data;
 }
