@@ -8,7 +8,7 @@ import { deleteObjectByUrl } from '../config/storage.js';
 import { AppError } from '../middleware/error.middleware.js';
 import type { Prisma } from '@prisma/client';
 
-const postInclude = {
+export const postInclude = {
   author: {
     select: { id: true, name: true, bio: true, location: true, skills: true, avatarUrl: true, createdAt: true },
   },
@@ -193,10 +193,20 @@ postRoutes.get('/:id', requireAuth, async (req: AuthRequest, res, next) => {
   } catch (err) { next(err); }
 });
 
-postRoutes.get('/:id/matches', requireAuth, async (req, res, next) => {
+postRoutes.get('/:id/matches', requireAuth, async (req: AuthRequest, res, next) => {
   try {
     const post = await prisma.post.findUnique({ where: { id: req.params.id as string } });
     if (!post) throw new AppError(404, 'Post not found');
+
+    // If the source post is community-scoped, the viewer must be a member (or site ADMIN)
+    if (post.communityId) {
+      const membership = await prisma.communityMember.findUnique({
+        where: { communityId_userId: { communityId: post.communityId, userId: req.user!.id } },
+      });
+      if (!membership && req.user!.role !== 'ADMIN') {
+        throw new AppError(403, 'This post is only visible to community members');
+      }
+    }
 
     const matchType = post.type === 'REQUEST' ? 'OFFER' : 'REQUEST';
     const where: Prisma.PostWhereInput = {
@@ -211,6 +221,12 @@ postRoutes.get('/:id/matches', requireAuth, async (req, res, next) => {
       where.latitude = { gte: post.latitude - radiusInDegrees, lte: post.latitude + radiusInDegrees };
       where.longitude = { gte: post.longitude - radiusInDegrees, lte: post.longitude + radiusInDegrees };
     }
+
+    // Hide community posts the viewer isn't a member of
+    const myCommunityIds = await getUserCommunityIds(req.user!.id);
+    where.OR = myCommunityIds.length > 0
+      ? [{ communityId: null }, { communityId: { in: myCommunityIds } }]
+      : [{ communityId: null }];
 
     const matches = await prisma.post.findMany({
       where,
