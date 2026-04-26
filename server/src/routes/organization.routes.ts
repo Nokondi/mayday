@@ -201,16 +201,22 @@ organizationRoutes.post('/', validate(createOrganizationSchema), async (req: Aut
 // GET /api/organizations/:id — org detail with members
 organizationRoutes.get('/:id', async (req: AuthRequest, res, next) => {
   try {
-    const org = await prisma.organization.findUnique({
-      where: { id: req.params.id as string },
-      include: {
-        _count: { select: { members: true } },
-        members: {
-          include: memberInclude,
-          orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
+    const orgId = req.params.id as string;
+    const [org, fulfilledCount] = await Promise.all([
+      prisma.organization.findUnique({
+        where: { id: orgId },
+        include: {
+          _count: { select: { members: true } },
+          members: {
+            include: memberInclude,
+            orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
+          },
         },
-      },
-    });
+      }),
+      prisma.postFulfillment.count({
+        where: { organizationId: orgId, post: { type: 'REQUEST' } },
+      }),
+    ]);
     if (!org) throw new AppError(404, 'Organization not found');
 
     const myMembership = org.members.find((m) => m.userId === req.user!.id);
@@ -220,6 +226,7 @@ organizationRoutes.get('/:id', async (req: AuthRequest, res, next) => {
       ...rest,
       memberCount: _count.members,
       myRole: myMembership?.role ?? null,
+      fulfilledCount,
       members,
     });
   } catch (err) { next(err); }

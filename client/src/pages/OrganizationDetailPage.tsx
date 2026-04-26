@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Users, MapPin, Settings, LogOut, Trash2 } from 'lucide-react';
+import { Users, MapPin, CheckCircle2, Settings, LogOut, Trash2 } from 'lucide-react';
 import { getOrganization, removeMember, deleteOrganization } from '../api/organizations.js';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
 import { useAuth } from '../context/AuthContext.js';
@@ -69,6 +69,12 @@ export function OrganizationDetailPage() {
                   <span className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
                     {org.location}
+                  </span>
+                )}
+                {!!org.fulfilledCount && (
+                  <span className="flex items-center gap-1">
+                    <CheckCircle2 className="w-4 h-4" />
+                    {org.fulfilledCount} {org.fulfilledCount === 1 ? 'request' : 'requests'} fulfilled
                   </span>
                 )}
                 {org.myRole && (

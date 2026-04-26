@@ -13,6 +13,7 @@ export interface Organization {
   avatarUrl: string | null;
   createdAt: string;
   updatedAt: string;
+  fulfilledCount?: number;
 }
 
 export interface OrganizationMember {

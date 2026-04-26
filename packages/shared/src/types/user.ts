@@ -25,4 +25,5 @@ export interface UserPublicProfile {
   skills: string[];
   avatarUrl: string | null;
   createdAt: string;
+  fulfilledCount?: number;
 }

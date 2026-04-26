@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import { User as UserIcon, MapPin, Calendar, Edit2, Save, X, MessageSquare, Trash2, Flag, Settings } from 'lucide-react';
+import { User as UserIcon, MapPin, Calendar, CheckCircle2, Edit2, Save, X, MessageSquare, Trash2, Flag, Settings } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { getUser, updateProfile, getUserPosts, uploadUserAvatar, deleteProfile, createReport } from '../api/users.js';
@@ -191,6 +191,12 @@ export function ProfilePage() {
                   <Calendar className="w-3 h-3" />
                   Joined {formatDistanceToNow(new Date(profile.createdAt), { addSuffix: true })}
                 </span>
+                {!!profile.fulfilledCount && (
+                  <span className="flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    {profile.fulfilledCount} {profile.fulfilledCount === 1 ? 'request' : 'requests'} fulfilled
+                  </span>
+                )}
               </div>
             </div>
           </div>

@@ -29,12 +29,18 @@ userRoutes.put('/me/settings', requireAuth, validate(updateUserSettingsSchema), 
 
 userRoutes.get('/:id', async (req, res, next) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.params.id as string },
-      select: publicUserSelect,
-    });
+    const id = req.params.id as string;
+    const [user, fulfilledCount] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id },
+        select: publicUserSelect,
+      }),
+      prisma.postFulfillment.count({
+        where: { userId: id, post: { type: 'REQUEST' } },
+      }),
+    ]);
     if (!user) throw new AppError(404, 'User not found');
-    res.json(user);
+    res.json({ ...user, fulfilledCount });
   } catch (err) { next(err); }
 });
 
@@ -72,18 +78,23 @@ userRoutes.post('/:id/avatar', requireAuth, uploadAvatar, async (req: AuthReques
       select: { avatarUrl: true },
     });
 
-    const user = await prisma.user.update({
-      where: { id: req.params.id as string },
-      data: { avatarUrl: file.location },
-      select: publicUserSelect,
-    });
+    const [user, fulfilledCount] = await Promise.all([
+      prisma.user.update({
+        where: { id: req.params.id as string },
+        data: { avatarUrl: file.location },
+        select: publicUserSelect,
+      }),
+      prisma.postFulfillment.count({
+        where: { userId: req.params.id as string, post: { type: 'REQUEST' } },
+      }),
+    ]);
 
     // Delete old avatar from Spaces (after successful update)
     if (existing?.avatarUrl) {
       await deleteObjectByUrl(existing.avatarUrl).catch(() => {});
     }
 
-    res.json(user);
+    res.json({ ...user, fulfilledCount });
   } catch (err) { next(err); }
 });
 
