@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { randomBytes } from 'crypto';
 import {
   createOrganizationSchema,
   updateOrganizationSchema,
@@ -11,6 +12,10 @@ import { uploadAvatar } from '../middleware/upload.middleware.js';
 import { prisma } from '../config/database.js';
 import { deleteObjectByUrl } from '../config/storage.js';
 import { AppError } from '../middleware/error.middleware.js';
+import {
+  sendOrganizationInviteEmail,
+  sendOrganizationSignupInviteEmail,
+} from '../services/mail.service.js';
 import type { Prisma } from '@prisma/client';
 
 const publicUserSelect = {
@@ -422,7 +427,46 @@ organizationRoutes.post('/:id/invites', validate(inviteToOrganizationSchema), as
       where: { email: req.body.email },
       select: { id: true },
     });
-    if (!targetUser) throw new AppError(404, 'No user found with that email');
+    if (!targetUser) {
+      const org = await prisma.organization.findUnique({ where: { id: orgId }, select: { name: true } });
+      if (!org) throw new AppError(404, 'Organization not found');
+      const inviter = await prisma.user.findUnique({ where: { id: req.user!.id }, select: { name: true } });
+
+      const normalizedEmail = req.body.email.trim().toLowerCase();
+      const token = randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      await prisma.pendingOrganizationInvite.upsert({
+        where: { organizationId_email: { organizationId: orgId, email: normalizedEmail } },
+        create: {
+          organizationId: orgId,
+          email: normalizedEmail,
+          invitedById: req.user!.id,
+          token,
+          expiresAt,
+        },
+        update: {
+          invitedById: req.user!.id,
+          token,
+          expiresAt,
+          status: 'PENDING',
+          claimedAt: null,
+        },
+      });
+
+      try {
+        await sendOrganizationSignupInviteEmail(
+          normalizedEmail,
+          inviter?.name ?? 'A Mayday member',
+          org.name,
+          token,
+        );
+      } catch (err) {
+        console.error('[mail] failed to send organization-signup-invite email', err);
+      }
+      res.status(202).json({ pendingSignup: true, email: normalizedEmail });
+      return;
+    }
 
     // Already a member?
     const existingMember = await prisma.organizationMember.findUnique({
@@ -462,6 +506,30 @@ organizationRoutes.post('/:id/invites', validate(inviteToOrganizationSchema), as
         },
       });
     }
+
+    void (async () => {
+      try {
+        const [org, recipient, inviter] = await Promise.all([
+          prisma.organization.findUnique({ where: { id: orgId }, select: { name: true } }),
+          prisma.user.findUnique({
+            where: { id: targetUser.id },
+            select: { email: true, emailNotificationsEnabled: true, emailVerified: true },
+          }),
+          prisma.user.findUnique({ where: { id: req.user!.id }, select: { name: true } }),
+        ]);
+        if (
+          org &&
+          recipient &&
+          inviter &&
+          recipient.emailNotificationsEnabled &&
+          recipient.emailVerified
+        ) {
+          await sendOrganizationInviteEmail(recipient.email, inviter.name, org.name);
+        }
+      } catch (err) {
+        console.error('[mail] failed to send organization-invite email', err);
+      }
+    })();
 
     res.status(201).json(invite);
   } catch (err) { next(err); }

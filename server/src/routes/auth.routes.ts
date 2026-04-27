@@ -47,6 +47,73 @@ function dispatchRegistrationCollisionEmail(email: string) {
   });
 }
 
+async function materializePendingInvitesForUser(user: { id: string; email: string }): Promise<void> {
+  const normalizedEmail = user.email.trim().toLowerCase();
+  const now = new Date();
+
+  try {
+    const pendingCommunity = await prisma.pendingCommunityInvite.findMany({
+      where: { email: normalizedEmail, status: 'PENDING', expiresAt: { gt: now } },
+    });
+    for (const claim of pendingCommunity) {
+      try {
+        await prisma.$transaction([
+          prisma.communityInvite.upsert({
+            where: { communityId_invitedUserId: { communityId: claim.communityId, invitedUserId: user.id } },
+            create: {
+              communityId: claim.communityId,
+              invitedUserId: user.id,
+              invitedById: claim.invitedById,
+              status: 'PENDING',
+            },
+            update: {
+              invitedById: claim.invitedById,
+              status: 'PENDING',
+            },
+          }),
+          prisma.pendingCommunityInvite.update({
+            where: { id: claim.id },
+            data: { status: 'CLAIMED', claimedAt: now },
+          }),
+        ]);
+      } catch (err) {
+        console.error(`[auth] Failed to materialize pending community invite ${claim.id}:`, err);
+      }
+    }
+
+    const pendingOrg = await prisma.pendingOrganizationInvite.findMany({
+      where: { email: normalizedEmail, status: 'PENDING', expiresAt: { gt: now } },
+    });
+    for (const claim of pendingOrg) {
+      try {
+        await prisma.$transaction([
+          prisma.organizationInvite.upsert({
+            where: { organizationId_invitedUserId: { organizationId: claim.organizationId, invitedUserId: user.id } },
+            create: {
+              organizationId: claim.organizationId,
+              invitedUserId: user.id,
+              invitedById: claim.invitedById,
+              status: 'PENDING',
+            },
+            update: {
+              invitedById: claim.invitedById,
+              status: 'PENDING',
+            },
+          }),
+          prisma.pendingOrganizationInvite.update({
+            where: { id: claim.id },
+            data: { status: 'CLAIMED', claimedAt: now },
+          }),
+        ]);
+      } catch (err) {
+        console.error(`[auth] Failed to materialize pending organization invite ${claim.id}:`, err);
+      }
+    }
+  } catch (err) {
+    console.error('[auth] Failed to materialize pending invites:', err);
+  }
+}
+
 function setRefreshCookie(res: import('express').Response, token: string) {
   res.cookie('refreshToken', token, {
     httpOnly: true,
@@ -137,6 +204,8 @@ authRoutes.post('/verify-email', async (req, res, next) => {
       where: { id: user.id },
       data: { emailVerified: true },
     });
+
+    await materializePendingInvitesForUser({ id: user.id, email: user.email });
 
     res.json({ message: 'Email verified. You can now log in.' });
   } catch (err) { next(err); }

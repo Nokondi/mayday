@@ -6,11 +6,13 @@ interface RegisterFormProps {
   onSubmit: (data: RegisterRequest) => Promise<void>;
   isSubmitting: boolean;
   error?: string;
+  defaultEmail?: string;
 }
 
-export function RegisterForm({ onSubmit, isSubmitting, error }: RegisterFormProps) {
+export function RegisterForm({ onSubmit, isSubmitting, error, defaultEmail }: RegisterFormProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterRequest>({
     resolver: zodResolver(registerSchema),
+    defaultValues: defaultEmail ? { email: defaultEmail } : undefined,
   });
 
   return (

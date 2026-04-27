@@ -1,17 +1,20 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 import {
   createCommunitySchema,
   type CreateCommunityRequest,
 } from "@mayday/shared";
-import { createCommunity } from "../api/communities.js";
+import { createCommunity, inviteToCommunity } from "../api/communities.js";
 
 export function CreateCommunityPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [inviteEmails, setInviteEmails] = useState<string[]>([""]);
   const {
     register,
     handleSubmit,
@@ -22,10 +25,31 @@ export function CreateCommunityPage() {
 
   const mutation = useMutation({
     mutationFn: createCommunity,
-    onSuccess: (c) => {
+    onSuccess: async (c) => {
       queryClient.invalidateQueries({ queryKey: ["communities"] });
       queryClient.invalidateQueries({ queryKey: ["my-communities"] });
-      toast.success("Community created");
+
+      const emails = Array.from(
+        new Set(inviteEmails.map((e) => e.trim()).filter(Boolean)),
+      );
+      if (emails.length > 0) {
+        const results = await Promise.allSettled(
+          emails.map((email) => inviteToCommunity(c.id, { email })),
+        );
+        const ok = results.filter((r) => r.status === "fulfilled").length;
+        const failed = emails.length - ok;
+        if (ok && !failed) {
+          toast.success(
+            `Community created · ${ok} invite${ok === 1 ? "" : "s"} sent`,
+          );
+        } else if (ok && failed) {
+          toast.success(`Community created · ${ok} invited, ${failed} failed`);
+        } else {
+          toast.success("Community created · invites failed to send");
+        }
+      } else {
+        toast.success("Community created");
+      }
       navigate(`/communities/${c.id}`);
     },
     onError: () => toast.error("Failed to create community"),
@@ -104,6 +128,56 @@ export function CreateCommunityPage() {
                 {errors.avatarUrl.message}
               </p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Invite people{" "}
+              <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <p className="text-xs text-gray-500 mb-2">
+              They'll get an email invite. People without a Mayday account will
+              be invited to sign up.
+            </p>
+            <div className="space-y-2">
+              {inviteEmails.map((email, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) =>
+                      setInviteEmails((prev) =>
+                        prev.map((v, i) => (i === idx ? e.target.value : v)),
+                      )
+                    }
+                    placeholder="friend@example.com"
+                    aria-label={`Email to invite ${idx + 1}`}
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+                  />
+                  {inviteEmails.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setInviteEmails((prev) =>
+                          prev.filter((_, i) => i !== idx),
+                        )
+                      }
+                      className="px-2 text-gray-400 hover:text-red-600"
+                      aria-label="Remove email"
+                    >
+                      <X className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setInviteEmails((prev) => [...prev, ""])}
+              className="mt-2 text-sm text-mayday-600 hover:text-mayday-700 font-medium"
+            >
+              + Add another
+            </button>
           </div>
 
           <button

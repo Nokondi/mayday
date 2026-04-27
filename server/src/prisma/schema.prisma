@@ -63,6 +63,13 @@ enum InviteStatus {
   REVOKED
 }
 
+enum PendingInviteStatus {
+  PENDING
+  CLAIMED
+  REVOKED
+  EXPIRED
+}
+
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -97,6 +104,8 @@ model User {
   communityJoinRequests CommunityJoinRequest[]
   fulfillments          PostFulfillment[]
   bugReports            BugReport[]
+  pendingCommunityInvitesSent    PendingCommunityInvite[]    @relation("pendingCommunityInviteSender")
+  pendingOrganizationInvitesSent PendingOrganizationInvite[] @relation("pendingOrganizationInviteSender")
 }
 
 model Post {
@@ -240,10 +249,11 @@ model Organization {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members      OrganizationMember[]
-  invites      OrganizationInvite[]
-  posts        Post[]
-  fulfillments PostFulfillment[]
+  members         OrganizationMember[]
+  invites         OrganizationInvite[]
+  pendingInvites  PendingOrganizationInvite[]
+  posts           Post[]
+  fulfillments    PostFulfillment[]
 
   @@index([name])
   @@index([latitude, longitude])
@@ -292,10 +302,11 @@ model Community {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members      CommunityMember[]
-  invites      CommunityInvite[]
-  joinRequests CommunityJoinRequest[]
-  posts        Post[]
+  members        CommunityMember[]
+  invites        CommunityInvite[]
+  pendingInvites PendingCommunityInvite[]
+  joinRequests   CommunityJoinRequest[]
+  posts          Post[]
 
   @@index([name])
   @@index([latitude, longitude])
@@ -347,5 +358,45 @@ model CommunityJoinRequest {
 
   @@unique([communityId, userId])
   @@index([userId])
+  @@index([status])
+}
+
+model PendingCommunityInvite {
+  id           String              @id @default(uuid())
+  token        String              @unique
+  email        String
+  communityId  String
+  invitedById  String
+  status       PendingInviteStatus @default(PENDING)
+  expiresAt    DateTime
+  claimedAt    DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  invitedBy User      @relation("pendingCommunityInviteSender", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, email])
+  @@index([email, status])
+  @@index([status])
+}
+
+model PendingOrganizationInvite {
+  id              String              @id @default(uuid())
+  token           String              @unique
+  email           String
+  organizationId  String
+  invitedById     String
+  status          PendingInviteStatus @default(PENDING)
+  expiresAt       DateTime
+  claimedAt       DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedBy    User         @relation("pendingOrganizationInviteSender", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, email])
+  @@index([email, status])
   @@index([status])
 }

@@ -149,6 +149,169 @@ export async function sendCommunityJoinRequestEmail(
   });
 }
 
+export async function sendCommunityJoinRequestApprovedEmail(
+  to: string,
+  communityName: string,
+  communityId: string,
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(`[mail] SMTP not configured; skipping community-join-approved email to ${to}`);
+    return;
+  }
+
+  const communityUrl = `${env.CLIENT_URL}/communities/${communityId}`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escape = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  const escapedCommunity = escape(communityName);
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `You're in: ${communityName} on Mayday`,
+    text: `Your request to join the "${communityName}" community on Mayday was approved.\n\nVisit the community: ${communityUrl}`,
+    html: `
+      <p>Your request to join the <strong>${escapedCommunity}</strong> community on Mayday was approved.</p>
+      <p><a href="${communityUrl}">Visit the community</a></p>
+    `,
+  });
+}
+
+export async function sendCommunityInviteEmail(
+  to: string,
+  inviterName: string,
+  communityName: string,
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(`[mail] SMTP not configured; skipping community-invite email to ${to}`);
+    return;
+  }
+
+  const invitesUrl = `${env.CLIENT_URL}/invites`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escape = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  const escapedInviter = escape(inviterName);
+  const escapedCommunity = escape(communityName);
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `${inviterName} invited you to join ${communityName} on Mayday`,
+    text: `${inviterName} invited you to join the "${communityName}" community on Mayday.\n\nReview your invites: ${invitesUrl}`,
+    html: `
+      <p><strong>${escapedInviter}</strong> invited you to join the <strong>${escapedCommunity}</strong> community on Mayday.</p>
+      <p><a href="${invitesUrl}">Review your invites</a></p>
+    `,
+  });
+}
+
+export async function sendOrganizationInviteEmail(
+  to: string,
+  inviterName: string,
+  organizationName: string,
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(`[mail] SMTP not configured; skipping organization-invite email to ${to}`);
+    return;
+  }
+
+  const invitesUrl = `${env.CLIENT_URL}/invites`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escape = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  const escapedInviter = escape(inviterName);
+  const escapedOrg = escape(organizationName);
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `${inviterName} invited you to join ${organizationName} on Mayday`,
+    text: `${inviterName} invited you to join the "${organizationName}" organization on Mayday.\n\nReview your invites: ${invitesUrl}`,
+    html: `
+      <p><strong>${escapedInviter}</strong> invited you to join the <strong>${escapedOrg}</strong> organization on Mayday.</p>
+      <p><a href="${invitesUrl}">Review your invites</a></p>
+    `,
+  });
+}
+
+export async function sendCommunitySignupInviteEmail(
+  to: string,
+  inviterName: string,
+  communityName: string,
+  claimToken: string,
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(`[mail] SMTP not configured; skipping community-signup-invite email to ${to}`);
+    return;
+  }
+
+  const registerUrl = `${env.CLIENT_URL}/register?email=${encodeURIComponent(to)}&claimToken=${encodeURIComponent(claimToken)}`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escape = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  const escapedInviter = escape(inviterName);
+  const escapedCommunity = escape(communityName);
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `${inviterName} invited you to join ${communityName} on Mayday`,
+    text: `${inviterName} invited you to join the "${communityName}" community on Mayday, but you don't have an account yet.\n\nCreate an account to accept the invite:\n${registerUrl}\n\nOnce you've signed up and confirmed your email, your invite will be waiting in your inbox.`,
+    html: `
+      <p><strong>${escapedInviter}</strong> invited you to join the <strong>${escapedCommunity}</strong> community on Mayday, but you don't have an account yet.</p>
+      <p><a href="${registerUrl}">Create your account</a></p>
+      <p style="color:#666;font-size:0.9em;">Once you've signed up and confirmed your email, your invite will be waiting in your inbox.</p>
+    `,
+  });
+}
+
+export async function sendOrganizationSignupInviteEmail(
+  to: string,
+  inviterName: string,
+  organizationName: string,
+  claimToken: string,
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(`[mail] SMTP not configured; skipping organization-signup-invite email to ${to}`);
+    return;
+  }
+
+  const registerUrl = `${env.CLIENT_URL}/register?email=${encodeURIComponent(to)}&claimToken=${encodeURIComponent(claimToken)}`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escape = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  const escapedInviter = escape(inviterName);
+  const escapedOrg = escape(organizationName);
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `${inviterName} invited you to join ${organizationName} on Mayday`,
+    text: `${inviterName} invited you to join the "${organizationName}" organization on Mayday, but you don't have an account yet.\n\nCreate an account to accept the invite:\n${registerUrl}\n\nOnce you've signed up and confirmed your email, your invite will be waiting in your inbox.`,
+    html: `
+      <p><strong>${escapedInviter}</strong> invited you to join the <strong>${escapedOrg}</strong> organization on Mayday, but you don't have an account yet.</p>
+      <p><a href="${registerUrl}">Create your account</a></p>
+      <p style="color:#666;font-size:0.9em;">Once you've signed up and confirmed your email, your invite will be waiting in your inbox.</p>
+    `,
+  });
+}
+
 export async function sendPasswordResetEmail(to: string, token: string): Promise<void> {
   const t = getTransporter();
   if (!t) {
