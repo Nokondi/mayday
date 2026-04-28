@@ -1,13 +1,17 @@
-import { useState, useRef, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useQuery } from '@tanstack/react-query';
-import { createPostSchema, CATEGORIES, type CreatePostRequest } from '@mayday/shared';
-import { ImagePlus, X, MapPin, Loader2 } from 'lucide-react';
-import { useDebounce } from '../../hooks/useDebounce.js';
-import { listMyOrganizations } from '../../api/organizations.js';
-import { listMyCommunities } from '../../api/communities.js';
-import { useAuth } from '../../context/AuthContext.js';
+import { useState, useRef, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
+import {
+  createPostSchema,
+  CATEGORIES,
+  type CreatePostRequest,
+} from "@mayday/shared";
+import { ImagePlus, X, MapPin, Loader2 } from "lucide-react";
+import { useDebounce } from "../../hooks/useDebounce.js";
+import { listMyOrganizations } from "../../api/organizations.js";
+import { listMyCommunities } from "../../api/communities.js";
+import { useAuth } from "../../context/AuthContext.js";
 
 interface PostFormProps {
   onSubmit: (data: CreatePostRequest, images: File[]) => Promise<void>;
@@ -16,25 +20,31 @@ interface PostFormProps {
 
 export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
   const { user } = useAuth();
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CreatePostRequest>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<CreatePostRequest>({
     resolver: zodResolver(createPostSchema),
     defaultValues: {
-      type: 'REQUEST',
-      urgency: 'MEDIUM',
+      type: "REQUEST",
+      urgency: "MEDIUM",
     },
   });
 
-  const recurrenceFreq = watch('recurrenceFreq');
+  const recurrenceFreq = watch("recurrenceFreq");
 
   // Organizations the user can post on behalf of
   const { data: myOrgs } = useQuery({
-    queryKey: ['my-organizations'],
+    queryKey: ["my-organizations"],
     queryFn: listMyOrganizations,
   });
 
   // Communities the user can scope posts to
   const { data: myCommunities } = useQuery({
-    queryKey: ['my-communities'],
+    queryKey: ["my-communities"],
     queryFn: listMyCommunities,
   });
 
@@ -59,42 +69,55 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
     };
     formatted?: string;
   }
-  const [locationQuery, setLocationQuery] = useState('');
+  const [locationQuery, setLocationQuery] = useState("");
   const [geocodeResults, setGeocodeResults] = useState<GeoResult[]>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
-  const [resolvedLocation, setResolvedLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
+  const [resolvedLocation, setResolvedLocation] = useState<{
+    name: string;
+    lat: number;
+    lng: number;
+  } | null>(null);
   const debouncedLocation = useDebounce(locationQuery, 500);
 
   function formatAddress(result: GeoResult): string {
     const a = result.address;
     if (!a) return result.display_name;
 
-    const street = [a.house_number, a.road].filter(Boolean).join(' ');
-    const city = a.city || a.town || a.village || a.hamlet || '';
-    const state = a.state || '';
-    const zip = a.postcode || '';
+    const street = [a.house_number, a.road].filter(Boolean).join(" ");
+    const city = a.city || a.town || a.village || a.hamlet || "";
+    const state = a.state || "";
+    const zip = a.postcode || "";
 
     // Build "street, city, state zip"
     const parts: string[] = [];
     if (street) parts.push(street);
     if (city) parts.push(city);
-    if (state || zip) parts.push([state, zip].filter(Boolean).join(' '));
+    if (state || zip) parts.push([state, zip].filter(Boolean).join(" "));
 
-    return parts.length > 0 ? parts.join(', ') : result.display_name;
+    return parts.length > 0 ? parts.join(", ") : result.display_name;
   }
 
   // Geocode when debounced query changes
-  const lastGeocodedRef = useRef('');
-  if (debouncedLocation.length >= 3 && debouncedLocation !== lastGeocodedRef.current && !resolvedLocation) {
+  const lastGeocodedRef = useRef("");
+  if (
+    debouncedLocation.length >= 3 &&
+    debouncedLocation !== lastGeocodedRef.current &&
+    !resolvedLocation
+  ) {
     lastGeocodedRef.current = debouncedLocation;
     setIsGeocoding(true);
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(debouncedLocation)}&limit=5`, {
-      headers: { 'User-Agent': 'MayDay-MutualAid/0.1' },
-    })
-      .then(r => r.json())
+    fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(debouncedLocation)}&limit=5`,
+      {
+        headers: { "User-Agent": "MayDay-MutualAid/0.1" },
+      },
+    )
+      .then((r) => r.json())
       .then((data: GeoResult[]) => {
         // Pre-compute formatted addresses
-        setGeocodeResults(data.map(r => ({ ...r, formatted: formatAddress(r) })));
+        setGeocodeResults(
+          data.map((r) => ({ ...r, formatted: formatAddress(r) })),
+        );
       })
       .catch(() => setGeocodeResults([]))
       .finally(() => setIsGeocoding(false));
@@ -107,19 +130,19 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
     setResolvedLocation({ name, lat, lng });
     setLocationQuery(name);
     setGeocodeResults([]);
-    setValue('location', name);
-    setValue('latitude', lat);
-    setValue('longitude', lng);
+    setValue("location", name);
+    setValue("latitude", lat);
+    setValue("longitude", lng);
   }, []);
 
   const clearLocation = useCallback(() => {
     setResolvedLocation(null);
-    setLocationQuery('');
+    setLocationQuery("");
     setGeocodeResults([]);
-    lastGeocodedRef.current = '';
-    setValue('location', undefined as any);
-    setValue('latitude', undefined as any);
-    setValue('longitude', undefined as any);
+    lastGeocodedRef.current = "";
+    setValue("location", undefined as any);
+    setValue("latitude", undefined as any);
+    setValue("longitude", undefined as any);
   }, []);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,17 +150,20 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
     const remaining = 5 - images.length;
     const toAdd = files.slice(0, remaining);
 
-    setImages(prev => [...prev, ...toAdd]);
-    setPreviews(prev => [...prev, ...toAdd.map(f => URL.createObjectURL(f))]);
+    setImages((prev) => [...prev, ...toAdd]);
+    setPreviews((prev) => [
+      ...prev,
+      ...toAdd.map((f) => URL.createObjectURL(f)),
+    ]);
 
     // Reset input so the same file can be re-selected
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const removeImage = (index: number) => {
     URL.revokeObjectURL(previews[index]);
-    setImages(prev => prev.filter((_, i) => i !== index));
-    setPreviews(prev => prev.filter((_, i) => i !== index));
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleFormSubmit = (data: CreatePostRequest) => {
@@ -157,14 +183,26 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Type
+        </label>
         <div className="flex gap-4">
           <label className="flex items-center gap-2">
-            <input type="radio" value="REQUEST" {...register('type')} className="text-mayday-500" />
+            <input
+              type="radio"
+              value="REQUEST"
+              {...register("type")}
+              className="text-mayday-500"
+            />
             <span>I need help (Request)</span>
           </label>
           <label className="flex items-center gap-2">
-            <input type="radio" value="OFFER" {...register('type')} className="text-green-500" />
+            <input
+              type="radio"
+              value="OFFER"
+              {...register("type")}
+              className="text-green-500"
+            />
             <span>I can help (Offer)</span>
           </label>
         </div>
@@ -172,14 +210,18 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
       {myOrgs && myOrgs.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Post as</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Post as
+          </label>
           <select
-            {...register('organizationId')}
+            {...register("organizationId")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
-            <option value="">{user?.name ?? 'Yourself'}</option>
+            <option value="">{user?.name ?? "Yourself"}</option>
             {myOrgs.map((org) => (
-              <option key={org.id} value={org.id}>{org.name}</option>
+              <option key={org.id} value={org.id}>
+                {org.name}
+              </option>
             ))}
           </select>
         </div>
@@ -187,51 +229,75 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
       {myCommunities && myCommunities.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Visibility
+          </label>
           <select
-            {...register('communityId')}
+            {...register("communityId")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
             <option value="">Public (visible to everyone)</option>
             {myCommunities.map((c) => (
-              <option key={c.id} value={c.id}>{c.name} members only</option>
+              <option key={c.id} value={c.id}>
+                {c.name} members only
+              </option>
             ))}
           </select>
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Title
+        </label>
         <input
-          {...register('title')}
+          {...register("title")}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
           placeholder="Brief description of what you need or can offer"
         />
-        {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
+        {errors.title && (
+          <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+        )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Description
+        </label>
         <textarea
-          {...register('description')}
+          {...register("description")}
           rows={4}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
           placeholder="Provide details about your request or offer..."
         />
-        {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
+        {errors.description && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.description.message}
+          </p>
+        )}
       </div>
 
       {/* Image upload */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Images <span className="text-gray-400 font-normal">(optional, up to 5)</span>
+          Images{" "}
+          <span className="text-gray-400 font-normal">
+            (optional, maximum of 5 images, 5mb per image)
+          </span>
         </label>
 
         {previews.length > 0 && (
           <div className="flex flex-wrap gap-3 mb-3">
             {previews.map((src, i) => (
-              <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 group">
-                <img src={src} alt={`Preview of image ${i + 1}`} className="w-full h-full object-cover" />
+              <div
+                key={i}
+                className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 group"
+              >
+                <img
+                  src={src}
+                  alt={`Preview of image ${i + 1}`}
+                  className="w-full h-full object-cover"
+                />
                 <button
                   type="button"
                   onClick={() => removeImage(i)}
@@ -268,23 +334,33 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Category
+          </label>
           <select
-            {...register('category')}
+            {...register("category")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
             <option value="">Select a category</option>
             {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
             ))}
           </select>
-          {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>}
+          {errors.category && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.category.message}
+            </p>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Urgency</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Urgency
+          </label>
           <select
-            {...register('urgency')}
+            {...register("urgency")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
             <option value="LOW">Low</option>
@@ -302,10 +378,14 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           </label>
           <input
             type="datetime-local"
-            {...register('startAt')}
+            {...register("startAt")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
           />
-          {errors.startAt && <p className="text-red-500 text-sm mt-1">{errors.startAt.message}</p>}
+          {errors.startAt && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.startAt.message}
+            </p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -313,27 +393,31 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           </label>
           <input
             type="datetime-local"
-            {...register('endAt')}
+            {...register("endAt")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
           />
-          {errors.endAt && <p className="text-red-500 text-sm mt-1">{errors.endAt.message}</p>}
+          {errors.endAt && (
+            <p className="text-red-500 text-sm mt-1">{errors.endAt.message}</p>
+          )}
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Repeats</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Repeats <span className="text-gray-400 font-normal">(optional)</span>
+        </label>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">every</span>
           <input
             type="number"
             min={1}
             max={365}
-            {...register('recurrenceInterval')}
+            {...register("recurrenceInterval")}
             disabled={!recurrenceFreq}
             className="w-20 border border-gray-300 rounded-lg px-3 py-2 disabled:bg-gray-100 disabled:text-gray-400"
           />
           <select
-            {...register('recurrenceFreq')}
+            {...register("recurrenceFreq")}
             className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
             <option value="">Does not repeat</option>
@@ -342,17 +426,37 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             <option value="MONTH">month(s)</option>
           </select>
         </div>
-        {errors.recurrenceFreq && <p className="text-red-500 text-sm mt-1">{errors.recurrenceFreq.message}</p>}
-        {errors.recurrenceInterval && <p className="text-red-500 text-sm mt-1">{errors.recurrenceInterval.message}</p>}
+        {errors.recurrenceFreq && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.recurrenceFreq.message}
+          </p>
+        )}
+        {errors.recurrenceInterval && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.recurrenceInterval.message}
+          </p>
+        )}
       </div>
 
       <div className="relative">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Location <span className="text-gray-400 font-normal">(optional)</span>
+        </label>
         {resolvedLocation ? (
           <div className="flex items-center gap-2 border border-green-300 bg-green-50 rounded-lg px-3 py-2">
-            <MapPin className="w-4 h-4 text-green-600 flex-shrink-0" aria-hidden="true" />
-            <span className="text-sm text-green-800 flex-1">{resolvedLocation.name}</span>
-            <button type="button" onClick={clearLocation} aria-label="Clear location" className="text-gray-400 hover:text-gray-600">
+            <MapPin
+              className="w-4 h-4 text-green-600 flex-shrink-0"
+              aria-hidden="true"
+            />
+            <span className="text-sm text-green-800 flex-1">
+              {resolvedLocation.name}
+            </span>
+            <button
+              type="button"
+              onClick={clearLocation}
+              aria-label="Clear location"
+              className="text-gray-400 hover:text-gray-600"
+            >
               <X className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
@@ -375,7 +479,11 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         )}
 
         {geocodeResults.length > 0 && !resolvedLocation && (
-          <ul role="listbox" aria-label="Location suggestions" className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          <ul
+            role="listbox"
+            aria-label="Location suggestions"
+            className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+          >
             {geocodeResults.map((result, i) => (
               <li key={i} role="option" aria-selected={false}>
                 <button
@@ -383,8 +491,13 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
                   onClick={() => selectLocation(result)}
                   className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-start gap-2"
                 >
-                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                  <span className="line-clamp-2">{result.formatted || result.display_name}</span>
+                  <MapPin
+                    className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span className="line-clamp-2">
+                    {result.formatted || result.display_name}
+                  </span>
                 </button>
               </li>
             ))}
@@ -397,7 +510,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         disabled={isSubmitting}
         className="w-full bg-mayday-500 text-white py-3 rounded-lg font-medium hover:bg-mayday-600 disabled:opacity-50"
       >
-        {isSubmitting ? 'Creating...' : 'Create Post'}
+        {isSubmitting ? "Creating..." : "Create Post"}
       </button>
     </form>
   );
