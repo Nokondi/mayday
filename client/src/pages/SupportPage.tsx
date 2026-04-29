@@ -78,13 +78,13 @@ const generalTopics: Topic[] = [
           MayDay Patreon
         </Link>
         . Donation tiers start at $1, and every contribution helps keep MayDay
-        running. I'll be using the Patreon to keep folks informed about project
-        development, and there will be opportunities for supporters to help
-        decide on future features and updates. If you're not a developer and
-        don't have money to contribute, you can still help by sharing MayDay
-        with your friends and family, giving feedback on how to make it better,
-        or even just posting your needs and offers to help build the community.
-        The more people use it, the more useful it becomes!
+        running. You can follow along with updates about project development,
+        and there will be opportunities for supporters to help decide on future
+        features and updates. If you're not a developer and don't have money to
+        contribute, you can still help by sharing MayDay with your friends and
+        family, giving feedback on how to make it better, or even just posting
+        your needs and offers to help build the community. The more people use
+        it, the more useful it becomes!
       </p>
     ),
   },

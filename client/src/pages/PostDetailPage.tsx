@@ -14,6 +14,8 @@ import {
   RotateCcw,
   Calendar,
   Repeat,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { formatDistanceToNow, format, isSameDay } from "date-fns";
 import { formatRecurrence } from "../components/posts/PostCard.js";
@@ -32,6 +34,87 @@ import { UrgencyBadge } from "../components/common/UrgencyBadge.js";
 import { PostCard } from "../components/posts/PostCard.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { FulfillModal } from "../components/posts/FulfillModal.js";
+
+function ImageCarousel({
+  images,
+}: {
+  images: { id: string; url: string }[];
+}) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollState = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 0);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  };
+
+  useEffect(() => {
+    updateScrollState();
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", updateScrollState, { passive: true });
+    window.addEventListener("resize", updateScrollState);
+    return () => {
+      el.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+  }, [images.length]);
+
+  const scrollByCard = (direction: 1 | -1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const card = el.querySelector<HTMLElement>("[data-carousel-item]");
+    const step = card ? card.offsetWidth + 12 : el.clientWidth;
+    el.scrollBy({ left: step * direction, behavior: "smooth" });
+  };
+
+  const showArrows = images.length > 1;
+
+  return (
+    <div className="relative mb-4">
+      <div
+        ref={scrollerRef}
+        className="flex flex-nowrap gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-1 -mx-1 px-1"
+      >
+        {images.map((img) => (
+          <a
+            key={img.id}
+            href={img.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-carousel-item
+            className="snap-start shrink-0 block rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
+          >
+            <img src={img.url} alt="" className="w-40 h-40 object-cover" />
+          </a>
+        ))}
+      </div>
+      {showArrows && canScrollLeft && (
+        <button
+          type="button"
+          onClick={() => scrollByCard(-1)}
+          aria-label="Previous image"
+          className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-1.5 shadow"
+        >
+          <ChevronLeft className="w-4 h-4 text-gray-700" />
+        </button>
+      )}
+      {showArrows && canScrollRight && (
+        <button
+          type="button"
+          onClick={() => scrollByCard(1)}
+          aria-label="Next image"
+          className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-1.5 shadow"
+        >
+          <ChevronRight className="w-4 h-4 text-gray-700" />
+        </button>
+      )}
+    </div>
+  );
+}
 
 export function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -140,25 +223,28 @@ export function PostDetailPage() {
             <Flag className="w-4 h-4" aria-hidden="true" />
           </button>
         )}
-        <div className="flex items-center gap-2 mb-3">
-          <span
-            className={`text-sm font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-600" : "text-green-600"}`}
-          >
-            {post.type === "REQUEST" ? "Request" : "Offer"}
-          </span>
-          <CategoryBadge category={post.category} />
-          <UrgencyBadge urgency={post.urgency} />
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full ${
-              post.status === "OPEN"
-                ? "bg-green-100 text-green-700"
-                : post.status === "FULFILLED"
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-gray-100 text-gray-700"
-            }`}
-          >
-            {post.status}
-          </span>
+        <span
+          className={`text-sm font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-600" : "text-green-600"}`}
+        >
+          {post.type === "REQUEST" ? "Request" : "Offer"}
+        </span>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">{post.title}</h1>
+        <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 mb-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <CategoryBadge category={post.category} />
+            <UrgencyBadge urgency={post.urgency} />
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full ${
+                post.status === "OPEN"
+                  ? "bg-green-100 text-green-700"
+                  : post.status === "FULFILLED"
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              {post.status}
+            </span>
+          </div>
           {post.community && (
             <Link
               to={`/communities/${post.community.id}`}
@@ -170,23 +256,7 @@ export function PostDetailPage() {
           )}
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">{post.title}</h1>
-
-        {post.images?.length > 0 && (
-          <div className="flex flex-wrap gap-3 mb-4">
-            {post.images.map((img) => (
-              <a
-                key={img.id}
-                href={img.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
-              >
-                <img src={img.url} alt="" className="w-40 h-40 object-cover" />
-              </a>
-            ))}
-          </div>
-        )}
+        {post.images?.length > 0 && <ImageCarousel images={post.images} />}
 
         <p className="text-gray-700 whitespace-pre-wrap mb-6">
           {post.description}
@@ -224,7 +294,7 @@ export function PostDetailPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-6 text-sm text-gray-500 mb-6">
+        <div className="flex items-center gap-x-6 gap-y-2 text-sm leading-none text-gray-500 mb-6 flex-wrap sm:gap-1">
           {post.organization ? (
             <Link
               to={`/organizations/${post.organization.id}`}
@@ -262,8 +332,8 @@ export function PostDetailPage() {
           )}
           {(() => {
             if (!post.startAt && !post.endAt) return null;
-            const dateFmt = 'MMM d, yyyy h:mm a';
-            const timeFmt = 'h:mm a';
+            const dateFmt = "MMM d, yyyy h:mm a";
+            const timeFmt = "h:mm a";
             let label: string;
             if (post.startAt && post.endAt) {
               const start = new Date(post.startAt);
@@ -284,7 +354,10 @@ export function PostDetailPage() {
             );
           })()}
           {(() => {
-            const repeat = formatRecurrence(post.recurrenceFreq, post.recurrenceInterval);
+            const repeat = formatRecurrence(
+              post.recurrenceFreq,
+              post.recurrenceInterval,
+            );
             return repeat ? (
               <span className="flex items-center gap-1">
                 <Repeat className="w-4 h-4" />
@@ -303,10 +376,12 @@ export function PostDetailPage() {
             <button
               onClick={() => contactMutation.mutate()}
               disabled={contactMutation.isPending}
+              aria-label="Contact"
+              title="Contact"
               className="flex items-center gap-2 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600"
             >
               <MessageSquare className="w-4 h-4" />
-              Contact
+              <span className="hidden sm:inline">Contact</span>
             </button>
           )}
           {(isOwner || isAdmin) &&
@@ -314,30 +389,36 @@ export function PostDetailPage() {
             post.type === "REQUEST" && (
               <button
                 onClick={() => setShowFulfillModal(true)}
+                aria-label="Mark as Fulfilled"
+                title="Mark as Fulfilled"
                 className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
               >
                 <CheckCircle className="w-4 h-4" />
-                Mark as Fulfilled
+                <span className="hidden sm:inline">Mark as Fulfilled</span>
               </button>
             )}
           {(isOwner || isAdmin) && post.status === "FULFILLED" && (
             <button
               onClick={() => reopenMutation.mutate()}
               disabled={reopenMutation.isPending}
+              aria-label="Reopen"
+              title="Reopen"
               className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50"
             >
               <RotateCcw className="w-4 h-4" />
-              Reopen
+              <span className="hidden sm:inline">Reopen</span>
             </button>
           )}
           {(isOwner || isAdmin) && (
             <button
               onClick={() => deleteMutation.mutate()}
               disabled={deleteMutation.isPending}
+              aria-label="Delete"
+              title="Delete"
               className="flex items-center gap-2 border border-red-300 text-red-600 px-4 py-2 rounded-lg hover:bg-red-50"
             >
               <Trash2 className="w-4 h-4" />
-              Delete
+              <span className="hidden sm:inline">Delete</span>
             </button>
           )}
         </div>

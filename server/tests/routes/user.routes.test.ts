@@ -15,6 +15,7 @@ vi.mock('../../src/config/database.js', () => {
       deleteMany: vi.fn(),
       updateMany: vi.fn(),
     },
+    postFulfillment: { count: vi.fn() },
     community: {
       delete: vi.fn(),
     },
@@ -64,6 +65,7 @@ vi.mock('../../src/middleware/upload.middleware.js', () => ({
     req.file = { location: 'https://cdn.example.com/new-avatar.png' };
     next();
   },
+  uploadPostImages: (_req: unknown, _res: unknown, next: () => void) => next(),
 }));
 
 import { prisma } from '../../src/config/database.js';
@@ -88,7 +90,10 @@ function makeApp() {
 const authHeader = (id = USER_ID) =>
   `Bearer ${signAccessToken({ id, email: 'a@b.com', role: 'USER' })}`;
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(prisma.communityMember.findMany).mockResolvedValue([] as never);
+});
 afterEach(() => vi.restoreAllMocks());
 
 describe('GET /api/users/:id', () => {
@@ -199,7 +204,9 @@ describe('GET /api/users/:id/posts', () => {
     mockedPost.findMany.mockResolvedValueOnce([{ id: 'p1' }, { id: 'p2' }] as never);
     mockedPost.count.mockResolvedValueOnce(2 as never);
 
-    const res = await request(makeApp()).get(`/api/users/${USER_ID}/posts`);
+    const res = await request(makeApp())
+      .get(`/api/users/${USER_ID}/posts`)
+      .set('Authorization', authHeader());
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ data: [{ id: 'p1' }, { id: 'p2' }], total: 2, page: 1 });
@@ -209,7 +216,9 @@ describe('GET /api/users/:id/posts', () => {
     mockedPost.findMany.mockResolvedValueOnce([] as never);
     mockedPost.count.mockResolvedValueOnce(0 as never);
 
-    await request(makeApp()).get(`/api/users/${USER_ID}/posts?limit=999`);
+    await request(makeApp())
+      .get(`/api/users/${USER_ID}/posts?limit=999`)
+      .set('Authorization', authHeader());
 
     const args = mockedPost.findMany.mock.calls[0][0] as { take: number };
     expect(args.take).toBe(50);

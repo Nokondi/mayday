@@ -27,6 +27,7 @@ vi.mock('../../src/config/database.js', () => ({
     },
     user: { findUnique: vi.fn() },
     post: { updateMany: vi.fn() },
+    postFulfillment: { count: vi.fn() },
     $transaction: vi.fn(),
   },
 }));

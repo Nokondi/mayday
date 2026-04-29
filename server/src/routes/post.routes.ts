@@ -214,6 +214,7 @@ postRoutes.get('/:id/matches', requireAuth, async (req: AuthRequest, res, next) 
       category: post.category,
       status: 'OPEN',
       id: { not: post.id },
+      authorId: { not: req.user!.id },
     };
 
     if (post.latitude && post.longitude) {
