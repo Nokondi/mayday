@@ -1,13 +1,13 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock('../../../src/context/AuthContext.js', () => ({
+vi.mock("../../../src/context/AuthContext.js", () => ({
   useAuth: vi.fn(),
 }));
 
-import { Footer } from '../../../src/components/layout/Footer.js';
-import { useAuth } from '../../../src/context/AuthContext.js';
+import { Footer } from "../../../src/components/layout/Footer.js";
+import { useAuth } from "../../../src/context/AuthContext.js";
 
 const mockedUseAuth = vi.mocked(useAuth);
 
@@ -33,41 +33,52 @@ function renderFooter() {
   );
 }
 
-describe('Footer', () => {
+describe("Footer", () => {
   beforeEach(() => {
     setAuth();
   });
 
-  it('renders as a contentinfo landmark', () => {
+  it("renders as a contentinfo landmark", () => {
     renderFooter();
-    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+    expect(screen.getByRole("contentinfo")).toBeInTheDocument();
   });
 
   it('renders the "Built with love for community" attribution with screen-reader text', () => {
     renderFooter();
     // The heart icon has aria-hidden; the word "love" is provided via sr-only.
     expect(screen.getByText(/built with/i)).toBeInTheDocument();
-    const srLove = screen.getByText('love');
-    expect(srLove).toHaveClass('sr-only');
+    const srLove = screen.getByText("love");
+    expect(srLove).toHaveClass("sr-only");
     expect(screen.getByText(/for community/i)).toBeInTheDocument();
   });
 
-  it('renders the product name', () => {
+  it("renders the product name", () => {
     renderFooter();
-    expect(screen.getByText('MayDay Mutual Aid Hub')).toBeInTheDocument();
+    expect(screen.getByText("MayDay Mutual Aid Hub")).toBeInTheDocument();
   });
 
-  it('hides the support link when logged out', () => {
+  it("hides the support link when logged out", () => {
     renderFooter();
-    expect(screen.queryByRole('link', { name: /help|bug report/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /help|bug report/i }),
+    ).not.toBeInTheDocument();
   });
 
-  it('shows the support link pointing to /support when logged in', () => {
+  it("shows the support link pointing to /support when logged in", () => {
     setAuth({
-      user: { id: 'u1', email: 'a@b.com', name: 'Alice', role: 'USER', avatarUrl: null } as never,
+      user: {
+        id: "u1",
+        email: "a@b.com",
+        name: "Alice",
+        role: "USER",
+        avatarUrl: null,
+      } as never,
     });
     renderFooter();
-    const link = screen.getByRole('link', { name: /help.*bug report/i });
-    expect(link).toHaveAttribute('href', '/support');
+    const link = screen.getByRole("link", { name: /Follow us on Patreon/i });
+    expect(link).toHaveAttribute(
+      "href",
+      "https://www.patreon.com/c/MayDayCreative/membership",
+    );
   });
 });
