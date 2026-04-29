@@ -14,6 +14,8 @@ import {
   RotateCcw,
   Calendar,
   Repeat,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { formatDistanceToNow, format, isSameDay } from "date-fns";
 import { formatRecurrence } from "../components/posts/PostCard.js";
@@ -32,6 +34,87 @@ import { UrgencyBadge } from "../components/common/UrgencyBadge.js";
 import { PostCard } from "../components/posts/PostCard.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { FulfillModal } from "../components/posts/FulfillModal.js";
+
+function ImageCarousel({
+  images,
+}: {
+  images: { id: string; url: string }[];
+}) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollState = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 0);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  };
+
+  useEffect(() => {
+    updateScrollState();
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", updateScrollState, { passive: true });
+    window.addEventListener("resize", updateScrollState);
+    return () => {
+      el.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+  }, [images.length]);
+
+  const scrollByCard = (direction: 1 | -1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const card = el.querySelector<HTMLElement>("[data-carousel-item]");
+    const step = card ? card.offsetWidth + 12 : el.clientWidth;
+    el.scrollBy({ left: step * direction, behavior: "smooth" });
+  };
+
+  const showArrows = images.length > 1;
+
+  return (
+    <div className="relative mb-4">
+      <div
+        ref={scrollerRef}
+        className="flex flex-nowrap gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-1 -mx-1 px-1"
+      >
+        {images.map((img) => (
+          <a
+            key={img.id}
+            href={img.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-carousel-item
+            className="snap-start shrink-0 block rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
+          >
+            <img src={img.url} alt="" className="w-40 h-40 object-cover" />
+          </a>
+        ))}
+      </div>
+      {showArrows && canScrollLeft && (
+        <button
+          type="button"
+          onClick={() => scrollByCard(-1)}
+          aria-label="Previous image"
+          className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-1.5 shadow"
+        >
+          <ChevronLeft className="w-4 h-4 text-gray-700" />
+        </button>
+      )}
+      {showArrows && canScrollRight && (
+        <button
+          type="button"
+          onClick={() => scrollByCard(1)}
+          aria-label="Next image"
+          className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-1.5 shadow"
+        >
+          <ChevronRight className="w-4 h-4 text-gray-700" />
+        </button>
+      )}
+    </div>
+  );
+}
 
 export function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -173,21 +256,7 @@ export function PostDetailPage() {
           )}
         </div>
 
-        {post.images?.length > 0 && (
-          <div className="flex flex-wrap gap-3 mb-4">
-            {post.images.map((img) => (
-              <a
-                key={img.id}
-                href={img.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
-              >
-                <img src={img.url} alt="" className="w-40 h-40 object-cover" />
-              </a>
-            ))}
-          </div>
-        )}
+        {post.images?.length > 0 && <ImageCarousel images={post.images} />}
 
         <p className="text-gray-700 whitespace-pre-wrap mb-6">
           {post.description}
