@@ -212,7 +212,7 @@ export function ProfilePage() {
                   {profile.name}
                 </h1>
               )}
-              <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500 mt-1">
+              <div className="flex items-center flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mt-1">
                 {profile.location && (
                   <span className="flex items-center gap-1">
                     <MapPin className="w-3 h-3" />

@@ -47,7 +47,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           <Link
             to="/"
-            className="flex items-center gap-2 text-mayday-600 font-bold text-xl"
+            className="flex items-center gap-2 text-mayday-600 font-bold text-2xl"
           >
             <MaydayLogo className="w-16 h-16" aria-hidden="true" />
             MayDay
