@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import {
-  LifeBuoy,
   Menu,
   X,
   MessageSquare,
@@ -15,6 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../context/AuthContext.js";
 import { getMyInvites } from "../../api/organizations.js";
 import { getMyCommunityInvites } from "../../api/communities.js";
+import MayDayLogo from "../../assets/mayday-logo.svg?react";
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -49,8 +49,8 @@ export function Header() {
             to="/"
             className="flex items-center gap-2 text-mayday-600 font-bold text-2xl"
           >
-            <LifeBuoy
-              className="w-10 h-10 text-mayday-500"
+            <MayDayLogo
+              className="w-16 h-16 text-mayday-500"
               aria-hidden="true"
             />
             MayDay
