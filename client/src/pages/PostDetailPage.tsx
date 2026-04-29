@@ -225,7 +225,7 @@ export function PostDetailPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-6 text-sm leading-none text-gray-500 mb-6 flex-wrap">
+        <div className="flex items-center gap-x-6 gap-y-2 text-sm leading-none text-gray-500 mb-6 flex-wrap sm:gap-1">
           {post.organization ? (
             <Link
               to={`/organizations/${post.organization.id}`}
