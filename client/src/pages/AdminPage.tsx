@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Shield, Flag, Users, Check, X, Ban, Bug, Search } from 'lucide-react';
+import { Shield, Flag, Users, Check, X, Ban, Bug, Search, Megaphone, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '../api/client.js';
 import { getBugReports, updateBugReportStatus, type BugReport } from '../api/bugReports.js';
 import { searchUsers, setUserBanned, type AdminUserRow } from '../api/adminUsers.js';
+import {
+  listAnnouncements,
+  createAnnouncement,
+  updateAnnouncement,
+  deleteAnnouncement,
+} from '../api/announcements.js';
+import type { Announcement } from '@mayday/shared';
 
 interface Report {
   id: string;
@@ -21,7 +28,8 @@ interface Report {
 const BUG_STATUSES: BugReport['status'][] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
 
 export function AdminPage() {
-  const [tab, setTab] = useState<'reports' | 'bugs' | 'users'>('reports');
+  const [tab, setTab] = useState<'reports' | 'bugs' | 'users' | 'announcements'>('reports');
+  const [announcementDraft, setAnnouncementDraft] = useState('');
   const [bugStatusFilter, setBugStatusFilter] = useState<BugReport['status'] | 'ALL'>('OPEN');
   const [userQuery, setUserQuery] = useState('');
   const [debouncedUserQuery, setDebouncedUserQuery] = useState('');
@@ -96,6 +104,43 @@ export function AdminPage() {
     onError: () => toast.error('Failed to update user'),
   });
 
+  const { data: announcements } = useQuery({
+    queryKey: ['admin', 'announcements'],
+    queryFn: listAnnouncements,
+    enabled: tab === 'announcements',
+  });
+
+  const postAnnouncement = useMutation({
+    mutationFn: (message: string) => createAnnouncement({ message }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] });
+      queryClient.invalidateQueries({ queryKey: ['announcement', 'active'] });
+      setAnnouncementDraft('');
+      toast.success('Announcement posted');
+    },
+    onError: () => toast.error('Failed to post announcement'),
+  });
+
+  const deactivateAnnouncement = useMutation({
+    mutationFn: (id: string) => updateAnnouncement(id, { active: false }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] });
+      queryClient.invalidateQueries({ queryKey: ['announcement', 'active'] });
+      toast.success('Announcement cleared');
+    },
+    onError: () => toast.error('Failed to clear announcement'),
+  });
+
+  const removeAnnouncement = useMutation({
+    mutationFn: (id: string) => deleteAnnouncement(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] });
+      queryClient.invalidateQueries({ queryKey: ['announcement', 'active'] });
+      toast.success('Announcement deleted');
+    },
+    onError: () => toast.error('Failed to delete announcement'),
+  });
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
@@ -127,6 +172,14 @@ export function AdminPage() {
           }`}
         >
           <Users className="w-4 h-4" /> Users
+        </button>
+        <button
+          onClick={() => setTab('announcements')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+            tab === 'announcements' ? 'bg-mayday-500 text-white' : 'bg-gray-100 text-gray-700'
+          }`}
+        >
+          <Megaphone className="w-4 h-4" /> Announcements
         </button>
       </div>
 
@@ -359,6 +412,99 @@ export function AdminPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {tab === 'announcements' && (
+        <div className="space-y-6">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const message = announcementDraft.trim();
+              if (!message) return;
+              postAnnouncement.mutate(message);
+            }}
+            className="bg-white rounded-lg border border-gray-200 p-4 space-y-3"
+          >
+            <label htmlFor="announcement-message" className="block text-sm font-medium text-gray-700">
+              Post a new announcement
+            </label>
+            <textarea
+              id="announcement-message"
+              value={announcementDraft}
+              onChange={(e) => setAnnouncementDraft(e.target.value)}
+              placeholder="A short message to display at the top of the app for all users."
+              rows={3}
+              maxLength={500}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+            />
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-500">
+                Posting replaces the current active announcement. Users who dismissed a previous announcement will see this new one.
+              </p>
+              <button
+                type="submit"
+                disabled={!announcementDraft.trim() || postAnnouncement.isPending}
+                className="bg-mayday-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-mayday-600 disabled:opacity-50"
+              >
+                {postAnnouncement.isPending ? 'Posting...' : 'Post'}
+              </button>
+            </div>
+          </form>
+
+          <div>
+            <h2 className="text-sm font-semibold text-gray-700 mb-2">Recent announcements</h2>
+            {announcements?.length === 0 && (
+              <p className="text-center py-8 text-gray-500">No announcements yet</p>
+            )}
+            <div className="space-y-2">
+              {announcements?.map((a: Announcement) => (
+                <div
+                  key={a.id}
+                  className={`bg-white rounded-lg border p-4 flex items-start justify-between gap-4 ${
+                    a.active ? 'border-mayday-300' : 'border-gray-200'
+                  }`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {a.active ? (
+                        <span className="text-xs bg-mayday-100 text-mayday-700 px-1.5 py-0.5 rounded">
+                          Active
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                          Inactive
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-500">
+                        {new Date(a.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap break-words">{a.message}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {a.active && (
+                      <button
+                        onClick={() => deactivateAnnouncement.mutate(a.id)}
+                        disabled={deactivateAnnouncement.isPending}
+                        className="text-sm px-3 py-1.5 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Clear
+                      </button>
+                    )}
+                    <button
+                      onClick={() => removeAnnouncement.mutate(a.id)}
+                      disabled={removeAnnouncement.isPending}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
+                      aria-label="Delete announcement"
+                    >
+                      <Trash2 className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
