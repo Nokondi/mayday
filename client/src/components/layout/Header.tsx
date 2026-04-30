@@ -50,7 +50,7 @@ export function Header() {
             className="flex items-center gap-2 text-mayday-600 font-bold text-2xl"
           >
             <MayDayLogo
-              className="w-16 h-16 text-mayday-600"
+              className="w-16 h-16 text-mayday-700"
               aria-hidden="true"
             />
             MayDay
@@ -97,9 +97,13 @@ export function Header() {
                 </Link>
                 <Link
                   to="/posts/new"
-                  className="flex items-center gap-1 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600"
+                  className="flex items-center gap-1 bg-mayday-700 text-white text-nowrap font-bold px-4 py-2 rounded-lg hover:bg-mayday-800"
                 >
-                  <Plus className="w-4 h-4" aria-hidden="true" />
+                  <Plus
+                    strokeWidth={5}
+                    className="w-4 h-4"
+                    aria-hidden="true"
+                  />
                   New Post
                 </Link>
                 <Link
@@ -170,7 +174,7 @@ export function Header() {
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600"
+                  className="bg-mayday-700 text-white font-bold px-4 py-2 rounded-lg hover:bg-mayday-800 text-nowrap"
                 >
                   Sign up
                 </Link>

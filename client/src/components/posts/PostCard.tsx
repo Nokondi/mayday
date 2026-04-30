@@ -43,7 +43,7 @@ export function formatRecurrence(
 
 export function PostCard({ post }: { post: PostWithAuthor }) {
   const typeColor =
-    post.type === "REQUEST" ? "border-l-orange-400" : "border-l-green-400";
+    post.type === "REQUEST" ? "border-l-orange-700" : "border-l-green-700";
 
   const typeLabel = post.type === "REQUEST" ? "Request" : "Offer";
 
@@ -56,7 +56,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
         <div className="flex-1 min-w-0">
           <div className="flex flex-col gap-2 mb-1">
             <span
-              className={`text-xs font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-600" : "text-green-600"}`}
+              className={`text-s font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-700" : "text-green-700"}`}
             >
               <span className="sr-only">Post type: </span>
               {typeLabel}
@@ -115,14 +115,10 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
               </span>
             )}
             {post.location && post.latitude && post.longitude && (
-              <Link
-                to={`/map?lat=${post.latitude}&lng=${post.longitude}&zoom=15`}
-                onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1 hover:text-mayday-600"
-              >
+              <span className="flex items-center gap-1">
                 <MapPin className="w-3 h-3" aria-hidden="true" />
                 {post.location}
-              </Link>
+              </span>
             )}
             {post.location && (!post.latitude || !post.longitude) && (
               <span className="flex items-center gap-1">

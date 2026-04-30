@@ -116,7 +116,7 @@ export function AboutPage() {
             <div className="flex flex-wrap gap-4 justify-center">
               <Link
                 to="/register"
-                className="bg-mayday-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-mayday-600"
+                className="bg-mayday-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-mayday-700"
               >
                 Sign up
               </Link>
