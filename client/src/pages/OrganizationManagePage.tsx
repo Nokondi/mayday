@@ -125,10 +125,10 @@ export function OrganizationManagePage() {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Organization Details</h2>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Avatar</label>
+          <p className="block text-sm font-medium text-gray-700 mb-2">Avatar</p>
           <AvatarUploader
             currentUrl={org.avatarUrl}
-            fallback={<Building2 className="w-8 h-8 text-gray-400" />}
+            fallback={<Building2 className="w-8 h-8 text-gray-500" />}
             onUpload={async (file) => {
               await uploadOrganizationAvatar(id!, file);
               queryClient.invalidateQueries({ queryKey: ['organization', id] });
@@ -149,23 +149,26 @@ export function OrganizationManagePage() {
           className="space-y-4"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label htmlFor="org-edit-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
             <input
+              id="org-edit-name"
               {...editForm.register('name')}
               className="w-full border border-gray-300 rounded-lg px-3 py-2"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label htmlFor="org-edit-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
+              id="org-edit-description"
               {...editForm.register('description')}
               rows={3}
               className="w-full border border-gray-300 rounded-lg px-3 py-2"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+            <label htmlFor="org-edit-location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
             <input
+              id="org-edit-location"
               {...editForm.register('location')}
               className="w-full border border-gray-300 rounded-lg px-3 py-2"
             />
@@ -267,7 +270,7 @@ export function OrganizationManagePage() {
                         }
                       }}
                       aria-label={`Remove ${m.user.name}`}
-                      className="text-gray-400 hover:text-red-600"
+                      className="text-gray-500 hover:text-red-600"
                     >
                       <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>

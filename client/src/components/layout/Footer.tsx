@@ -16,7 +16,7 @@ export function Footer() {
         <p className="mt-1">MayDay Mutual Aid Hub</p>
         <p className="mt-1">
           <Link
-            to="https://www.patreon.com/c/MayDayCreative/membership"
+            to="https://www.patreon.com/c/MayDayCreative"
             className="text-mayday-600 hover:underline"
           >
             Follow us on Patreon

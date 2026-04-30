@@ -18,7 +18,7 @@ export function RegisterForm({ onSubmit, isSubmitting, error, defaultEmail }: Re
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div role="alert" className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
           {error}
         </div>
       )}
@@ -27,10 +27,12 @@ export function RegisterForm({ onSubmit, isSubmitting, error, defaultEmail }: Re
         <label htmlFor="register-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
         <input
           id="register-name"
+          aria-invalid={!!errors.name}
+          aria-describedby={errors.name ? 'register-name-error' : undefined}
           {...register('name')}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
         />
-        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
+        {errors.name && <p id="register-name-error" className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
       </div>
 
       <div>
@@ -38,10 +40,12 @@ export function RegisterForm({ onSubmit, isSubmitting, error, defaultEmail }: Re
         <input
           id="register-email"
           type="email"
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? 'register-email-error' : undefined}
           {...register('email')}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
         />
-        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+        {errors.email && <p id="register-email-error" className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
       </div>
 
       <div>
@@ -49,10 +53,12 @@ export function RegisterForm({ onSubmit, isSubmitting, error, defaultEmail }: Re
         <input
           id="register-password"
           type="password"
+          aria-invalid={!!errors.password}
+          aria-describedby={errors.password ? 'register-password-error' : undefined}
           {...register('password')}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
         />
-        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+        {errors.password && <p id="register-password-error" className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
       </div>
 
       <button

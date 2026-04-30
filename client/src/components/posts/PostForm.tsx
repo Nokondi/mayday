@@ -72,6 +72,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
   const [locationQuery, setLocationQuery] = useState("");
   const [geocodeResults, setGeocodeResults] = useState<GeoResult[]>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [activeOptionIndex, setActiveOptionIndex] = useState(-1);
   const [resolvedLocation, setResolvedLocation] = useState<{
     name: string;
     lat: number;
@@ -130,15 +131,34 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
     setResolvedLocation({ name, lat, lng });
     setLocationQuery(name);
     setGeocodeResults([]);
+    setActiveOptionIndex(-1);
     setValue("location", name);
     setValue("latitude", lat);
     setValue("longitude", lng);
   }, []);
 
+  const handleLocationKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (geocodeResults.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveOptionIndex((i) => (i + 1) % geocodeResults.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveOptionIndex((i) => (i <= 0 ? geocodeResults.length - 1 : i - 1));
+    } else if (e.key === "Enter" && activeOptionIndex >= 0) {
+      e.preventDefault();
+      selectLocation(geocodeResults[activeOptionIndex]);
+    } else if (e.key === "Escape") {
+      setGeocodeResults([]);
+      setActiveOptionIndex(-1);
+    }
+  };
+
   const clearLocation = useCallback(() => {
     setResolvedLocation(null);
     setLocationQuery("");
     setGeocodeResults([]);
+    setActiveOptionIndex(-1);
     lastGeocodedRef.current = "";
     setValue("location", undefined as any);
     setValue("latitude", undefined as any);
@@ -182,10 +202,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <fieldset className="border-0 p-0 m-0">
+        <legend className="block text-sm font-medium text-gray-700 mb-2">
           Type
-        </label>
+        </legend>
         <div className="flex gap-4">
           <label className="flex items-center gap-2">
             <input
@@ -206,14 +226,15 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             <span>I can help (Offer)</span>
           </label>
         </div>
-      </div>
+      </fieldset>
 
       {myOrgs && myOrgs.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="post-organization" className="block text-sm font-medium text-gray-700 mb-1">
             Post as
           </label>
           <select
+            id="post-organization"
             {...register("organizationId")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
@@ -229,10 +250,11 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
       {myCommunities && myCommunities.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="post-community" className="block text-sm font-medium text-gray-700 mb-1">
             Visibility
           </label>
           <select
+            id="post-community"
             {...register("communityId")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
@@ -247,31 +269,37 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="post-title" className="block text-sm font-medium text-gray-700 mb-1">
           Title
         </label>
         <input
+          id="post-title"
+          aria-invalid={!!errors.title}
+          aria-describedby={errors.title ? 'post-title-error' : undefined}
           {...register("title")}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
           placeholder="Brief description of what you need or can offer"
         />
         {errors.title && (
-          <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+          <p id="post-title-error" className="text-red-500 text-sm mt-1">{errors.title.message}</p>
         )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="post-description" className="block text-sm font-medium text-gray-700 mb-1">
           Description
         </label>
         <textarea
+          id="post-description"
+          aria-invalid={!!errors.description}
+          aria-describedby={errors.description ? 'post-description-error' : undefined}
           {...register("description")}
           rows={4}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
           placeholder="Provide details about your request or offer..."
         />
         {errors.description && (
-          <p className="text-red-500 text-sm mt-1">
+          <p id="post-description-error" className="text-red-500 text-sm mt-1">
             {errors.description.message}
           </p>
         )}
@@ -281,7 +309,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Images{" "}
-          <span className="text-gray-400 font-normal">
+          <span className="text-gray-500 font-normal">
             (optional, maximum of 5 images, 5mb per image)
           </span>
         </label>
@@ -295,7 +323,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
               >
                 <img
                   src={src}
-                  alt={`Preview of image ${i + 1}`}
+                  alt={`Upload preview ${i + 1}`}
                   className="w-full h-full object-cover"
                 />
                 <button
@@ -334,10 +362,13 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="post-category" className="block text-sm font-medium text-gray-700 mb-1">
             Category
           </label>
           <select
+            id="post-category"
+            aria-invalid={!!errors.category}
+            aria-describedby={errors.category ? 'post-category-error' : undefined}
             {...register("category")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
@@ -349,17 +380,18 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             ))}
           </select>
           {errors.category && (
-            <p className="text-red-500 text-sm mt-1">
+            <p id="post-category-error" className="text-red-500 text-sm mt-1">
               {errors.category.message}
             </p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="post-urgency" className="block text-sm font-medium text-gray-700 mb-1">
             Urgency
           </label>
           <select
+            id="post-urgency"
             {...register("urgency")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
@@ -373,50 +405,58 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Starts <span className="text-gray-400 font-normal">(optional)</span>
+          <label htmlFor="post-startAt" className="block text-sm font-medium text-gray-700 mb-1">
+            Starts <span className="text-gray-500 font-normal">(optional)</span>
           </label>
           <input
+            id="post-startAt"
             type="datetime-local"
+            aria-invalid={!!errors.startAt}
+            aria-describedby={errors.startAt ? 'post-startAt-error' : undefined}
             {...register("startAt")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
           />
           {errors.startAt && (
-            <p className="text-red-500 text-sm mt-1">
+            <p id="post-startAt-error" className="text-red-500 text-sm mt-1">
               {errors.startAt.message}
             </p>
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Ends <span className="text-gray-400 font-normal">(optional)</span>
+          <label htmlFor="post-endAt" className="block text-sm font-medium text-gray-700 mb-1">
+            Ends <span className="text-gray-500 font-normal">(optional)</span>
           </label>
           <input
+            id="post-endAt"
             type="datetime-local"
+            aria-invalid={!!errors.endAt}
+            aria-describedby={errors.endAt ? 'post-endAt-error' : undefined}
             {...register("endAt")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
           />
           {errors.endAt && (
-            <p className="text-red-500 text-sm mt-1">{errors.endAt.message}</p>
+            <p id="post-endAt-error" className="text-red-500 text-sm mt-1">{errors.endAt.message}</p>
           )}
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Repeats <span className="text-gray-400 font-normal">(optional)</span>
-        </label>
+      <fieldset className="border-0 p-0 m-0">
+        <legend className="block text-sm font-medium text-gray-700 mb-1">
+          Repeats <span className="text-gray-500 font-normal">(optional)</span>
+        </legend>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">every</span>
           <input
             type="number"
+            aria-label="Recurrence interval"
             min={1}
             max={365}
             {...register("recurrenceInterval")}
             disabled={!recurrenceFreq}
-            className="w-20 border border-gray-300 rounded-lg px-3 py-2 disabled:bg-gray-100 disabled:text-gray-400"
+            className="w-20 border border-gray-300 rounded-lg px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500"
           />
           <select
+            aria-label="Recurrence frequency"
             {...register("recurrenceFreq")}
             className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
@@ -436,11 +476,11 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             {errors.recurrenceInterval.message}
           </p>
         )}
-      </div>
+      </fieldset>
 
       <div className="relative">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Location <span className="text-gray-400 font-normal">(optional)</span>
+        <label htmlFor="post-location" className="block text-sm font-medium text-gray-700 mb-1">
+          Location <span className="text-gray-500 font-normal">(optional)</span>
         </label>
         {resolvedLocation ? (
           <div className="flex items-center gap-2 border border-green-300 bg-green-50 rounded-lg px-3 py-2">
@@ -455,7 +495,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
               type="button"
               onClick={clearLocation}
               aria-label="Clear location"
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-500 hover:text-gray-600"
             >
               <X className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -463,36 +503,57 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         ) : (
           <div className="relative">
             <input
+              id="post-location"
               type="text"
+              role="combobox"
+              aria-expanded={geocodeResults.length > 0}
+              aria-controls="post-location-listbox"
+              aria-autocomplete="list"
+              aria-activedescendant={
+                activeOptionIndex >= 0
+                  ? `post-location-option-${activeOptionIndex}`
+                  : undefined
+              }
               value={locationQuery}
               onChange={(e) => {
                 setLocationQuery(e.target.value);
                 setResolvedLocation(null);
+                setActiveOptionIndex(-1);
               }}
+              onKeyDown={handleLocationKeyDown}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
               placeholder="Search for an address or place..."
             />
             {isGeocoding && (
-              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 animate-spin" />
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 animate-spin" aria-hidden="true" />
             )}
           </div>
         )}
 
         {geocodeResults.length > 0 && !resolvedLocation && (
           <ul
+            id="post-location-listbox"
             role="listbox"
             aria-label="Location suggestions"
             className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
           >
             {geocodeResults.map((result, i) => (
-              <li key={i} role="option" aria-selected={false}>
+              <li
+                key={i}
+                id={`post-location-option-${i}`}
+                role="option"
+                aria-selected={i === activeOptionIndex}
+              >
                 <button
                   type="button"
                   onClick={() => selectLocation(result)}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-start gap-2"
+                  onMouseEnter={() => setActiveOptionIndex(i)}
+                  className={`w-full text-left px-3 py-2 text-sm flex items-start gap-2 ${
+                    i === activeOptionIndex ? "bg-gray-100" : "hover:bg-gray-50"
+                  }`}
                 >
                   <MapPin
-                    className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0"
+                    className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0"
                     aria-hidden="true"
                   />
                   <span className="line-clamp-2">

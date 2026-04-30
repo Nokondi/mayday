@@ -16,7 +16,7 @@ export function LoginForm({ onSubmit, isSubmitting, error }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div role="alert" className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
           {error}
         </div>
       )}
@@ -26,10 +26,12 @@ export function LoginForm({ onSubmit, isSubmitting, error }: LoginFormProps) {
         <input
           id="login-email"
           type="email"
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? 'login-email-error' : undefined}
           {...register('email')}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
         />
-        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+        {errors.email && <p id="login-email-error" className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
       </div>
 
       <div>
@@ -37,10 +39,12 @@ export function LoginForm({ onSubmit, isSubmitting, error }: LoginFormProps) {
         <input
           id="login-password"
           type="password"
+          aria-invalid={!!errors.password}
+          aria-describedby={errors.password ? 'login-password-error' : undefined}
           {...register('password')}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
         />
-        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+        {errors.password && <p id="login-password-error" className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
       </div>
 
       <button

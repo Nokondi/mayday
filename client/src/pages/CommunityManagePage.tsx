@@ -153,10 +153,10 @@ export function CommunityManagePage() {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Details</h2>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Avatar</label>
+          <p className="block text-sm font-medium text-gray-700 mb-2">Avatar</p>
           <AvatarUploader
             currentUrl={community.avatarUrl}
-            fallback={<UsersIcon className="w-8 h-8 text-gray-400" />}
+            fallback={<UsersIcon className="w-8 h-8 text-gray-500" />}
             onUpload={async (file) => {
               await uploadCommunityAvatar(id!, file);
               queryClient.invalidateQueries({ queryKey: ['community', id] });
@@ -177,16 +177,16 @@ export function CommunityManagePage() {
           className="space-y-4"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input {...editForm.register('name')} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
+            <label htmlFor="community-edit-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input id="community-edit-name" {...editForm.register('name')} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea {...editForm.register('description')} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
+            <label htmlFor="community-edit-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea id="community-edit-description" {...editForm.register('description')} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <input {...editForm.register('location')} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
+            <label htmlFor="community-edit-location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+            <input id="community-edit-location" {...editForm.register('location')} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
           </div>
           <button
             type="submit"
@@ -316,7 +316,7 @@ export function CommunityManagePage() {
                     <button
                       onClick={() => { if (confirm(`Remove ${m.user.name}?`)) removeMutation.mutate(m.userId); }}
                       aria-label={`Remove ${m.user.name}`}
-                      className="text-gray-400 hover:text-red-600"
+                      className="text-gray-500 hover:text-red-600"
                     >
                       <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>

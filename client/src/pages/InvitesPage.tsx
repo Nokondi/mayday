@@ -79,7 +79,7 @@ export function InvitesPage() {
             <li key={`org-${inv.id}`} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <Building2 className="w-4 h-4 text-gray-500 flex-shrink-0" />
                   {inv.organization && (
                     <Link to={`/organizations/${inv.organization.id}`} className="font-semibold text-gray-900 hover:text-mayday-600">
                       {inv.organization.name}
@@ -115,7 +115,7 @@ export function InvitesPage() {
             <li key={`comm-${inv.id}`} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <Users className="w-4 h-4 text-gray-500 flex-shrink-0" />
                   {inv.community && (
                     <Link to={`/communities/${inv.community.id}`} className="font-semibold text-gray-900 hover:text-mayday-600">
                       {inv.community.name}

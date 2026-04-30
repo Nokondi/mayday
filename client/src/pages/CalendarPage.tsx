@@ -147,7 +147,7 @@ export function CalendarPage() {
                   className={`min-h-[100px] border-b border-r border-gray-200 p-1.5 ${inMonth ? 'bg-white' : 'bg-gray-50'}`}
                 >
                   <div
-                    className={`text-xs mb-1 ${isToday ? 'inline-flex items-center justify-center w-5 h-5 rounded-full bg-mayday-500 text-white font-semibold' : inMonth ? 'text-gray-700' : 'text-gray-400'}`}
+                    className={`text-xs mb-1 ${isToday ? 'inline-flex items-center justify-center w-5 h-5 rounded-full bg-mayday-500 text-white font-semibold' : inMonth ? 'text-gray-700' : 'text-gray-500'}`}
                   >
                     {format(day, 'd')}
                   </div>

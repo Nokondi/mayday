@@ -173,7 +173,7 @@ describe('PostCard — image preview', () => {
         ],
       }),
     );
-    const img = screen.getByAltText(/image for bike for offer/i) as HTMLImageElement;
+    const img = screen.getByAltText(/bike for offer/i) as HTMLImageElement;
     expect(img).toBeInTheDocument();
     expect(img.src).toBe('https://example.com/a.jpg');
   });

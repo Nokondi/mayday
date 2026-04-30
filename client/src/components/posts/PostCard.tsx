@@ -58,13 +58,14 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             <span
               className={`text-xs font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-600" : "text-green-600"}`}
             >
+              <span className="sr-only">Post type: </span>
               {typeLabel}
             </span>
             <div className="flex items-center gap-2">
               {post.images?.length > 0 && (
                 <img
                   src={post.images[0].url}
-                  alt={`Image for ${post.title}`}
+                  alt={post.title}
                   className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
                 />
               )}
@@ -105,7 +106,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
               <span className="flex items-center gap-1">
                 <Building2 className="w-3 h-3" aria-hidden="true" />
                 {post.organization.name}
-                <span className="text-gray-400">· by {post.author.name}</span>
+                <span className="text-gray-500">· by {post.author.name}</span>
               </span>
             ) : (
               <span className="flex items-center gap-1">

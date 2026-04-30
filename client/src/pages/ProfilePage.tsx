@@ -290,10 +290,11 @@ export function ProfilePage() {
         {editing ? (
           <div className="mt-4 space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="profile-bio" className="block text-sm font-medium text-gray-700 mb-1">
                 Bio
               </label>
               <textarea
+                id="profile-bio"
                 value={editForm.bio}
                 onChange={(e) =>
                   setEditForm((f) => ({ ...f, bio: e.target.value }))
@@ -303,10 +304,11 @@ export function ProfilePage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="profile-skills" className="block text-sm font-medium text-gray-700 mb-1">
                 Skills (comma-separated)
               </label>
               <input
+                id="profile-skills"
                 value={editForm.skills}
                 onChange={(e) =>
                   setEditForm((f) => ({ ...f, skills: e.target.value }))
@@ -319,16 +321,16 @@ export function ProfilePage() {
           <>
             {profile.bio && <p className="mt-4 text-gray-700">{profile.bio}</p>}
             {profile.skills.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
+              <ul aria-label="Skills" className="mt-4 flex flex-wrap gap-2">
                 {profile.skills.map((skill) => (
-                  <span
+                  <li
                     key={skill}
                     className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
                   >
                     {skill}
-                  </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </>
         )}
@@ -426,7 +428,7 @@ export function ProfilePage() {
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               Additional details{" "}
-              <span className="text-gray-400 font-normal">(optional)</span>
+              <span className="text-gray-500 font-normal">(optional)</span>
             </label>
             <textarea
               id="report-user-details"

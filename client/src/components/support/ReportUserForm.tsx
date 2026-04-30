@@ -65,7 +65,7 @@ export function ReportUserForm() {
 
       <div>
         <label htmlFor="report-details" className="block text-sm font-medium text-gray-700 mb-1">
-          Details <span className="text-gray-400 font-normal">(optional)</span>
+          Details <span className="text-gray-500 font-normal">(optional)</span>
         </label>
         <textarea
           id="report-details"

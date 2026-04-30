@@ -17,13 +17,13 @@ export function ConversationList({ conversations, activeId, onSelect }: Conversa
   }
 
   return (
-    <div className="divide-y divide-gray-200">
+    <ul aria-label="Conversations" className="divide-y divide-gray-200">
       {conversations.map((conv) => (
+        <li key={conv.id}>
         <button
-          key={conv.id}
           onClick={() => onSelect(conv.id)}
           aria-label={`Conversation with ${conv.otherParticipant.name}${conv.unreadCount > 0 ? `, ${conv.unreadCount} unread` : ''}`}
-          aria-current={activeId === conv.id ? 'true' : undefined}
+          aria-current={activeId === conv.id || undefined}
           className={`w-full text-left p-4 hover:bg-gray-50 transition-colors ${
             activeId === conv.id ? 'bg-mayday-50' : ''
           }`}
@@ -42,12 +42,13 @@ export function ConversationList({ conversations, activeId, onSelect }: Conversa
             </p>
           )}
           {conv.lastMessage && (
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               {formatDistanceToNow(new Date(conv.lastMessage.createdAt), { addSuffix: true })}
             </p>
           )}
         </button>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

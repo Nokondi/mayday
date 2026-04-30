@@ -15,22 +15,29 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-3" aria-live="polite" aria-label="Message history">
+    <div role="log" className="flex-1 overflow-y-auto p-4 space-y-3" aria-live="polite" aria-label="Message history">
       {messages.map((msg) => {
         const isMine = msg.senderId === currentUserId;
+        const sentAt = new Date(msg.createdAt);
+        const relativeTime = formatDistanceToNow(sentAt, { addSuffix: true });
+        const senderLabel = isMine ? 'You' : 'Other participant';
         return (
-          <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+          <article
+            key={msg.id}
+            aria-label={`${senderLabel} said ${msg.content}, ${relativeTime}`}
+            className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
+          >
             <div className={`max-w-[70%] px-4 py-2 rounded-2xl ${
               isMine
                 ? 'bg-mayday-500 text-white rounded-br-md'
                 : 'bg-gray-100 text-gray-900 rounded-bl-md'
             }`}>
               <p className="text-sm">{msg.content}</p>
-              <p className={`text-xs mt-1 ${isMine ? 'text-mayday-200' : 'text-gray-400'}`}>
-                {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
+              <p className={`text-xs mt-1 ${isMine ? 'text-mayday-200' : 'text-gray-500'}`}>
+                <time dateTime={sentAt.toISOString()}>{relativeTime}</time>
               </p>
             </div>
-          </div>
+          </article>
         );
       })}
       <div ref={bottomRef} />

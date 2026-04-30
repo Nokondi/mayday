@@ -95,10 +95,8 @@ describe('MessageThread', () => {
 
     const text = screen.getByText('hi');
     const bubble = text.parentElement as HTMLElement;
-    // The bubble contains exactly two <p> elements: the content and the timestamp.
-    const paragraphs = within(bubble).getAllByText(/.+/, { selector: 'p' });
+    const paragraphs = within(bubble).getAllByText((_, el) => el?.tagName === 'P');
     expect(paragraphs).toHaveLength(2);
-    // The timestamp line contains "ago" thanks to addSuffix: true.
     expect(paragraphs[1].textContent).toMatch(/ago$/);
   });
 });

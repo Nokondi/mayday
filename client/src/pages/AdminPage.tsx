@@ -27,8 +27,25 @@ interface Report {
 
 const BUG_STATUSES: BugReport['status'][] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
 
+const ADMIN_TABS = ['reports', 'bugs', 'users', 'announcements'] as const;
+type AdminTab = (typeof ADMIN_TABS)[number];
+
 export function AdminPage() {
-  const [tab, setTab] = useState<'reports' | 'bugs' | 'users' | 'announcements'>('reports');
+  const [tab, setTab] = useState<AdminTab>('reports');
+
+  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    const currentIndex = ADMIN_TABS.indexOf(tab);
+    let nextIndex = currentIndex;
+    if (e.key === 'ArrowRight') nextIndex = (currentIndex + 1) % ADMIN_TABS.length;
+    else if (e.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + ADMIN_TABS.length) % ADMIN_TABS.length;
+    else if (e.key === 'Home') nextIndex = 0;
+    else if (e.key === 'End') nextIndex = ADMIN_TABS.length - 1;
+    const nextTab = ADMIN_TABS[nextIndex];
+    setTab(nextTab);
+    document.getElementById(`admin-tab-${nextTab}`)?.focus();
+  };
   const [announcementDraft, setAnnouncementDraft] = useState('');
   const [bugStatusFilter, setBugStatusFilter] = useState<BugReport['status'] | 'ALL'>('OPEN');
   const [userQuery, setUserQuery] = useState('');
@@ -148,43 +165,64 @@ export function AdminPage() {
         <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
       </div>
 
-      <div className="flex gap-4 mb-6">
+      {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus -- per WAI-ARIA APG, the tablist itself is not focusable; the active tab inside is */}
+      <div role="tablist" aria-label="Admin sections" onKeyDown={handleTabKeyDown} className="flex gap-4 mb-6">
         <button
+          role="tab"
+          id="admin-tab-reports"
+          aria-selected={tab === 'reports'}
+          aria-controls="admin-panel-reports"
+          tabIndex={tab === 'reports' ? 0 : -1}
           onClick={() => setTab('reports')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
             tab === 'reports' ? 'bg-mayday-500 text-white' : 'bg-gray-100 text-gray-700'
           }`}
         >
-          <Flag className="w-4 h-4" /> Reports
+          <Flag className="w-4 h-4" aria-hidden="true" /> Reports
         </button>
         <button
+          role="tab"
+          id="admin-tab-bugs"
+          aria-selected={tab === 'bugs'}
+          aria-controls="admin-panel-bugs"
+          tabIndex={tab === 'bugs' ? 0 : -1}
           onClick={() => setTab('bugs')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
             tab === 'bugs' ? 'bg-mayday-500 text-white' : 'bg-gray-100 text-gray-700'
           }`}
         >
-          <Bug className="w-4 h-4" /> Bug Reports
+          <Bug className="w-4 h-4" aria-hidden="true" /> Bug Reports
         </button>
         <button
+          role="tab"
+          id="admin-tab-users"
+          aria-selected={tab === 'users'}
+          aria-controls="admin-panel-users"
+          tabIndex={tab === 'users' ? 0 : -1}
           onClick={() => setTab('users')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
             tab === 'users' ? 'bg-mayday-500 text-white' : 'bg-gray-100 text-gray-700'
           }`}
         >
-          <Users className="w-4 h-4" /> Users
+          <Users className="w-4 h-4" aria-hidden="true" /> Users
         </button>
         <button
+          role="tab"
+          id="admin-tab-announcements"
+          aria-selected={tab === 'announcements'}
+          aria-controls="admin-panel-announcements"
+          tabIndex={tab === 'announcements' ? 0 : -1}
           onClick={() => setTab('announcements')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
             tab === 'announcements' ? 'bg-mayday-500 text-white' : 'bg-gray-100 text-gray-700'
           }`}
         >
-          <Megaphone className="w-4 h-4" /> Announcements
+          <Megaphone className="w-4 h-4" aria-hidden="true" /> Announcements
         </button>
       </div>
 
       {tab === 'reports' && (
-        <div className="space-y-3">
+        <div role="tabpanel" id="admin-panel-reports" aria-labelledby="admin-tab-reports" className="space-y-3">
           {reports?.data.length === 0 && (
             <p className="text-center py-8 text-gray-500">No pending reports</p>
           )}
@@ -252,7 +290,7 @@ export function AdminPage() {
       )}
 
       {tab === 'bugs' && (
-        <div>
+        <div role="tabpanel" id="admin-panel-bugs" aria-labelledby="admin-tab-bugs">
           <div className="flex items-center gap-2 mb-4">
             <label htmlFor="bug-status-filter" className="text-sm text-gray-700">Filter:</label>
             <select
@@ -303,10 +341,10 @@ export function AdminPage() {
       )}
 
       {tab === 'users' && (
-        <div>
+        <div role="tabpanel" id="admin-panel-users" aria-labelledby="admin-tab-users">
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" aria-hidden="true" />
               <label htmlFor="user-search" className="sr-only">Search users</label>
               <input
                 id="user-search"
@@ -371,7 +409,7 @@ export function AdminPage() {
                       )}
                     </div>
                     <p className="text-sm text-gray-500 truncate">{u.email}</p>
-                    <p className="text-xs text-gray-400">Joined {new Date(u.createdAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-gray-500">Joined {new Date(u.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <button
@@ -416,7 +454,7 @@ export function AdminPage() {
       )}
 
       {tab === 'announcements' && (
-        <div className="space-y-6">
+        <div role="tabpanel" id="admin-panel-announcements" aria-labelledby="admin-tab-announcements" className="space-y-6">
           <form
             onSubmit={(e) => {
               e.preventDefault();

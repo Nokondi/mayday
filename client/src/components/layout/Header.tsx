@@ -50,7 +50,7 @@ export function Header() {
             className="flex items-center gap-2 text-mayday-600 font-bold text-2xl"
           >
             <MayDayLogo
-              className="w-16 h-16 text-mayday-500"
+              className="w-16 h-16 text-mayday-600"
               aria-hidden="true"
             />
             MayDay
