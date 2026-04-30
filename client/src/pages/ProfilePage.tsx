@@ -290,7 +290,10 @@ export function ProfilePage() {
         {editing ? (
           <div className="mt-4 space-y-3">
             <div>
-              <label htmlFor="profile-bio" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="profile-bio"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Bio
               </label>
               <textarea
@@ -304,7 +307,10 @@ export function ProfilePage() {
               />
             </div>
             <div>
-              <label htmlFor="profile-skills" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="profile-skills"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Skills (comma-separated)
               </label>
               <input
@@ -340,7 +346,7 @@ export function ProfilePage() {
             <button
               onClick={() => messageMutation.mutate()}
               disabled={messageMutation.isPending}
-              className="flex items-center gap-1 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600 disabled:opacity-50"
+              className="flex items-center gap-1 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800 disabled:opacity-50"
             >
               <MessageSquare className="w-4 h-4" aria-hidden="true" />
               {messageMutation.isPending ? "Starting…" : "Message"}

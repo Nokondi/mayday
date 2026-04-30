@@ -72,7 +72,10 @@ export function CreateCommunityPage() {
           className="space-y-6"
         >
           <div>
-            <label htmlFor="community-name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="community-name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Name
             </label>
             <input
@@ -87,7 +90,10 @@ export function CreateCommunityPage() {
           </div>
 
           <div>
-            <label htmlFor="community-description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="community-description"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Description
             </label>
             <textarea
@@ -105,7 +111,10 @@ export function CreateCommunityPage() {
           </div>
 
           <div>
-            <label htmlFor="community-location" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="community-location"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Location
             </label>
             <input
@@ -117,7 +126,10 @@ export function CreateCommunityPage() {
           </div>
 
           <div>
-            <label htmlFor="community-avatar-url" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="community-avatar-url"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Avatar URL{" "}
               <span className="text-gray-500 font-normal">(optional)</span>
             </label>
@@ -187,7 +199,7 @@ export function CreateCommunityPage() {
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="w-full bg-mayday-500 text-white py-3 rounded-lg font-medium hover:bg-mayday-600 disabled:opacity-50"
+            className="w-full bg-mayday-700 text-white py-3 rounded-lg font-medium hover:bg-mayday-800 disabled:opacity-50"
           >
             {mutation.isPending ? "Creating..." : "Create Community"}
           </button>

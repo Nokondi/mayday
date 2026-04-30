@@ -47,7 +47,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           <Link
             to="/"
-            className="flex items-center gap-2 text-mayday-600 font-bold text-2xl"
+            className="flex items-center gap-2 text-mayday-700 font-bold text-2xl"
           >
             <MayDayLogo
               className="w-16 h-16 text-mayday-700"
@@ -126,7 +126,7 @@ export function Header() {
                   {inviteCount > 0 && (
                     <span
                       aria-hidden="true"
-                      className="absolute -top-1 -right-1 bg-mayday-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium"
+                      className="absolute -top-1 -right-1 bg-mayday-700 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium"
                     >
                       {inviteCount}
                     </span>

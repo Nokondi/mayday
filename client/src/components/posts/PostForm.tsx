@@ -230,7 +230,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
       {myOrgs && myOrgs.length > 0 && (
         <div>
-          <label htmlFor="post-organization" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="post-organization"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Post as
           </label>
           <select
@@ -250,7 +253,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
       {myCommunities && myCommunities.length > 0 && (
         <div>
-          <label htmlFor="post-community" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="post-community"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Visibility
           </label>
           <select
@@ -269,30 +275,40 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
       )}
 
       <div>
-        <label htmlFor="post-title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="post-title"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Title
         </label>
         <input
           id="post-title"
           aria-invalid={!!errors.title}
-          aria-describedby={errors.title ? 'post-title-error' : undefined}
+          aria-describedby={errors.title ? "post-title-error" : undefined}
           {...register("title")}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
           placeholder="Brief description of what you need or can offer"
         />
         {errors.title && (
-          <p id="post-title-error" className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+          <p id="post-title-error" className="text-red-500 text-sm mt-1">
+            {errors.title.message}
+          </p>
         )}
       </div>
 
       <div>
-        <label htmlFor="post-description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="post-description"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Description
         </label>
         <textarea
           id="post-description"
           aria-invalid={!!errors.description}
-          aria-describedby={errors.description ? 'post-description-error' : undefined}
+          aria-describedby={
+            errors.description ? "post-description-error" : undefined
+          }
           {...register("description")}
           rows={4}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
@@ -362,13 +378,18 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="post-category" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="post-category"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Category
           </label>
           <select
             id="post-category"
             aria-invalid={!!errors.category}
-            aria-describedby={errors.category ? 'post-category-error' : undefined}
+            aria-describedby={
+              errors.category ? "post-category-error" : undefined
+            }
             {...register("category")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
@@ -387,7 +408,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         </div>
 
         <div>
-          <label htmlFor="post-urgency" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="post-urgency"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Urgency
           </label>
           <select
@@ -405,14 +429,17 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="post-startAt" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="post-startAt"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Starts <span className="text-gray-500 font-normal">(optional)</span>
           </label>
           <input
             id="post-startAt"
             type="datetime-local"
             aria-invalid={!!errors.startAt}
-            aria-describedby={errors.startAt ? 'post-startAt-error' : undefined}
+            aria-describedby={errors.startAt ? "post-startAt-error" : undefined}
             {...register("startAt")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
           />
@@ -423,19 +450,24 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           )}
         </div>
         <div>
-          <label htmlFor="post-endAt" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="post-endAt"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Ends <span className="text-gray-500 font-normal">(optional)</span>
           </label>
           <input
             id="post-endAt"
             type="datetime-local"
             aria-invalid={!!errors.endAt}
-            aria-describedby={errors.endAt ? 'post-endAt-error' : undefined}
+            aria-describedby={errors.endAt ? "post-endAt-error" : undefined}
             {...register("endAt")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
           />
           {errors.endAt && (
-            <p id="post-endAt-error" className="text-red-500 text-sm mt-1">{errors.endAt.message}</p>
+            <p id="post-endAt-error" className="text-red-500 text-sm mt-1">
+              {errors.endAt.message}
+            </p>
           )}
         </div>
       </div>
@@ -479,7 +511,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
       </fieldset>
 
       <div className="relative">
-        <label htmlFor="post-location" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="post-location"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Location <span className="text-gray-500 font-normal">(optional)</span>
         </label>
         {resolvedLocation ? (
@@ -525,7 +560,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
               placeholder="Search for an address or place..."
             />
             {isGeocoding && (
-              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 animate-spin" aria-hidden="true" />
+              <Loader2
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 animate-spin"
+                aria-hidden="true"
+              />
             )}
           </div>
         )}
@@ -569,7 +607,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-mayday-500 text-white py-3 rounded-lg font-medium hover:bg-mayday-600 disabled:opacity-50"
+        className="w-full bg-mayday-700 text-white py-3 rounded-lg font-medium hover:bg-mayday-800 disabled:opacity-50"
       >
         {isSubmitting ? "Creating..." : "Create Post"}
       </button>
