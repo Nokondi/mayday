@@ -35,7 +35,7 @@ export function CommunitiesPage() {
         <h1 className="text-2xl font-bold text-gray-900">Communities</h1>
         <Link
           to="/communities/new"
-          className="flex items-center gap-1 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800"
+          className="flex items-center gap-1 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600"
         >
           <Plus className="w-4 h-4" />
           New Community

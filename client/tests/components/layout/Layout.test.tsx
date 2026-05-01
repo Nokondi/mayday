@@ -2,18 +2,14 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
-// Stub the Header, Footer, and AnnouncementBanner so the Layout test does not
-// need to wire up the auth context, react-query client, or icon mocks that
-// those components depend on. The Layout's job is to compose them, not to
-// reimplement them.
+// Stub the Header and Footer so the Layout test does not need to wire up the
+// auth context, react-query client, or icon mocks that those components
+// depend on. The Layout's job is to compose them, not to reimplement them.
 vi.mock('../../../src/components/layout/Header.js', () => ({
   Header: () => <div data-testid="header-stub">HEADER</div>,
 }));
 vi.mock('../../../src/components/layout/Footer.js', () => ({
   Footer: () => <div data-testid="footer-stub">FOOTER</div>,
-}));
-vi.mock('../../../src/components/common/AnnouncementBanner.js', () => ({
-  AnnouncementBanner: () => null,
 }));
 
 import { Layout } from '../../../src/components/layout/Layout.js';

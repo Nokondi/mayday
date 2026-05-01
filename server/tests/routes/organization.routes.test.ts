@@ -41,7 +41,6 @@ vi.mock('../../src/middleware/upload.middleware.js', () => ({
     req.file = { location: 'https://cdn.example.com/new.png' };
     next();
   },
-  uploadPostImages: (_req: unknown, _res: unknown, next: () => void) => next(),
 }));
 
 import { prisma } from '../../src/config/database.js';

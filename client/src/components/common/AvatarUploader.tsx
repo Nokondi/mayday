@@ -64,7 +64,6 @@ export function AvatarUploader({
         type="button"
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled || uploading}
-        aria-label={uploading ? 'Uploading avatar' : 'Upload avatar'}
         className={`${radius} bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0 relative group cursor-pointer disabled:cursor-not-allowed`}
         style={{ width: size, height: size }}
       >
@@ -75,9 +74,9 @@ export function AvatarUploader({
         )}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
           {uploading ? (
-            <Loader2 className="w-6 h-6 text-white animate-spin" aria-hidden="true" />
+            <Loader2 className="w-6 h-6 text-white animate-spin" />
           ) : (
-            <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
+            <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
           )}
         </div>
       </button>

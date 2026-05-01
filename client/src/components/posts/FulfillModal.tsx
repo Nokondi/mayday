@@ -133,18 +133,16 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
   const hasResults = searchResults.users.length > 0 || searchResults.organizations.length > 0;
 
   return (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- backdrop dismiss; Escape is handled natively by <dialog>
     <dialog
       ref={dialogRef}
-      aria-labelledby="fulfill-modal-title"
       className="backdrop:bg-black/50 bg-transparent p-0 m-auto max-w-lg w-full"
       onClick={(e) => { if (e.target === dialogRef.current) resetAndClose(); }}
     >
       <div className="bg-white rounded-lg shadow-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 id="fulfill-modal-title" className="text-lg font-bold text-gray-900">Mark as Fulfilled</h2>
-          <button onClick={resetAndClose} aria-label="Close" className="text-gray-500 hover:text-gray-600">
-            <X className="w-5 h-5" aria-hidden="true" />
+          <h2 className="text-lg font-bold text-gray-900">Mark as Fulfilled</h2>
+          <button onClick={resetAndClose} className="text-gray-400 hover:text-gray-600">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -166,10 +164,10 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
                 />
                 {fulfiller.userId && (
-                  <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 )}
                 {fulfiller.organizationId && (
-                  <Building2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <Building2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 )}
 
                 {activeIndex === index && (hasResults || searching) && (
@@ -193,7 +191,7 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
                             {u.avatarUrl ? (
                               <img src={u.avatarUrl} alt="" className="w-5 h-5 rounded-full object-cover" />
                             ) : (
-                              <User className="w-5 h-5 text-gray-500" />
+                              <User className="w-5 h-5 text-gray-400" />
                             )}
                             {u.name}
                           </button>
@@ -214,7 +212,7 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
                             {o.avatarUrl ? (
                               <img src={o.avatarUrl} alt="" className="w-5 h-5 rounded-full object-cover" />
                             ) : (
-                              <Building2 className="w-5 h-5 text-gray-500" />
+                              <Building2 className="w-5 h-5 text-gray-400" />
                             )}
                             {o.name}
                           </button>
@@ -229,10 +227,9 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
                 <button
                   type="button"
                   onClick={() => removeFulfiller(index)}
-                  aria-label={`Remove fulfiller ${index + 1}`}
-                  className="text-gray-500 hover:text-red-500 p-1"
+                  className="text-gray-400 hover:text-red-500 p-1"
                 >
-                  <X className="w-4 h-4" aria-hidden="true" />
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
