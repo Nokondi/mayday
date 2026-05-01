@@ -1,4 +1,4 @@
-import { CATEGORIES } from "@mayday/shared";
+import { CATEGORIES } from '@mayday/shared';
 
 interface PostFiltersProps {
   type: string;
@@ -15,23 +15,13 @@ interface PostFiltersProps {
 }
 
 export function PostFilters({
-  type,
-  category,
-  urgency,
-  sort,
-  community,
-  communities,
-  onTypeChange,
-  onCategoryChange,
-  onUrgencyChange,
-  onSortChange,
-  onCommunityChange,
+  type, category, urgency, sort, community, communities,
+  onTypeChange, onCategoryChange, onUrgencyChange, onSortChange, onCommunityChange,
 }: PostFiltersProps) {
   return (
     <div className="flex flex-wrap gap-3">
       <select
         value={type}
-        aria-label={"Filter by type"}
         onChange={(e) => onTypeChange(e.target.value)}
         className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
       >
@@ -42,37 +32,30 @@ export function PostFilters({
 
       <select
         value={category}
-        aria-label={"Filter by category"}
         onChange={(e) => onCategoryChange(e.target.value)}
         className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
       >
         <option value="">All Categories</option>
         {CATEGORIES.map((cat) => (
-          <option key={cat} value={cat}>
-            {cat}
-          </option>
+          <option key={cat} value={cat}>{cat}</option>
         ))}
       </select>
 
       {communities && communities.length > 0 && onCommunityChange && (
         <select
-          value={community ?? ""}
-          aria-label={"Filter by community"}
+          value={community ?? ''}
           onChange={(e) => onCommunityChange(e.target.value)}
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
         >
           <option value="">All Communities</option>
           {communities.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
+            <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
       )}
 
       <select
         value={urgency}
-        aria-label={"Filter by urgency"}
         onChange={(e) => onUrgencyChange(e.target.value)}
         className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
       >
@@ -85,8 +68,7 @@ export function PostFilters({
 
       {onSortChange && (
         <select
-          value={sort ?? "recent"}
-          aria-label={"Sort posts"}
+          value={sort ?? 'recent'}
           onChange={(e) => onSortChange(e.target.value)}
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
         >

@@ -1,22 +1,22 @@
-import { render, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
-import type { PostWithAuthor } from "@mayday/shared";
-import { PostCard } from "../../../src/components/posts/PostCard.js";
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import type { PostWithAuthor } from '@mayday/shared';
+import { PostCard } from '../../../src/components/posts/PostCard.js';
 
 function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
   return {
-    id: "p1",
-    type: "REQUEST",
-    status: "OPEN",
-    title: "Need help",
-    description: "Some description",
-    category: "Food",
+    id: 'p1',
+    type: 'REQUEST',
+    status: 'OPEN',
+    title: 'Need help',
+    description: 'Some description',
+    category: 'Food',
     location: null,
     latitude: null,
     longitude: null,
-    urgency: "MEDIUM",
-    authorId: "u1",
+    urgency: 'MEDIUM',
+    authorId: 'u1',
     organizationId: null,
     communityId: null,
     startAt: null,
@@ -25,16 +25,16 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
     recurrenceInterval: null,
     images: [],
     fulfillments: [],
-    createdAt: "2020-01-01T00:00:00Z",
-    updatedAt: "2020-01-01T00:00:00Z",
+    createdAt: '2020-01-01T00:00:00Z',
+    updatedAt: '2020-01-01T00:00:00Z',
     author: {
-      id: "u1",
-      name: "Alice",
+      id: 'u1',
+      name: 'Alice',
       bio: null,
       location: null,
       skills: [],
       avatarUrl: null,
-      createdAt: "2020-01-01T00:00:00Z",
+      createdAt: '2020-01-01T00:00:00Z',
     },
     organization: null,
     community: null,
@@ -50,28 +50,24 @@ function renderCard(post: PostWithAuthor) {
   );
 }
 
-describe("PostCard — basic rendering", () => {
-  it("links to the post detail page", () => {
-    renderCard(makePost({ id: "abc123" }));
-    const links = screen.getAllByRole("link");
+describe('PostCard — basic rendering', () => {
+  it('links to the post detail page', () => {
+    renderCard(makePost({ id: 'abc123' }));
+    const links = screen.getAllByRole('link');
     // The outer card is the first link; its href is /posts/:id.
-    expect(links[0]).toHaveAttribute("href", "/posts/abc123");
+    expect(links[0]).toHaveAttribute('href', '/posts/abc123');
   });
 
-  it("renders the title and description", () => {
-    renderCard(
-      makePost({ title: "Need groceries", description: "Short on funds" }),
-    );
-    expect(
-      screen.getByRole("heading", { name: "Need groceries" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Short on funds")).toBeInTheDocument();
+  it('renders the title and description', () => {
+    renderCard(makePost({ title: 'Need groceries', description: 'Short on funds' }));
+    expect(screen.getByRole('heading', { name: 'Need groceries' })).toBeInTheDocument();
+    expect(screen.getByText('Short on funds')).toBeInTheDocument();
   });
 
-  it("renders the CategoryBadge and UrgencyBadge", () => {
-    renderCard(makePost({ category: "Housing", urgency: "HIGH" }));
-    expect(screen.getByText("Housing")).toBeInTheDocument();
-    expect(screen.getByText("High")).toBeInTheDocument();
+  it('renders the CategoryBadge and UrgencyBadge', () => {
+    renderCard(makePost({ category: 'Housing', urgency: 'HIGH' }));
+    expect(screen.getByText('Housing')).toBeInTheDocument();
+    expect(screen.getByText('High')).toBeInTheDocument();
   });
 
   it('shows a relative-time line ending in "ago"', () => {
@@ -80,113 +76,111 @@ describe("PostCard — basic rendering", () => {
   });
 });
 
-describe("PostCard — type label and styling", () => {
+describe('PostCard — type label and styling', () => {
   it('labels request posts as "Request" with orange accents', () => {
-    const { container } = renderCard(makePost({ type: "REQUEST" }));
-    expect(screen.getByText("Request")).toBeInTheDocument();
+    const { container } = renderCard(makePost({ type: 'REQUEST' }));
+    expect(screen.getByText('Request')).toBeInTheDocument();
     // The outer link carries the left-border color.
-    const card = container.querySelector("a");
-    expect(card).toHaveClass("border-l-orange-700");
+    const card = container.querySelector('a');
+    expect(card).toHaveClass('border-l-orange-400');
   });
 
   it('labels offer posts as "Offer" with green accents', () => {
-    const { container } = renderCard(makePost({ type: "OFFER" }));
-    expect(screen.getByText("Offer")).toBeInTheDocument();
-    const card = container.querySelector("a");
-    expect(card).toHaveClass("border-l-green-700");
+    const { container } = renderCard(makePost({ type: 'OFFER' }));
+    expect(screen.getByText('Offer')).toBeInTheDocument();
+    const card = container.querySelector('a');
+    expect(card).toHaveClass('border-l-green-400');
   });
 });
 
-describe("PostCard — author vs organization attribution", () => {
-  it("shows only the author when there is no organization", () => {
+describe('PostCard — author vs organization attribution', () => {
+  it('shows only the author when there is no organization', () => {
     renderCard(
       makePost({
         author: {
-          id: "u1",
-          name: "Alice",
+          id: 'u1',
+          name: 'Alice',
           bio: null,
           location: null,
           skills: [],
           avatarUrl: null,
-          createdAt: "2020-01-01T00:00:00Z",
+          createdAt: '2020-01-01T00:00:00Z',
         },
       }),
     );
-    expect(screen.getByText("Alice")).toBeInTheDocument();
+    expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.queryByText(/by Alice/i)).not.toBeInTheDocument();
   });
 
   it('shows the organization name with a "· by <author>" suffix when posted by an org', () => {
     renderCard(
       makePost({
-        organization: { id: "o1", name: "Red Cross", avatarUrl: null },
+        organization: { id: 'o1', name: 'Red Cross', avatarUrl: null },
         author: {
-          id: "u1",
-          name: "Alice",
+          id: 'u1',
+          name: 'Alice',
           bio: null,
           location: null,
           skills: [],
           avatarUrl: null,
-          createdAt: "2020-01-01T00:00:00Z",
+          createdAt: '2020-01-01T00:00:00Z',
         },
       }),
     );
-    expect(screen.getByText("Red Cross")).toBeInTheDocument();
+    expect(screen.getByText('Red Cross')).toBeInTheDocument();
     expect(screen.getByText(/by Alice/i)).toBeInTheDocument();
   });
 });
 
-describe("PostCard — status badges", () => {
+describe('PostCard — status badges', () => {
   it('shows a "Fulfilled" badge when the post status is FULFILLED', () => {
-    renderCard(makePost({ status: "FULFILLED" }));
-    expect(screen.getByText("Fulfilled")).toBeInTheDocument();
+    renderCard(makePost({ status: 'FULFILLED' }));
+    expect(screen.getByText('Fulfilled')).toBeInTheDocument();
   });
 
   it('shows a "Closed" badge when the post status is CLOSED', () => {
-    renderCard(makePost({ status: "CLOSED" }));
-    expect(screen.getByText("Closed")).toBeInTheDocument();
+    renderCard(makePost({ status: 'CLOSED' }));
+    expect(screen.getByText('Closed')).toBeInTheDocument();
   });
 
-  it("does not show a status badge when the post is OPEN", () => {
-    renderCard(makePost({ status: "OPEN" }));
-    expect(screen.queryByText("Fulfilled")).not.toBeInTheDocument();
-    expect(screen.queryByText("Closed")).not.toBeInTheDocument();
+  it('does not show a status badge when the post is OPEN', () => {
+    renderCard(makePost({ status: 'OPEN' }));
+    expect(screen.queryByText('Fulfilled')).not.toBeInTheDocument();
+    expect(screen.queryByText('Closed')).not.toBeInTheDocument();
   });
 });
 
-describe("PostCard — community badge", () => {
-  it("renders the community name when the post is scoped to a community", () => {
-    renderCard(
-      makePost({ community: { id: "c1", name: "Neighborhood Watch" } }),
-    );
-    expect(screen.getByText("Neighborhood Watch")).toBeInTheDocument();
+describe('PostCard — community badge', () => {
+  it('renders the community name when the post is scoped to a community', () => {
+    renderCard(makePost({ community: { id: 'c1', name: 'Neighborhood Watch' } }));
+    expect(screen.getByText('Neighborhood Watch')).toBeInTheDocument();
   });
 
-  it("does not render a community badge when community is null", () => {
+  it('does not render a community badge when community is null', () => {
     renderCard(makePost({ community: null }));
-    expect(screen.queryByText("Neighborhood Watch")).not.toBeInTheDocument();
+    expect(screen.queryByText('Neighborhood Watch')).not.toBeInTheDocument();
   });
 });
 
-describe("PostCard — image preview", () => {
-  it("renders the first image when images exist, with an alt that references the title", () => {
+describe('PostCard — image preview', () => {
+  it('renders the first image when images exist, with an alt that references the title', () => {
     renderCard(
       makePost({
-        title: "Bike for offer",
+        title: 'Bike for offer',
         images: [
-          { id: "i1", url: "https://example.com/a.jpg", order: 0 },
-          { id: "i2", url: "https://example.com/b.jpg", order: 1 },
+          { id: 'i1', url: 'https://example.com/a.jpg', order: 0 },
+          { id: 'i2', url: 'https://example.com/b.jpg', order: 1 },
         ],
       }),
     );
-    const img = screen.getByAltText(/bike for offer/i) as HTMLImageElement;
+    const img = screen.getByAltText(/image for bike for offer/i) as HTMLImageElement;
     expect(img).toBeInTheDocument();
-    expect(img.src).toBe("https://example.com/a.jpg");
+    expect(img.src).toBe('https://example.com/a.jpg');
   });
 
-  it("does not render an image when the post has no images", () => {
+  it('does not render an image when the post has no images', () => {
     const { container } = renderCard(makePost({ images: [] }));
-    expect(container.querySelector("img")).toBeNull();
+    expect(container.querySelector('img')).toBeNull();
   });
 });
 
@@ -200,25 +194,85 @@ function findCardLink(container: HTMLElement): HTMLAnchorElement | null {
   return container.querySelector<HTMLAnchorElement>('a[href^="/posts/"]');
 }
 
-describe("PostCard — location rendering", () => {
-  it("renders the location as plain text", () => {
+describe('PostCard — location rendering', () => {
+  it('renders a map link when location has coordinates', () => {
     const { container } = renderCard(
-      makePost({ location: "Somewhere", latitude: null, longitude: null }),
+      makePost({ location: 'Little Rock, AR', latitude: 34.7465, longitude: -92.2896 }),
     );
-    expect(screen.getByText("Somewhere")).toBeInTheDocument();
+    const mapLink = findMapLink(container);
+    expect(mapLink).not.toBeNull();
+    expect(mapLink).toHaveAttribute(
+      'href',
+      '/map?lat=34.7465&lng=-92.2896&zoom=15',
+    );
+    expect(mapLink).toHaveTextContent('Little Rock, AR');
+  });
+
+  it('renders the location as plain text (no map link) when coordinates are missing', () => {
+    const { container } = renderCard(
+      makePost({ location: 'Somewhere', latitude: null, longitude: null }),
+    );
+    expect(screen.getByText('Somewhere')).toBeInTheDocument();
     expect(findMapLink(container)).toBeNull();
   });
 
-  it("renders nothing for location when location is null", () => {
+  it('renders nothing for location when location is null', () => {
     const { container } = renderCard(makePost({ location: null }));
     expect(findMapLink(container)).toBeNull();
     // Also sanity-check: no stray location string left over from the default.
     expect(screen.queryByText(/little rock/i)).not.toBeInTheDocument();
   });
+
+  it('stops the click event from bubbling so the outer post link does not also navigate', async () => {
+    const user = userEvent.setup();
+    function LocationProbe() {
+      const location = useLocation();
+      return <div data-testid="location">{location.pathname + location.search}</div>;
+    }
+    const { container } = render(
+      <MemoryRouter initialEntries={['/posts']}>
+        <Routes>
+          <Route
+            path="/posts"
+            element={
+              <>
+                <PostCard
+                  post={makePost({
+                    id: 'p1',
+                    location: 'Town',
+                    latitude: 1,
+                    longitude: 2,
+                  })}
+                />
+                <LocationProbe />
+              </>
+            }
+          />
+          <Route path="/map" element={<><div>MAP PAGE</div><LocationProbe /></>} />
+          <Route path="/posts/:id" element={<><div>DETAIL PAGE</div><LocationProbe /></>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    const mapLink = findMapLink(container)!;
+    expect(mapLink).not.toBeNull();
+    await user.click(mapLink);
+
+    // The map link won — no stray navigation to /posts/:id.
+    expect(screen.getByText('MAP PAGE')).toBeInTheDocument();
+    expect(screen.getByTestId('location').textContent).toMatch(/^\/map\?/);
+  });
+
+  it('keeps the outer card link pointing at the post detail even when a map link is rendered', () => {
+    const { container } = renderCard(
+      makePost({ id: 'p1', location: 'Town', latitude: 1, longitude: 2 }),
+    );
+    expect(findCardLink(container)).toHaveAttribute('href', '/posts/p1');
+  });
 });
 
-describe("PostCard — schedule rendering", () => {
-  it("does not render a schedule when both startAt and endAt are null", () => {
+describe('PostCard — schedule rendering', () => {
+  it('does not render a schedule when both startAt and endAt are null', () => {
     renderCard(makePost({ startAt: null, endAt: null }));
     // No "Starts" / "Ends" / en-dash range text anywhere.
     expect(screen.queryByText(/starts/i)).toBeNull();
@@ -227,12 +281,12 @@ describe("PostCard — schedule rendering", () => {
   });
 
   it('renders "Starts <date>" when only startAt is set', () => {
-    renderCard(makePost({ startAt: "2026-06-10T14:00:00Z", endAt: null }));
+    renderCard(makePost({ startAt: '2026-06-10T14:00:00Z', endAt: null }));
     expect(screen.getByText(/starts jun 10/i)).toBeInTheDocument();
   });
 
   it('renders "Ends <date>" when only endAt is set', () => {
-    renderCard(makePost({ startAt: null, endAt: "2026-06-10T14:00:00Z" }));
+    renderCard(makePost({ startAt: null, endAt: '2026-06-10T14:00:00Z' }));
     expect(screen.getByText(/ends jun 10/i)).toBeInTheDocument();
   });
 
@@ -240,8 +294,8 @@ describe("PostCard — schedule rendering", () => {
     renderCard(
       makePost({
         // Pick times that land on the same calendar day in every US timezone.
-        startAt: "2026-06-10T16:00:00Z",
-        endAt: "2026-06-10T18:00:00Z",
+        startAt: '2026-06-10T16:00:00Z',
+        endAt: '2026-06-10T18:00:00Z',
       }),
     );
     // Both times on the same day → only one date prefix in the output.
@@ -250,11 +304,11 @@ describe("PostCard — schedule rendering", () => {
     expect(matches[0].textContent).toMatch(/jun 10.*–/i);
   });
 
-  it("renders a multi-day range with both dates when start and end are on different days", () => {
+  it('renders a multi-day range with both dates when start and end are on different days', () => {
     renderCard(
       makePost({
-        startAt: "2026-06-10T16:00:00Z",
-        endAt: "2026-06-12T16:00:00Z",
+        startAt: '2026-06-10T16:00:00Z',
+        endAt: '2026-06-12T16:00:00Z',
       }),
     );
     const el = screen.getByText(/jun 10/i);
@@ -263,57 +317,51 @@ describe("PostCard — schedule rendering", () => {
   });
 });
 
-describe("PostCard — recurrence rendering", () => {
+describe('PostCard — recurrence rendering', () => {
   it('renders "every week" when freq is WEEK and interval is 1', () => {
     renderCard(
       makePost({
-        startAt: "2026-06-10T14:00:00Z",
-        recurrenceFreq: "WEEK",
+        startAt: '2026-06-10T14:00:00Z',
+        recurrenceFreq: 'WEEK',
         recurrenceInterval: 1,
       }),
     );
-    expect(screen.getByText("every week")).toBeInTheDocument();
+    expect(screen.getByText('every week')).toBeInTheDocument();
   });
 
-  it("pluralizes the unit when the interval is greater than 1", () => {
+  it('pluralizes the unit when the interval is greater than 1', () => {
     renderCard(
       makePost({
-        startAt: "2026-06-10T14:00:00Z",
-        recurrenceFreq: "WEEK",
+        startAt: '2026-06-10T14:00:00Z',
+        recurrenceFreq: 'WEEK',
         recurrenceInterval: 2,
       }),
     );
-    expect(screen.getByText("every 2 weeks")).toBeInTheDocument();
+    expect(screen.getByText('every 2 weeks')).toBeInTheDocument();
   });
 
-  it("handles DAY and MONTH units", () => {
+  it('handles DAY and MONTH units', () => {
     const { unmount } = renderCard(
       makePost({
-        startAt: "2026-06-10T14:00:00Z",
-        recurrenceFreq: "DAY",
+        startAt: '2026-06-10T14:00:00Z',
+        recurrenceFreq: 'DAY',
         recurrenceInterval: 3,
       }),
     );
-    expect(screen.getByText("every 3 days")).toBeInTheDocument();
+    expect(screen.getByText('every 3 days')).toBeInTheDocument();
     unmount();
     renderCard(
       makePost({
-        startAt: "2026-06-10T14:00:00Z",
-        recurrenceFreq: "MONTH",
+        startAt: '2026-06-10T14:00:00Z',
+        recurrenceFreq: 'MONTH',
         recurrenceInterval: 1,
       }),
     );
-    expect(screen.getByText("every month")).toBeInTheDocument();
+    expect(screen.getByText('every month')).toBeInTheDocument();
   });
 
-  it("does not render recurrence text when freq is null", () => {
-    renderCard(
-      makePost({
-        startAt: "2026-06-10T14:00:00Z",
-        recurrenceFreq: null,
-        recurrenceInterval: null,
-      }),
-    );
+  it('does not render recurrence text when freq is null', () => {
+    renderCard(makePost({ startAt: '2026-06-10T14:00:00Z', recurrenceFreq: null, recurrenceInterval: null }));
     expect(screen.queryByText(/every /)).toBeNull();
   });
 });

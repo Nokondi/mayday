@@ -71,12 +71,7 @@ function MapEventHandler({ onBoundsChange }: { onBoundsChange?: MapViewProps['on
 
 export function MapView({ posts, center = [34.7465, -92.2896], zoom = 12, onBoundsChange, className = 'h-[600px]' }: MapViewProps) {
   return (
-    <MapContainer
-      center={center}
-      zoom={zoom}
-      aria-label="Map of mutual aid posts"
-      className={`w-full rounded-lg ${className}`}
-    >
+    <MapContainer center={center} zoom={zoom} className={`w-full rounded-lg ${className}`}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

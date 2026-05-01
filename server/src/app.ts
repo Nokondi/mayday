@@ -17,7 +17,6 @@ import { reportRoutes } from './routes/report.routes.js';
 import { bugReportRoutes } from './routes/bugReport.routes.js';
 import { organizationRoutes } from './routes/organization.routes.js';
 import { communityRoutes } from './routes/community.routes.js';
-import { announcementRoutes } from './routes/announcement.routes.js';
 
 export function createApp() {
   const app = express();
@@ -86,7 +85,6 @@ export function createApp() {
   app.use('/api/bug-reports', bugReportRoutes);
   app.use('/api/organizations', organizationRoutes);
   app.use('/api/communities', communityRoutes);
-  app.use('/api/announcements', announcementRoutes);
 
   // Serve client static files in production
   if (env.NODE_ENV === 'production') {

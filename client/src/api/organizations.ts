@@ -9,7 +9,6 @@ import type {
   OrganizationInvite,
   OrganizationWithMembership,
   PaginatedResponse,
-  PostWithAuthor,
 } from '@mayday/shared';
 import { api } from './client.js';
 
@@ -49,11 +48,6 @@ export async function uploadOrganizationAvatar(id: string, file: File): Promise<
 
 export async function deleteOrganization(id: string): Promise<void> {
   await api.delete(`/organizations/${id}`);
-}
-
-export async function getOrganizationPosts(id: string, page = 1): Promise<PaginatedResponse<PostWithAuthor>> {
-  const res = await api.get(`/organizations/${id}/posts`, { params: { page } });
-  return res.data;
 }
 
 // Members

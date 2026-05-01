@@ -291,7 +291,7 @@ export function SupportPage() {
               <summary className="flex justify-between items-center cursor-pointer list-none px-4 py-3 font-medium text-gray-800 hover:bg-gray-50">
                 <span>{topic.question}</span>
                 <span
-                  className="text-gray-500 group-open:rotate-90 transition-transform"
+                  className="text-gray-400 group-open:rotate-90 transition-transform"
                   aria-hidden="true"
                 >
                   ›
@@ -320,7 +320,7 @@ export function SupportPage() {
               <summary className="flex justify-between items-center cursor-pointer list-none px-4 py-3 font-medium text-gray-800 hover:bg-gray-50">
                 <span>{topic.question}</span>
                 <span
-                  className="text-gray-500 group-open:rotate-90 transition-transform"
+                  className="text-gray-400 group-open:rotate-90 transition-transform"
                   aria-hidden="true"
                 >
                   ›

@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import {
+  LifeBuoy,
   Menu,
   X,
   MessageSquare,
@@ -14,7 +15,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../context/AuthContext.js";
 import { getMyInvites } from "../../api/organizations.js";
 import { getMyCommunityInvites } from "../../api/communities.js";
-import MayDayLogo from "../../assets/mayday-logo.svg?react";
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -47,10 +47,10 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           <Link
             to="/"
-            className="flex items-center gap-2 text-mayday-700 font-bold text-2xl"
+            className="flex items-center gap-2 text-mayday-600 font-bold text-2xl"
           >
-            <MayDayLogo
-              className="w-16 h-16 text-mayday-700"
+            <LifeBuoy
+              className="w-10 h-10 text-mayday-500"
               aria-hidden="true"
             />
             MayDay
@@ -97,13 +97,9 @@ export function Header() {
                 </Link>
                 <Link
                   to="/posts/new"
-                  className="flex items-center gap-1 bg-mayday-700 text-white text-nowrap font-bold px-4 py-2 rounded-lg hover:bg-mayday-800"
+                  className="flex items-center gap-1 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600"
                 >
-                  <Plus
-                    strokeWidth={5}
-                    className="w-4 h-4"
-                    aria-hidden="true"
-                  />
+                  <Plus className="w-4 h-4" aria-hidden="true" />
                   New Post
                 </Link>
                 <Link
@@ -126,7 +122,7 @@ export function Header() {
                   {inviteCount > 0 && (
                     <span
                       aria-hidden="true"
-                      className="absolute -top-1 -right-1 bg-mayday-700 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium"
+                      className="absolute -top-1 -right-1 bg-mayday-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium"
                     >
                       {inviteCount}
                     </span>
@@ -174,7 +170,7 @@ export function Header() {
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-mayday-700 text-white font-bold px-4 py-2 rounded-lg hover:bg-mayday-800 text-nowrap"
+                  className="bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600"
                 >
                   Sign up
                 </Link>

@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
-import { Send } from "lucide-react";
+import { useState, type FormEvent } from 'react';
+import { Send } from 'lucide-react';
 
 interface MessageInputProps {
   onSend: (content: string) => Promise<void>;
@@ -7,7 +7,7 @@ interface MessageInputProps {
 }
 
 export function MessageInput({ onSend, disabled }: MessageInputProps) {
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -17,17 +17,14 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
     setSending(true);
     try {
       await onSend(content.trim());
-      setContent("");
+      setContent('');
     } finally {
       setSending(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="border-t border-gray-200 p-4 flex gap-2"
-    >
+    <form onSubmit={handleSubmit} className="border-t border-gray-200 p-4 flex gap-2">
       <input
         type="text"
         value={content}
@@ -41,7 +38,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
         type="submit"
         disabled={!content.trim() || sending || disabled}
         aria-label="Send message"
-        className="bg-mayday-700 text-white p-2 rounded-full hover:bg-mayday-800 disabled:opacity-50"
+        className="bg-mayday-500 text-white p-2 rounded-full hover:bg-mayday-600 disabled:opacity-50"
       >
         <Send className="w-5 h-5" aria-hidden="true" />
       </button>

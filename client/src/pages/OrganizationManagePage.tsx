@@ -1,13 +1,15 @@
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { Trash2, ArrowLeft, Building2 } from "lucide-react";
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
+import { Trash2, UserPlus, ArrowLeft, Building2 } from 'lucide-react';
 import {
+  inviteToOrganizationSchema,
   updateOrganizationSchema,
+  type InviteToOrganizationRequest,
   type UpdateOrganizationRequest,
-} from "@mayday/shared";
+} from '@mayday/shared';
 import {
   getOrganization,
   getOrganizationInvites,
@@ -17,12 +19,10 @@ import {
   updateMemberRole,
   updateOrganization,
   uploadOrganizationAvatar,
-} from "../api/organizations.js";
-import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
-import { AvatarUploader } from "../components/common/AvatarUploader.js";
-import { InviteEmailsField } from "../components/common/InviteEmailsField.js";
-import { useBatchInvite } from "../hooks/useBatchInvite.js";
-import { useAuth } from "../context/AuthContext.js";
+} from '../api/organizations.js';
+import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
+import { AvatarUploader } from '../components/common/AvatarUploader.js';
+import { useAuth } from '../context/AuthContext.js';
 
 export function OrganizationManagePage() {
   const { id } = useParams<{ id: string }>();
@@ -31,122 +31,108 @@ export function OrganizationManagePage() {
   const queryClient = useQueryClient();
 
   const { data: org, isLoading } = useQuery({
-    queryKey: ["organization", id],
+    queryKey: ['organization', id],
     queryFn: () => getOrganization(id!),
     enabled: !!id,
   });
 
   const { data: invites } = useQuery({
-    queryKey: ["organization", id, "invites"],
+    queryKey: ['organization', id, 'invites'],
     queryFn: () => getOrganizationInvites(id!),
-    enabled: !!id && (org?.myRole === "OWNER" || org?.myRole === "ADMIN"),
+    enabled: !!id && (org?.myRole === 'OWNER' || org?.myRole === 'ADMIN'),
   });
 
-  const inviteBatch = useBatchInvite({
-    inviteEmail: (email) => inviteToOrganization(id!, { email }),
-    onSettled: () =>
-      queryClient.invalidateQueries({
-        queryKey: ["organization", id, "invites"],
-      }),
+  const inviteForm = useForm<InviteToOrganizationRequest>({
+    resolver: zodResolver(inviteToOrganizationSchema),
   });
 
   const editForm = useForm<UpdateOrganizationRequest>({
     resolver: zodResolver(updateOrganizationSchema),
-    values: org
-      ? {
-          name: org.name,
-          description: org.description ?? undefined,
-          location: org.location ?? undefined,
-          avatarUrl: org.avatarUrl ?? undefined,
-        }
-      : undefined,
+    values: org ? {
+      name: org.name,
+      description: org.description ?? undefined,
+      location: org.location ?? undefined,
+      avatarUrl: org.avatarUrl ?? undefined,
+    } : undefined,
+  });
+
+  const inviteMutation = useMutation({
+    mutationFn: (data: InviteToOrganizationRequest) => inviteToOrganization(id!, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['organization', id, 'invites'] });
+      toast.success('Invite sent');
+      inviteForm.reset();
+    },
+    onError: (e: any) => toast.error(e?.response?.data?.message || 'Failed to send invite'),
   });
 
   const revokeMutation = useMutation({
     mutationFn: (inviteId: string) => revokeInvite(id!, inviteId),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["organization", id, "invites"],
-      });
-      toast.success("Invite revoked");
+      queryClient.invalidateQueries({ queryKey: ['organization', id, 'invites'] });
+      toast.success('Invite revoked');
     },
   });
 
   const removeMutation = useMutation({
     mutationFn: (userId: string) => removeMember(id!, userId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organization", id] });
-      toast.success("Member removed");
+      queryClient.invalidateQueries({ queryKey: ['organization', id] });
+      toast.success('Member removed');
     },
-    onError: (e: any) =>
-      toast.error(e?.response?.data?.message || "Failed to remove member"),
+    onError: (e: any) => toast.error(e?.response?.data?.message || 'Failed to remove member'),
   });
 
   const roleMutation = useMutation({
-    mutationFn: ({
-      userId,
-      role,
-    }: {
-      userId: string;
-      role: "ADMIN" | "MEMBER";
-    }) => updateMemberRole(id!, userId, { role }),
+    mutationFn: ({ userId, role }: { userId: string; role: 'ADMIN' | 'MEMBER' }) =>
+      updateMemberRole(id!, userId, { role }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organization", id] });
-      toast.success("Role updated");
+      queryClient.invalidateQueries({ queryKey: ['organization', id] });
+      toast.success('Role updated');
     },
-    onError: (e: any) =>
-      toast.error(e?.response?.data?.message || "Failed to update role"),
+    onError: (e: any) => toast.error(e?.response?.data?.message || 'Failed to update role'),
   });
 
   const editMutation = useMutation({
-    mutationFn: (data: UpdateOrganizationRequest) =>
-      updateOrganization(id!, data),
+    mutationFn: (data: UpdateOrganizationRequest) => updateOrganization(id!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organization", id] });
-      queryClient.invalidateQueries({ queryKey: ["organizations"] });
-      toast.success("Organization updated");
+      queryClient.invalidateQueries({ queryKey: ['organization', id] });
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      toast.success('Organization updated');
     },
-    onError: () => toast.error("Failed to update"),
+    onError: () => toast.error('Failed to update'),
   });
 
   if (isLoading) return <LoadingSpinner className="py-12" />;
-  if (!org)
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-8">Organization not found.</div>
-    );
+  if (!org) return <div className="max-w-3xl mx-auto px-4 py-8">Organization not found.</div>;
 
-  if (org.myRole !== "OWNER" && org.myRole !== "ADMIN") {
+  if (org.myRole !== 'OWNER' && org.myRole !== 'ADMIN') {
     navigate(`/organizations/${org.id}`, { replace: true });
     return null;
   }
 
-  const isOwner = org.myRole === "OWNER";
+  const isOwner = org.myRole === 'OWNER';
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-      <Link
-        to={`/organizations/${org.id}`}
-        className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
-      >
+      <Link to={`/organizations/${org.id}`} className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
         <ArrowLeft className="w-4 h-4" />
         Back to {org.name}
       </Link>
 
       {/* Edit org details */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Organization Details
-        </h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Organization Details</h2>
 
         <div className="mb-4">
-          <p className="block text-sm font-medium text-gray-700 mb-2">Avatar</p>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Avatar</label>
           <AvatarUploader
             currentUrl={org.avatarUrl}
-            fallback={<Building2 className="w-8 h-8 text-gray-500" />}
+            fallback={<Building2 className="w-8 h-8 text-gray-400" />}
             onUpload={async (file) => {
               await uploadOrganizationAvatar(id!, file);
-              queryClient.invalidateQueries({ queryKey: ["organization", id] });
-              queryClient.invalidateQueries({ queryKey: ["organizations"] });
+              queryClient.invalidateQueries({ queryKey: ['organization', id] });
+              queryClient.invalidateQueries({ queryKey: ['organizations'] });
             }}
             shape="square"
           />
@@ -163,49 +149,31 @@ export function OrganizationManagePage() {
           className="space-y-4"
         >
           <div>
-            <label
-              htmlFor="org-edit-name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
             <input
-              id="org-edit-name"
-              {...editForm.register("name")}
+              {...editForm.register('name')}
               className="w-full border border-gray-300 rounded-lg px-3 py-2"
             />
           </div>
           <div>
-            <label
-              htmlFor="org-edit-description"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
-              id="org-edit-description"
-              {...editForm.register("description")}
+              {...editForm.register('description')}
               rows={3}
               className="w-full border border-gray-300 rounded-lg px-3 py-2"
             />
           </div>
           <div>
-            <label
-              htmlFor="org-edit-location"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Location
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
             <input
-              id="org-edit-location"
-              {...editForm.register("location")}
+              {...editForm.register('location')}
               className="w-full border border-gray-300 rounded-lg px-3 py-2"
             />
           </div>
           <button
             type="submit"
             disabled={editMutation.isPending}
-            className="bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800 disabled:opacity-50"
+            className="bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600 disabled:opacity-50"
           >
             Save changes
           </button>
@@ -214,31 +182,38 @@ export function OrganizationManagePage() {
 
       {/* Invite form */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Invite Members
-        </h2>
-        <InviteEmailsField
-          emails={inviteBatch.emails}
-          onEmailsChange={inviteBatch.setEmails}
-          onSubmit={inviteBatch.submit}
-          isSubmitting={inviteBatch.isSubmitting}
-          legend={null}
-        />
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Invite a Member</h2>
+        <form
+          onSubmit={inviteForm.handleSubmit((data) => inviteMutation.mutate(data))}
+          className="flex gap-2"
+        >
+          <input
+            type="email"
+            {...inviteForm.register('email')}
+            placeholder="user@example.com"
+            aria-label="Email address to invite"
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2"
+          />
+          <button
+            type="submit"
+            disabled={inviteMutation.isPending}
+            className="flex items-center gap-1 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600 disabled:opacity-50"
+          >
+            <UserPlus className="w-4 h-4" aria-hidden="true" />
+            Invite
+          </button>
+        </form>
+        {inviteForm.formState.errors.email && (
+          <p className="text-red-500 text-sm mt-1">{inviteForm.formState.errors.email.message}</p>
+        )}
 
         {invites && invites.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">
-              Pending invites
-            </h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Pending invites</h3>
             <ul className="divide-y divide-gray-100">
               {invites.map((inv) => (
-                <li
-                  key={inv.id}
-                  className="py-2 flex items-center justify-between"
-                >
-                  <span className="text-sm text-gray-900">
-                    {inv.invitedUser?.name ?? "Pending invite"}
-                  </span>
+                <li key={inv.id} className="py-2 flex items-center justify-between">
+                  <span className="text-sm text-gray-900">{inv.invitedUser?.name ?? 'Pending invite'}</span>
                   <button
                     onClick={() => revokeMutation.mutate(inv.id)}
                     className="text-sm text-red-600 hover:text-red-700"
@@ -258,37 +233,23 @@ export function OrganizationManagePage() {
         <ul className="divide-y divide-gray-100">
           {org.members.map((m) => {
             const isSelf = m.userId === user?.id;
-            const canChangeRole = isOwner && !isSelf && m.role !== "OWNER";
+            const canChangeRole = isOwner && !isSelf && m.role !== 'OWNER';
             // Owner can remove anyone except themselves; Admin can remove only MEMBERs
             const canRemove =
               !isSelf &&
-              m.role !== "OWNER" &&
-              (isOwner || (org.myRole === "ADMIN" && m.role === "MEMBER"));
+              m.role !== 'OWNER' &&
+              (isOwner || (org.myRole === 'ADMIN' && m.role === 'MEMBER'));
 
             return (
-              <li
-                key={m.id}
-                className="py-3 flex items-center justify-between gap-2"
-              >
-                <Link
-                  to={`/profile/${m.user.id}`}
-                  className="text-gray-900 hover:text-mayday-600 flex-1 min-w-0 truncate"
-                >
-                  {m.user.name}{" "}
-                  {isSelf && (
-                    <span className="text-xs text-gray-500">(you)</span>
-                  )}
+              <li key={m.id} className="py-3 flex items-center justify-between gap-2">
+                <Link to={`/profile/${m.user.id}`} className="text-gray-900 hover:text-mayday-600 flex-1 min-w-0 truncate">
+                  {m.user.name} {isSelf && <span className="text-xs text-gray-500">(you)</span>}
                 </Link>
                 <div className="flex items-center gap-2">
                   {canChangeRole ? (
                     <select
                       value={m.role}
-                      onChange={(e) =>
-                        roleMutation.mutate({
-                          userId: m.userId,
-                          role: e.target.value as "ADMIN" | "MEMBER",
-                        })
-                      }
+                      onChange={(e) => roleMutation.mutate({ userId: m.userId, role: e.target.value as 'ADMIN' | 'MEMBER' })}
                       aria-label={`Role for ${m.user.name}`}
                       className="text-xs border border-gray-300 rounded px-2 py-1"
                     >
@@ -296,23 +257,17 @@ export function OrganizationManagePage() {
                       <option value="ADMIN">Admin</option>
                     </select>
                   ) : (
-                    <span className="text-xs uppercase tracking-wider text-gray-500">
-                      {m.role}
-                    </span>
+                    <span className="text-xs uppercase tracking-wider text-gray-500">{m.role}</span>
                   )}
                   {canRemove && (
                     <button
                       onClick={() => {
-                        if (
-                          confirm(
-                            `Remove ${m.user.name} from the organization?`,
-                          )
-                        ) {
+                        if (confirm(`Remove ${m.user.name} from the organization?`)) {
                           removeMutation.mutate(m.userId);
                         }
                       }}
                       aria-label={`Remove ${m.user.name}`}
-                      className="text-gray-500 hover:text-red-600"
+                      className="text-gray-400 hover:text-red-600"
                     >
                       <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>

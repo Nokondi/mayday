@@ -1,5 +1,5 @@
-import nodemailer, { type Transporter } from "nodemailer";
-import { env } from "../config/env.js";
+import nodemailer, { type Transporter } from 'nodemailer';
+import { env } from '../config/env.js';
 
 let transporter: Transporter | null = null;
 
@@ -15,15 +15,10 @@ function getTransporter(): Transporter | null {
   return transporter;
 }
 
-export async function sendVerificationEmail(
-  to: string,
-  token: string,
-): Promise<void> {
+export async function sendVerificationEmail(to: string, token: string): Promise<void> {
   const t = getTransporter();
   if (!t) {
-    console.warn(
-      `[mail] SMTP not configured; skipping verification email to ${to}`,
-    );
+    console.warn(`[mail] SMTP not configured; skipping verification email to ${to}`);
     return;
   }
 
@@ -33,7 +28,7 @@ export async function sendVerificationEmail(
   await t.sendMail({
     from,
     to,
-    subject: "Confirm your Mayday account",
+    subject: 'Confirm your Mayday account',
     text: `Welcome to Mayday!\n\nConfirm your email by opening this link:\n${verifyUrl}\n\nThis link expires in 24 hours.`,
     html: `
       <p>Welcome to Mayday!</p>
@@ -45,14 +40,10 @@ export async function sendVerificationEmail(
   });
 }
 
-export async function sendRegistrationCollisionEmail(
-  to: string,
-): Promise<void> {
+export async function sendRegistrationCollisionEmail(to: string): Promise<void> {
   const t = getTransporter();
   if (!t) {
-    console.warn(
-      `[mail] SMTP not configured; skipping registration-collision email to ${to}`,
-    );
+    console.warn(`[mail] SMTP not configured; skipping registration-collision email to ${to}`);
     return;
   }
 
@@ -63,7 +54,7 @@ export async function sendRegistrationCollisionEmail(
   await t.sendMail({
     from,
     to,
-    subject: "Someone tried to sign up with your Mayday email",
+    subject: 'Someone tried to sign up with your Mayday email',
     text: `Someone just tried to create a new Mayday account with this email address.
 
 You already have an account here. If it was you and you've forgotten your password, reset it:
@@ -88,26 +79,23 @@ export async function sendNewMessageEmail(
 ): Promise<void> {
   const t = getTransporter();
   if (!t) {
-    console.warn(
-      `[mail] SMTP not configured; skipping new-message email to ${to}`,
-    );
+    console.warn(`[mail] SMTP not configured; skipping new-message email to ${to}`);
     return;
   }
 
   const inboxUrl = `${env.CLIENT_URL}/messages`;
   const from = env.SMTP_FROM || env.SMTP_USER!;
-  const safePreview =
-    messagePreview.length > 280
-      ? messagePreview.slice(0, 280) + "…"
-      : messagePreview;
+  const safePreview = messagePreview.length > 280
+    ? messagePreview.slice(0, 280) + '…'
+    : messagePreview;
   const escapedPreview = safePreview
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
   const escapedSender = senderName
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 
   await t.sendMail({
     from,
@@ -131,24 +119,22 @@ export async function sendCommunityJoinRequestEmail(
 ): Promise<void> {
   const t = getTransporter();
   if (!t) {
-    console.warn(
-      `[mail] SMTP not configured; skipping community-join-request email to ${to}`,
-    );
+    console.warn(`[mail] SMTP not configured; skipping community-join-request email to ${to}`);
     return;
   }
 
   const requestsUrl = `${env.CLIENT_URL}/communities/${communityId}/manage`;
   const from = env.SMTP_FROM || env.SMTP_USER!;
-  const escape = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escape = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
   const escapedRequester = escape(requesterName);
   const escapedCommunity = escape(communityName);
   const messageBlockHtml = requestMessage
     ? `<p>They wrote:</p><blockquote style="border-left:3px solid #ccc;padding-left:12px;color:#444;">${escape(requestMessage)}</blockquote>`
-    : "";
-  const messageBlockText = requestMessage
-    ? `\n\nThey wrote:\n"${requestMessage}"`
-    : "";
+    : '';
+  const messageBlockText = requestMessage ? `\n\nThey wrote:\n"${requestMessage}"` : '';
 
   await t.sendMail({
     from,
@@ -170,16 +156,16 @@ export async function sendCommunityJoinRequestApprovedEmail(
 ): Promise<void> {
   const t = getTransporter();
   if (!t) {
-    console.warn(
-      `[mail] SMTP not configured; skipping community-join-approved email to ${to}`,
-    );
+    console.warn(`[mail] SMTP not configured; skipping community-join-approved email to ${to}`);
     return;
   }
 
   const communityUrl = `${env.CLIENT_URL}/communities/${communityId}`;
   const from = env.SMTP_FROM || env.SMTP_USER!;
-  const escape = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escape = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
   const escapedCommunity = escape(communityName);
 
   await t.sendMail({
@@ -201,16 +187,16 @@ export async function sendCommunityInviteEmail(
 ): Promise<void> {
   const t = getTransporter();
   if (!t) {
-    console.warn(
-      `[mail] SMTP not configured; skipping community-invite email to ${to}`,
-    );
+    console.warn(`[mail] SMTP not configured; skipping community-invite email to ${to}`);
     return;
   }
 
   const invitesUrl = `${env.CLIENT_URL}/invites`;
   const from = env.SMTP_FROM || env.SMTP_USER!;
-  const escape = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escape = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
   const escapedInviter = escape(inviterName);
   const escapedCommunity = escape(communityName);
 
@@ -233,16 +219,16 @@ export async function sendOrganizationInviteEmail(
 ): Promise<void> {
   const t = getTransporter();
   if (!t) {
-    console.warn(
-      `[mail] SMTP not configured; skipping organization-invite email to ${to}`,
-    );
+    console.warn(`[mail] SMTP not configured; skipping organization-invite email to ${to}`);
     return;
   }
 
   const invitesUrl = `${env.CLIENT_URL}/invites`;
   const from = env.SMTP_FROM || env.SMTP_USER!;
-  const escape = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escape = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
   const escapedInviter = escape(inviterName);
   const escapedOrg = escape(organizationName);
 
@@ -266,16 +252,16 @@ export async function sendCommunitySignupInviteEmail(
 ): Promise<void> {
   const t = getTransporter();
   if (!t) {
-    console.warn(
-      `[mail] SMTP not configured; skipping community-signup-invite email to ${to}`,
-    );
+    console.warn(`[mail] SMTP not configured; skipping community-signup-invite email to ${to}`);
     return;
   }
 
   const registerUrl = `${env.CLIENT_URL}/register?email=${encodeURIComponent(to)}&claimToken=${encodeURIComponent(claimToken)}`;
   const from = env.SMTP_FROM || env.SMTP_USER!;
-  const escape = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escape = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
   const escapedInviter = escape(inviterName);
   const escapedCommunity = escape(communityName);
 
@@ -300,16 +286,16 @@ export async function sendOrganizationSignupInviteEmail(
 ): Promise<void> {
   const t = getTransporter();
   if (!t) {
-    console.warn(
-      `[mail] SMTP not configured; skipping organization-signup-invite email to ${to}`,
-    );
+    console.warn(`[mail] SMTP not configured; skipping organization-signup-invite email to ${to}`);
     return;
   }
 
   const registerUrl = `${env.CLIENT_URL}/register?email=${encodeURIComponent(to)}&claimToken=${encodeURIComponent(claimToken)}`;
   const from = env.SMTP_FROM || env.SMTP_USER!;
-  const escape = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escape = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
   const escapedInviter = escape(inviterName);
   const escapedOrg = escape(organizationName);
 
@@ -326,50 +312,10 @@ export async function sendOrganizationSignupInviteEmail(
   });
 }
 
-export async function sendAnnouncementEmail(
-  to: string,
-  recipientName: string,
-  message: string,
-): Promise<void> {
+export async function sendPasswordResetEmail(to: string, token: string): Promise<void> {
   const t = getTransporter();
   if (!t) {
-    console.warn(
-      `[mail] SMTP not configured; skipping announcement email to ${to}`,
-    );
-    return;
-  }
-
-  const settingsUrl = `${env.CLIENT_URL}/`;
-  const from = env.SMTP_FROM || env.SMTP_USER!;
-  const escape = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const escapedName = escape(recipientName);
-  const escapedMessage = escape(message);
-
-  await t.sendMail({
-    from,
-    to,
-    subject: "Announcement from Mayday",
-    text: `Hi ${recipientName},\n\n${message}\n\n— The Mayday team\n\nYou received this email because announcements are enabled on your account. To stop receiving these, turn off email notifications in your profile: ${settingsUrl}`,
-    html: `
-      <p>Hi ${escapedName},</p>
-      <p style="white-space:pre-wrap;">${escapedMessage}</p>
-      <p>— Mark @ MayDay</p>
-      <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
-      <p style="color:#888;font-size:0.85em;">You received this email because announcements are enabled on your account. To stop receiving these, turn off email notifications in your <a href="${settingsUrl}">Mayday profile</a>.</p>
-    `,
-  });
-}
-
-export async function sendPasswordResetEmail(
-  to: string,
-  token: string,
-): Promise<void> {
-  const t = getTransporter();
-  if (!t) {
-    console.warn(
-      `[mail] SMTP not configured; skipping password reset email to ${to}`,
-    );
+    console.warn(`[mail] SMTP not configured; skipping password reset email to ${to}`);
     return;
   }
 
@@ -379,7 +325,7 @@ export async function sendPasswordResetEmail(
   await t.sendMail({
     from,
     to,
-    subject: "Reset your Mayday password",
+    subject: 'Reset your Mayday password',
     text: `Someone requested a password reset for your Mayday account.\n\nIf that was you, open this link to choose a new password:\n${resetUrl}\n\nThis link expires in 1 hour. If you didn't request a reset, you can safely ignore this email.`,
     html: `
       <p>Someone requested a password reset for your Mayday account.</p>
