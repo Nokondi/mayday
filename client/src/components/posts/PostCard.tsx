@@ -54,7 +54,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex flex-col gap-2 mb-1">
+          <div className="flex flex-col">
             <span
               className={`text-s font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-700" : "text-green-700"}`}
             >
@@ -70,10 +70,10 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
                 />
               )}
               <div className="flex flex-col gap-1">
-                <h3 className="font-semibold text-gray-900 truncate">
+                <h3 className="font-semibold text-wrap text-gray-900 truncate">
                   {post.title}
                 </h3>
-                <div className="flex flew-row flex-wrap items-center gap-2 mb-1">
+                <div className="flex flew-row flex-wrap items-center gap-2">
                   <CategoryBadge category={post.category} />
                   <UrgencyBadge urgency={post.urgency} />
                   {post.status === "FULFILLED" && (
@@ -88,20 +88,20 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
                     </span>
                   )}
                   {post.community && (
-                    <span className="flex items-center gap-0.5 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
+                    <span className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
                       <Lock className="w-3 h-3" aria-hidden="true" />
                       {post.community.name}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                <p className="text-sm text-gray-600 line-clamp-2">
                   {post.description}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-x-4 gap-y-2 flex-wrap mt-3 text-xs text-gray-500">
+          <div className="flex items-center gap-x-3 flex-wrap mt-1 text-xs text-gray-500">
             {post.organization ? (
               <span className="flex items-center gap-1">
                 <Building2 className="w-3 h-3" aria-hidden="true" />

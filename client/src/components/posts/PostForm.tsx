@@ -212,7 +212,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
               type="radio"
               value="REQUEST"
               {...register("type")}
-              className="text-mayday-500"
+              className="text-mayday-700"
             />
             <span>I need help (Request)</span>
           </label>
@@ -221,7 +221,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
               type="radio"
               value="OFFER"
               {...register("type")}
-              className="text-green-500"
+              className="text-mayday-700"
             />
             <span>I can help (Offer)</span>
           </label>

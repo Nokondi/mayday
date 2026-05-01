@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import {
   addMonths,
   eachDayOfInterval,
@@ -32,6 +32,8 @@ export function CalendarPage() {
   const [urgency, setUrgency] = useState("");
   const [community, setCommunity] = useState("");
   const [search, setSearch] = useState("");
+  const [openDayKey, setOpenDayKey] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const debouncedSearch = useDebounce(search, 300);
 
   const gridStart = useMemo(() => startOfWeek(startOfMonth(cursor)), [cursor]);
@@ -65,6 +67,24 @@ export function CalendarPage() {
         q: debouncedSearch || undefined,
       }),
   });
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (openDayKey && !dialog.open) {
+      dialog.showModal();
+    } else if (!openDayKey && dialog.open) {
+      dialog.close();
+    }
+  }, [openDayKey]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => setOpenDayKey(null);
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, []);
 
   const occurrencesByDay = useMemo(() => {
     const map = new Map<string, Occurrence[]>();
@@ -136,6 +156,68 @@ export function CalendarPage() {
         />
       </div>
 
+      {(() => {
+        const openDayOccs = openDayKey
+          ? occurrencesByDay.get(openDayKey) ?? []
+          : [];
+        const openDayDate = openDayKey
+          ? new Date(`${openDayKey}T00:00:00`)
+          : null;
+        return (
+          // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- backdrop dismiss; Escape is handled natively by <dialog>
+          <dialog
+            ref={dialogRef}
+            aria-labelledby="day-events-title"
+            className="backdrop:bg-black/50 bg-transparent p-0 m-auto max-w-lg w-full"
+            onClick={(e) => {
+              if (e.target === dialogRef.current) setOpenDayKey(null);
+            }}
+          >
+            <div className="bg-white rounded-lg shadow-xl flex flex-col max-h-[80vh]">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h2
+                  id="day-events-title"
+                  className="text-lg font-bold text-gray-900"
+                >
+                  {openDayDate
+                    ? format(openDayDate, "EEEE, MMMM d, yyyy")
+                    : ""}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setOpenDayKey(null)}
+                  aria-label="Close"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" aria-hidden="true" />
+                </button>
+              </div>
+              <div className="overflow-y-auto p-4 space-y-2">
+                {openDayOccs.map((occ, i) => {
+                  const color =
+                    occ.post.type === "REQUEST"
+                      ? "bg-orange-50 text-orange-800 border-orange-200 hover:bg-orange-100"
+                      : "bg-green-50 text-green-800 border-green-200 hover:bg-green-100";
+                  return (
+                    <Link
+                      key={`${occ.post.id}-${i}`}
+                      to={`/posts/${occ.post.id}`}
+                      onClick={() => setOpenDayKey(null)}
+                      className={`block rounded px-3 py-2 border ${color}`}
+                    >
+                      <div className="text-xs font-medium">
+                        {format(occ.start, "h:mm a")}
+                      </div>
+                      <div className="text-sm">{occ.post.title}</div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </dialog>
+        );
+      })()}
+
       {isLoading ? (
         <LoadingSpinner className="py-12" />
       ) : (
@@ -189,9 +271,13 @@ export function CalendarPage() {
                       );
                     })}
                     {overflow > 0 && (
-                      <div className="text-[11px] text-gray-500 px-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setOpenDayKey(key)}
+                        className="text-[11px] text-mayday-700 hover:text-mayday-800 hover:underline px-1.5 text-left"
+                      >
                         +{overflow} more
-                      </div>
+                      </button>
                     )}
                   </div>
                 </div>
