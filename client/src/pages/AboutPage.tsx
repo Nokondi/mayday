@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { Heart, Users, MapPin, HandHeart } from "lucide-react";
 import { WaveDivider } from "../components/common/WaveDivider.js";
+import { useAuth } from "../context/AuthContext.js";
 
 export function AboutPage() {
+  const { user } = useAuth();
   return (
     <div>
       {/* Hero */}
@@ -102,30 +104,32 @@ export function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-white">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Ready to get involved?
-          </h2>
-          <p className="text-gray-600 text-lg mb-8">
-            Join MayDay today and start making a difference in your community.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link
-              to="/register"
-              className="bg-mayday-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-mayday-600"
-            >
-              Sign up
-            </Link>
-            <Link
-              to="/login"
-              className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50"
-            >
-              Log in
-            </Link>
+      {!user && (
+        <section className="py-16 bg-white">
+          <div className="max-w-3xl mx-auto px-4 text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Ready to get involved?
+            </h2>
+            <p className="text-gray-600 text-lg mb-8">
+              Join MayDay today and start making a difference in your community.
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Link
+                to="/register"
+                className="bg-mayday-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-mayday-700"
+              >
+                Sign up
+              </Link>
+              <Link
+                to="/login"
+                className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50"
+              >
+                Log in
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

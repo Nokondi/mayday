@@ -35,11 +35,7 @@ import { PostCard } from "../components/posts/PostCard.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { FulfillModal } from "../components/posts/FulfillModal.js";
 
-function ImageCarousel({
-  images,
-}: {
-  images: { id: string; url: string }[];
-}) {
+function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -79,7 +75,7 @@ function ImageCarousel({
         ref={scrollerRef}
         className="flex flex-nowrap gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-1 -mx-1 px-1"
       >
-        {images.map((img) => (
+        {images.map((img, i) => (
           <a
             key={img.id}
             href={img.url}
@@ -88,7 +84,11 @@ function ImageCarousel({
             data-carousel-item
             className="snap-start shrink-0 block rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
           >
-            <img src={img.url} alt="" className="w-40 h-40 object-cover" />
+            <img
+              src={img.url}
+              alt={`Attachment ${i + 1} of ${images.length} (opens in new tab)`}
+              className="w-40 h-40 object-cover"
+            />
           </a>
         ))}
       </div>
@@ -224,8 +224,9 @@ export function PostDetailPage() {
           </button>
         )}
         <span
-          className={`text-sm font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-600" : "text-green-600"}`}
+          className={`text-sm font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-700" : "text-green-700"}`}
         >
+          <span className="sr-only">Post type: </span>
           {post.type === "REQUEST" ? "Request" : "Offer"}
         </span>
         <h1 className="text-2xl font-bold text-gray-900 mb-3">{post.title}</h1>
@@ -302,7 +303,7 @@ export function PostDetailPage() {
             >
               <Building2 className="w-4 h-4" />
               {post.organization.name}
-              <span className="text-gray-400 ml-1">
+              <span className="text-gray-500 ml-1">
                 · by {post.author.name}
               </span>
             </Link>
@@ -378,7 +379,7 @@ export function PostDetailPage() {
               disabled={contactMutation.isPending}
               aria-label="Contact"
               title="Contact"
-              className="flex items-center gap-2 bg-mayday-500 text-white px-4 py-2 rounded-lg hover:bg-mayday-600"
+              className="flex items-center gap-2 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800"
             >
               <MessageSquare className="w-4 h-4" />
               <span className="hidden sm:inline">Contact</span>
@@ -466,7 +467,7 @@ export function PostDetailPage() {
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               Additional details{" "}
-              <span className="text-gray-400 font-normal">(optional)</span>
+              <span className="text-gray-500 font-normal">(optional)</span>
             </label>
             <textarea
               id="report-post-details"

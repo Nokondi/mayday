@@ -19,7 +19,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
       >
         <ChevronLeft className="w-4 h-4" aria-hidden="true" />
       </button>
-      <span className="text-sm text-gray-600" aria-current="page">
+      <span className="text-sm text-gray-600" aria-live="polite" aria-atomic="true">
         Page {page} of {totalPages}
       </span>
       <button
