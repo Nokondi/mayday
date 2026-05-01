@@ -107,7 +107,8 @@ describe('CalendarPage — overflow modal', () => {
       ],
       total: 3,
       limit: 200,
-      offset: 0,
+      page: 1,
+      totalPages: 1,
     });
 
     renderCalendar();
@@ -130,7 +131,8 @@ describe('CalendarPage — overflow modal', () => {
       ],
       total: 5,
       limit: 200,
-      offset: 0,
+      page: 1,
+      totalPages: 1,
     });
 
     renderCalendar();
@@ -158,7 +160,8 @@ describe('CalendarPage — overflow modal', () => {
       ],
       total: 5,
       limit: 200,
-      offset: 0,
+      page: 1,
+      totalPages: 1,
     });
 
     renderCalendar();
@@ -194,7 +197,8 @@ describe('CalendarPage — overflow modal', () => {
       ],
       total: 4,
       limit: 200,
-      offset: 0,
+      page: 1,
+      totalPages: 1,
     });
 
     renderCalendar();
@@ -217,7 +221,8 @@ describe('CalendarPage — overflow modal', () => {
       ],
       total: 4,
       limit: 200,
-      offset: 0,
+      page: 1,
+      totalPages: 1,
     });
 
     renderCalendar();
@@ -241,7 +246,8 @@ describe('CalendarPage — overflow modal', () => {
       ],
       total: 4,
       limit: 200,
-      offset: 0,
+      page: 1,
+      totalPages: 1,
     });
 
     renderCalendar();
@@ -268,7 +274,8 @@ describe('CalendarPage — overflow modal', () => {
       ],
       total: 4,
       limit: 200,
-      offset: 0,
+      page: 1,
+      totalPages: 1,
     });
 
     renderCalendar();
