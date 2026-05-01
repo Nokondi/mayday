@@ -13,13 +13,17 @@ import {
 } from "lucide-react";
 import {
   getCommunity,
+  getCommunityInvites,
+  inviteToCommunity,
   removeCommunityMember,
+  revokeCommunityInvite,
   deleteCommunity,
   requestToJoinCommunity,
   withdrawJoinRequest,
 } from "../api/communities.js";
 import { PostList } from "../components/posts/PostList.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
+import { MembersSection } from "../components/common/MembersSection.js";
 import { useAuth } from "../context/AuthContext.js";
 import { getPosts } from "../api/posts.js";
 
@@ -41,6 +45,15 @@ export function CommunityDetailPage() {
     queryKey: ["posts", "community", id],
     queryFn: () => getPosts({ communityId: id, status: "OPEN", limit: 20 }),
     enabled: !!id && isMember,
+  });
+
+  const canManage =
+    community?.myRole === "OWNER" || community?.myRole === "ADMIN";
+
+  const { data: communityInvites } = useQuery({
+    queryKey: ["community", id, "invites"],
+    queryFn: () => getCommunityInvites(id!),
+    enabled: !!id && canManage,
   });
 
   const leaveMutation = useMutation({
@@ -200,23 +213,27 @@ export function CommunityDetailPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Members</h2>
-        <ul className="divide-y divide-gray-100">
-          {community.members.map((m) => (
-            <li key={m.id} className="py-3 flex items-center justify-between">
-              <Link
-                to={`/profile/${m.user.id}`}
-                className="text-gray-900 hover:text-mayday-600"
-              >
-                {m.user.name}
-              </Link>
-              <span className="text-xs uppercase tracking-wider text-gray-500">
-                {m.role}
-              </span>
-            </li>
-          ))}
-        </ul>
+      <div className="mb-6">
+        <MembersSection
+          members={community.members}
+          invite={
+            isAdminOrOwner
+              ? {
+                  inviteEmail: (email) => inviteToCommunity(id!, { email }),
+                  pending: communityInvites,
+                  revoke: (inviteId) => revokeCommunityInvite(id!, inviteId),
+                  onSettled: () => {
+                    queryClient.invalidateQueries({
+                      queryKey: ["community", id],
+                    });
+                    queryClient.invalidateQueries({
+                      queryKey: ["community", id, "invites"],
+                    });
+                  },
+                }
+              : undefined
+          }
+        />
       </div>
 
       {isMember && postsData && postsData.data.length > 0 && (

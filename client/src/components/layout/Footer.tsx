@@ -14,7 +14,7 @@ export function Footer() {
           />
           <span className="sr-only">love</span> for community
         </p>
-        <p className="mt-1">
+        <p>
           <Link
             to="https://www.patreon.com/c/MayDayCreative"
             className="text-mayday-700 hover:underline"

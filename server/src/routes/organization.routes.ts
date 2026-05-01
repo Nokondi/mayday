@@ -16,6 +16,7 @@ import {
   sendOrganizationInviteEmail,
   sendOrganizationSignupInviteEmail,
 } from '../services/mail.service.js';
+import { postInclude } from './post.routes.js';
 import type { Prisma } from '@prisma/client';
 
 const publicUserSelect = {
@@ -306,6 +307,48 @@ organizationRoutes.delete('/:id', async (req: AuthRequest, res, next) => {
     });
     await prisma.organization.delete({ where: { id: orgId } });
     res.json({ message: 'Organization deleted' });
+  } catch (err) { next(err); }
+});
+
+// GET /api/organizations/:id/posts — list posts authored on behalf of the org
+organizationRoutes.get('/:id/posts', async (req: AuthRequest, res, next) => {
+  try {
+    const orgId = req.params.id as string;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
+
+    const where: Prisma.PostWhereInput = { organizationId: orgId };
+
+    // Hide community posts the viewer isn't a member of (site ADMINs see everything)
+    if (req.user!.role !== 'ADMIN') {
+      const memberships = await prisma.communityMember.findMany({
+        where: { userId: req.user!.id },
+        select: { communityId: true },
+      });
+      const myCommunityIds = memberships.map((m) => m.communityId);
+      where.OR = myCommunityIds.length > 0
+        ? [{ communityId: null }, { communityId: { in: myCommunityIds } }]
+        : [{ communityId: null }];
+    }
+
+    const [data, total] = await Promise.all([
+      prisma.post.findMany({
+        where,
+        include: postInclude,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.post.count({ where }),
+    ]);
+
+    res.json({
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (err) { next(err); }
 });
 

@@ -5,16 +5,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
   Trash2,
-  UserPlus,
   ArrowLeft,
   UserCheck,
   UserX,
   Users as UsersIcon,
 } from "lucide-react";
 import {
-  inviteToCommunitySchema,
   updateCommunitySchema,
-  type InviteToCommunityRequest,
   type UpdateCommunityRequest,
 } from "@mayday/shared";
 import {
@@ -32,6 +29,8 @@ import {
 } from "../api/communities.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { AvatarUploader } from "../components/common/AvatarUploader.js";
+import { InviteEmailsField } from "../components/common/InviteEmailsField.js";
+import { useBatchInvite } from "../hooks/useBatchInvite.js";
 import { useAuth } from "../context/AuthContext.js";
 
 export function CommunityManagePage() {
@@ -85,8 +84,10 @@ export function CommunityManagePage() {
       toast.error(e?.response?.data?.message || "Failed to reject"),
   });
 
-  const inviteForm = useForm<InviteToCommunityRequest>({
-    resolver: zodResolver(inviteToCommunitySchema),
+  const inviteBatch = useBatchInvite({
+    inviteEmail: (email) => inviteToCommunity(id!, { email }),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["community", id, "invites"] }),
   });
 
   const editForm = useForm<UpdateCommunityRequest>({
@@ -99,18 +100,6 @@ export function CommunityManagePage() {
           avatarUrl: community.avatarUrl ?? undefined,
         }
       : undefined,
-  });
-
-  const inviteMutation = useMutation({
-    mutationFn: (data: InviteToCommunityRequest) =>
-      inviteToCommunity(id!, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["community", id, "invites"] });
-      toast.success("Invite sent");
-      inviteForm.reset();
-    },
-    onError: (e: any) =>
-      toast.error(e?.response?.data?.message || "Failed to send invite"),
   });
 
   const revokeMutation = useMutation({
@@ -263,35 +252,15 @@ export function CommunityManagePage() {
       {/* Invite form */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Invite a Member
+          Invite Members
         </h2>
-        <form
-          onSubmit={inviteForm.handleSubmit((data) =>
-            inviteMutation.mutate(data),
-          )}
-          className="flex gap-2"
-        >
-          <input
-            type="email"
-            {...inviteForm.register("email")}
-            placeholder="user@example.com"
-            aria-label="Email address to invite"
-            className="flex-1 border border-gray-300 rounded-lg px-3 py-2"
-          />
-          <button
-            type="submit"
-            disabled={inviteMutation.isPending}
-            className="flex items-center gap-1 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800 disabled:opacity-50"
-          >
-            <UserPlus className="w-4 h-4" aria-hidden="true" />
-            Invite
-          </button>
-        </form>
-        {inviteForm.formState.errors.email && (
-          <p className="text-red-500 text-sm mt-1">
-            {inviteForm.formState.errors.email.message}
-          </p>
-        )}
+        <InviteEmailsField
+          emails={inviteBatch.emails}
+          onEmailsChange={inviteBatch.setEmails}
+          onSubmit={inviteBatch.submit}
+          isSubmitting={inviteBatch.isSubmitting}
+          legend={null}
+        />
 
         {invites && invites.length > 0 && (
           <div className="mt-6">
