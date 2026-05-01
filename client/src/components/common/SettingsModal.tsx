@@ -68,18 +68,20 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
   };
 
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- backdrop dismiss; Escape is handled natively by <dialog>
     <dialog
       ref={dialogRef}
+      aria-labelledby="settings-modal-title"
       className="backdrop:bg-black/50 bg-transparent p-0 m-auto max-w-md w-full"
       onClick={(e) => { if (e.target === dialogRef.current) onClose(); }}
     >
       <div className="bg-white rounded-lg shadow-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-900">Settings</h2>
+          <h2 id="settings-modal-title" className="text-lg font-bold text-gray-900">Settings</h2>
           <button
             onClick={onClose}
             aria-label="Close settings"
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-500 hover:text-gray-600"
           >
             <X className="w-5 h-5" />
           </button>
@@ -108,7 +110,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
                   </div>
                 </div>
                 {mutation.isPending && (
-                  <Loader2 className="w-4 h-4 animate-spin text-gray-400 mt-1" />
+                  <Loader2 className="w-4 h-4 animate-spin text-gray-500 mt-1" />
                 )}
               </label>
             </div>

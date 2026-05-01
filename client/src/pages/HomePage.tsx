@@ -30,7 +30,7 @@ export function HomePage() {
             <h2 className="text-2xl font-bold text-gray-900">Recent Posts</h2>
             <Link
               to="/posts"
-              className="text-mayday-600 hover:text-mayday-700 font-medium flex items-center gap-1"
+              className="text-mayday-800 hover:text-mayday-700 font-medium flex items-center gap-1"
             >
               <Search className="w-4 h-4" />
               View all

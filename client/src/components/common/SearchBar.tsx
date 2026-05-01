@@ -9,7 +9,7 @@ interface SearchBarProps {
 export function SearchBar({ value, onChange, placeholder = 'Search...' }: SearchBarProps) {
   return (
     <div role="search" className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" aria-hidden="true" />
       <input
         type="text"
         value={value}

@@ -83,7 +83,7 @@ export function MessagesPage() {
             <MessageInput onSend={handleSend} />
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-400">
+          <div className="flex-1 flex items-center justify-center text-gray-500">
             <div className="text-center">
               <MessageSquare className="w-12 h-12 mx-auto mb-3" />
               <p>Select a conversation to start messaging</p>

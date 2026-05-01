@@ -78,7 +78,7 @@ describe("Footer", () => {
     const link = screen.getByRole("link", { name: /Follow us on Patreon/i });
     expect(link).toHaveAttribute(
       "href",
-      "https://www.patreon.com/c/MayDayCreative/membership",
+      "https://www.patreon.com/c/MayDayCreative",
     );
   });
 });

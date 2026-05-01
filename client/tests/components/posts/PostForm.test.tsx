@@ -217,8 +217,8 @@ describe('PostForm — image uploads', () => {
     fireEvent.change(fileInput, { target: { files: [img1, img2] } });
 
     await waitFor(() => {
-      expect(screen.getByAltText(/preview of image 1/i)).toBeInTheDocument();
-      expect(screen.getByAltText(/preview of image 2/i)).toBeInTheDocument();
+      expect(screen.getByAltText(/upload preview 1/i)).toBeInTheDocument();
+      expect(screen.getByAltText(/upload preview 2/i)).toBeInTheDocument();
     });
     expect(screen.getByRole('button', { name: /remove image 1/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /remove image 2/i })).toBeInTheDocument();
@@ -232,11 +232,11 @@ describe('PostForm — image uploads', () => {
     fireEvent.change(fileInput, {
       target: { files: [new File(['a'], 'a.png', { type: 'image/png' })] },
     });
-    await screen.findByAltText(/preview of image 1/i);
+    await screen.findByAltText(/upload preview 1/i);
 
     await user.click(screen.getByRole('button', { name: /remove image 1/i }));
 
-    expect(screen.queryByAltText(/preview of image 1/i)).not.toBeInTheDocument();
+    expect(screen.queryByAltText(/upload preview 1/i)).not.toBeInTheDocument();
     expect(URL.revokeObjectURL).toHaveBeenCalled();
   });
 
@@ -250,9 +250,9 @@ describe('PostForm — image uploads', () => {
     fireEvent.change(fileInput, { target: { files } });
 
     await waitFor(() => {
-      expect(screen.getByAltText(/preview of image 5/i)).toBeInTheDocument();
+      expect(screen.getByAltText(/upload preview 5/i)).toBeInTheDocument();
     });
-    expect(screen.queryByAltText(/preview of image 6/i)).not.toBeInTheDocument();
+    expect(screen.queryByAltText(/upload preview 6/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /add images/i })).not.toBeInTheDocument();
   });
 
@@ -262,7 +262,7 @@ describe('PostForm — image uploads', () => {
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const img = new File(['a'], 'a.png', { type: 'image/png' });
     fireEvent.change(fileInput, { target: { files: [img] } });
-    await screen.findByAltText(/preview of image 1/i);
+    await screen.findByAltText(/upload preview 1/i);
 
     await user.type(getField(container, 'title'), 'Title');
     await user.type(getField(container, 'description'), 'Enough description here');
