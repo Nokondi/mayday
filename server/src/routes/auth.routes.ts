@@ -21,6 +21,7 @@ import {
   passwordFingerprint,
 } from '../utils/jwt.js';
 import { AppError } from '../middleware/error.middleware.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 import {
   sendVerificationEmail,
   sendPasswordResetEmail,
@@ -130,188 +131,172 @@ function setRefreshCookie(res: import('express').Response, token: string) {
 // real owner knows someone tried to sign up with their address) and run a
 // throwaway bcrypt hash so the response time of both branches is within
 // bcrypt's variance.
-authRoutes.post('/register', validate(registerSchema), async (req, res, next) => {
-  try {
-    const { email, password, name } = req.body;
-    const genericResponse = {
-      message: 'Check your email to confirm your address before logging in.',
-    };
+authRoutes.post('/register', validate(registerSchema), asyncHandler(async (req, res) => {
+  const { email, password, name } = req.body;
+  const genericResponse = {
+    message: 'Check your email to confirm your address before logging in.',
+  };
 
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      dispatchRegistrationCollisionEmail(existing.email);
-      await hashPassword(password);
-      res.status(201).json(genericResponse);
-      return;
-    }
-
-    const passwordHash = await hashPassword(password);
-    const user = await prisma.user.create({
-      data: { email, passwordHash, name },
-    });
-
-    dispatchVerificationEmail(user.email, signVerificationToken(user.id));
-
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    dispatchRegistrationCollisionEmail(existing.email);
+    await hashPassword(password);
     res.status(201).json(genericResponse);
-  } catch (err) { next(err); }
-});
+    return;
+  }
 
-authRoutes.post('/login', validate(loginSchema), async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
+  const passwordHash = await hashPassword(password);
+  const user = await prisma.user.create({
+    data: { email, passwordHash, name },
+  });
 
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) throw new AppError(401, 'Invalid credentials');
-    if (user.isBanned) throw new AppError(403, 'Account is banned');
+  dispatchVerificationEmail(user.email, signVerificationToken(user.id));
 
-    const valid = await comparePassword(password, user.passwordHash);
-    if (!valid) throw new AppError(401, 'Invalid credentials');
+  res.status(201).json(genericResponse);
+}));
 
-    if (!user.emailVerified) {
-      throw new AppError(403, 'Please confirm your email address before logging in.');
-    }
+authRoutes.post('/login', validate(loginSchema), asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
 
-    const tokenPayload = { id: user.id, email: user.email, role: user.role };
-    const accessToken = signAccessToken(tokenPayload);
-    const refreshToken = signRefreshToken(tokenPayload);
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw new AppError(401, 'Invalid credentials');
+  if (user.isBanned) throw new AppError(403, 'Account is banned');
 
-    setRefreshCookie(res, refreshToken);
+  const valid = await comparePassword(password, user.passwordHash);
+  if (!valid) throw new AppError(401, 'Invalid credentials');
 
-    res.json({
-      accessToken,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role, avatarUrl: user.avatarUrl },
-    });
-  } catch (err) { next(err); }
-});
+  if (!user.emailVerified) {
+    throw new AppError(403, 'Please confirm your email address before logging in.');
+  }
 
-authRoutes.post('/verify-email', async (req, res, next) => {
-  try {
-    const token = typeof req.body?.token === 'string' ? req.body.token : '';
-    if (!token) throw new AppError(400, 'Missing verification token');
+  const tokenPayload = { id: user.id, email: user.email, role: user.role };
+  const accessToken = signAccessToken(tokenPayload);
+  const refreshToken = signRefreshToken(tokenPayload);
 
-    const payload = verifyVerificationToken(token);
-    if (!payload) throw new AppError(400, 'Invalid or expired verification token');
+  setRefreshCookie(res, refreshToken);
 
-    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
-    if (!user) throw new AppError(400, 'Invalid or expired verification token');
+  res.json({
+    accessToken,
+    user: { id: user.id, email: user.email, name: user.name, role: user.role, avatarUrl: user.avatarUrl },
+  });
+}));
 
-    if (user.emailVerified) {
-      res.json({ message: 'Email already verified. You can now log in.' });
-      return;
-    }
+authRoutes.post('/verify-email', asyncHandler(async (req, res) => {
+  const token = typeof req.body?.token === 'string' ? req.body.token : '';
+  if (!token) throw new AppError(400, 'Missing verification token');
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { emailVerified: true },
-    });
+  const payload = verifyVerificationToken(token);
+  if (!payload) throw new AppError(400, 'Invalid or expired verification token');
 
-    await materializePendingInvitesForUser({ id: user.id, email: user.email });
+  const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+  if (!user) throw new AppError(400, 'Invalid or expired verification token');
 
-    res.json({ message: 'Email verified. You can now log in.' });
-  } catch (err) { next(err); }
-});
+  if (user.emailVerified) {
+    res.json({ message: 'Email already verified. You can now log in.' });
+    return;
+  }
 
-authRoutes.post('/resend-verification', validate(resendVerificationSchema), async (req, res, next) => {
-  try {
-    const { email } = req.body;
-    const user = await prisma.user.findUnique({ where: { email } });
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { emailVerified: true },
+  });
 
-    // Always return the same response to avoid leaking which emails are registered.
-    const genericResponse = { message: 'If that account exists and is unverified, a new confirmation email has been sent.' };
+  await materializePendingInvitesForUser({ id: user.id, email: user.email });
 
-    if (!user || user.emailVerified || user.isBanned) {
-      res.json(genericResponse);
-      return;
-    }
+  res.json({ message: 'Email verified. You can now log in.' });
+}));
 
-    dispatchVerificationEmail(user.email, signVerificationToken(user.id));
+authRoutes.post('/resend-verification', validate(resendVerificationSchema), asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  // Always return the same response to avoid leaking which emails are registered.
+  const genericResponse = { message: 'If that account exists and is unverified, a new confirmation email has been sent.' };
+
+  if (!user || user.emailVerified || user.isBanned) {
     res.json(genericResponse);
-  } catch (err) { next(err); }
-});
+    return;
+  }
+
+  dispatchVerificationEmail(user.email, signVerificationToken(user.id));
+  res.json(genericResponse);
+}));
 
 // POST /api/auth/forgot-password — issue a reset link if the email matches.
 // Always returns the same generic response to avoid leaking which emails exist.
-authRoutes.post('/forgot-password', validate(forgotPasswordSchema), async (req, res, next) => {
-  try {
-    const { email } = req.body;
-    const genericResponse = {
-      message: 'If that account exists, a password reset email has been sent.',
-    };
+authRoutes.post('/forgot-password', validate(forgotPasswordSchema), asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const genericResponse = {
+    message: 'If that account exists, a password reset email has been sent.',
+  };
 
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || user.isBanned) {
-      res.json(genericResponse);
-      return;
-    }
-
-    dispatchPasswordResetEmail(user.email, signPasswordResetToken(user));
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user || user.isBanned) {
     res.json(genericResponse);
-  } catch (err) { next(err); }
-});
+    return;
+  }
+
+  dispatchPasswordResetEmail(user.email, signPasswordResetToken(user));
+  res.json(genericResponse);
+}));
 
 // POST /api/auth/reset-password — consume a reset token and set a new password.
 // The token is single-use in practice: we verify its `pv` claim still matches
 // the user's current password hash fingerprint, which changes on success.
-authRoutes.post('/reset-password', validate(resetPasswordSchema), async (req, res, next) => {
-  try {
-    const { token, password } = req.body;
-    const payload = verifyPasswordResetToken(token);
-    if (!payload) throw new AppError(400, 'Invalid or expired reset link');
+authRoutes.post('/reset-password', validate(resetPasswordSchema), asyncHandler(async (req, res) => {
+  const { token, password } = req.body;
+  const payload = verifyPasswordResetToken(token);
+  if (!payload) throw new AppError(400, 'Invalid or expired reset link');
 
-    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
-    if (!user) throw new AppError(400, 'Invalid or expired reset link');
-    if (passwordFingerprint(user.passwordHash) !== payload.pv) {
-      throw new AppError(400, 'Invalid or expired reset link');
-    }
+  const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+  if (!user) throw new AppError(400, 'Invalid or expired reset link');
+  if (passwordFingerprint(user.passwordHash) !== payload.pv) {
+    throw new AppError(400, 'Invalid or expired reset link');
+  }
 
-    const passwordHash = await hashPassword(password);
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { passwordHash },
-    });
+  const passwordHash = await hashPassword(password);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash },
+  });
 
-    res.json({ message: 'Password updated. You can now log in.' });
-  } catch (err) { next(err); }
-});
+  res.json({ message: 'Password updated. You can now log in.' });
+}));
 
-authRoutes.post('/refresh', async (req, res, next) => {
-  try {
-    const token = req.cookies?.refreshToken;
-    if (!token) throw new AppError(401, 'No refresh token');
+authRoutes.post('/refresh', asyncHandler(async (req, res) => {
+  const token = req.cookies?.refreshToken;
+  if (!token) throw new AppError(401, 'No refresh token');
 
-    const payload = verifyRefreshToken(token);
-    if (!payload) throw new AppError(401, 'Invalid refresh token');
+  const payload = verifyRefreshToken(token);
+  if (!payload) throw new AppError(401, 'Invalid refresh token');
 
-    const user = await prisma.user.findUnique({ where: { id: payload.id } });
-    if (!user || user.isBanned) throw new AppError(401, 'User not found or banned');
+  const user = await prisma.user.findUnique({ where: { id: payload.id } });
+  if (!user || user.isBanned) throw new AppError(401, 'User not found or banned');
 
-    const tokenPayload = { id: user.id, email: user.email, role: user.role };
-    const accessToken = signAccessToken(tokenPayload);
-    // Rotate: issue a fresh refresh token and overwrite the old cookie
-    const newRefreshToken = signRefreshToken(tokenPayload);
-    setRefreshCookie(res, newRefreshToken);
+  const tokenPayload = { id: user.id, email: user.email, role: user.role };
+  const accessToken = signAccessToken(tokenPayload);
+  // Rotate: issue a fresh refresh token and overwrite the old cookie
+  const newRefreshToken = signRefreshToken(tokenPayload);
+  setRefreshCookie(res, newRefreshToken);
 
-    res.json({ accessToken });
-  } catch (err) { next(err); }
-});
+  res.json({ accessToken });
+}));
 
 authRoutes.post('/logout', (_req, res) => {
   res.clearCookie('refreshToken');
   res.json({ message: 'Logged out' });
 });
 
-authRoutes.get('/me', requireAuth, async (req: AuthRequest, res, next) => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user!.id },
-      select: {
-        id: true, email: true, name: true, bio: true,
-        location: true, latitude: true, longitude: true,
-        skills: true, role: true, avatarUrl: true, createdAt: true,
-        emailNotificationsEnabled: true,
-      },
-    });
-    if (!user) throw new AppError(404, 'User not found');
-    res.json(user);
-  } catch (err) { next(err); }
-});
+authRoutes.get('/me', requireAuth, asyncHandler(async (req: AuthRequest, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user!.id },
+    select: {
+      id: true, email: true, name: true, bio: true,
+      location: true, latitude: true, longitude: true,
+      skills: true, role: true, avatarUrl: true, createdAt: true,
+      emailNotificationsEnabled: true,
+    },
+  });
+  if (!user) throw new AppError(404, 'User not found');
+  res.json(user);
+}));

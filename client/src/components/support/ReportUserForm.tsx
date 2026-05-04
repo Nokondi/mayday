@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { reportUserSchema, type ReportUserRequest } from "@mayday/shared";
 import { reportUser } from "../../api/users.js";
+import { FormField } from "../common/FormField.js";
 
 export function ReportUserForm() {
   const {
@@ -36,61 +37,33 @@ export function ReportUserForm() {
       aria-label="Report a user"
       noValidate
     >
-      <div>
-        <label
-          htmlFor="report-email"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          User's email
-        </label>
-        <input
-          id="report-email"
-          type="email"
-          {...register("email")}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-          placeholder="person@example.com"
-        />
-        {errors.email && (
-          <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-        )}
-      </div>
+      <FormField
+        id="report-email"
+        type="email"
+        label="User's email"
+        error={errors.email?.message}
+        placeholder="person@example.com"
+        {...register("email")}
+      />
 
-      <div>
-        <label
-          htmlFor="report-reason"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Reason
-        </label>
-        <input
-          id="report-reason"
-          {...register("reason")}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-          placeholder="Short summary (e.g. 'Harassing messages')"
-        />
-        {errors.reason && (
-          <p className="text-red-500 text-sm mt-1">{errors.reason.message}</p>
-        )}
-      </div>
+      <FormField
+        id="report-reason"
+        label="Reason"
+        error={errors.reason?.message}
+        placeholder="Short summary (e.g. 'Harassing messages')"
+        {...register("reason")}
+      />
 
-      <div>
-        <label
-          htmlFor="report-details"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Details <span className="text-gray-500 font-normal">(optional)</span>
-        </label>
-        <textarea
-          id="report-details"
-          {...register("details")}
-          rows={6}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-          placeholder="What happened? Include context, approximate dates, or links to specific posts if relevant."
-        />
-        {errors.details && (
-          <p className="text-red-500 text-sm mt-1">{errors.details.message}</p>
-        )}
-      </div>
+      <FormField
+        multiline
+        id="report-details"
+        label="Details"
+        optional
+        error={errors.details?.message}
+        rows={6}
+        placeholder="What happened? Include context, approximate dates, or links to specific posts if relevant."
+        {...register("details")}
+      />
 
       <button
         type="submit"

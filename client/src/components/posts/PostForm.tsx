@@ -12,6 +12,7 @@ import { useDebounce } from "../../hooks/useDebounce.js";
 import { listMyOrganizations } from "../../api/organizations.js";
 import { listMyCommunities } from "../../api/communities.js";
 import { useAuth } from "../../context/AuthContext.js";
+import { FormField } from "../common/FormField.js";
 
 interface PostFormProps {
   onSubmit: (data: CreatePostRequest, images: File[]) => Promise<void>;
@@ -274,52 +275,23 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         </div>
       )}
 
-      <div>
-        <label
-          htmlFor="post-title"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Title
-        </label>
-        <input
-          id="post-title"
-          aria-invalid={!!errors.title}
-          aria-describedby={errors.title ? "post-title-error" : undefined}
-          {...register("title")}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-          placeholder="Brief description of what you need or can offer"
-        />
-        {errors.title && (
-          <p id="post-title-error" className="text-red-500 text-sm mt-1">
-            {errors.title.message}
-          </p>
-        )}
-      </div>
+      <FormField
+        id="post-title"
+        label="Title"
+        error={errors.title?.message}
+        placeholder="Brief description of what you need or can offer"
+        {...register("title")}
+      />
 
-      <div>
-        <label
-          htmlFor="post-description"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Description
-        </label>
-        <textarea
-          id="post-description"
-          aria-invalid={!!errors.description}
-          aria-describedby={
-            errors.description ? "post-description-error" : undefined
-          }
-          {...register("description")}
-          rows={4}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-          placeholder="Provide details about your request or offer..."
-        />
-        {errors.description && (
-          <p id="post-description-error" className="text-red-500 text-sm mt-1">
-            {errors.description.message}
-          </p>
-        )}
-      </div>
+      <FormField
+        multiline
+        id="post-description"
+        label="Description"
+        error={errors.description?.message}
+        rows={4}
+        placeholder="Provide details about your request or offer..."
+        {...register("description")}
+      />
 
       {/* Image upload */}
       <div>
@@ -428,48 +400,22 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor="post-startAt"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Starts <span className="text-gray-500 font-normal">(optional)</span>
-          </label>
-          <input
-            id="post-startAt"
-            type="datetime-local"
-            aria-invalid={!!errors.startAt}
-            aria-describedby={errors.startAt ? "post-startAt-error" : undefined}
-            {...register("startAt")}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-          />
-          {errors.startAt && (
-            <p id="post-startAt-error" className="text-red-500 text-sm mt-1">
-              {errors.startAt.message}
-            </p>
-          )}
-        </div>
-        <div>
-          <label
-            htmlFor="post-endAt"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Ends <span className="text-gray-500 font-normal">(optional)</span>
-          </label>
-          <input
-            id="post-endAt"
-            type="datetime-local"
-            aria-invalid={!!errors.endAt}
-            aria-describedby={errors.endAt ? "post-endAt-error" : undefined}
-            {...register("endAt")}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-          />
-          {errors.endAt && (
-            <p id="post-endAt-error" className="text-red-500 text-sm mt-1">
-              {errors.endAt.message}
-            </p>
-          )}
-        </div>
+        <FormField
+          id="post-startAt"
+          type="datetime-local"
+          label="Starts"
+          optional
+          error={errors.startAt?.message}
+          {...register("startAt")}
+        />
+        <FormField
+          id="post-endAt"
+          type="datetime-local"
+          label="Ends"
+          optional
+          error={errors.endAt?.message}
+          {...register("endAt")}
+        />
       </div>
 
       <fieldset className="border-0 p-0 m-0">

@@ -13,6 +13,7 @@ import {
   inviteToOrganization,
 } from "../api/organizations.js";
 import { InviteEmailsField } from "../components/common/InviteEmailsField.js";
+import { FormField } from "../components/common/FormField.js";
 
 export function CreateOrganizationPage() {
   const navigate = useNavigate();
@@ -77,80 +78,39 @@ export function CreateOrganizationPage() {
           })}
           className="space-y-6"
         >
-          <div>
-            <label
-              htmlFor="org-name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Name
-            </label>
-            <input
-              id="org-name"
-              {...register("name")}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-              placeholder="e.g. Riverside Mutual Aid"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
-            )}
-          </div>
+          <FormField
+            id="org-name"
+            label="Name"
+            error={errors.name?.message}
+            placeholder="e.g. Riverside Mutual Aid"
+            {...register("name")}
+          />
 
-          <div>
-            <label
-              htmlFor="org-description"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Description
-            </label>
-            <textarea
-              id="org-description"
-              {...register("description")}
-              rows={4}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-              placeholder="What does your organization do?"
-            />
-            {errors.description && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
+          <FormField
+            multiline
+            id="org-description"
+            label="Description"
+            error={errors.description?.message}
+            rows={4}
+            placeholder="What does your organization do?"
+            {...register("description")}
+          />
 
-          <div>
-            <label
-              htmlFor="org-location"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Location
-            </label>
-            <input
-              id="org-location"
-              {...register("location")}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-              placeholder="e.g. Little Rock, AR"
-            />
-          </div>
+          <FormField
+            id="org-location"
+            label="Location"
+            placeholder="e.g. Little Rock, AR"
+            {...register("location")}
+          />
 
-          <div>
-            <label
-              htmlFor="org-avatar-url"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Avatar URL{" "}
-              <span className="text-gray-500 font-normal">(optional)</span>
-            </label>
-            <input
-              id="org-avatar-url"
-              {...register("avatarUrl")}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-              placeholder="https://..."
-            />
-            {errors.avatarUrl && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.avatarUrl.message}
-              </p>
-            )}
-          </div>
+          <FormField
+            id="org-avatar-url"
+            label="Avatar URL"
+            optional
+            error={errors.avatarUrl?.message}
+            placeholder="https://..."
+            {...register("avatarUrl")}
+          />
 
           <InviteEmailsField
             emails={inviteEmails}

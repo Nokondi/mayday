@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { loginSchema, type LoginRequest } from "@mayday/shared";
+import { FormField } from "../common/FormField.js";
 
 interface LoginFormProps {
   onSubmit: (data: LoginRequest) => Promise<void>;
@@ -31,27 +32,13 @@ export function LoginForm({ onSubmit, isSubmitting, error }: LoginFormProps) {
         </div>
       )}
 
-      <div>
-        <label
-          htmlFor="login-email"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Email
-        </label>
-        <input
-          id="login-email"
-          type="email"
-          aria-invalid={!!errors.email}
-          aria-describedby={errors.email ? "login-email-error" : undefined}
-          {...register("email")}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-        />
-        {errors.email && (
-          <p id="login-email-error" className="text-red-500 text-sm mt-1">
-            {errors.email.message}
-          </p>
-        )}
-      </div>
+      <FormField
+        id="login-email"
+        type="email"
+        label="Email"
+        error={errors.email?.message}
+        {...register("email")}
+      />
 
       <div>
         <label

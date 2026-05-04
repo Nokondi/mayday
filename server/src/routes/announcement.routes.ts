@@ -3,6 +3,7 @@ import { createAnnouncementSchema, updateAnnouncementSchema } from '@mayday/shar
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.middleware.js';
 import { prisma } from '../config/database.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendAnnouncementEmail } from '../services/mail.service.js';
 
 export const announcementRoutes = Router();
@@ -35,50 +36,44 @@ async function broadcastAnnouncement(message: string): Promise<void> {
   }
 }
 
-announcementRoutes.get('/active', async (_req, res, next) => {
-  try {
-    const announcement = await prisma.announcement.findFirst({
-      where: { active: true },
-      orderBy: { createdAt: 'desc' },
-    });
-    res.json(announcement);
-  } catch (err) { next(err); }
-});
+announcementRoutes.get('/active', asyncHandler(async (_req, res) => {
+  const announcement = await prisma.announcement.findFirst({
+    where: { active: true },
+    orderBy: { createdAt: 'desc' },
+  });
+  res.json(announcement);
+}));
 
-announcementRoutes.get('/', requireAuth, requireAdmin, async (_req, res, next) => {
-  try {
-    const announcements = await prisma.announcement.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    });
-    res.json(announcements);
-  } catch (err) { next(err); }
-});
+announcementRoutes.get('/', requireAuth, requireAdmin, asyncHandler(async (_req, res) => {
+  const announcements = await prisma.announcement.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+  });
+  res.json(announcements);
+}));
 
 announcementRoutes.post(
   '/',
   requireAuth,
   requireAdmin,
   validate(createAnnouncementSchema),
-  async (req, res, next) => {
-    try {
-      const announcement = await prisma.$transaction(async (tx) => {
-        await tx.announcement.updateMany({
-          where: { active: true },
-          data: { active: false },
-        });
-        return tx.announcement.create({
-          data: { message: req.body.message },
-        });
+  asyncHandler(async (req, res) => {
+    const announcement = await prisma.$transaction(async (tx) => {
+      await tx.announcement.updateMany({
+        where: { active: true },
+        data: { active: false },
       });
-
-      broadcastAnnouncement(announcement.message).catch((err) => {
-        console.error('[announcement] broadcast failed:', err);
+      return tx.announcement.create({
+        data: { message: req.body.message },
       });
+    });
 
-      res.status(201).json(announcement);
-    } catch (err) { next(err); }
-  },
+    broadcastAnnouncement(announcement.message).catch((err) => {
+      console.error('[announcement] broadcast failed:', err);
+    });
+
+    res.status(201).json(announcement);
+  }),
 );
 
 announcementRoutes.put(
@@ -86,20 +81,16 @@ announcementRoutes.put(
   requireAuth,
   requireAdmin,
   validate(updateAnnouncementSchema),
-  async (req, res, next) => {
-    try {
-      const announcement = await prisma.announcement.update({
-        where: { id: req.params.id as string },
-        data: req.body,
-      });
-      res.json(announcement);
-    } catch (err) { next(err); }
-  },
+  asyncHandler(async (req, res) => {
+    const announcement = await prisma.announcement.update({
+      where: { id: req.params.id as string },
+      data: req.body,
+    });
+    res.json(announcement);
+  }),
 );
 
-announcementRoutes.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
-  try {
-    await prisma.announcement.delete({ where: { id: req.params.id as string } });
-    res.json({ message: 'Announcement deleted' });
-  } catch (err) { next(err); }
-});
+announcementRoutes.delete('/:id', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+  await prisma.announcement.delete({ where: { id: req.params.id as string } });
+  res.json({ message: 'Announcement deleted' });
+}));
