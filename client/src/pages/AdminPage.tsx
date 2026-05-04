@@ -237,7 +237,8 @@ export function AdminPage() {
               : "bg-gray-100 text-gray-700"
           }`}
         >
-          <Flag className="w-4 h-4" aria-hidden="true" /> Reports
+          <Flag className="w-4 h-4" aria-hidden="true" />{" "}
+          <span className="text:no-wrap hidden sm:inline">User Reports</span>
         </button>
         <button
           role="tab"
@@ -252,7 +253,8 @@ export function AdminPage() {
               : "bg-gray-100 text-gray-700"
           }`}
         >
-          <Bug className="w-4 h-4" aria-hidden="true" /> Bug Reports
+          <Bug className="w-4 h-4" aria-hidden="true" />{" "}
+          <span className="text:no-wrap hidden sm:inline">Bug Reports</span>
         </button>
         <button
           role="tab"
@@ -267,7 +269,8 @@ export function AdminPage() {
               : "bg-gray-100 text-gray-700"
           }`}
         >
-          <Users className="w-4 h-4" aria-hidden="true" /> Users
+          <Users className="w-4 h-4" aria-hidden="true" />{" "}
+          <span className="text:no-wrap hidden sm:inline">Users</span>
         </button>
         <button
           role="tab"
@@ -282,7 +285,8 @@ export function AdminPage() {
               : "bg-gray-100 text-gray-700"
           }`}
         >
-          <Megaphone className="w-4 h-4" aria-hidden="true" /> Announcements
+          <Megaphone className="w-4 h-4" aria-hidden="true" />{" "}
+          <span className="text:no-wrap hidden sm:inline">Announcements</span>
         </button>
       </div>
 

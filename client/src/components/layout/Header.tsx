@@ -248,6 +248,7 @@ export function Header() {
                 <Link
                   to="/support"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
+                  onClick={() => setMenuOpen(false)}
                 >
                   Support
                 </Link>
@@ -284,6 +285,7 @@ export function Header() {
                     to="/admin"
                     aria-label="Admin panel"
                     className="block px-3 py-2 rounded hover:bg-gray-100"
+                    onClick={() => setMenuOpen(false)}
                   >
                     Admin
                   </Link>

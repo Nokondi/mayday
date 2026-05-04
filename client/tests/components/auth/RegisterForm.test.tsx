@@ -15,14 +15,14 @@ describe('RegisterForm', () => {
     renderForm();
     expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
 
   it('uses appropriate input types for email and password', () => {
     renderForm();
     expect(screen.getByLabelText(/email/i)).toHaveAttribute('type', 'email');
-    expect(screen.getByLabelText(/password/i)).toHaveAttribute('type', 'password');
+    expect(screen.getByLabelText(/^password$/i)).toHaveAttribute('type', 'password');
   });
 
   it('shows the error prop when provided', () => {
@@ -47,7 +47,7 @@ describe('RegisterForm', () => {
 
     await user.type(screen.getByLabelText(/name/i), 'Alice');
     await user.type(screen.getByLabelText(/email/i), 'alice@example.com');
-    await user.type(screen.getByLabelText(/password/i), 'hunter2hunter2');
+    await user.type(screen.getByLabelText(/^password$/i), 'hunter2hunter2');
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
@@ -62,7 +62,7 @@ describe('RegisterForm', () => {
     const { onSubmit } = renderForm();
 
     await user.type(screen.getByLabelText(/email/i), 'alice@example.com');
-    await user.type(screen.getByLabelText(/password/i), 'hunter2hunter2');
+    await user.type(screen.getByLabelText(/^password$/i), 'hunter2hunter2');
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -75,7 +75,7 @@ describe('RegisterForm', () => {
 
     await user.type(screen.getByLabelText(/name/i), 'Alice');
     await user.type(screen.getByLabelText(/email/i), 'not-an-email');
-    await user.type(screen.getByLabelText(/password/i), 'hunter2hunter2');
+    await user.type(screen.getByLabelText(/^password$/i), 'hunter2hunter2');
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -88,7 +88,7 @@ describe('RegisterForm', () => {
 
     await user.type(screen.getByLabelText(/name/i), 'Alice');
     await user.type(screen.getByLabelText(/email/i), 'alice@example.com');
-    await user.type(screen.getByLabelText(/password/i), 'short');
+    await user.type(screen.getByLabelText(/^password$/i), 'short');
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await new Promise((resolve) => setTimeout(resolve, 50));
