@@ -1,0 +1,37 @@
+name: Security
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    # Weekly run catches advisories disclosed after a PR was already merged
+    - cron: "0 8 * * 1"
+
+jobs:
+  npm-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+      - name: Audit dependencies
+        # --audit-level=high so low/moderate advisories don't block CI;
+        # tighten to "moderate" once the high/critical baseline is clean.
+        run: npm audit --audit-level=high
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so gitleaks can scan every commit, not just the latest
+          fetch-depth: 0
+      - name: Run gitleaks
+        # Free for personal accounts and public repos.
+        # Organization-private repos require GITLEAKS_LICENSE secret.
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
