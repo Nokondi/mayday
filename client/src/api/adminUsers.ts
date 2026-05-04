@@ -11,7 +11,7 @@ export interface AdminUserRow {
   createdAt: string;
 }
 
-export interface AdminUserSearchParams {
+interface AdminUserSearchParams {
   q?: string;
   role?: 'USER' | 'ADMIN';
   banned?: boolean;

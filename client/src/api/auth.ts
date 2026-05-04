@@ -8,11 +8,11 @@ import type {
 } from '@mayday/shared';
 import { api } from './client.js';
 
-export interface RegisterResponse {
+interface RegisterResponse {
   message: string;
 }
 
-export interface MessageResponse {
+interface MessageResponse {
   message: string;
 }
 
