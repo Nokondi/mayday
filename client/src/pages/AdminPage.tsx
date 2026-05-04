@@ -238,7 +238,7 @@ export function AdminPage() {
           }`}
         >
           <Flag className="w-4 h-4" aria-hidden="true" />{" "}
-          <span className="hidden sm:inline">Reports</span>
+          <span className="text:no-wrap hidden sm:inline">User Reports</span>
         </button>
         <button
           role="tab"
@@ -254,7 +254,7 @@ export function AdminPage() {
           }`}
         >
           <Bug className="w-4 h-4" aria-hidden="true" />{" "}
-          <span className="hidden sm:inline">Bug Reports</span>
+          <span className="text:no-wrap hidden sm:inline">Bug Reports</span>
         </button>
         <button
           role="tab"
@@ -270,7 +270,7 @@ export function AdminPage() {
           }`}
         >
           <Users className="w-4 h-4" aria-hidden="true" />{" "}
-          <span className="hidden sm:inline">Users</span>
+          <span className="text:no-wrap hidden sm:inline">Users</span>
         </button>
         <button
           role="tab"
@@ -286,7 +286,7 @@ export function AdminPage() {
           }`}
         >
           <Megaphone className="w-4 h-4" aria-hidden="true" />{" "}
-          <span className="hidden sm:inline">Announcements</span>
+          <span className="text:no-wrap hidden sm:inline">Announcements</span>
         </button>
       </div>
 
