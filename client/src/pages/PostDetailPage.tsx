@@ -1,5 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToastMutation } from "../hooks/useToastMutation.js";
 import { useEffect, useRef, useState } from "react";
 import {
   MapPin,
@@ -19,7 +20,6 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow, format, isSameDay } from "date-fns";
 import { formatRecurrence } from "../components/posts/PostCard.js";
-import { toast } from "sonner";
 import {
   getPost,
   getPostMatches,
@@ -158,46 +158,42 @@ export function PostDetailPage() {
     enabled: !!id && !!user,
   });
 
-  const contactMutation = useMutation({
+  const contactMutation = useToastMutation({
     mutationFn: () => startConversation({ participantId: post!.authorId }),
+    errorMessage: "Failed to start conversation",
     onSuccess: (conv) => navigate(`/messages?conversation=${conv.id}`),
-    onError: () => toast.error("Failed to start conversation"),
   });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useToastMutation({
     mutationFn: () => deletePost(id!),
+    successMessage: "Post deleted",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
-      toast.success("Post deleted");
       navigate("/posts");
     },
   });
 
-  const reopenMutation = useMutation({
+  const reopenMutation = useToastMutation({
     mutationFn: () => reopenPost(id!),
+    successMessage: "Post reopened",
+    errorMessage: "Failed to reopen post",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["post", id] });
       queryClient.invalidateQueries({ queryKey: ["posts"] });
-      toast.success("Post reopened");
     },
-    onError: () => toast.error("Failed to reopen post"),
   });
 
-  const reportMutation = useMutation({
+  const reportMutation = useToastMutation({
     mutationFn: () =>
       createReport({
         reason: "Inappropriate content",
         postId: id,
         details: reportDetails.trim() || undefined,
       }),
-    onSuccess: () => {
-      toast.success("Report submitted");
-      setShowReportConfirm(false);
-    },
-    onError: () => {
-      toast.error("Failed to submit report");
-      setShowReportConfirm(false);
-    },
+    successMessage: "Report submitted",
+    errorMessage: "Failed to submit report",
+    onSuccess: () => setShowReportConfirm(false),
+    onError: () => setShowReportConfirm(false),
   });
 
   if (isLoading) return <LoadingSpinner className="py-20" />;

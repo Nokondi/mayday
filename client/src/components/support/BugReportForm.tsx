@@ -1,12 +1,11 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import {
   createBugReportSchema,
   type CreateBugReportRequest,
 } from "@mayday/shared";
 import { submitBugReport } from "../../api/bugReports.js";
+import { useToastMutation } from "../../hooks/useToastMutation.js";
 import { FormField } from "../common/FormField.js";
 
 export function BugReportForm() {
@@ -19,13 +18,11 @@ export function BugReportForm() {
     resolver: zodResolver(createBugReportSchema),
   });
 
-  const mutation = useMutation({
+  const mutation = useToastMutation({
     mutationFn: submitBugReport,
-    onSuccess: () => {
-      toast.success("Bug report submitted — thank you!");
-      reset();
-    },
-    onError: () => toast.error("Failed to submit bug report"),
+    successMessage: "Bug report submitted — thank you!",
+    errorMessage: "Failed to submit bug report",
+    onSuccess: () => reset(),
   });
 
   return (

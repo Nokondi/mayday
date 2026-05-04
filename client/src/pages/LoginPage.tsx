@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext.js";
 import { LoginForm } from "../components/auth/LoginForm.js";
 import { resendVerification } from "../api/auth.js";
@@ -11,31 +12,30 @@ export function LoginPage() {
   const location = useLocation();
   const [error, setError] = useState("");
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [resendState, setResendState] = useState<"idle" | "sending" | "sent">(
     "idle",
   );
 
   const from = (location.state as any)?.from?.pathname || "/";
 
-  const handleSubmit = async (data: LoginRequest) => {
-    setIsSubmitting(true);
-    setError("");
-    setUnverifiedEmail(null);
-    setResendState("idle");
-    try {
-      await login(data);
-      navigate(from, { replace: true });
-    } catch (err: any) {
+  const loginMutation = useMutation({
+    mutationFn: login,
+    onSuccess: () => navigate(from, { replace: true }),
+    onError: (err: any, vars) => {
       const status = err.response?.status;
       const message = err.response?.data?.error || "Login failed";
       setError(message);
       if (status === 403 && /confirm your email/i.test(message)) {
-        setUnverifiedEmail(data.email);
+        setUnverifiedEmail(vars.email);
       }
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const handleSubmit = async (data: LoginRequest) => {
+    setError("");
+    setUnverifiedEmail(null);
+    setResendState("idle");
+    await loginMutation.mutateAsync(data).catch(() => {});
   };
 
   const handleResend = async () => {
@@ -57,7 +57,7 @@ export function LoginPage() {
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <LoginForm
           onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
+          isSubmitting={loginMutation.isPending}
           error={error}
         />
         {unverifiedEmail && (

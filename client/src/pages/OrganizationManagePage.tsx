@@ -1,8 +1,8 @@
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
+import { useToastMutation } from "../hooks/useToastMutation.js";
 import { Trash2, ArrowLeft, Building2 } from "lucide-react";
 import {
   updateOrganizationSchema,
@@ -62,27 +62,27 @@ export function OrganizationManagePage() {
       : undefined,
   });
 
-  const revokeMutation = useMutation({
+  const revokeMutation = useToastMutation({
     mutationFn: (inviteId: string) => revokeInvite(id!, inviteId),
+    successMessage: "Invite revoked",
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["organization", id, "invites"],
       });
-      toast.success("Invite revoked");
     },
   });
 
-  const removeMutation = useMutation({
+  const removeMutation = useToastMutation({
     mutationFn: (userId: string) => removeMember(id!, userId),
+    successMessage: "Member removed",
+    errorMessage: (e: any) =>
+      e?.response?.data?.message || "Failed to remove member",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organization", id] });
-      toast.success("Member removed");
     },
-    onError: (e: any) =>
-      toast.error(e?.response?.data?.message || "Failed to remove member"),
   });
 
-  const roleMutation = useMutation({
+  const roleMutation = useToastMutation({
     mutationFn: ({
       userId,
       role,
@@ -90,23 +90,23 @@ export function OrganizationManagePage() {
       userId: string;
       role: "ADMIN" | "MEMBER";
     }) => updateMemberRole(id!, userId, { role }),
+    successMessage: "Role updated",
+    errorMessage: (e: any) =>
+      e?.response?.data?.message || "Failed to update role",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organization", id] });
-      toast.success("Role updated");
     },
-    onError: (e: any) =>
-      toast.error(e?.response?.data?.message || "Failed to update role"),
   });
 
-  const editMutation = useMutation({
+  const editMutation = useToastMutation({
     mutationFn: (data: UpdateOrganizationRequest) =>
       updateOrganization(id!, data),
+    successMessage: "Organization updated",
+    errorMessage: "Failed to update",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organization", id] });
       queryClient.invalidateQueries({ queryKey: ["organizations"] });
-      toast.success("Organization updated");
     },
-    onError: () => toast.error("Failed to update"),
   });
 
   if (isLoading) return <LoadingSpinner className="py-12" />;

@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { useToastMutation } from "../hooks/useToastMutation.js";
 import { Check, X, Mail, Building2, Users } from "lucide-react";
 import {
   acceptInvite,
@@ -27,44 +27,44 @@ export function InvitesPage() {
     queryFn: getMyCommunityInvites,
   });
 
-  const acceptOrgMutation = useMutation({
+  const acceptOrgMutation = useToastMutation({
     mutationFn: acceptInvite,
+    successMessage: "Joined organization",
+    errorMessage: "Failed to accept invite",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-invites"] });
       queryClient.invalidateQueries({ queryKey: ["my-organizations"] });
       queryClient.invalidateQueries({ queryKey: ["organizations"] });
-      toast.success("Joined organization");
     },
-    onError: () => toast.error("Failed to accept invite"),
   });
 
-  const declineOrgMutation = useMutation({
+  const declineOrgMutation = useToastMutation({
     mutationFn: declineInvite,
+    successMessage: "Invite declined",
+    errorMessage: "Failed to decline invite",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-invites"] });
-      toast.success("Invite declined");
     },
-    onError: () => toast.error("Failed to decline invite"),
   });
 
-  const acceptCommunityMutation = useMutation({
+  const acceptCommunityMutation = useToastMutation({
     mutationFn: acceptCommunityInvite,
+    successMessage: "Joined community",
+    errorMessage: "Failed to accept invite",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-community-invites"] });
       queryClient.invalidateQueries({ queryKey: ["my-communities"] });
       queryClient.invalidateQueries({ queryKey: ["communities"] });
-      toast.success("Joined community");
     },
-    onError: () => toast.error("Failed to accept invite"),
   });
 
-  const declineCommunityMutation = useMutation({
+  const declineCommunityMutation = useToastMutation({
     mutationFn: declineCommunityInvite,
+    successMessage: "Invite declined",
+    errorMessage: "Failed to decline invite",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-community-invites"] });
-      toast.success("Invite declined");
     },
-    onError: () => toast.error("Failed to decline invite"),
   });
 
   const isLoading = orgLoading || communityLoading;

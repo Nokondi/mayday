@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { X, Plus, User, Building2, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 import { fulfillPost, searchFulfillers } from '../../api/posts.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
+import { useToastMutation } from '../../hooks/useToastMutation.js';
 
 interface Fulfiller {
   name: string;
@@ -66,17 +66,17 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
     return () => { cancelled = true; };
   }, [debouncedQuery]);
 
-  const fulfillMutation = useMutation({
+  const fulfillMutation = useToastMutation({
     mutationFn: () => fulfillPost(postId, {
       fulfillers: fulfillers.filter(f => f.name.trim()),
     }),
+    successMessage: 'Post marked as fulfilled',
+    errorMessage: 'Failed to mark post as fulfilled',
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      toast.success('Post marked as fulfilled');
       resetAndClose();
     },
-    onError: () => toast.error('Failed to mark post as fulfilled'),
   });
 
   const resetAndClose = () => {

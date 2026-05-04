@@ -1,9 +1,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { reportUserSchema, type ReportUserRequest } from "@mayday/shared";
 import { reportUser } from "../../api/users.js";
+import { useToastMutation } from "../../hooks/useToastMutation.js";
 import { FormField } from "../common/FormField.js";
 
 export function ReportUserForm() {
@@ -16,18 +15,13 @@ export function ReportUserForm() {
     resolver: zodResolver(reportUserSchema),
   });
 
-  const mutation = useMutation({
+  const mutation = useToastMutation({
     mutationFn: reportUser,
-    onSuccess: () => {
-      toast.success("Report submitted — the admin team will review it.");
-      reset();
-    },
-    onError: (err: unknown) => {
-      const msg =
-        (err as { response?: { data?: { error?: string } } }).response?.data
-          ?.error || "Failed to submit report";
-      toast.error(msg);
-    },
+    successMessage: "Report submitted — the admin team will review it.",
+    errorMessage: (err) =>
+      (err as { response?: { data?: { error?: string } } }).response?.data
+        ?.error || "Failed to submit report",
+    onSuccess: () => reset(),
   });
 
   return (

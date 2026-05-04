@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToastMutation } from "../hooks/useToastMutation.js";
 import { useEffect, useRef, useState } from "react";
 import {
   User as UserIcon,
@@ -71,42 +72,38 @@ export function ProfilePage() {
 
   const isOwnProfile = authUser?.id === id;
 
-  const messageMutation = useMutation({
+  const messageMutation = useToastMutation({
     mutationFn: () => startConversation({ participantId: id! }),
+    errorMessage: "Could not start a conversation",
     onSuccess: (conversation) => {
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
       navigate(`/messages?conversation=${conversation.id}`);
     },
-    onError: () => toast.error("Could not start a conversation"),
   });
 
-  const reportMutation = useMutation({
+  const reportMutation = useToastMutation({
     mutationFn: () =>
       createReport({
         reason: "Inappropriate conduct",
         reportedUserId: id!,
         details: reportDetails.trim() || undefined,
       }),
-    onSuccess: () => {
-      toast.success("Report submitted");
-      setShowReportConfirm(false);
-    },
-    onError: () => {
-      toast.error("Failed to submit report");
-      setShowReportConfirm(false);
-    },
+    successMessage: "Report submitted",
+    errorMessage: "Failed to submit report",
+    onSuccess: () => setShowReportConfirm(false),
+    onError: () => setShowReportConfirm(false),
   });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useToastMutation({
     mutationFn: () => deleteProfile(id!),
+    successMessage: "Your account has been deleted.",
+    errorMessage: "Failed to delete account",
     onSuccess: async () => {
       queryClient.clear();
       // Clear client-side session state; the server has already cleared the refresh cookie.
       await logout().catch(() => {});
-      toast.success("Your account has been deleted.");
       navigate("/");
     },
-    onError: () => toast.error("Failed to delete account"),
   });
 
   const { data: profile, isLoading } = useQuery({
@@ -121,14 +118,14 @@ export function ProfilePage() {
     enabled: !!id,
   });
 
-  const updateMutation = useMutation({
+  const updateMutation = useToastMutation({
     mutationFn: (data: any) => updateProfile(id!, data),
+    successMessage: "Profile updated",
+    errorMessage: "Failed to update profile",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user", id] });
       setEditing(false);
-      toast.success("Profile updated");
     },
-    onError: () => toast.error("Failed to update profile"),
   });
 
   const startEditing = () => {

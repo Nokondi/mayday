@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToastMutation } from "../hooks/useToastMutation.js";
 import {
   Users,
   MapPin,
@@ -56,47 +56,46 @@ export function CommunityDetailPage() {
     enabled: !!id && canManage,
   });
 
-  const leaveMutation = useMutation({
+  const leaveMutation = useToastMutation({
     mutationFn: () => removeCommunityMember(id!, user!.id),
+    successMessage: "Left community",
+    errorMessage: (e: any) => e?.response?.data?.message || "Failed to leave",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["communities"] });
       queryClient.invalidateQueries({ queryKey: ["my-communities"] });
-      toast.success("Left community");
       navigate("/communities");
     },
-    onError: (e: any) =>
-      toast.error(e?.response?.data?.message || "Failed to leave"),
   });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useToastMutation({
     mutationFn: () => deleteCommunity(id!),
+    successMessage: "Community deleted",
+    errorMessage: "Failed to delete community",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["communities"] });
       queryClient.invalidateQueries({ queryKey: ["my-communities"] });
-      toast.success("Community deleted");
       navigate("/communities");
     },
-    onError: () => toast.error("Failed to delete community"),
   });
 
-  const joinRequestMutation = useMutation({
+  const joinRequestMutation = useToastMutation({
     mutationFn: () => requestToJoinCommunity(id!),
+    successMessage: "Join request sent",
+    errorMessage: (e: any) =>
+      e?.response?.data?.message || "Failed to send request",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community", id] });
-      toast.success("Join request sent");
     },
-    onError: (e: any) =>
-      toast.error(e?.response?.data?.message || "Failed to send request"),
   });
 
-  const withdrawMutation = useMutation({
+  const withdrawMutation = useToastMutation({
     mutationFn: () => withdrawJoinRequest(id!),
+    successMessage: "Request withdrawn",
+    errorMessage: (e: any) =>
+      e?.response?.data?.message || "Failed to withdraw request",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community", id] });
-      toast.success("Request withdrawn");
     },
-    onError: (e: any) =>
-      toast.error(e?.response?.data?.message || "Failed to withdraw request"),
   });
 
   if (isLoading) return <LoadingSpinner className="py-12" />;
