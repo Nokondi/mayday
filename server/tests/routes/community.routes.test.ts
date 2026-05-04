@@ -347,6 +347,24 @@ describe('PATCH /api/communities/:id', () => {
       .send({ name: 'Renamed' });
     expect(res.status).toBe(403);
   });
+
+  // Avatar is now set via POST /:id/avatar only — PATCH must not accept avatarUrl,
+  // even from a stale client that still sends it. Pin the strip so a regression
+  // can't silently re-enable that channel.
+  it('ignores avatarUrl in the request body and never persists it', async () => {
+    mockedMember.findUnique.mockResolvedValueOnce({ role: 'OWNER' } as never);
+    mockedCommunity.update.mockResolvedValueOnce(dbCommunity({ name: 'Renamed' }) as never);
+
+    const res = await request(makeApp())
+      .patch(`/api/communities/${COMMUNITY_ID}`)
+      .set('Authorization', authHeader())
+      .send({ name: 'Renamed', avatarUrl: 'https://evil.example.com/forced.png' });
+
+    expect(res.status).toBe(200);
+    expect(mockedCommunity.update).toHaveBeenCalledTimes(1);
+    const data = mockedCommunity.update.mock.calls[0][0]?.data ?? {};
+    expect(data).not.toHaveProperty('avatarUrl');
+  });
 });
 
 describe('POST /api/communities/:id/avatar', () => {

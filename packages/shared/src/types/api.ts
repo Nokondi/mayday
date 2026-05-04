@@ -180,19 +180,14 @@ export type CreateBugReportRequest = z.infer<typeof createBugReportSchema>;
 export type UpdateBugReportRequest = z.infer<typeof updateBugReportSchema>;
 
 // Organizations
+// Avatar is set via the dedicated upload endpoint (POST /api/organizations/:id/avatar),
+// not as part of create/update — same pattern as user avatars.
 export const createOrganizationSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(2000).optional(),
   location: z.string().max(200).optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
-  // Accept empty string as "not provided" so a blank optional input doesn't fail URL validation
-  avatarUrl: z
-    .string()
-    .max(500)
-    .url('Must be a valid URL')
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
 });
 
 export const updateOrganizationSchema = createOrganizationSchema.partial();
@@ -211,18 +206,14 @@ export type InviteToOrganizationRequest = z.infer<typeof inviteToOrganizationSch
 export type UpdateMemberRoleRequest = z.infer<typeof updateMemberRoleSchema>;
 
 // Communities
+// Avatar is set via the dedicated upload endpoint (POST /api/communities/:id/avatar),
+// not as part of create/update — same pattern as user avatars.
 export const createCommunitySchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(2000).optional(),
   location: z.string().max(200).optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
-  avatarUrl: z
-    .string()
-    .max(500)
-    .url('Must be a valid URL')
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
 });
 
 export const updateCommunitySchema = createCommunitySchema.partial();
