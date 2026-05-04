@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToastMutation } from "../hooks/useToastMutation.js";
 import {
   Shield,
   Flag,
@@ -143,34 +144,34 @@ export function AdminPage() {
     placeholderData: (prev) => prev,
   });
 
-  const resolveReport = useMutation({
+  const resolveReport = useToastMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       await api.put(`/admin/reports/${id}`, { status });
     },
+    successMessage: "Report updated",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "reports"] });
-      toast.success("Report updated");
     },
   });
 
-  const changeBugStatus = useMutation({
+  const changeBugStatus = useToastMutation({
     mutationFn: ({ id, status }: { id: string; status: BugReport["status"] }) =>
       updateBugReportStatus(id, status),
+    successMessage: "Bug report updated",
+    errorMessage: "Failed to update bug report",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "bug-reports"] });
-      toast.success("Bug report updated");
     },
-    onError: () => toast.error("Failed to update bug report"),
   });
 
-  const banUser = useMutation({
+  const banUser = useToastMutation({
     mutationFn: ({ id, banned }: { id: string; banned: boolean }) =>
       setUserBanned(id, banned),
-    onSuccess: (_, vars) => {
+    errorMessage: "Failed to update user",
+    onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
       toast.success(vars.banned ? "User banned" : "User unbanned");
     },
-    onError: () => toast.error("Failed to update user"),
   });
 
   const { data: announcements } = useQuery({
@@ -179,35 +180,35 @@ export function AdminPage() {
     enabled: tab === "announcements",
   });
 
-  const postAnnouncement = useMutation({
+  const postAnnouncement = useToastMutation({
     mutationFn: (message: string) => createAnnouncement({ message }),
+    successMessage: "Announcement posted",
+    errorMessage: "Failed to post announcement",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "announcements"] });
       queryClient.invalidateQueries({ queryKey: ["announcement", "active"] });
       setAnnouncementDraft("");
-      toast.success("Announcement posted");
     },
-    onError: () => toast.error("Failed to post announcement"),
   });
 
-  const deactivateAnnouncement = useMutation({
+  const deactivateAnnouncement = useToastMutation({
     mutationFn: (id: string) => updateAnnouncement(id, { active: false }),
+    successMessage: "Announcement cleared",
+    errorMessage: "Failed to clear announcement",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "announcements"] });
       queryClient.invalidateQueries({ queryKey: ["announcement", "active"] });
-      toast.success("Announcement cleared");
     },
-    onError: () => toast.error("Failed to clear announcement"),
   });
 
-  const removeAnnouncement = useMutation({
+  const removeAnnouncement = useToastMutation({
     mutationFn: (id: string) => deleteAnnouncement(id),
+    successMessage: "Announcement deleted",
+    errorMessage: "Failed to delete announcement",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "announcements"] });
       queryClient.invalidateQueries({ queryKey: ["announcement", "active"] });
-      toast.success("Announcement deleted");
     },
-    onError: () => toast.error("Failed to delete announcement"),
   });
 
   return (

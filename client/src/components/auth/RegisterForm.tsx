@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { registerSchema, type RegisterRequest } from "@mayday/shared";
+import { FormField } from "../common/FormField.js";
 
 interface RegisterFormProps {
   onSubmit: (data: RegisterRequest) => Promise<void>;
@@ -38,48 +39,20 @@ export function RegisterForm({
         </div>
       )}
 
-      <div>
-        <label
-          htmlFor="register-name"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Name
-        </label>
-        <input
-          id="register-name"
-          aria-invalid={!!errors.name}
-          aria-describedby={errors.name ? "register-name-error" : undefined}
-          {...register("name")}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-        />
-        {errors.name && (
-          <p id="register-name-error" className="text-red-500 text-sm mt-1">
-            {errors.name.message}
-          </p>
-        )}
-      </div>
+      <FormField
+        id="register-name"
+        label="Name"
+        error={errors.name?.message}
+        {...register("name")}
+      />
 
-      <div>
-        <label
-          htmlFor="register-email"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Email
-        </label>
-        <input
-          id="register-email"
-          type="email"
-          aria-invalid={!!errors.email}
-          aria-describedby={errors.email ? "register-email-error" : undefined}
-          {...register("email")}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-        />
-        {errors.email && (
-          <p id="register-email-error" className="text-red-500 text-sm mt-1">
-            {errors.email.message}
-          </p>
-        )}
-      </div>
+      <FormField
+        id="register-email"
+        type="email"
+        label="Email"
+        error={errors.email?.message}
+        {...register("email")}
+      />
 
       <div>
         <label

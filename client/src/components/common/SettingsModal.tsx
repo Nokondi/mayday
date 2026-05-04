@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import { X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateUserSettings } from '../../api/users.js';
 import * as authApi from '../../api/auth.js';
+import { useToastMutation } from '../../hooks/useToastMutation.js';
 
 interface SettingsModalProps {
   open: boolean;
@@ -49,16 +49,16 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
     return () => { cancelled = true; };
   }, [open]);
 
-  const mutation = useMutation({
+  const mutation = useToastMutation({
     mutationFn: (next: boolean) => updateUserSettings({ emailNotificationsEnabled: next }),
+    successMessage: 'Settings saved',
+    errorMessage: 'Failed to update settings',
     onError: (_err, attemptedValue) => {
       // Revert optimistic update
       setEmailNotificationsEnabled(!attemptedValue);
-      toast.error('Failed to update settings');
     },
     onSuccess: (data) => {
       setEmailNotificationsEnabled(data.emailNotificationsEnabled);
-      toast.success('Settings saved');
     },
   });
 

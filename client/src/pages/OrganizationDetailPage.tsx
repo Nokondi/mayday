@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToastMutation } from "../hooks/useToastMutation.js";
 import {
   Users,
   MapPin,
@@ -49,27 +49,26 @@ export function OrganizationDetailPage() {
     enabled: !!id && canManage,
   });
 
-  const leaveMutation = useMutation({
+  const leaveMutation = useToastMutation({
     mutationFn: () => removeMember(id!, user!.id),
+    successMessage: "Left organization",
+    errorMessage: (e: any) => e?.response?.data?.message || "Failed to leave",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organizations"] });
       queryClient.invalidateQueries({ queryKey: ["my-organizations"] });
-      toast.success("Left organization");
       navigate("/organizations");
     },
-    onError: (e: any) =>
-      toast.error(e?.response?.data?.message || "Failed to leave"),
   });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useToastMutation({
     mutationFn: () => deleteOrganization(id!),
+    successMessage: "Organization deleted",
+    errorMessage: "Failed to delete organization",
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organizations"] });
       queryClient.invalidateQueries({ queryKey: ["my-organizations"] });
-      toast.success("Organization deleted");
       navigate("/organizations");
     },
-    onError: () => toast.error("Failed to delete organization"),
   });
 
   if (isLoading) return <LoadingSpinner className="py-12" />;

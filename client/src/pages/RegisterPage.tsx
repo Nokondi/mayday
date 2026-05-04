@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext.js';
 import { RegisterForm } from '../components/auth/RegisterForm.js';
 import { resendVerification } from '../api/auth.js';
@@ -10,22 +11,21 @@ export function RegisterPage() {
   const [searchParams] = useSearchParams();
   const prefilledEmail = searchParams.get('email')?.trim() || undefined;
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent'>('idle');
   const [resendError, setResendError] = useState('');
 
-  const handleSubmit = async (data: RegisterRequest) => {
-    setIsSubmitting(true);
-    setError('');
-    try {
-      await register(data);
-      setSubmittedEmail(data.email);
-    } catch (err: any) {
+  const registerMutation = useMutation({
+    mutationFn: register,
+    onSuccess: (_data, vars) => setSubmittedEmail(vars.email),
+    onError: (err: any) => {
       setError(err.response?.data?.error || 'Registration failed');
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const handleSubmit = async (data: RegisterRequest) => {
+    setError('');
+    await registerMutation.mutateAsync(data).catch(() => {});
   };
 
   const handleResend = async () => {
@@ -80,7 +80,7 @@ export function RegisterPage() {
     <div className="max-w-md mx-auto px-4 py-16">
       <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">Join MayDay</h1>
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <RegisterForm onSubmit={handleSubmit} isSubmitting={isSubmitting} error={error} defaultEmail={prefilledEmail} />
+        <RegisterForm onSubmit={handleSubmit} isSubmitting={registerMutation.isPending} error={error} defaultEmail={prefilledEmail} />
         <p className="text-center text-sm text-gray-500 mt-4">
           Already have an account?{' '}
           <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">Log in</Link>
