@@ -14,14 +14,14 @@ describe('LoginForm', () => {
   it('renders email, password, and submit controls', () => {
     renderForm();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument();
   });
 
   it('uses the appropriate input types for email and password', () => {
     renderForm();
     expect(screen.getByLabelText(/email/i)).toHaveAttribute('type', 'email');
-    expect(screen.getByLabelText(/password/i)).toHaveAttribute('type', 'password');
+    expect(screen.getByLabelText(/^password$/i)).toHaveAttribute('type', 'password');
   });
 
   it('shows the error prop when provided', () => {
@@ -45,7 +45,7 @@ describe('LoginForm', () => {
     const { onSubmit } = renderForm();
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com');
-    await user.type(screen.getByLabelText(/password/i), 'hunter2');
+    await user.type(screen.getByLabelText(/^password$/i), 'hunter2');
     await user.click(screen.getByRole('button', { name: /log in/i }));
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
@@ -60,7 +60,7 @@ describe('LoginForm', () => {
     const { onSubmit } = renderForm();
 
     await user.type(screen.getByLabelText(/email/i), 'not-an-email');
-    await user.type(screen.getByLabelText(/password/i), 'hunter2');
+    await user.type(screen.getByLabelText(/^password$/i), 'hunter2');
     await user.click(screen.getByRole('button', { name: /log in/i }));
 
     // Give react-hook-form + zod async validation time to settle.
