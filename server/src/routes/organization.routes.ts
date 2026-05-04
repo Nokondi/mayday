@@ -222,10 +222,10 @@ organizationRoutes.patch('/:id', validate(updateOrganizationSchema), asyncHandle
     throw new AppError(403, 'Not authorized');
   }
 
-  const { name, description, location, latitude, longitude, avatarUrl } = req.body;
+  const { name, description, location, latitude, longitude } = req.body;
   const org = await prisma.organization.update({
     where: { id: orgId },
-    data: { name, description, location, latitude, longitude, avatarUrl },
+    data: { name, description, location, latitude, longitude },
   });
   res.json(org);
 }));

@@ -95,7 +95,6 @@ export function CommunityManagePage() {
           name: community.name,
           description: community.description ?? undefined,
           location: community.location ?? undefined,
-          avatarUrl: community.avatarUrl ?? undefined,
         }
       : undefined,
   });

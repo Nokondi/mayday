@@ -58,6 +58,13 @@ export function OrganizationsPage() {
                 className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between gap-3">
+                  {org.avatarUrl && (
+                    <img
+                      src={org.avatarUrl}
+                      alt=""
+                      className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                    />
+                  )}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900">{org.name}</h3>
                     {org.description && (
@@ -84,13 +91,6 @@ export function OrganizationsPage() {
                       )}
                     </div>
                   </div>
-                  {org.avatarUrl && (
-                    <img
-                      src={org.avatarUrl}
-                      alt=""
-                      className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-                    />
-                  )}
                 </div>
               </Link>
             ))}

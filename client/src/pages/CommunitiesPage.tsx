@@ -113,6 +113,13 @@ function CommunityCard({
       className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
     >
       <div className="flex items-start justify-between gap-3">
+        {c.avatarUrl && (
+          <img
+            src={c.avatarUrl}
+            alt=""
+            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+          />
+        )}
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-gray-900">{c.name}</h3>
           {c.description && (
@@ -138,13 +145,6 @@ function CommunityCard({
             )}
           </div>
         </div>
-        {c.avatarUrl && (
-          <img
-            src={c.avatarUrl}
-            alt=""
-            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-          />
-        )}
       </div>
     </Link>
   );

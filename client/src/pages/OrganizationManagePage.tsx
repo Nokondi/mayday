@@ -57,7 +57,6 @@ export function OrganizationManagePage() {
           name: org.name,
           description: org.description ?? undefined,
           location: org.location ?? undefined,
-          avatarUrl: org.avatarUrl ?? undefined,
         }
       : undefined,
   });

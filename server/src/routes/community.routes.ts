@@ -218,8 +218,8 @@ communityRoutes.patch('/:id', validate(updateCommunitySchema), asyncHandler(asyn
   if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
     throw new AppError(403, 'Not authorized');
   }
-  const { name, description, location, latitude, longitude, avatarUrl } = req.body;
-  const updated = await prisma.community.update({ where: { id: cid }, data: { name, description, location, latitude, longitude, avatarUrl } });
+  const { name, description, location, latitude, longitude } = req.body;
+  const updated = await prisma.community.update({ where: { id: cid }, data: { name, description, location, latitude, longitude } });
   res.json(updated);
 }));
 
