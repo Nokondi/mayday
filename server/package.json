@@ -12,7 +12,8 @@
     "db:clear": "dotenv -e ../.env -- tsx src/prisma/clear.ts",
     "db:generate": "dotenv -e ../.env -- prisma generate",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1030.0",
