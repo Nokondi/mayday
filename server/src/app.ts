@@ -65,7 +65,7 @@ export function createApp() {
   // (see setRefreshCookie in auth.routes.ts) — the refresh cookie is the only
   // cookie used for auth, and browsers won't send it on cross-site requests.
   // All other state-changing endpoints authenticate via Authorization: Bearer.
-  app.use(cookieParser()); // codeql[js/missing-token-validation]
+  app.use(cookieParser());
 
   // Rate limiting for auth endpoints (brute-force protection)
   const authLimiter = rateLimit({
@@ -112,7 +112,7 @@ export function createApp() {
     app.use(express.static(clientDist));
 
     // SPA fallback — serve index.html for all non-API routes
-    app.get("*", (req, res, next) => {
+    app.get("*", apiLimiter, (req, res, next) => {
       if (req.path.startsWith("/api/")) {
         return next();
       }

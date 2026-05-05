@@ -54,7 +54,7 @@ function makeApp() {
   // CSRF protection in production comes from the refresh cookie's SameSite=Strict
   // attribute (see setRefreshCookie in auth.routes.ts), not from csurf middleware.
   // This is a supertest fixture, not a browser-facing app, so CSRF is not reachable.
-  app.use(cookieParser()); // codeql[js/missing-token-validation]
+  app.use(cookieParser());
   app.use("/api/auth", authRoutes);
   app.use(errorMiddleware);
   return app;
