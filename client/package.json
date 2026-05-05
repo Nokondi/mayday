@@ -15,7 +15,7 @@
     "@hookform/resolvers": "^3.9.0",
     "@mayday/shared": "*",
     "@tanstack/react-query": "^5.62.0",
-    "axios": "^1.7.9",
+    "axios": "^1.15.2",
     "date-fns": "^4.1.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.468.0",
