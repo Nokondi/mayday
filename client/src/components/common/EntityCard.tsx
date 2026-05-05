@@ -30,34 +30,34 @@ export function EntityCard({
           <img
             src={avatarUrl}
             alt=""
-            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+            className="w-16 h-16 rounded-lg object-cover flex-shrink-0 mt-1"
           />
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900">{name}</h3>
+          <h3 className="font-semibold text-gray-900 truncate">{name}</h3>
           {description && (
-            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+            <p className="text-sm text-gray-600 mt-1 line-clamp-2 break-words">
               {description}
             </p>
           )}
-          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-            <span className="flex items-center gap-1">
-              <Users className="w-3 h-3" />
-              {memberCount} member{memberCount !== 1 ? "s" : ""}
-            </span>
-            {location && (
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
-                {location}
-              </span>
-            )}
-            {myRole && (
-              <span className="text-mayday-600 font-medium">
-                You: {myRole.toLowerCase()}
-              </span>
-            )}
-          </div>
         </div>
+      </div>
+      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+        <span className="flex items-center gap-1">
+          <Users className="w-3 h-3" />
+          {memberCount} member{memberCount !== 1 ? "s" : ""}
+        </span>
+        {location && (
+          <span className="flex items-center gap-1">
+            <MapPin className="w-3 h-3" />
+            {location}
+          </span>
+        )}
+        {myRole && (
+          <span className="text-mayday-600 font-medium">
+            You: {myRole.toLowerCase()}
+          </span>
+        )}
       </div>
     </Link>
   );
