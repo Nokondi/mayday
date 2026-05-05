@@ -49,7 +49,10 @@ const mockedSendRegistrationCollisionEmail = vi.mocked(sendRegistrationCollision
 function makeApp() {
   const app = express();
   app.use(express.json());
-  app.use(cookieParser());
+  // CSRF protection in production comes from the refresh cookie's SameSite=Strict
+  // attribute (see setRefreshCookie in auth.routes.ts), not from csurf middleware.
+  // This is a supertest fixture, not a browser-facing app, so CSRF is not reachable.
+  app.use(cookieParser()); // lgtm[js/missing-token-validation]
   app.use('/api/auth', authRoutes);
   app.use(errorMiddleware);
   return app;

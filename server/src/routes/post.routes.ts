@@ -149,8 +149,8 @@ postRoutes.get(
 
     // Community visibility: if filtering by a specific community, only show that
     // community's posts. Otherwise show public posts + posts from user's communities.
-    if (communityId) {
-      where.communityId = communityId as string;
+    if (typeof communityId === "string" && communityId) {
+      where.communityId = communityId;
     } else {
       const myCommunityIds = await getUserCommunityIds(req.user!.id);
       const visibilityFilter: Prisma.PostWhereInput =
@@ -196,8 +196,8 @@ postRoutes.get(
   "/fulfiller-search",
   requireAuth,
   asyncHandler(async (req: AuthRequest, res) => {
-    const q = req.query.q as string;
-    if (!q || q.length < 2) {
+    const q = req.query.q;
+    if (typeof q !== "string" || q.length < 2) {
       res.json({ users: [], organizations: [] });
       return;
     }

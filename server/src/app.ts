@@ -59,7 +59,11 @@ export function createApp() {
     credentials: true,
   }));
   app.use(express.json());
-  app.use(cookieParser());
+  // CSRF protection comes from the refresh cookie's SameSite=Strict attribute
+  // (see setRefreshCookie in auth.routes.ts) — the refresh cookie is the only
+  // cookie used for auth, and browsers won't send it on cross-site requests.
+  // All other state-changing endpoints authenticate via Authorization: Bearer.
+  app.use(cookieParser()); // lgtm[js/missing-token-validation]
 
   // Rate limiting for auth endpoints (brute-force protection)
   const authLimiter = rateLimit({
@@ -70,10 +74,21 @@ export function createApp() {
     message: { message: 'Too many requests, please try again later' },
   });
 
-  // Health check
+  // Outer perimeter limiter for all /api routes (stacks with authLimiter on /api/auth)
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Too many requests, please try again later' },
+  });
+
+  // Health check (mounted before apiLimiter so monitors aren't throttled)
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
+
+  app.use('/api', apiLimiter);
 
   // Routes
   app.use('/api/auth', authLimiter, authRoutes);
