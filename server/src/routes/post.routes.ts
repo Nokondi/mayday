@@ -1,14 +1,21 @@
-import { Router } from 'express';
-import { createPostSchema, updatePostSchema, fulfillPostSchema } from '@mayday/shared';
-import { validate } from '../middleware/validate.middleware.js';
-import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
-import { uploadPostImages } from '../middleware/upload.middleware.js';
-import { prisma } from '../config/database.js';
-import { deleteObjectByUrl } from '../config/storage.js';
-import { AppError } from '../middleware/error.middleware.js';
-import { asyncHandler } from '../utils/asyncHandler.js';
-import { publicUserSelect } from '../utils/prisma-selects.js';
-import type { Prisma } from '@prisma/client';
+import { Router } from "express";
+import {
+  createPostSchema,
+  updatePostSchema,
+  fulfillPostSchema,
+} from "@mayday/shared";
+import { validate } from "../middleware/validate.middleware.js";
+import {
+  requireAuth,
+  type AuthRequest,
+} from "../middleware/auth.middleware.js";
+import { uploadPostImages } from "../middleware/upload.middleware.js";
+import { prisma } from "../config/database.js";
+import { deleteObjectByUrl } from "../config/storage.js";
+import { AppError } from "../middleware/error.middleware.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { publicUserSelect } from "../utils/prisma-selects.js";
+import type { Prisma } from "@prisma/client";
 
 export const postInclude = {
   author: {
@@ -22,11 +29,18 @@ export const postInclude = {
   },
   images: {
     select: { id: true, url: true, order: true },
-    orderBy: { order: 'asc' as const },
+    orderBy: { order: "asc" as const },
   },
   fulfillments: {
-    select: { id: true, postId: true, name: true, userId: true, organizationId: true, createdAt: true },
-    orderBy: { createdAt: 'asc' as const },
+    select: {
+      id: true,
+      postId: true,
+      name: true,
+      userId: true,
+      organizationId: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: "asc" as const },
   },
 };
 
@@ -50,14 +64,20 @@ async function canModifyPost(
   user: { id: string; role: string },
 ): Promise<boolean> {
   if (post.authorId === user.id) return true;
-  if (user.role === 'ADMIN') return true;
+  if (user.role === "ADMIN") return true;
   if (post.organizationId) {
     const membership = await prisma.organizationMember.findUnique({
       where: {
-        organizationId_userId: { organizationId: post.organizationId, userId: user.id },
+        organizationId_userId: {
+          organizationId: post.organizationId,
+          userId: user.id,
+        },
       },
     });
-    if (membership && (membership.role === 'OWNER' || membership.role === 'ADMIN')) {
+    if (
+      membership &&
+      (membership.role === "OWNER" || membership.role === "ADMIN")
+    ) {
       return true;
     }
   }
@@ -66,362 +86,468 @@ async function canModifyPost(
 
 export const postRoutes = Router();
 
-postRoutes.get('/', requireAuth, asyncHandler(async (req: AuthRequest, res) => {
-  const {
-    type, category, status, urgency, q,
-    neLat, neLng, swLat, swLng,
-    page = '1', limit = '20', sort = 'recent',
-    communityId, scheduled,
-  } = req.query;
+postRoutes.get(
+  "/",
+  requireAuth,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const {
+      type,
+      category,
+      status,
+      urgency,
+      q,
+      neLat,
+      neLng,
+      swLat,
+      swLng,
+      page = "1",
+      limit = "20",
+      sort = "recent",
+      communityId,
+      scheduled,
+    } = req.query;
 
-  const pageNum = Math.max(1, parseInt(page as string));
-  const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
+    const pageNum = Math.max(1, parseInt(page as string));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
 
-  const where: Prisma.PostWhereInput = {};
-  if (type && ['REQUEST', 'OFFER'].includes(type as string))
-    where.type = type as 'REQUEST' | 'OFFER';
-  if (category) where.category = category as string;
-  if (status && ['OPEN', 'FULFILLED', 'CLOSED'].includes(status as string))
-    where.status = status as 'OPEN' | 'FULFILLED' | 'CLOSED';
-  if (urgency && ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(urgency as string))
-    where.urgency = urgency as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  if (scheduled === 'true') where.startAt = { not: null };
+    const where: Prisma.PostWhereInput = {};
+    if (type && ["REQUEST", "OFFER"].includes(type as string))
+      where.type = type as "REQUEST" | "OFFER";
+    if (category) where.category = category as string;
+    if (status && ["OPEN", "FULFILLED", "CLOSED"].includes(status as string))
+      where.status = status as "OPEN" | "FULFILLED" | "CLOSED";
+    if (
+      urgency &&
+      ["LOW", "MEDIUM", "HIGH", "CRITICAL"].includes(urgency as string)
+    )
+      where.urgency = urgency as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+    if (scheduled === "true") where.startAt = { not: null };
 
-  if (neLat && neLng && swLat && swLng) {
-    where.latitude = {
-      gte: parseFloat(swLat as string),
-      lte: parseFloat(neLat as string),
+    if (neLat && neLng && swLat && swLng) {
+      where.latitude = {
+        gte: parseFloat(swLat as string),
+        lte: parseFloat(neLat as string),
+      };
+      where.longitude = {
+        gte: parseFloat(swLng as string),
+        lte: parseFloat(neLng as string),
+      };
+    }
+
+    // Text search (AND'd with other filters)
+    if (q) {
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : []),
+        {
+          OR: [
+            { title: { contains: q as string, mode: "insensitive" } },
+            { description: { contains: q as string, mode: "insensitive" } },
+          ],
+        },
+      ];
+    }
+
+    // Community visibility: if filtering by a specific community, only show that
+    // community's posts. Otherwise show public posts + posts from user's communities.
+    if (typeof communityId === "string" && communityId) {
+      where.communityId = communityId;
+    } else {
+      const myCommunityIds = await getUserCommunityIds(req.user!.id);
+      const visibilityFilter: Prisma.PostWhereInput =
+        myCommunityIds.length > 0
+          ? {
+              OR: [
+                { communityId: null },
+                { communityId: { in: myCommunityIds } },
+              ],
+            }
+          : { communityId: null };
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : []),
+        visibilityFilter,
+      ];
+    }
+
+    const orderBy: Prisma.PostOrderByWithRelationInput =
+      sort === "urgency" ? { urgency: "desc" } : { createdAt: "desc" };
+
+    const [data, total] = await Promise.all([
+      prisma.post.findMany({
+        where,
+        include: postInclude,
+        orderBy,
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum,
+      }),
+      prisma.post.count({ where }),
+    ]);
+
+    res.json({
+      data,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum),
+    });
+  }),
+);
+
+postRoutes.get(
+  "/fulfiller-search",
+  requireAuth,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const q = req.query.q;
+    if (typeof q !== "string" || q.length < 2) {
+      res.json({ users: [], organizations: [] });
+      return;
+    }
+
+    const [users, organizations] = await Promise.all([
+      prisma.user.findMany({
+        where: { name: { contains: q, mode: "insensitive" }, isBanned: false },
+        select: { id: true, name: true, avatarUrl: true },
+        take: 5,
+      }),
+      prisma.organization.findMany({
+        where: { name: { contains: q, mode: "insensitive" } },
+        select: { id: true, name: true, avatarUrl: true },
+        take: 5,
+      }),
+    ]);
+
+    res.json({ users, organizations });
+  }),
+);
+
+postRoutes.get(
+  "/:id",
+  requireAuth,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const post = await prisma.post.findUnique({
+      where: { id: req.params.id as string },
+      include: postInclude,
+    });
+    if (!post) throw new AppError(404, "Post not found");
+
+    // Check community visibility
+    if (post.communityId) {
+      const membership = await prisma.communityMember.findUnique({
+        where: {
+          communityId_userId: {
+            communityId: post.communityId,
+            userId: req.user!.id,
+          },
+        },
+      });
+      if (!membership && req.user!.role !== "ADMIN") {
+        throw new AppError(
+          403,
+          "This post is only visible to community members",
+        );
+      }
+    }
+
+    res.json(post);
+  }),
+);
+
+postRoutes.get(
+  "/:id/matches",
+  requireAuth,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const post = await prisma.post.findUnique({
+      where: { id: req.params.id as string },
+    });
+    if (!post) throw new AppError(404, "Post not found");
+
+    // If the source post is community-scoped, the viewer must be a member (or site ADMIN)
+    if (post.communityId) {
+      const membership = await prisma.communityMember.findUnique({
+        where: {
+          communityId_userId: {
+            communityId: post.communityId,
+            userId: req.user!.id,
+          },
+        },
+      });
+      if (!membership && req.user!.role !== "ADMIN") {
+        throw new AppError(
+          403,
+          "This post is only visible to community members",
+        );
+      }
+    }
+
+    const matchType = post.type === "REQUEST" ? "OFFER" : "REQUEST";
+    const where: Prisma.PostWhereInput = {
+      type: matchType,
+      category: post.category,
+      status: "OPEN",
+      id: { not: post.id },
+      authorId: { not: req.user!.id },
     };
-    where.longitude = {
-      gte: parseFloat(swLng as string),
-      lte: parseFloat(neLng as string),
-    };
-  }
 
-  // Text search (AND'd with other filters)
-  if (q) {
-    where.AND = [
-      ...(Array.isArray(where.AND) ? where.AND : []),
-      { OR: [
-        { title: { contains: q as string, mode: 'insensitive' } },
-        { description: { contains: q as string, mode: 'insensitive' } },
-      ] },
-    ];
-  }
+    if (post.latitude && post.longitude) {
+      const radiusInDegrees = 0.45; // ~50km
+      where.latitude = {
+        gte: post.latitude - radiusInDegrees,
+        lte: post.latitude + radiusInDegrees,
+      };
+      where.longitude = {
+        gte: post.longitude - radiusInDegrees,
+        lte: post.longitude + radiusInDegrees,
+      };
+    }
 
-  // Community visibility: if filtering by a specific community, only show that
-  // community's posts. Otherwise show public posts + posts from user's communities.
-  if (communityId) {
-    where.communityId = communityId as string;
-  } else {
+    // Hide community posts the viewer isn't a member of
     const myCommunityIds = await getUserCommunityIds(req.user!.id);
-    const visibilityFilter: Prisma.PostWhereInput = myCommunityIds.length > 0
-      ? { OR: [{ communityId: null }, { communityId: { in: myCommunityIds } }] }
-      : { communityId: null };
-    where.AND = [...(Array.isArray(where.AND) ? where.AND : []), visibilityFilter];
-  }
+    where.OR =
+      myCommunityIds.length > 0
+        ? [{ communityId: null }, { communityId: { in: myCommunityIds } }]
+        : [{ communityId: null }];
 
-  const orderBy: Prisma.PostOrderByWithRelationInput =
-    sort === 'urgency'
-      ? { urgency: 'desc' }
-      : { createdAt: 'desc' };
-
-  const [data, total] = await Promise.all([
-    prisma.post.findMany({
+    const matches = await prisma.post.findMany({
       where,
       include: postInclude,
-      orderBy,
-      skip: (pageNum - 1) * limitNum,
-      take: limitNum,
-    }),
-    prisma.post.count({ where }),
-  ]);
-
-  res.json({
-    data,
-    total,
-    page: pageNum,
-    limit: limitNum,
-    totalPages: Math.ceil(total / limitNum),
-  });
-}));
-
-postRoutes.get('/fulfiller-search', requireAuth, asyncHandler(async (req: AuthRequest, res) => {
-  const q = req.query.q as string;
-  if (!q || q.length < 2) {
-    res.json({ users: [], organizations: [] });
-    return;
-  }
-
-  const [users, organizations] = await Promise.all([
-    prisma.user.findMany({
-      where: { name: { contains: q, mode: 'insensitive' }, isBanned: false },
-      select: { id: true, name: true, avatarUrl: true },
-      take: 5,
-    }),
-    prisma.organization.findMany({
-      where: { name: { contains: q, mode: 'insensitive' } },
-      select: { id: true, name: true, avatarUrl: true },
-      take: 5,
-    }),
-  ]);
-
-  res.json({ users, organizations });
-}));
-
-postRoutes.get('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res) => {
-  const post = await prisma.post.findUnique({
-    where: { id: req.params.id as string },
-    include: postInclude,
-  });
-  if (!post) throw new AppError(404, 'Post not found');
-
-  // Check community visibility
-  if (post.communityId) {
-    const membership = await prisma.communityMember.findUnique({
-      where: { communityId_userId: { communityId: post.communityId, userId: req.user!.id } },
+      orderBy: [{ urgency: "desc" }, { createdAt: "desc" }],
+      take: 10,
     });
-    if (!membership && req.user!.role !== 'ADMIN') {
-      throw new AppError(403, 'This post is only visible to community members');
-    }
-  }
 
-  res.json(post);
-}));
-
-postRoutes.get('/:id/matches', requireAuth, asyncHandler(async (req: AuthRequest, res) => {
-  const post = await prisma.post.findUnique({ where: { id: req.params.id as string } });
-  if (!post) throw new AppError(404, 'Post not found');
-
-  // If the source post is community-scoped, the viewer must be a member (or site ADMIN)
-  if (post.communityId) {
-    const membership = await prisma.communityMember.findUnique({
-      where: { communityId_userId: { communityId: post.communityId, userId: req.user!.id } },
-    });
-    if (!membership && req.user!.role !== 'ADMIN') {
-      throw new AppError(403, 'This post is only visible to community members');
-    }
-  }
-
-  const matchType = post.type === 'REQUEST' ? 'OFFER' : 'REQUEST';
-  const where: Prisma.PostWhereInput = {
-    type: matchType,
-    category: post.category,
-    status: 'OPEN',
-    id: { not: post.id },
-    authorId: { not: req.user!.id },
-  };
-
-  if (post.latitude && post.longitude) {
-    const radiusInDegrees = 0.45; // ~50km
-    where.latitude = { gte: post.latitude - radiusInDegrees, lte: post.latitude + radiusInDegrees };
-    where.longitude = { gte: post.longitude - radiusInDegrees, lte: post.longitude + radiusInDegrees };
-  }
-
-  // Hide community posts the viewer isn't a member of
-  const myCommunityIds = await getUserCommunityIds(req.user!.id);
-  where.OR = myCommunityIds.length > 0
-    ? [{ communityId: null }, { communityId: { in: myCommunityIds } }]
-    : [{ communityId: null }];
-
-  const matches = await prisma.post.findMany({
-    where,
-    include: postInclude,
-    orderBy: [{ urgency: 'desc' }, { createdAt: 'desc' }],
-    take: 10,
-  });
-
-  res.json(matches);
-}));
+    res.json(matches);
+  }),
+);
 
 // Create post with optional image uploads (multipart/form-data)
-postRoutes.post('/', requireAuth, uploadPostImages, asyncHandler(async (req: AuthRequest, res) => {
-  // When using multipart, form fields come as strings — parse them
-  const body = { ...req.body };
+postRoutes.post(
+  "/",
+  requireAuth,
+  uploadPostImages,
+  asyncHandler(async (req: AuthRequest, res) => {
+    // When using multipart, form fields come as strings — parse them
+    const body = { ...req.body };
 
-  // Parse numeric fields that arrive as strings from FormData
-  if (body.latitude) body.latitude = parseFloat(body.latitude);
-  if (body.longitude) body.longitude = parseFloat(body.longitude);
+    // Parse numeric fields that arrive as strings from FormData
+    if (body.latitude) body.latitude = parseFloat(body.latitude);
+    if (body.longitude) body.longitude = parseFloat(body.longitude);
 
-  // Validate the parsed body
-  const parsed = createPostSchema.safeParse(body);
-  if (!parsed.success) {
-    const message = parsed.error.errors.map(e => e.message).join(', ');
-    throw new AppError(400, message);
-  }
+    // Validate the parsed body
+    const parsed = createPostSchema.safeParse(body);
+    if (!parsed.success) {
+      const message = parsed.error.errors.map((e) => e.message).join(", ");
+      throw new AppError(400, message);
+    }
 
-  // If posting on behalf of an organization, verify membership
-  if (parsed.data.organizationId) {
-    const membership = await prisma.organizationMember.findUnique({
-      where: {
-        organizationId_userId: {
-          organizationId: parsed.data.organizationId,
-          userId: req.user!.id,
+    // If posting on behalf of an organization, verify membership
+    if (parsed.data.organizationId) {
+      const membership = await prisma.organizationMember.findUnique({
+        where: {
+          organizationId_userId: {
+            organizationId: parsed.data.organizationId,
+            userId: req.user!.id,
+          },
         },
+      });
+      if (!membership) {
+        throw new AppError(403, "You are not a member of this organization");
+      }
+    }
+
+    // If scoping to a community, verify membership
+    if (parsed.data.communityId) {
+      const membership = await prisma.communityMember.findUnique({
+        where: {
+          communityId_userId: {
+            communityId: parsed.data.communityId,
+            userId: req.user!.id,
+          },
+        },
+      });
+      if (!membership) {
+        throw new AppError(403, "You are not a member of this community");
+      }
+    }
+
+    const post = await prisma.post.create({
+      data: {
+        ...parsed.data,
+        startAt: parsed.data.startAt
+          ? new Date(parsed.data.startAt)
+          : undefined,
+        endAt: parsed.data.endAt ? new Date(parsed.data.endAt) : undefined,
+        authorId: req.user!.id,
       },
     });
-    if (!membership) {
-      throw new AppError(403, 'You are not a member of this organization');
+
+    // Create PostImage records for uploaded files
+    const files = (req.files as Express.MulterS3.File[]) || [];
+    if (files.length > 0) {
+      await prisma.postImage.createMany({
+        data: files.map((file, index) => ({
+          postId: post.id,
+          url: file.location,
+          order: index,
+        })),
+      });
     }
-  }
 
-  // If scoping to a community, verify membership
-  if (parsed.data.communityId) {
-    const membership = await prisma.communityMember.findUnique({
-      where: {
-        communityId_userId: {
-          communityId: parsed.data.communityId,
-          userId: req.user!.id,
-        },
-      },
-    });
-    if (!membership) {
-      throw new AppError(403, 'You are not a member of this community');
-    }
-  }
-
-  const post = await prisma.post.create({
-    data: {
-      ...parsed.data,
-      startAt: parsed.data.startAt ? new Date(parsed.data.startAt) : undefined,
-      endAt: parsed.data.endAt ? new Date(parsed.data.endAt) : undefined,
-      authorId: req.user!.id,
-    },
-  });
-
-  // Create PostImage records for uploaded files
-  const files = (req.files as Express.MulterS3.File[]) || [];
-  if (files.length > 0) {
-    await prisma.postImage.createMany({
-      data: files.map((file, index) => ({
-        postId: post.id,
-        url: file.location,
-        order: index,
-      })),
-    });
-  }
-
-  // Re-fetch with includes
-  const fullPost = await prisma.post.findUnique({
-    where: { id: post.id },
-    include: postInclude,
-  });
-
-  res.status(201).json(fullPost);
-}));
-
-postRoutes.put('/:id', requireAuth, validate(updatePostSchema), asyncHandler(async (req: AuthRequest, res) => {
-  const existing = await prisma.post.findUnique({ where: { id: req.params.id as string } });
-  if (!existing) throw new AppError(404, 'Post not found');
-  if (!(await canModifyPost(existing, req.user!))) {
-    throw new AppError(403, 'Not authorized');
-  }
-
-  // Don't let editors change the org/community link via update
-  const { organizationId: _ignoreOrg, communityId: _ignoreCommunity, ...updateData } = req.body;
-
-  if (updateData.startAt) updateData.startAt = new Date(updateData.startAt);
-  if (updateData.endAt) updateData.endAt = new Date(updateData.endAt);
-
-  const post = await prisma.post.update({
-    where: { id: req.params.id as string },
-    data: updateData,
-    include: postInclude,
-  });
-  res.json(post);
-}));
-
-postRoutes.post('/:id/fulfill', requireAuth, validate(fulfillPostSchema), asyncHandler(async (req: AuthRequest, res) => {
-  const existing = await prisma.post.findUnique({ where: { id: req.params.id as string } });
-  if (!existing) throw new AppError(404, 'Post not found');
-  if (!(await canModifyPost(existing, req.user!))) {
-    throw new AppError(403, 'Not authorized');
-  }
-  if (existing.status !== 'OPEN') {
-    throw new AppError(400, 'Only open posts can be marked as fulfilled');
-  }
-
-  const { fulfillers } = req.body;
-
-  const post = await prisma.$transaction(async (tx) => {
-    await tx.post.update({
-      where: { id: req.params.id as string },
-      data: { status: 'FULFILLED' },
-    });
-
-    await tx.postFulfillment.createMany({
-      data: fulfillers.map((f: { name: string; userId?: string; organizationId?: string }) => ({
-        postId: req.params.id as string,
-        name: f.name,
-        userId: f.userId || null,
-        organizationId: f.organizationId || null,
-      })),
-    });
-
-    return tx.post.findUnique({
-      where: { id: req.params.id as string },
+    // Re-fetch with includes
+    const fullPost = await prisma.post.findUnique({
+      where: { id: post.id },
       include: postInclude,
     });
-  });
 
-  res.json(post);
-}));
+    res.status(201).json(fullPost);
+  }),
+);
 
-postRoutes.post('/:id/reopen', requireAuth, asyncHandler(async (req: AuthRequest, res) => {
-  const existing = await prisma.post.findUnique({ where: { id: req.params.id as string } });
-  if (!existing) throw new AppError(404, 'Post not found');
-  if (!(await canModifyPost(existing, req.user!))) {
-    throw new AppError(403, 'Not authorized');
-  }
-  if (existing.status !== 'FULFILLED') {
-    throw new AppError(400, 'Only fulfilled posts can be reopened');
-  }
-
-  const post = await prisma.$transaction(async (tx) => {
-    await tx.postFulfillment.deleteMany({ where: { postId: req.params.id as string } });
-    return tx.post.update({
+postRoutes.put(
+  "/:id",
+  requireAuth,
+  validate(updatePostSchema),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const existing = await prisma.post.findUnique({
       where: { id: req.params.id as string },
-      data: { status: 'OPEN' },
+    });
+    if (!existing) throw new AppError(404, "Post not found");
+    if (!(await canModifyPost(existing, req.user!))) {
+      throw new AppError(403, "Not authorized");
+    }
+
+    // Don't let editors change the org/community link via update
+    const {
+      organizationId: _ignoreOrg,
+      communityId: _ignoreCommunity,
+      ...updateData
+    } = req.body;
+
+    if (updateData.startAt) updateData.startAt = new Date(updateData.startAt);
+    if (updateData.endAt) updateData.endAt = new Date(updateData.endAt);
+
+    const post = await prisma.post.update({
+      where: { id: req.params.id as string },
+      data: updateData,
       include: postInclude,
     });
-  });
+    res.json(post);
+  }),
+);
 
-  res.json(post);
-}));
+postRoutes.post(
+  "/:id/fulfill",
+  requireAuth,
+  validate(fulfillPostSchema),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const existing = await prisma.post.findUnique({
+      where: { id: req.params.id as string },
+    });
+    if (!existing) throw new AppError(404, "Post not found");
+    if (!(await canModifyPost(existing, req.user!))) {
+      throw new AppError(403, "Not authorized");
+    }
+    if (existing.status !== "OPEN") {
+      throw new AppError(400, "Only open posts can be marked as fulfilled");
+    }
 
-postRoutes.delete('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res) => {
-  const existing = await prisma.post.findUnique({
-    where: { id: req.params.id as string },
-    include: { images: true },
-  });
-  if (!existing) throw new AppError(404, 'Post not found');
-  if (!(await canModifyPost(existing, req.user!))) {
-    throw new AppError(403, 'Not authorized');
-  }
+    const { fulfillers } = req.body;
 
-  // Delete image files from Spaces
-  for (const image of existing.images) {
-    await deleteObjectByUrl(image.url).catch(() => {});
-  }
+    const post = await prisma.$transaction(async (tx) => {
+      await tx.post.update({
+        where: { id: req.params.id as string },
+        data: { status: "FULFILLED" },
+      });
 
-  await prisma.post.delete({ where: { id: req.params.id as string } });
-  res.json({ message: 'Post deleted' });
-}));
+      await tx.postFulfillment.createMany({
+        data: fulfillers.map(
+          (f: { name: string; userId?: string; organizationId?: string }) => ({
+            postId: req.params.id as string,
+            name: f.name,
+            userId: f.userId || null,
+            organizationId: f.organizationId || null,
+          }),
+        ),
+      });
+
+      return tx.post.findUnique({
+        where: { id: req.params.id as string },
+        include: postInclude,
+      });
+    });
+
+    res.json(post);
+  }),
+);
+
+postRoutes.post(
+  "/:id/reopen",
+  requireAuth,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const existing = await prisma.post.findUnique({
+      where: { id: req.params.id as string },
+    });
+    if (!existing) throw new AppError(404, "Post not found");
+    if (!(await canModifyPost(existing, req.user!))) {
+      throw new AppError(403, "Not authorized");
+    }
+    if (existing.status !== "FULFILLED") {
+      throw new AppError(400, "Only fulfilled posts can be reopened");
+    }
+
+    const post = await prisma.$transaction(async (tx) => {
+      await tx.postFulfillment.deleteMany({
+        where: { postId: { equals: req.params.id as string } },
+      });
+      return tx.post.update({
+        where: { id: req.params.id as string },
+        data: { status: "OPEN" },
+        include: postInclude,
+      });
+    });
+
+    res.json(post);
+  }),
+);
+
+postRoutes.delete(
+  "/:id",
+  requireAuth,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const existing = await prisma.post.findUnique({
+      where: { id: req.params.id as string },
+      include: { images: true },
+    });
+    if (!existing) throw new AppError(404, "Post not found");
+    if (!(await canModifyPost(existing, req.user!))) {
+      throw new AppError(403, "Not authorized");
+    }
+
+    // Delete image files from Spaces
+    for (const image of existing.images) {
+      await deleteObjectByUrl(image.url).catch(() => {});
+    }
+
+    await prisma.post.delete({ where: { id: req.params.id as string } });
+    res.json({ message: "Post deleted" });
+  }),
+);
 
 // Delete a single image from a post
-postRoutes.delete('/:postId/images/:imageId', requireAuth, asyncHandler(async (req: AuthRequest, res) => {
-  const image = await prisma.postImage.findUnique({
-    where: { id: req.params.imageId as string },
-    include: { post: true },
-  });
-  if (!image) throw new AppError(404, 'Image not found');
-  if (!(await canModifyPost(image.post, req.user!))) {
-    throw new AppError(403, 'Not authorized');
-  }
+postRoutes.delete(
+  "/:postId/images/:imageId",
+  requireAuth,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const image = await prisma.postImage.findUnique({
+      where: { id: req.params.imageId as string },
+      include: { post: true },
+    });
+    if (!image) throw new AppError(404, "Image not found");
+    if (!(await canModifyPost(image.post, req.user!))) {
+      throw new AppError(403, "Not authorized");
+    }
 
-  // Delete file from Spaces
-  await deleteObjectByUrl(image.url).catch(() => {});
+    // Delete file from Spaces
+    await deleteObjectByUrl(image.url).catch(() => {});
 
-  await prisma.postImage.delete({ where: { id: image.id } });
-  res.json({ message: 'Image deleted' });
-}));
+    await prisma.postImage.delete({ where: { id: image.id } });
+    res.json({ message: "Image deleted" });
+  }),
+);
