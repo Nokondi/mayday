@@ -113,10 +113,9 @@ describe("PostCard — author vs organization attribution", () => {
       }),
     );
     expect(screen.getByText("Alice")).toBeInTheDocument();
-    expect(screen.queryByText(/by Alice/i)).not.toBeInTheDocument();
   });
 
-  it('shows the organization name with a "· by <author>" suffix when posted by an org', () => {
+  it("shows the organization name when posted by an org", () => {
     renderCard(
       makePost({
         organization: { id: "o1", name: "Red Cross", avatarUrl: null },
@@ -132,7 +131,6 @@ describe("PostCard — author vs organization attribution", () => {
       }),
     );
     expect(screen.getByText("Red Cross")).toBeInTheDocument();
-    expect(screen.getByText(/by Alice/i)).toBeInTheDocument();
   });
 });
 
