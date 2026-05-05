@@ -1,0 +1,6 @@
+[allowlist]
+  description = "Ignore test directories and dummy files"
+  paths = [
+    '''client/tests/''',
+    '''server/tests/'''
+  ]
