@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Users, MapPin } from "lucide-react";
+import { Plus } from "lucide-react";
 import { listOrganizations } from "../api/organizations.js";
 import { SearchBar } from "../components/common/SearchBar.js";
 import { Pagination } from "../components/common/Pagination.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
+import { EntityCard } from "../components/common/EntityCard.js";
 import { useDebounce } from "../hooks/useDebounce.js";
 
 export function OrganizationsPage() {
@@ -52,47 +53,16 @@ export function OrganizationsPage() {
           </p>
           <div className="space-y-3">
             {data.data.map((org) => (
-              <Link
+              <EntityCard
                 key={org.id}
                 to={`/organizations/${org.id}`}
-                className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  {org.avatarUrl && (
-                    <img
-                      src={org.avatarUrl}
-                      alt=""
-                      className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900">{org.name}</h3>
-                    {org.description && (
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                        {org.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Users className="w-3 h-3" />
-                        {org.memberCount} member
-                        {org.memberCount !== 1 ? "s" : ""}
-                      </span>
-                      {org.location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {org.location}
-                        </span>
-                      )}
-                      {org.myRole && (
-                        <span className="text-mayday-600 font-medium">
-                          You: {org.myRole.toLowerCase()}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </Link>
+                name={org.name}
+                description={org.description}
+                avatarUrl={org.avatarUrl}
+                memberCount={org.memberCount}
+                location={org.location}
+                myRole={org.myRole}
+              />
             ))}
           </div>
           <Pagination
