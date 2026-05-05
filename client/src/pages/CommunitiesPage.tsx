@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Users, MapPin } from "lucide-react";
-import type { CommunityWithMembership } from "@mayday/shared";
+import { Plus } from "lucide-react";
 import { listCommunities, listMyCommunities } from "../api/communities.js";
 import { SearchBar } from "../components/common/SearchBar.js";
 import { Pagination } from "../components/common/Pagination.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
+import { EntityCard } from "../components/common/EntityCard.js";
 import { useDebounce } from "../hooks/useDebounce.js";
 
 export function CommunitiesPage() {
@@ -65,7 +65,16 @@ export function CommunitiesPage() {
               </h2>
               <div className="space-y-3">
                 {myCommunities.map((c) => (
-                  <CommunityCard key={c.id} community={c} />
+                  <EntityCard
+                    key={c.id}
+                    to={`/communities/${c.id}`}
+                    name={c.name}
+                    description={c.description}
+                    avatarUrl={c.avatarUrl}
+                    memberCount={c.memberCount}
+                    location={c.location}
+                    myRole={c.myRole}
+                  />
                 ))}
               </div>
             </div>
@@ -86,7 +95,16 @@ export function CommunitiesPage() {
               </p>
               <div className="space-y-3">
                 {(isSearching ? data.data : otherCommunities)?.map((c) => (
-                  <CommunityCard key={c.id} community={c} />
+                  <EntityCard
+                    key={c.id}
+                    to={`/communities/${c.id}`}
+                    name={c.name}
+                    description={c.description}
+                    avatarUrl={c.avatarUrl}
+                    memberCount={c.memberCount}
+                    location={c.location}
+                    myRole={c.myRole}
+                  />
                 ))}
               </div>
               <Pagination
@@ -102,50 +120,3 @@ export function CommunitiesPage() {
   );
 }
 
-function CommunityCard({
-  community: c,
-}: {
-  community: CommunityWithMembership;
-}) {
-  return (
-    <Link
-      to={`/communities/${c.id}`}
-      className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
-    >
-      <div className="flex items-start justify-between gap-3">
-        {c.avatarUrl && (
-          <img
-            src={c.avatarUrl}
-            alt=""
-            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-          />
-        )}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900">{c.name}</h3>
-          {c.description && (
-            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-              {c.description}
-            </p>
-          )}
-          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-            <span className="flex items-center gap-1">
-              <Users className="w-3 h-3" />
-              {c.memberCount} member{c.memberCount !== 1 ? "s" : ""}
-            </span>
-            {c.location && (
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
-                {c.location}
-              </span>
-            )}
-            {c.myRole && (
-              <span className="text-mayday-600 font-medium">
-                You: {c.myRole.toLowerCase()}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}

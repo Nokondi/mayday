@@ -111,104 +111,102 @@ export function CommunityDetailPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4 flex-1 min-w-0">
-            {community.avatarUrl && (
-              <img
-                src={community.avatarUrl}
-                alt=""
-                className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-              />
-            )}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-gray-900">
-                {community.name}
-              </h1>
-              {community.description && (
-                <p className="text-gray-700 mt-2 whitespace-pre-wrap">
-                  {community.description}
-                </p>
-              )}
-              <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500">
-                <span className="flex items-center gap-1">
-                  <Users className="w-4 h-4" aria-hidden="true" />
-                  {community.memberCount} member
-                  {community.memberCount !== 1 ? "s" : ""}
-                </span>
-                {community.location && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" aria-hidden="true" />
-                    {community.location}
-                  </span>
-                )}
-                {community.myRole && (
-                  <span className="text-mayday-600 font-medium">
-                    You: {community.myRole.toLowerCase()}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2 flex-shrink-0">
-            {isAdminOrOwner && (
-              <Link
-                to={`/communities/${community.id}/manage`}
-                className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
-              >
-                <Settings className="w-4 h-4" />
-                Manage
-              </Link>
-            )}
-            {isMember && !isOwner && (
-              <button
-                onClick={() => {
-                  if (confirm("Leave this community?")) leaveMutation.mutate();
-                }}
-                className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
-              >
-                <LogOut className="w-4 h-4" />
-                Leave
-              </button>
-            )}
-            {isOwner && (
-              <button
-                onClick={() => {
-                  if (confirm("Delete this community? This cannot be undone."))
-                    deleteMutation.mutate();
-                }}
-                className="flex items-center gap-1 px-3 py-2 border border-red-300 rounded-lg text-sm text-red-700 hover:bg-red-50"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete
-              </button>
-            )}
-            {!isMember && !hasPendingRequest && (
-              <button
-                onClick={() => joinRequestMutation.mutate()}
-                disabled={joinRequestMutation.isPending}
-                className="flex items-center gap-1 px-3 py-2 bg-mayday-700 text-white rounded-lg text-sm hover:bg-mayday-800 disabled:opacity-50"
-              >
-                <UserPlus className="w-4 h-4" />
-                Request to Join
-              </button>
-            )}
-            {!isMember && hasPendingRequest && (
-              <div className="flex flex-col gap-2">
-                <span className="flex items-center gap-1 px-3 py-2 border border-yellow-300 bg-yellow-50 rounded-lg text-sm text-yellow-800">
-                  <Clock className="w-4 h-4" />
-                  Request Pending
-                </span>
-                <button
-                  onClick={() => withdrawMutation.mutate()}
-                  disabled={withdrawMutation.isPending}
-                  className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                >
-                  <X className="w-4 h-4" />
-                  Withdraw
-                </button>
-              </div>
+        <div className="flex items-start gap-4">
+          {community.avatarUrl && (
+            <img
+              src={community.avatarUrl}
+              alt=""
+              className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+            />
+          )}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold text-gray-900">
+              {community.name}
+            </h1>
+            {community.description && (
+              <p className="text-gray-700 whitespace-pre-wrap">
+                {community.description}
+              </p>
             )}
           </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+          <span className="flex items-center gap-1">
+            <Users className="w-4 h-4" aria-hidden="true" />
+            {community.memberCount} member
+            {community.memberCount !== 1 ? "s" : ""}
+          </span>
+          {community.location && (
+            <span className="flex items-center gap-1">
+              <MapPin className="w-4 h-4" aria-hidden="true" />
+              {community.location}
+            </span>
+          )}
+          {community.myRole && (
+            <span className="text-mayday-600 font-medium">
+              You: {community.myRole.toLowerCase()}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {isAdminOrOwner && (
+            <Link
+              to={`/communities/${community.id}/manage`}
+              className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+            >
+              <Settings className="w-4 h-4" />
+              Manage
+            </Link>
+          )}
+          {isMember && !isOwner && (
+            <button
+              onClick={() => {
+                if (confirm("Leave this community?")) leaveMutation.mutate();
+              }}
+              className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+            >
+              <LogOut className="w-4 h-4" />
+              Leave
+            </button>
+          )}
+          {isOwner && (
+            <button
+              onClick={() => {
+                if (confirm("Delete this community? This cannot be undone."))
+                  deleteMutation.mutate();
+              }}
+              className="flex items-center gap-1 px-3 py-2 border border-red-300 rounded-lg text-sm text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete
+            </button>
+          )}
+          {!isMember && !hasPendingRequest && (
+            <button
+              onClick={() => joinRequestMutation.mutate()}
+              disabled={joinRequestMutation.isPending}
+              className="flex items-center gap-1 px-3 py-2 bg-mayday-700 text-white rounded-lg text-sm hover:bg-mayday-800 disabled:opacity-50"
+            >
+              <UserPlus className="w-4 h-4" />
+              Request to Join
+            </button>
+          )}
+          {!isMember && hasPendingRequest && (
+            <>
+              <span className="flex items-center gap-1 px-3 py-2 border border-yellow-300 bg-yellow-50 rounded-lg text-sm text-yellow-800">
+                <Clock className="w-4 h-4" />
+                Request Pending
+              </span>
+              <button
+                onClick={() => withdrawMutation.mutate()}
+                disabled={withdrawMutation.isPending}
+                className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                <X className="w-4 h-4" />
+                Withdraw
+              </button>
+            </>
+          )}
         </div>
       </div>
 

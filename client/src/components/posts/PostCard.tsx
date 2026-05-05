@@ -61,52 +61,50 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
               <span className="sr-only">Post type: </span>
               {typeLabel}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex gap-2">
               {post.images?.length > 0 && (
                 <img
                   src={post.images[0].url}
                   alt={post.title}
-                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0 mt-1"
                 />
               )}
-              <div className="flex flex-col gap-1">
-                <h3 className="font-semibold text-wrap text-gray-900 truncate">
+              <div className="flex flex-col min-w-0 flex-1">
+                <h3 className="font-semibold text-gray-900 truncate">
                   {post.title}
                 </h3>
-                <div className="flex flew-row flex-wrap items-center gap-2">
-                  <CategoryBadge category={post.category} />
-                  <UrgencyBadge urgency={post.urgency} />
-                  {post.status === "FULFILLED" && (
-                    <span className="flex items-center gap-0.5 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
-                      <CheckCircle className="w-3 h-3" aria-hidden="true" />
-                      Fulfilled
-                    </span>
-                  )}
-                  {post.status === "CLOSED" && (
-                    <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                      Closed
-                    </span>
-                  )}
-                  {post.community && (
-                    <span className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
-                      <Lock className="w-3 h-3" aria-hidden="true" />
-                      {post.community.name}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-gray-600 line-clamp-2">
+                <p className="text-sm text-gray-600 line-clamp-3 break-words">
                   {post.description}
                 </p>
               </div>
             </div>
           </div>
-
+          <div className="flex flew-row flex-wrap items-center gap-2 mt-2">
+            <CategoryBadge category={post.category} />
+            <UrgencyBadge urgency={post.urgency} />
+            {post.status === "FULFILLED" && (
+              <span className="flex items-center gap-0.5 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                <CheckCircle className="w-3 h-3" aria-hidden="true" />
+                Fulfilled
+              </span>
+            )}
+            {post.status === "CLOSED" && (
+              <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                Closed
+              </span>
+            )}
+            {post.community && (
+              <span className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
+                <Lock className="w-3 h-3" aria-hidden="true" />
+                {post.community.name}
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-x-3 flex-wrap mt-1 text-xs text-gray-500">
             {post.organization ? (
               <span className="flex items-center gap-1">
                 <Building2 className="w-3 h-3" aria-hidden="true" />
                 {post.organization.name}
-                <span className="text-gray-500">· by {post.author.name}</span>
               </span>
             ) : (
               <span className="flex items-center gap-1">
