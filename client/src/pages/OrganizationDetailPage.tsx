@@ -20,6 +20,7 @@ import {
 } from "../api/organizations.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { MembersSection } from "../components/common/MembersSection.js";
+import { LinksList } from "../components/common/LinksList.js";
 import { PostList } from "../components/posts/PostList.js";
 import { useAuth } from "../context/AuthContext.js";
 
@@ -123,6 +124,9 @@ export function OrganizationDetailPage() {
                 </span>
               )}
             </div>
+            {org.links && org.links.length > 0 && (
+              <LinksList links={org.links} className="mt-3" />
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2 mt-4">

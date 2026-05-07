@@ -11,6 +11,7 @@ function makeUser(overrides: Partial<UserPublicProfile> = {}): UserPublicProfile
     location: null,
     skills: [],
     avatarUrl: null,
+    links: null,
     createdAt: '2024-01-01T00:00:00Z',
     ...overrides,
   };

@@ -8,6 +8,7 @@ import { ImagePlus, X } from "lucide-react";
 import {
   createCommunitySchema,
   type CreateCommunityRequest,
+  type ProfileLink,
 } from "@mayday/shared";
 import {
   createCommunity,
@@ -15,6 +16,8 @@ import {
   uploadCommunityAvatar,
 } from "../api/communities.js";
 import { InviteEmailsField } from "../components/common/InviteEmailsField.js";
+import { FormField } from "../components/common/FormField.js";
+import { LinksEditor, cleanLinks } from "../components/common/LinksEditor.js";
 
 const AVATAR_MAX_SIZE = 5 * 1024 * 1024;
 const AVATAR_ALLOWED_TYPES = [
@@ -28,6 +31,7 @@ export function CreateCommunityPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [inviteEmails, setInviteEmails] = useState<string[]>([""]);
+  const [links, setLinks] = useState<ProfileLink[]>([]);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -115,6 +119,8 @@ export function CreateCommunityPage() {
             const clean: CreateCommunityRequest = { name: data.name };
             if (data.description) clean.description = data.description;
             if (data.location) clean.location = data.location;
+            const cleanedLinks = cleanLinks(links);
+            if (cleanedLinks) clean.links = cleanedLinks;
             mutation.mutate(clean);
           })}
           className="space-y-6"
@@ -159,59 +165,37 @@ export function CreateCommunityPage() {
             />
           </div>
 
-          <div>
-            <label
-              htmlFor="community-name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Name
-            </label>
-            <input
-              id="community-name"
-              {...register("name")}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-              placeholder="e.g. Little Rock Mutual Aid"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
-            )}
-          </div>
+          <FormField
+            id="community-name"
+            label="Name"
+            error={errors.name?.message}
+            placeholder="e.g. Little Rock Mutual Aid"
+            {...register("name")}
+          />
 
-          <div>
-            <label
-              htmlFor="community-description"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Description
-            </label>
-            <textarea
-              id="community-description"
-              {...register("description")}
-              rows={4}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-              placeholder="What is this community about?"
-            />
-            {errors.description && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
+          <FormField
+            multiline
+            id="community-description"
+            label="Description"
+            error={errors.description?.message}
+            rows={4}
+            placeholder="What is this community about?"
+            {...register("description")}
+          />
 
-          <div>
-            <label
-              htmlFor="community-location"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Location
-            </label>
-            <input
-              id="community-location"
-              {...register("location")}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-              placeholder="e.g. Little Rock, AR"
-            />
-          </div>
+          <FormField
+            id="community-location"
+            label="Location"
+            placeholder="e.g. Little Rock, AR"
+            {...register("location")}
+            optional
+          />
+
+          <LinksEditor
+            value={links}
+            onChange={setLinks}
+            idPrefix="community-link"
+          />
 
           <InviteEmailsField
             emails={inviteEmails}

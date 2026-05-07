@@ -256,10 +256,10 @@ organizationRoutes.patch(
       throw new AppError(403, "Not authorized");
     }
 
-    const { name, description, location, latitude, longitude } = req.body;
+    const { name, description, location, latitude, longitude, links } = req.body;
     const org = await prisma.organization.update({
       where: { id: orgId },
-      data: { name, description, location, latitude, longitude },
+      data: { name, description, location, latitude, longitude, links },
     });
     res.json(org);
   }),

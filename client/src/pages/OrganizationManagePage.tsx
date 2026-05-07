@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -7,6 +8,7 @@ import { Trash2, ArrowLeft, Building2 } from "lucide-react";
 import {
   updateOrganizationSchema,
   type UpdateOrganizationRequest,
+  type ProfileLink,
 } from "@mayday/shared";
 import {
   getOrganization,
@@ -21,6 +23,8 @@ import {
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { AvatarUploader } from "../components/common/AvatarUploader.js";
 import { InviteEmailsField } from "../components/common/InviteEmailsField.js";
+import { FormField } from "../components/common/FormField.js";
+import { LinksEditor, cleanLinks } from "../components/common/LinksEditor.js";
 import { useBatchInvite } from "../hooks/useBatchInvite.js";
 import { useAuth } from "../context/AuthContext.js";
 
@@ -60,6 +64,11 @@ export function OrganizationManagePage() {
         }
       : undefined,
   });
+
+  const [links, setLinks] = useState<ProfileLink[]>([]);
+  useEffect(() => {
+    setLinks(org?.links ?? []);
+  }, [org?.id, org?.links]);
 
   const revokeMutation = useToastMutation({
     mutationFn: (inviteId: string) => revokeInvite(id!, inviteId),
@@ -138,7 +147,9 @@ export function OrganizationManagePage() {
         </h2>
 
         <div className="mb-4">
-          <p className="block text-sm font-medium text-gray-700 mb-2">Avatar</p>
+          <p className="block text-sm font-medium text-gray-700 mb-2">
+            Avatar <span className="text-gray-500 font-normal">(optional)</span>
+          </p>
           <AvatarUploader
             currentUrl={org.avatarUrl}
             fallback={<Building2 className="w-8 h-8 text-gray-500" />}
@@ -157,50 +168,37 @@ export function OrganizationManagePage() {
             if (data.name) clean.name = data.name;
             clean.description = data.description || undefined;
             clean.location = data.location || undefined;
+            clean.links = cleanLinks(links) ?? [];
             editMutation.mutate(clean);
           })}
           className="space-y-4"
         >
-          <div>
-            <label
-              htmlFor="org-edit-name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Name
-            </label>
-            <input
-              id="org-edit-name"
-              {...editForm.register("name")}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="org-edit-description"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Description
-            </label>
-            <textarea
-              id="org-edit-description"
-              {...editForm.register("description")}
-              rows={3}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="org-edit-location"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Location
-            </label>
-            <input
-              id="org-edit-location"
-              {...editForm.register("location")}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
+          <FormField
+            id="org-edit-name"
+            label="Name"
+            error={editForm.formState.errors.name?.message}
+            {...editForm.register("name")}
+          />
+          <FormField
+            multiline
+            id="org-edit-description"
+            label="Description"
+            error={editForm.formState.errors.description?.message}
+            rows={3}
+            {...editForm.register("description")}
+          />
+          <FormField
+            id="org-edit-location"
+            label="Location"
+            error={editForm.formState.errors.location?.message}
+            {...editForm.register("location")}
+            optional
+          />
+          <LinksEditor
+            value={links}
+            onChange={setLinks}
+            idPrefix="org-edit-link"
+          />
           <button
             type="submit"
             disabled={editMutation.isPending}

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import type { ProfileLink } from "@mayday/shared";
 import {
   getUser,
   updateProfile,
@@ -31,6 +32,8 @@ import { PostList } from "../components/posts/PostList.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { AvatarUploader } from "../components/common/AvatarUploader.js";
 import { SettingsModal } from "../components/common/SettingsModal.js";
+import { LinksEditor, cleanLinks } from "../components/common/LinksEditor.js";
+import { LinksList } from "../components/common/LinksList.js";
 
 export function ProfilePage() {
   const { id } = useParams<{ id: string }>();
@@ -44,6 +47,7 @@ export function ProfilePage() {
     location: "",
     skills: "",
   });
+  const [editLinks, setEditLinks] = useState<ProfileLink[]>([]);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showReportConfirm, setShowReportConfirm] = useState(false);
@@ -136,6 +140,7 @@ export function ProfilePage() {
       location: profile.location || "",
       skills: profile.skills.join(", "),
     });
+    setEditLinks(profile.links ?? []);
     setEditing(true);
   };
 
@@ -148,6 +153,7 @@ export function ProfilePage() {
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
+      links: cleanLinks(editLinks) ?? [],
     });
   };
 
@@ -319,6 +325,11 @@ export function ProfilePage() {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2"
               />
             </div>
+            <LinksEditor
+              value={editLinks}
+              onChange={setEditLinks}
+              idPrefix="profile-link"
+            />
           </div>
         ) : (
           <>
@@ -334,6 +345,9 @@ export function ProfilePage() {
                   </li>
                 ))}
               </ul>
+            )}
+            {profile.links && profile.links.length > 0 && (
+              <LinksList links={profile.links} className="mt-4" />
             )}
           </>
         )}

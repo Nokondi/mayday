@@ -24,6 +24,7 @@ import {
 import { PostList } from "../components/posts/PostList.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { MembersSection } from "../components/common/MembersSection.js";
+import { LinksList } from "../components/common/LinksList.js";
 import { useAuth } from "../context/AuthContext.js";
 import { getPosts } from "../api/posts.js";
 
@@ -148,6 +149,9 @@ export function CommunityDetailPage() {
             </span>
           )}
         </div>
+        {community.links && community.links.length > 0 && (
+          <LinksList links={community.links} className="mt-3" />
+        )}
         <div className="flex flex-wrap gap-2 mt-2">
           {isAdminOrOwner && (
             <Link

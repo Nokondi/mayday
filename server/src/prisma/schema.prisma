@@ -81,6 +81,7 @@ model User {
   longitude    Float?
   skills       String[]
   avatarUrl    String?
+  links        Json?
   role         Role     @default(USER)
   isBanned     Boolean  @default(false)
   emailVerified Boolean  @default(false)
@@ -256,6 +257,7 @@ model Organization {
   latitude    Float?
   longitude   Float?
   avatarUrl   String?
+  links       Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -309,6 +311,7 @@ model Community {
   latitude    Float?
   longitude   Float?
   avatarUrl   String?
+  links       Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

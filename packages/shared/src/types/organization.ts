@@ -1,4 +1,5 @@
 import type { UserPublicProfile } from './user.js';
+import type { ProfileLink } from './api.js';
 
 export type OrgRole = 'OWNER' | 'ADMIN' | 'MEMBER';
 export type InviteStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'REVOKED';
@@ -11,6 +12,7 @@ export interface Organization {
   latitude: number | null;
   longitude: number | null;
   avatarUrl: string | null;
+  links: ProfileLink[] | null;
   createdAt: string;
   updatedAt: string;
   fulfilledCount?: number;

@@ -54,6 +54,7 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
       location: null,
       skills: [],
       avatarUrl: null,
+      links: null,
       createdAt: '2020-01-01T00:00:00Z',
     },
     organization: null,
