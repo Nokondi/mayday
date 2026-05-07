@@ -143,6 +143,7 @@ export type UpdateProfileRequest = z.infer<typeof updateProfileSchema>;
 // User settings (private — not exposed via public profile)
 export const updateUserSettingsSchema = z.object({
   emailNotificationsEnabled: z.boolean().optional(),
+  pushNotificationsEnabled: z.boolean().optional(),
 });
 
 export type UpdateUserSettingsRequest = z.infer<typeof updateUserSettingsSchema>;

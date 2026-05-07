@@ -14,11 +14,14 @@ export const userRoutes = Router();
 
 // PUT /api/users/me/settings — update private settings for the current user
 userRoutes.put('/me/settings', requireAuth, validate(updateUserSettingsSchema), asyncHandler(async (req: AuthRequest, res) => {
-  const { emailNotificationsEnabled } = req.body as { emailNotificationsEnabled?: boolean };
+  const { emailNotificationsEnabled, pushNotificationsEnabled } = req.body as {
+    emailNotificationsEnabled?: boolean;
+    pushNotificationsEnabled?: boolean;
+  };
   const user = await prisma.user.update({
     where: { id: req.user!.id },
-    data: { emailNotificationsEnabled },
-    select: { id: true, emailNotificationsEnabled: true },
+    data: { emailNotificationsEnabled, pushNotificationsEnabled },
+    select: { id: true, emailNotificationsEnabled: true, pushNotificationsEnabled: true },
   });
   res.json(user);
 }));

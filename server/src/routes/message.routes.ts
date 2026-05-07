@@ -7,9 +7,9 @@ import { AppError } from '../middleware/error.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { publicUserSelect } from '../utils/prisma-selects.js';
 import { sendToUser } from '../websocket/index.js';
-import { sendNewMessageEmail } from '../services/mail.service.js';
+import { notify } from '../services/notification.service.js';
 
-async function notifyReceiverByEmail(params: {
+async function notifyReceiver(params: {
   messageId: string;
   receiverId: string;
   senderId: string;
@@ -29,23 +29,21 @@ async function notifyReceiverByEmail(params: {
     });
     if (priorUnread > 0) return;
 
-    const [receiver, sender] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: params.receiverId },
-        select: { email: true, emailNotificationsEnabled: true, emailVerified: true },
-      }),
-      prisma.user.findUnique({
-        where: { id: params.senderId },
-        select: { name: true },
-      }),
-    ]);
-    if (!receiver || !sender) return;
-    if (!receiver.emailNotificationsEnabled) return;
-    if (!receiver.emailVerified) return;
+    const sender = await prisma.user.findUnique({
+      where: { id: params.senderId },
+      select: { name: true },
+    });
+    if (!sender) return;
 
-    await sendNewMessageEmail(receiver.email, sender.name, params.content);
+    await notify(params.receiverId, {
+      type: 'NEW_MESSAGE',
+      senderName: sender.name,
+      senderId: params.senderId,
+      conversationId: params.conversationId,
+      content: params.content,
+    });
   } catch (err) {
-    console.error('[mail] failed to send new-message email', err);
+    console.error('[notify] failed to deliver new-message notification', err);
   }
 }
 
@@ -172,7 +170,7 @@ messageRoutes.post('/conversations', validate(startConversationSchema), asyncHan
 
     sendToUser(participantId, { type: 'NEW_MESSAGE', payload: msg as any });
 
-    void notifyReceiverByEmail({
+    void notifyReceiver({
       messageId: msg.id,
       receiverId: participantId,
       senderId: userId,
@@ -214,7 +212,7 @@ messageRoutes.post('/conversations/:id/messages', validate(sendMessageSchema), a
 
   sendToUser(receiverId, { type: 'NEW_MESSAGE', payload: message as any });
 
-  void notifyReceiverByEmail({
+  void notifyReceiver({
     messageId: message.id,
     receiverId,
     senderId: userId,

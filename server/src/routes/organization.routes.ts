@@ -18,10 +18,8 @@ import { deleteObjectByUrl } from "../config/storage.js";
 import { AppError } from "../middleware/error.middleware.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { publicUserSelect, memberInclude } from "../utils/prisma-selects.js";
-import {
-  sendOrganizationInviteEmail,
-  sendOrganizationSignupInviteEmail,
-} from "../services/mail.service.js";
+import { sendOrganizationSignupInviteEmail } from "../services/mail.service.js";
+import { notify } from "../services/notification.service.js";
 import { postInclude } from "./post.routes.js";
 import type { Prisma } from "@prisma/client";
 
@@ -626,39 +624,26 @@ organizationRoutes.post(
 
     void (async () => {
       try {
-        const [org, recipient, inviter] = await Promise.all([
+        const [org, inviter] = await Promise.all([
           prisma.organization.findUnique({
             where: { id: orgId },
             select: { name: true },
-          }),
-          prisma.user.findUnique({
-            where: { id: targetUser.id },
-            select: {
-              email: true,
-              emailNotificationsEnabled: true,
-              emailVerified: true,
-            },
           }),
           prisma.user.findUnique({
             where: { id: req.user!.id },
             select: { name: true },
           }),
         ]);
-        if (
-          org &&
-          recipient &&
-          inviter &&
-          recipient.emailNotificationsEnabled &&
-          recipient.emailVerified
-        ) {
-          await sendOrganizationInviteEmail(
-            recipient.email,
-            inviter.name,
-            org.name,
-          );
+        if (org && inviter) {
+          await notify(targetUser.id, {
+            type: "ORGANIZATION_INVITE",
+            organizationId: orgId,
+            organizationName: org.name,
+            inviterName: inviter.name,
+          });
         }
       } catch (err) {
-        console.error("[mail] failed to send organization-invite email", err);
+        console.error("[notify] failed to deliver organization-invite notification", err);
       }
     })();
 
