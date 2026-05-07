@@ -4,36 +4,27 @@ import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.middleware.js';
 import { prisma } from '../config/database.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { sendAnnouncementEmail } from '../services/mail.service.js';
+import { notifyMany } from '../services/notification.service.js';
 
 export const announcementRoutes = Router();
-
-const ANNOUNCEMENT_EMAIL_CONCURRENCY = 5;
 
 async function broadcastAnnouncement(message: string): Promise<void> {
   const recipients = await prisma.user.findMany({
     where: {
-      emailNotificationsEnabled: true,
       emailVerified: true,
       isBanned: false,
+      OR: [
+        { emailNotificationsEnabled: true },
+        { pushNotificationsEnabled: true },
+      ],
     },
-    select: { email: true, name: true },
+    select: { id: true },
   });
 
-  for (let i = 0; i < recipients.length; i += ANNOUNCEMENT_EMAIL_CONCURRENCY) {
-    const batch = recipients.slice(i, i + ANNOUNCEMENT_EMAIL_CONCURRENCY);
-    const results = await Promise.allSettled(
-      batch.map((r) => sendAnnouncementEmail(r.email, r.name, message)),
-    );
-    for (const [idx, result] of results.entries()) {
-      if (result.status === 'rejected') {
-        console.error(
-          `[announcement] failed to email ${batch[idx]?.email}:`,
-          result.reason,
-        );
-      }
-    }
-  }
+  await notifyMany(
+    recipients.map((r) => r.id),
+    { type: 'ANNOUNCEMENT', message },
+  );
 }
 
 announcementRoutes.get('/active', asyncHandler(async (_req, res) => {

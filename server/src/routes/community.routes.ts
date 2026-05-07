@@ -15,12 +15,8 @@ import { deleteObjectByUrl } from '../config/storage.js';
 import { AppError } from '../middleware/error.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { publicUserSelect, memberInclude } from '../utils/prisma-selects.js';
-import {
-  sendCommunityJoinRequestEmail,
-  sendCommunityJoinRequestApprovedEmail,
-  sendCommunityInviteEmail,
-  sendCommunitySignupInviteEmail,
-} from '../services/mail.service.js';
+import { sendCommunitySignupInviteEmail } from '../services/mail.service.js';
+import { notify, notifyMany } from '../services/notification.service.js';
 import type { Prisma } from '@prisma/client';
 
 async function notifyAdminsOfJoinRequest(params: {
@@ -43,31 +39,24 @@ async function notifyAdminsOfJoinRequest(params: {
           communityId: params.communityId,
           role: { in: ['OWNER', 'ADMIN'] },
         },
-        select: {
-          user: {
-            select: { id: true, email: true, emailNotificationsEnabled: true, emailVerified: true },
-          },
-        },
+        select: { userId: true },
       }),
     ]);
     if (!community || !requester) return;
 
-    await Promise.all(
-      admins
-        .filter((m) => m.user.id !== params.requesterId)
-        .filter((m) => m.user.emailNotificationsEnabled && m.user.emailVerified)
-        .map((m) =>
-          sendCommunityJoinRequestEmail(
-            m.user.email,
-            requester.name,
-            community.name,
-            params.communityId,
-            params.message,
-          ),
-        ),
-    );
+    const adminIds = admins
+      .map((m) => m.userId)
+      .filter((id) => id !== params.requesterId);
+
+    await notifyMany(adminIds, {
+      type: 'COMMUNITY_JOIN_REQUEST',
+      communityId: params.communityId,
+      communityName: community.name,
+      requesterName: requester.name,
+      message: params.message,
+    });
   } catch (err) {
-    console.error('[mail] failed to send community-join-request email', err);
+    console.error('[notify] failed to deliver community-join-request notification', err);
   }
 }
 
@@ -428,25 +417,20 @@ communityRoutes.post('/:id/invites', validate(inviteToCommunitySchema), asyncHan
 
   void (async () => {
     try {
-      const [community, recipient, inviter] = await Promise.all([
+      const [community, inviter] = await Promise.all([
         prisma.community.findUnique({ where: { id: cid }, select: { name: true } }),
-        prisma.user.findUnique({
-          where: { id: targetUser.id },
-          select: { email: true, emailNotificationsEnabled: true, emailVerified: true },
-        }),
         prisma.user.findUnique({ where: { id: req.user!.id }, select: { name: true } }),
       ]);
-      if (
-        community &&
-        recipient &&
-        inviter &&
-        recipient.emailNotificationsEnabled &&
-        recipient.emailVerified
-      ) {
-        await sendCommunityInviteEmail(recipient.email, inviter.name, community.name);
+      if (community && inviter) {
+        await notify(targetUser.id, {
+          type: 'COMMUNITY_INVITE',
+          communityId: cid,
+          communityName: community.name,
+          inviterName: inviter.name,
+        });
       }
     } catch (err) {
-      console.error('[mail] failed to send community-invite email', err);
+      console.error('[notify] failed to deliver community-invite notification', err);
     }
   })();
 
@@ -572,23 +556,19 @@ communityRoutes.post('/:id/join-requests/:requestId/approve', asyncHandler(async
 
   void (async () => {
     try {
-      const [community, requester] = await Promise.all([
-        prisma.community.findUnique({ where: { id: cid }, select: { name: true } }),
-        prisma.user.findUnique({
-          where: { id: joinReq.userId },
-          select: { email: true, emailNotificationsEnabled: true, emailVerified: true },
-        }),
-      ]);
-      if (
-        community &&
-        requester &&
-        requester.emailNotificationsEnabled &&
-        requester.emailVerified
-      ) {
-        await sendCommunityJoinRequestApprovedEmail(requester.email, community.name, cid);
+      const community = await prisma.community.findUnique({
+        where: { id: cid },
+        select: { name: true },
+      });
+      if (community) {
+        await notify(joinReq.userId, {
+          type: 'COMMUNITY_JOIN_APPROVED',
+          communityId: cid,
+          communityName: community.name,
+        });
       }
     } catch (err) {
-      console.error('[mail] failed to send community-join-approved email', err);
+      console.error('[notify] failed to deliver community-join-approved notification', err);
     }
   })();
 

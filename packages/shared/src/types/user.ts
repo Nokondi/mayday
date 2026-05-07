@@ -16,6 +16,7 @@ export interface User {
   role: Role;
   isBanned: boolean;
   emailNotificationsEnabled: boolean;
+  pushNotificationsEnabled: boolean;
   createdAt: string;
   updatedAt: string;
 }

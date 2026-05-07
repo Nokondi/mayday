@@ -295,6 +295,7 @@ authRoutes.get('/me', requireAuth, asyncHandler(async (req: AuthRequest, res) =>
       location: true, latitude: true, longitude: true,
       skills: true, role: true, avatarUrl: true, links: true, createdAt: true,
       emailNotificationsEnabled: true,
+      pushNotificationsEnabled: true,
     },
   });
   if (!user) throw new AppError(404, 'User not found');
