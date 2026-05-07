@@ -55,7 +55,7 @@ const postFields = {
   type: z.enum(['REQUEST', 'OFFER']),
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().min(1, 'Description is required').max(5000),
-  category: z.enum(CATEGORIES),
+  category: z.enum(CATEGORIES, { errorMap: () => ({ message: 'Select a category' }) }),
   location: z.string().max(200).optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
