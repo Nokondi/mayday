@@ -182,7 +182,9 @@ export function CommunityManagePage() {
         </h2>
 
         <div className="mb-4">
-          <p className="block text-sm font-medium text-gray-700 mb-2">Avatar</p>
+          <p className="block text-sm font-medium text-gray-700 mb-2">
+            Avatar <span className="text-gray-500 font-normal">(optional)</span>
+          </p>
           <AvatarUploader
             currentUrl={community.avatarUrl}
             fallback={<UsersIcon className="w-8 h-8 text-gray-500" />}
