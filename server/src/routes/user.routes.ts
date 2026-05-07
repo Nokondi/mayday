@@ -43,14 +43,14 @@ userRoutes.put('/:id', requireAuth, validate(updateProfileSchema), asyncHandler(
     throw new AppError(403, 'Not authorized');
   }
 
-  const { name, bio, location, latitude, longitude, skills } = req.body;
+  const { name, bio, location, latitude, longitude, skills, links } = req.body;
   const user = await prisma.user.update({
     where: { id: req.params.id as string },
-    data: { name, bio, location, latitude, longitude, skills },
+    data: { name, bio, location, latitude, longitude, skills, links },
     select: {
       id: true, email: true, name: true, bio: true,
       location: true, latitude: true, longitude: true,
-      skills: true, avatarUrl: true, role: true, createdAt: true,
+      skills: true, avatarUrl: true, links: true, role: true, createdAt: true,
     },
   });
   res.json(user);

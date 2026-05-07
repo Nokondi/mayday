@@ -27,7 +27,7 @@ function makePost(overrides: Partial<PostWithAuthor>): PostWithAuthor {
     updatedAt: '2026-04-01T00:00:00Z',
     author: {
       id: 'u1', name: 'Alice', bio: null, location: null,
-      skills: [], avatarUrl: null, createdAt: '2026-04-01T00:00:00Z',
+      skills: [], avatarUrl: null, links: null, createdAt: '2026-04-01T00:00:00Z',
     },
     organization: null,
     community: null,

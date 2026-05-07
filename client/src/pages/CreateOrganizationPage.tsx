@@ -8,6 +8,7 @@ import { ImagePlus, X } from "lucide-react";
 import {
   createOrganizationSchema,
   type CreateOrganizationRequest,
+  type ProfileLink,
 } from "@mayday/shared";
 import {
   createOrganization,
@@ -16,6 +17,7 @@ import {
 } from "../api/organizations.js";
 import { InviteEmailsField } from "../components/common/InviteEmailsField.js";
 import { FormField } from "../components/common/FormField.js";
+import { LinksEditor, cleanLinks } from "../components/common/LinksEditor.js";
 
 const AVATAR_MAX_SIZE = 5 * 1024 * 1024;
 const AVATAR_ALLOWED_TYPES = [
@@ -29,6 +31,7 @@ export function CreateOrganizationPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [inviteEmails, setInviteEmails] = useState<string[]>([""]);
+  const [links, setLinks] = useState<ProfileLink[]>([]);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -119,6 +122,8 @@ export function CreateOrganizationPage() {
             const clean: CreateOrganizationRequest = { name: data.name };
             if (data.description) clean.description = data.description;
             if (data.location) clean.location = data.location;
+            const cleanedLinks = cleanLinks(links);
+            if (cleanedLinks) clean.links = cleanedLinks;
             mutation.mutate(clean);
           })}
           className="space-y-6"
@@ -186,7 +191,10 @@ export function CreateOrganizationPage() {
             label="Location"
             placeholder="e.g. Little Rock, AR"
             {...register("location")}
+            optional
           />
+
+          <LinksEditor value={links} onChange={setLinks} idPrefix="org-link" />
 
           <InviteEmailsField
             emails={inviteEmails}

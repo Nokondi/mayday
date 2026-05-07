@@ -1,5 +1,6 @@
 import type { UserPublicProfile } from './user.js';
 import type { OrgRole, InviteStatus } from './organization.js';
+import type { ProfileLink } from './api.js';
 
 export type CommunityRole = OrgRole;
 export type CommunityInviteStatus = InviteStatus;
@@ -12,6 +13,7 @@ export interface Community {
   latitude: number | null;
   longitude: number | null;
   avatarUrl: string | null;
+  links: ProfileLink[] | null;
   createdAt: string;
   updatedAt: string;
 }

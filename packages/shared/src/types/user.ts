@@ -1,3 +1,5 @@
+import type { ProfileLink } from './api.js';
+
 export type Role = 'USER' | 'ADMIN';
 
 export interface User {
@@ -10,6 +12,7 @@ export interface User {
   longitude: number | null;
   skills: string[];
   avatarUrl: string | null;
+  links: ProfileLink[] | null;
   role: Role;
   isBanned: boolean;
   emailNotificationsEnabled: boolean;
@@ -24,6 +27,7 @@ export interface UserPublicProfile {
   location: string | null;
   skills: string[];
   avatarUrl: string | null;
+  links: ProfileLink[] | null;
   createdAt: string;
   fulfilledCount?: number;
 }

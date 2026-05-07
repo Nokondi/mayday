@@ -5,6 +5,7 @@ export const publicUserSelect = {
   location: true,
   skills: true,
   avatarUrl: true,
+  links: true,
   createdAt: true,
 } as const;
 

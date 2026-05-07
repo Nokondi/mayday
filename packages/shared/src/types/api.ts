@@ -116,6 +116,17 @@ export type CreatePostRequest = z.infer<typeof createPostSchema>;
 export type UpdatePostRequest = z.infer<typeof updatePostSchema>;
 export type FulfillPostRequest = z.infer<typeof fulfillPostSchema>;
 
+// Profile links — shared by users, organizations, and communities.
+// Stored as a JSON array column. An empty array is normalized to undefined by callers.
+export const profileLinkSchema = z.object({
+  label: z.string().max(50).optional(),
+  url: z.string().url('Enter a valid URL').max(500),
+});
+
+export const profileLinksSchema = z.array(profileLinkSchema).max(20).optional();
+
+export type ProfileLink = z.infer<typeof profileLinkSchema>;
+
 // User profile
 export const updateProfileSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -124,6 +135,7 @@ export const updateProfileSchema = z.object({
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
   skills: z.array(z.string().max(50)).max(20).optional(),
+  links: profileLinksSchema,
 });
 
 export type UpdateProfileRequest = z.infer<typeof updateProfileSchema>;
@@ -188,6 +200,7 @@ export const createOrganizationSchema = z.object({
   location: z.string().max(200).optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
+  links: profileLinksSchema,
 });
 
 export const updateOrganizationSchema = createOrganizationSchema.partial();
@@ -214,6 +227,7 @@ export const createCommunitySchema = z.object({
   location: z.string().max(200).optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
+  links: profileLinksSchema,
 });
 
 export const updateCommunitySchema = createCommunitySchema.partial();
