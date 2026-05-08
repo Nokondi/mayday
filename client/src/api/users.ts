@@ -39,7 +39,9 @@ export async function deleteProfile(id: string): Promise<void> {
   await api.delete(`/users/${id}`);
 }
 
-export async function updateUserSettings(data: UpdateUserSettingsRequest): Promise<{ id: string; emailNotificationsEnabled: boolean }> {
+export async function updateUserSettings(
+  data: UpdateUserSettingsRequest,
+): Promise<{ id: string; emailNotificationsEnabled: boolean; pushNotificationsEnabled: boolean }> {
   const res = await api.put('/users/me/settings', data);
   return res.data;
 }
