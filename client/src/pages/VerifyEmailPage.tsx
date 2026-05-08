@@ -54,10 +54,12 @@ export function VerifyEmailPage() {
             )}
           </>
         )}
-        {status === 'verifying' && <p className="text-gray-700">Verifying your email…</p>}
+        {status === 'verifying' && (
+          <p role="status" className="text-gray-700">Verifying your email…</p>
+        )}
         {status === 'success' && (
           <>
-            <p className="text-green-700">{message}</p>
+            <p role="status" className="text-green-700">{message}</p>
             <p className="text-center">
               <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">Log in</Link>
             </p>
@@ -65,7 +67,7 @@ export function VerifyEmailPage() {
         )}
         {status === 'error' && (
           <>
-            <p className="text-red-600">{message}</p>
+            <p role="alert" className="text-red-600">{message}</p>
             <p className="text-center text-sm text-gray-600">
               Need a new link?{' '}
               <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">

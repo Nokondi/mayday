@@ -80,12 +80,14 @@ export function ForgotPasswordPage() {
               id="forgot-email"
               type="email"
               autoComplete="email"
+              aria-invalid={errors.email ? true : undefined}
+              aria-describedby={errors.email ? "forgot-email-error" : undefined}
               {...register("email")}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
               placeholder="you@example.com"
             />
             {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
+              <p id="forgot-email-error" className="text-red-500 text-sm mt-1">
                 {errors.email.message}
               </p>
             )}

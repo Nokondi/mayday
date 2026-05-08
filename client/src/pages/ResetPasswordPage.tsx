@@ -108,11 +108,15 @@ export function ResetPasswordPage() {
               id="new-password"
               type="password"
               autoComplete="new-password"
+              aria-invalid={errors.password ? true : undefined}
+              aria-describedby={
+                errors.password ? "new-password-error" : undefined
+              }
               {...register("password")}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
             />
             {errors.password && (
-              <p className="text-red-500 text-sm mt-1">
+              <p id="new-password-error" className="text-red-500 text-sm mt-1">
                 {errors.password.message}
               </p>
             )}
@@ -128,16 +132,27 @@ export function ResetPasswordPage() {
               id="confirm-password"
               type="password"
               autoComplete="new-password"
+              aria-invalid={errors.confirmPassword ? true : undefined}
+              aria-describedby={
+                errors.confirmPassword ? "confirm-password-error" : undefined
+              }
               {...register("confirmPassword")}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
             />
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">
+              <p
+                id="confirm-password-error"
+                className="text-red-500 text-sm mt-1"
+              >
                 {errors.confirmPassword.message}
               </p>
             )}
           </div>
-          {serverError && <p className="text-red-600 text-sm">{serverError}</p>}
+          {serverError && (
+            <p role="alert" className="text-red-600 text-sm">
+              {serverError}
+            </p>
+          )}
           <button
             type="submit"
             disabled={mutation.isPending}
