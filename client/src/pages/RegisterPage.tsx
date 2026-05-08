@@ -55,7 +55,7 @@ export function RegisterPage() {
           </p>
           <div className="pt-2 border-t border-gray-200">
             {resendState === 'sent' ? (
-              <p className="text-sm text-green-700">Confirmation email resent.</p>
+              <p role="status" className="text-sm text-green-700">Confirmation email resent.</p>
             ) : (
               <button
                 type="button"
@@ -66,7 +66,7 @@ export function RegisterPage() {
                 {resendState === 'sending' ? 'Sending…' : 'Resend confirmation email'}
               </button>
             )}
-            {resendError && <p className="text-sm text-red-600 mt-2">{resendError}</p>}
+            {resendError && <p role="alert" className="text-sm text-red-600 mt-2">{resendError}</p>}
           </div>
           <p className="text-center text-sm text-gray-500">
             <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">Back to log in</Link>

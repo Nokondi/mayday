@@ -63,7 +63,7 @@ export function LoginPage() {
         {unverifiedEmail && (
           <div className="mt-4 rounded border border-amber-200 bg-amber-50 p-3 text-sm">
             {resendState === "sent" ? (
-              <p className="text-gray-700">
+              <p role="status" className="text-gray-700">
                 Sent a new confirmation link to{" "}
                 <span className="font-medium">{unverifiedEmail}</span>.
               </p>
