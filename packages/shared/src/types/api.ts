@@ -148,6 +148,24 @@ export const updateUserSettingsSchema = z.object({
 
 export type UpdateUserSettingsRequest = z.infer<typeof updateUserSettingsSchema>;
 
+// Push notifications — subscription registration. Shape mirrors the JSON
+// returned by PushSubscription.toJSON() in the browser.
+export const pushSubscribeSchema = z.object({
+  endpoint: z.string().url().max(2048),
+  keys: z.object({
+    p256dh: z.string().min(1).max(256),
+    auth: z.string().min(1).max(256),
+  }),
+  userAgent: z.string().max(512).optional(),
+});
+
+export const pushUnsubscribeSchema = z.object({
+  endpoint: z.string().url().max(2048),
+});
+
+export type PushSubscribeRequest = z.infer<typeof pushSubscribeSchema>;
+export type PushUnsubscribeRequest = z.infer<typeof pushUnsubscribeSchema>;
+
 // Messages
 export const sendMessageSchema = z.object({
   content: z.string().min(1, 'Message cannot be empty').max(5000),
