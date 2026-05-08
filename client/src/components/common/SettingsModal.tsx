@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { updateUserSettings } from '../../api/users.js';
 import * as authApi from '../../api/auth.js';
 import { useToastMutation } from '../../hooks/useToastMutation.js';
+import { PushNotificationsToggle } from './PushNotificationsToggle.js';
 
 interface SettingsModalProps {
   open: boolean;
@@ -13,6 +14,7 @@ interface SettingsModalProps {
 export function SettingsModal({ open, onClose }: SettingsModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState<boolean | null>(null);
+  const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -38,6 +40,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
       .then((me) => {
         if (cancelled) return;
         setEmailNotificationsEnabled(Boolean(me.emailNotificationsEnabled));
+        setPushNotificationsEnabled(Boolean(me.pushNotificationsEnabled));
       })
       .catch(() => {
         if (cancelled) return;
@@ -87,12 +90,12 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
           </button>
         </div>
 
-        {loading || emailNotificationsEnabled === null ? (
+        {loading || emailNotificationsEnabled === null || pushNotificationsEnabled === null ? (
           <div className="flex items-center justify-center py-10 text-gray-500">
             <Loader2 className="w-5 h-5 animate-spin" />
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">Email notifications</h3>
               <label className="flex items-start gap-3 cursor-pointer">
@@ -114,6 +117,8 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
                 )}
               </label>
             </div>
+
+            <PushNotificationsToggle initialEnabled={pushNotificationsEnabled} />
           </div>
         )}
 
