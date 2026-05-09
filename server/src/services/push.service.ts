@@ -27,18 +27,31 @@ interface SubscriptionRow {
   auth: string;
 }
 
+// Subset of web-push's RequestOptions we expose. urgency tells the push
+// service whether to wake the device now ('high') or batch for power
+// efficiency ('normal', the default); TTL caps how long it'll hold the
+// message if the device is offline.
+export interface PushSendOptions {
+  urgency?: 'very-low' | 'low' | 'normal' | 'high';
+  TTL?: number;
+}
+
 async function sendToSubscription(
   sub: SubscriptionRow,
   payload: PushPayload,
+  options?: PushSendOptions,
 ): Promise<{ ok: true } | { ok: false; gone: boolean }> {
+  const target = {
+    endpoint: sub.endpoint,
+    keys: { p256dh: sub.p256dh, auth: sub.auth },
+  };
+  const body = JSON.stringify(payload);
   try {
-    await webpush.sendNotification(
-      {
-        endpoint: sub.endpoint,
-        keys: { p256dh: sub.p256dh, auth: sub.auth },
-      },
-      JSON.stringify(payload),
-    );
+    if (options) {
+      await webpush.sendNotification(target, body, options);
+    } else {
+      await webpush.sendNotification(target, body);
+    }
     return { ok: true };
   } catch (err) {
     const status = (err as { statusCode?: number } | null)?.statusCode;
@@ -53,6 +66,7 @@ async function sendToSubscription(
 export async function sendPushToUser(
   userId: string,
   payload: PushPayload,
+  options?: PushSendOptions,
 ): Promise<void> {
   if (!configure()) return;
 
@@ -63,7 +77,10 @@ export async function sendPushToUser(
   if (subs.length === 0) return;
 
   const results = await Promise.all(
-    subs.map(async (sub) => ({ sub, result: await sendToSubscription(sub, payload) })),
+    subs.map(async (sub) => ({
+      sub,
+      result: await sendToSubscription(sub, payload, options),
+    })),
   );
 
   const goneIds: string[] = [];

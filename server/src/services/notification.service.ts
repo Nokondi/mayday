@@ -8,7 +8,7 @@ import {
   sendOrganizationInviteEmail,
   sendAnnouncementEmail,
 } from './mail.service.js';
-import { sendPushToUser } from './push.service.js';
+import { sendPushToUser, type PushSendOptions } from './push.service.js';
 
 interface RecipientPrefs {
   id: string;
@@ -84,6 +84,17 @@ function buildPushPayload(event: NotificationEvent): PushPayload {
   }
 }
 
+// Time-sensitive events get high urgency so push services wake the device
+// immediately instead of batching for power efficiency, plus a short TTL so
+// stale messages aren't surfaced after the user is back in-app. Everything
+// else uses library defaults (normal urgency, ~4-week TTL).
+function buildPushOptions(event: NotificationEvent): PushSendOptions | undefined {
+  if (event.type === 'NEW_MESSAGE') {
+    return { urgency: 'high', TTL: 4 * 60 * 60 };
+  }
+  return undefined;
+}
+
 function sendEmailFor(
   user: RecipientPrefs,
   event: NotificationEvent,
@@ -136,7 +147,11 @@ async function dispatch(
   if (user.pushNotificationsEnabled) {
     tasks.push({
       channel: 'push',
-      promise: sendPushToUser(user.id, buildPushPayload(event)),
+      promise: sendPushToUser(
+        user.id,
+        buildPushPayload(event),
+        buildPushOptions(event),
+      ),
     });
   }
 
