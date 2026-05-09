@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext.js";
 import { LoginForm } from "../components/auth/LoginForm.js";
@@ -7,7 +7,7 @@ import { resendVerification } from "../api/auth.js";
 import type { LoginRequest } from "@mayday/shared";
 
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState("");
@@ -37,6 +37,19 @@ export function LoginPage() {
     setResendState("idle");
     await loginMutation.mutateAsync(data).catch(() => {});
   };
+
+  if (isLoading) {
+    return (
+      <div role="status" aria-live="polite" className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-mayday-500" />
+        <span className="sr-only">Loading...</span>
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleResend = async () => {
     if (!unverifiedEmail) return;
