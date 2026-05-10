@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare } from 'lucide-react';
 import { getConversations, getConversationMessages, sendMessage } from '../api/messages.js';
@@ -16,6 +16,8 @@ export function MessagesPage() {
   const { addHandler, removeHandler } = useWebSocket();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const initialDraft = (location.state as { draft?: string } | null)?.draft ?? '';
   const [activeConversation, setActiveConversation] = useState(searchParams.get('conversation') || '');
 
   const { data: conversations, isLoading: convLoading } = useQuery({
@@ -80,7 +82,7 @@ export function MessagesPage() {
             ) : (
               <MessageThread messages={messages || []} currentUserId={user!.id} />
             )}
-            <MessageInput onSend={handleSend} />
+            <MessageInput onSend={handleSend} initialContent={initialDraft} />
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">

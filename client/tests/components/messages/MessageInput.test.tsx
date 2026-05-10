@@ -44,6 +44,23 @@ describe('MessageInput — rendering', () => {
     expect(screen.getByRole('textbox')).toBeDisabled();
     expect(screen.getByRole('button', { name: /send message/i })).toBeDisabled();
   });
+
+  it('seeds the input with initialContent when provided', () => {
+    renderInput({ initialContent: 'Re: Need groceries ' });
+    expect((screen.getByRole('textbox') as HTMLInputElement).value).toBe('Re: Need groceries ');
+    // Send button is enabled because the seeded content is non-whitespace.
+    expect(screen.getByRole('button', { name: /send message/i })).toBeEnabled();
+  });
+
+  it('sends the seeded content combined with anything the user appends', async () => {
+    const user = userEvent.setup();
+    const { onSend } = renderInput({ initialContent: 'Re: Need groceries ' });
+
+    await user.type(screen.getByRole('textbox'), 'Happy to help!');
+    await user.click(screen.getByRole('button', { name: /send message/i }));
+
+    expect(onSend).toHaveBeenCalledWith('Re: Need groceries Happy to help!');
+  });
 });
 
 describe('MessageInput — sending', () => {

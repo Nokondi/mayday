@@ -161,7 +161,10 @@ export function PostDetailPage() {
   const contactMutation = useToastMutation({
     mutationFn: () => startConversation({ participantId: post!.authorId }),
     errorMessage: "Failed to start conversation",
-    onSuccess: (conv) => navigate(`/messages?conversation=${conv.id}`),
+    onSuccess: (conv) => {
+      const draft = `Re: ${post!.title} `;
+      navigate(`/messages?conversation=${conv.id}`, { state: { draft } });
+    },
   });
 
   const deleteMutation = useToastMutation({

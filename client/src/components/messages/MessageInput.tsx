@@ -4,10 +4,11 @@ import { Send } from "lucide-react";
 interface MessageInputProps {
   onSend: (content: string) => Promise<void>;
   disabled?: boolean;
+  initialContent?: string;
 }
 
-export function MessageInput({ onSend, disabled }: MessageInputProps) {
-  const [content, setContent] = useState("");
+export function MessageInput({ onSend, disabled, initialContent = "" }: MessageInputProps) {
+  const [content, setContent] = useState(initialContent);
   const [sending, setSending] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
