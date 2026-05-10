@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('sonner', () => ({
@@ -31,6 +31,7 @@ vi.mock('../../src/api/users.js', () => ({
 
 import { useAuth } from '../../src/context/AuthContext.js';
 import { getPost, getPostMatches, reopenPost } from '../../src/api/posts.js';
+import { startConversation } from '../../src/api/messages.js';
 import { createReport } from '../../src/api/users.js';
 import { PostDetailPage } from '../../src/pages/PostDetailPage.js';
 
@@ -39,6 +40,7 @@ const mockedGetPost = vi.mocked(getPost);
 const mockedGetPostMatches = vi.mocked(getPostMatches);
 const mockedReopenPost = vi.mocked(reopenPost);
 const mockedCreateReport = vi.mocked(createReport);
+const mockedStartConversation = vi.mocked(startConversation);
 
 function setAuth(user: { id: string; email: string; name: string; role: string; avatarUrl: string | null } | null) {
   mockedUseAuth.mockReturnValue({
@@ -89,6 +91,18 @@ function makePost(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function MessagesProbe() {
+  const location = useLocation();
+  const draft = (location.state as { draft?: string } | null)?.draft ?? '';
+  return (
+    <div>
+      <div>MESSAGES</div>
+      <div data-testid="messages-search">{location.search}</div>
+      <div data-testid="messages-draft">{draft}</div>
+    </div>
+  );
+}
+
 function renderPage() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -108,7 +122,7 @@ function renderPage() {
         <Routes>
           <Route path="/posts/:id" element={<PostDetailPage />} />
           <Route path="/posts" element={<div>POSTS LIST</div>} />
-          <Route path="/messages" element={<div>MESSAGES</div>} />
+          <Route path="/messages" element={<MessagesProbe />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -414,5 +428,29 @@ describe('PostDetailPage — report flag', () => {
     const call = mockedCreateReport.mock.calls[0][0];
     expect(call).toEqual({ reason: 'Inappropriate content', postId: 'p1' });
     expect(call).not.toHaveProperty('details', expect.any(String));
+  });
+});
+
+describe('PostDetailPage — Contact button', () => {
+  it('navigates to messages with a draft pre-filled with the post title', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(
+      makePost({ authorId: 'u1', title: 'Need groceries' }) as never,
+    );
+    mockedStartConversation.mockResolvedValueOnce({ id: 'c1' } as never);
+
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: /^contact$/i }));
+
+    await waitFor(() =>
+      expect(mockedStartConversation).toHaveBeenCalledWith({ participantId: 'u1' }),
+    );
+
+    // Navigated to /messages with the conversation in the URL and a draft in router state.
+    expect(await screen.findByText('MESSAGES')).toBeInTheDocument();
+    expect(screen.getByTestId('messages-search')).toHaveTextContent('?conversation=c1');
+    expect(screen.getByTestId('messages-draft')).toHaveTextContent('Re: Need groceries');
   });
 });

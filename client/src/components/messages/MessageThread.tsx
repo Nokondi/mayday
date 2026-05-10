@@ -1,10 +1,38 @@
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
 import type { Message } from "@mayday/shared";
 
 interface MessageThreadProps {
   messages: Message[];
   currentUserId: string;
+}
+
+const URL_PATTERN = /\bhttps?:\/\/[^\s<>"']+/g;
+
+function renderWithLinks(content: string, isMine: boolean) {
+  const parts: Array<string | { url: string }> = [];
+  let lastIndex = 0;
+  for (const match of content.matchAll(URL_PATTERN)) {
+    if (match.index! > lastIndex) parts.push(content.slice(lastIndex, match.index));
+    parts.push({ url: match[0] });
+    lastIndex = match.index! + match[0].length;
+  }
+  if (lastIndex < content.length) parts.push(content.slice(lastIndex));
+  return parts.map((part, i) =>
+    typeof part === "string" ? (
+      <Fragment key={i}>{part}</Fragment>
+    ) : (
+      <a
+        key={i}
+        href={part.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`underline ${isMine ? "text-white" : "text-mayday-700"}`}
+      >
+        {part.url}
+      </a>
+    ),
+  );
 }
 
 export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
@@ -39,7 +67,7 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
                   : "bg-gray-100 text-gray-900 rounded-bl-md"
               }`}
             >
-              <p className="text-sm">{msg.content}</p>
+              <p className="text-sm whitespace-pre-wrap break-words">{renderWithLinks(msg.content, isMine)}</p>
               <p
                 className={`text-xs mt-1 ${isMine ? "text-mayday-200" : "text-gray-500"}`}
               >
