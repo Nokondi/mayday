@@ -16,7 +16,6 @@ import {
   Settings,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { toast } from "sonner";
 import type { ProfileLink } from "@mayday/shared";
 import {
   getUser,
@@ -177,8 +176,8 @@ export function ProfilePage() {
             <Flag className="w-4 h-4" aria-hidden="true" />
           </button>
         )}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
             {isOwnProfile ? (
               <AvatarUploader
                 currentUrl={profile.avatarUrl}
@@ -201,14 +200,14 @@ export function ProfilePage() {
                 <UserIcon className="w-16 h-16 text-mayday-600" />
               </div>
             )}
-            <div>
+            <div className="min-w-0 flex-1">
               {editing ? (
                 <input
                   value={editForm.name}
                   onChange={(e) =>
                     setEditForm((f) => ({ ...f, name: e.target.value }))
                   }
-                  className="text-xl font-bold border border-gray-300 rounded px-2 py-1"
+                  className="w-full text-xl font-bold border border-gray-300 rounded px-2 py-1"
                 />
               ) : (
                 <h1 className="text-xl font-bold text-gray-900">
@@ -253,39 +252,22 @@ export function ProfilePage() {
               </div>
             </div>
           </div>
-          {isOwnProfile && (
-            <div>
-              {editing ? (
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleSave}
-                    className="flex items-center gap-1 text-green-600 hover:text-green-700"
-                  >
-                    <Save className="w-4 h-4" /> Save
-                  </button>
-                  <button
-                    onClick={() => setEditing(false)}
-                    className="flex items-center gap-1 text-gray-600 hover:text-gray-700"
-                  >
-                    <X className="w-4 h-4" /> Cancel
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-x-3 gap-y-2">
-                  <button
-                    onClick={startEditing}
-                    className="flex items-center gap-1 text-gray-600 hover:text-gray-700"
-                  >
-                    <Edit2 className="w-4 h-4" /> Edit
-                  </button>
-                  <button
-                    onClick={() => setShowSettings(true)}
-                    className="flex items-center gap-1 text-gray-600 hover:text-gray-700"
-                  >
-                    <Settings className="w-4 h-4" /> Settings
-                  </button>
-                </div>
-              )}
+          {isOwnProfile && !editing && (
+            <div className="flex flex-wrap flex-col gap-y-2 gap-x-3 sm:flex-row">
+              <button
+                onClick={startEditing}
+                className="flex items-center gap-0 sm:gap-1 text-gray-600 hover:text-gray-700"
+              >
+                <Edit2 className="w-4 h-4 sm:mr-0" />
+                <span className="hidden sm:inline"> Edit</span>
+              </button>
+              <button
+                onClick={() => setShowSettings(true)}
+                className="flex items-center gap-0 sm:gap-1 text-gray-600 hover:text-gray-700"
+              >
+                <Settings className="w-4 h-4 sm:mr-0" />
+                <span className="hidden sm:inline"> Settings</span>
+              </button>
             </div>
           )}
         </div>
@@ -330,6 +312,20 @@ export function ProfilePage() {
               onChange={setEditLinks}
               idPrefix="profile-link"
             />
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setEditing(false)}
+                className="flex items-center gap-1 text-gray-600 hover:text-gray-700"
+              >
+                <X className="w-4 h-4" /> Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="flex items-center gap-1 text-green-600 hover:text-green-700"
+              >
+                <Save className="w-4 h-4" /> Save
+              </button>
+            </div>
           </div>
         ) : (
           <>
