@@ -253,19 +253,19 @@ export function ProfilePage() {
             </div>
           </div>
           {isOwnProfile && !editing && (
-            <div className="flex flex-wrap gap-y-2 gap-x-3">
+            <div className="flex flex-wrap flex-col gap-y-2 gap-x-3 sm:flex-row">
               <button
                 onClick={startEditing}
                 className="flex items-center gap-0 sm:gap-1 text-gray-600 hover:text-gray-700"
               >
-                <Edit2 className="w-4 h-4 -mr-1.5 sm:mr-0" />
+                <Edit2 className="w-4 h-4 sm:mr-0" />
                 <span className="hidden sm:inline"> Edit</span>
               </button>
               <button
                 onClick={() => setShowSettings(true)}
                 className="flex items-center gap-0 sm:gap-1 text-gray-600 hover:text-gray-700"
               >
-                <Settings className="w-4 h-4 -mr-1.5 sm:mr-0" />
+                <Settings className="w-4 h-4 sm:mr-0" />
                 <span className="hidden sm:inline"> Settings</span>
               </button>
             </div>
