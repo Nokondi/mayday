@@ -6,12 +6,15 @@ let transporter: Transporter | null = null;
 function getTransporter(): Transporter | null {
   if (!env.SMTP_USER || !env.SMTP_PASS) return null;
   if (transporter) return transporter;
-  transporter = nodemailer.createTransport({
+  const options = {
     host: env.SMTP_HOST,
     port: env.SMTP_PORT,
     secure: env.SMTP_PORT === 465,
     auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
-  });
+  };
+  transporter = env.SMTP_REPLY_TO
+    ? nodemailer.createTransport(options, { replyTo: env.SMTP_REPLY_TO })
+    : nodemailer.createTransport(options);
   return transporter;
 }
 
