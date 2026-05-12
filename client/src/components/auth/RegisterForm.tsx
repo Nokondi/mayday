@@ -1,9 +1,22 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from "lucide-react";
+import { z } from "zod";
 import { registerSchema, type RegisterRequest } from "@mayday/shared";
 import { FormField } from "../common/FormField.js";
+import { PasswordField } from "../common/PasswordField.js";
+
+// Extends the shared register schema with a client-only confirmPassword field,
+// matched against `password`. The server never sees confirmPassword.
+const formSchema = registerSchema
+  .extend({
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((v) => v.password === v.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type FormData = z.infer<typeof formSchema>;
 
 interface RegisterFormProps {
   onSubmit: (data: RegisterRequest) => Promise<void>;
@@ -18,18 +31,22 @@ export function RegisterForm({
   error,
   defaultEmail,
 }: RegisterFormProps) {
-  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterRequest>({
-    resolver: zodResolver(registerSchema),
+  } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: defaultEmail ? { email: defaultEmail } : undefined,
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form
+      onSubmit={handleSubmit((data) =>
+        onSubmit({ name: data.name, email: data.email, password: data.password }),
+      )}
+      className="space-y-4"
+    >
       {error && (
         <div
           role="alert"
@@ -54,44 +71,19 @@ export function RegisterForm({
         {...register("email")}
       />
 
-      <div>
-        <label
-          htmlFor="register-password"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Password
-        </label>
-        <div className="relative">
-          <input
-            id="register-password"
-            type={showPassword ? "text" : "password"}
-            aria-invalid={!!errors.password}
-            aria-describedby={
-              errors.password ? "register-password-error" : undefined
-            }
-            {...register("password")}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            aria-label={showPassword ? "Hide password" : "Show password"}
-            aria-pressed={showPassword}
-            className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-mayday-500 rounded-r-lg"
-          >
-            {showPassword ? (
-              <EyeOff className="w-5 h-5" aria-hidden="true" />
-            ) : (
-              <Eye className="w-5 h-5" aria-hidden="true" />
-            )}
-          </button>
-        </div>
-        {errors.password && (
-          <p id="register-password-error" className="text-red-500 text-sm mt-1">
-            {errors.password.message}
-          </p>
-        )}
-      </div>
+      <PasswordField
+        id="register-password"
+        label="Password"
+        error={errors.password?.message}
+        {...register("password")}
+      />
+
+      <PasswordField
+        id="register-confirm-password"
+        label="Confirm password"
+        error={errors.confirmPassword?.message}
+        {...register("confirmPassword")}
+      />
 
       <button
         type="submit"
