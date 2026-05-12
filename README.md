@@ -114,3 +114,9 @@ mayday/
 - **Frontend:** React 19, Vite, Tailwind CSS, TanStack Query, React Router, Leaflet, React Hook Form
 - **Backend:** Express, Prisma, PostgreSQL, WebSocket (`ws`), JWT authentication
 - **Shared:** TypeScript, Zod
+
+## Notes
+
+- Versioning is very much being done on a vibes basis. I'm not great at rigidly following specifications
+- I'm trying to make this as useful for people IRL as possible. If there's something that I could add that would make this more usable for you, please let me know!
+- Accessibility is very important to me! Please report any accessibility issues, and they will instantly go to the top of my priority queue.

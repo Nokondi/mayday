@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { resetPassword } from "../api/auth.js";
+import { PasswordField } from "../components/common/PasswordField.js";
 
 // Extends the shared reset schema with a client-only confirmPassword field,
 // matched against `password`. The server never sees confirmPassword.
@@ -97,57 +98,20 @@ export function ResetPasswordPage() {
           className="space-y-4"
           noValidate
         >
-          <div>
-            <label
-              htmlFor="new-password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              New password
-            </label>
-            <input
-              id="new-password"
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={errors.password ? true : undefined}
-              aria-describedby={
-                errors.password ? "new-password-error" : undefined
-              }
-              {...register("password")}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-            />
-            {errors.password && (
-              <p id="new-password-error" className="text-red-500 text-sm mt-1">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-          <div>
-            <label
-              htmlFor="confirm-password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Confirm new password
-            </label>
-            <input
-              id="confirm-password"
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={errors.confirmPassword ? true : undefined}
-              aria-describedby={
-                errors.confirmPassword ? "confirm-password-error" : undefined
-              }
-              {...register("confirmPassword")}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-            />
-            {errors.confirmPassword && (
-              <p
-                id="confirm-password-error"
-                className="text-red-500 text-sm mt-1"
-              >
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
+          <PasswordField
+            id="new-password"
+            label="New password"
+            autoComplete="new-password"
+            error={errors.password?.message}
+            {...register("password")}
+          />
+          <PasswordField
+            id="confirm-password"
+            label="Confirm new password"
+            autoComplete="new-password"
+            error={errors.confirmPassword?.message}
+            {...register("confirmPassword")}
+          />
           {serverError && (
             <p role="alert" className="text-red-600 text-sm">
               {serverError}

@@ -48,13 +48,29 @@ describe('RegisterForm', () => {
     await user.type(screen.getByLabelText(/name/i), 'Alice');
     await user.type(screen.getByLabelText(/email/i), 'alice@example.com');
     await user.type(screen.getByLabelText(/^password$/i), 'hunter2hunter2');
+    await user.type(screen.getByLabelText(/confirm password/i), 'hunter2hunter2');
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
-    expect(onSubmit).toHaveBeenCalledWith(
-      { name: 'Alice', email: 'alice@example.com', password: 'hunter2hunter2' },
-      expect.anything(),
-    );
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: 'Alice',
+      email: 'alice@example.com',
+      password: 'hunter2hunter2',
+    });
+  });
+
+  it('does not call onSubmit when password and confirmation do not match', async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm();
+
+    await user.type(screen.getByLabelText(/name/i), 'Alice');
+    await user.type(screen.getByLabelText(/email/i), 'alice@example.com');
+    await user.type(screen.getByLabelText(/^password$/i), 'hunter2hunter2');
+    await user.type(screen.getByLabelText(/confirm password/i), 'different-pw');
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+
+    expect(await screen.findByText(/passwords do not match/i)).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 
   it('does not call onSubmit when the name is empty', async () => {
