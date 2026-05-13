@@ -1,4 +1,5 @@
 import type { UserPublicProfile } from './user.js';
+import type { PeerDevice } from './device.js';
 
 export interface Message {
   id: string;
@@ -21,7 +22,12 @@ export interface Conversation {
   unreadCount: number;
 }
 
-export type WSMessageType = 'NEW_MESSAGE' | 'TYPING' | 'READ';
+export type WSMessageType =
+  | 'NEW_MESSAGE'
+  | 'TYPING'
+  | 'READ'
+  | 'DEVICE_ADDED'
+  | 'DEVICE_REVOKED';
 
 export interface WSNewMessage {
   type: 'NEW_MESSAGE';
@@ -38,4 +44,22 @@ export interface WSRead {
   payload: { conversationId: string; messageId: string };
 }
 
-export type WSMessage = WSNewMessage | WSTyping | WSRead;
+// A device was registered. Phase 1 emits this event but clients only log it;
+// Phase 3 attaches handlers that wrap the conversation key for the new device
+// (own-handoff) and that re-wrap from the peer side (peer-rescue).
+export interface WSDeviceAdded {
+  type: 'DEVICE_ADDED';
+  payload: { userId: string; device: PeerDevice };
+}
+
+export interface WSDeviceRevoked {
+  type: 'DEVICE_REVOKED';
+  payload: { userId: string; deviceId: string };
+}
+
+export type WSMessage =
+  | WSNewMessage
+  | WSTyping
+  | WSRead
+  | WSDeviceAdded
+  | WSDeviceRevoked;

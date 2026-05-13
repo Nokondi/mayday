@@ -109,6 +109,7 @@ model User {
   pendingCommunityInvitesSent    PendingCommunityInvite[]    @relation("pendingCommunityInviteSender")
   pendingOrganizationInvitesSent PendingOrganizationInvite[] @relation("pendingOrganizationInviteSender")
   pushSubscriptions              PushSubscription[]
+  devices                        Device[]
 }
 
 model Post {
@@ -430,4 +431,29 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// End-to-end encryption device. Each browser/install of the app registers one
+// Device with two public keys: an Ed25519 signing key (identity) and an X25519
+// encryption key signed by it. Private keys never leave the client. See
+// memory/e2ee_design_decisions.md and the Phase 1 plan in chat for context.
+model Device {
+  id                  String    @id @default(uuid())
+  userId              String
+  // 32-byte Ed25519 public key — used now for the fingerprint and ready for
+  // X3DH-style prekey signing if we ever upgrade to forward secrecy (Level B).
+  signingPublicKey    Bytes
+  // 32-byte X25519 public key — recipients seal the conversation key to this.
+  encryptionPublicKey Bytes
+  // Ed25519 signature over encryptionPublicKey, proving the same device owns both.
+  encryptionKeySig    Bytes
+  label               String?
+  createdAt           DateTime  @default(now())
+  lastSeenAt          DateTime?
+  revokedAt           DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, revokedAt])
 }

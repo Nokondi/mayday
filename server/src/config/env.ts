@@ -25,6 +25,10 @@ const envSchema = z.object({
   VAPID_PUBLIC_KEY: z.string().optional(),
   VAPID_PRIVATE_KEY: z.string().optional(),
   VAPID_CONTACT_EMAIL: z.string().optional(),
+  // Master flag for end-to-end encryption of messages. Phase 1 ships device
+  // registration unconditionally so users get enrolled ahead of the flip; this
+  // flag gates the actual encryption flip in Phase 4.
+  E2EE_ENABLED: z.coerce.boolean().default(false),
 });
 
 export const env = envSchema.parse(process.env);

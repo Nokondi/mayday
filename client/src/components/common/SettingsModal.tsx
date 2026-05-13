@@ -5,6 +5,7 @@ import { updateUserSettings } from '../../api/users.js';
 import * as authApi from '../../api/auth.js';
 import { useToastMutation } from '../../hooks/useToastMutation.js';
 import { PushNotificationsToggle } from './PushNotificationsToggle.js';
+import { DevicesSection } from './DevicesSection.js';
 
 interface SettingsModalProps {
   open: boolean;
@@ -119,6 +120,8 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
             </div>
 
             <PushNotificationsToggle initialEnabled={pushNotificationsEnabled} />
+
+            <DevicesSection />
           </div>
         )}
 

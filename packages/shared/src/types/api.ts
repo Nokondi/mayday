@@ -166,6 +166,22 @@ export const pushUnsubscribeSchema = z.object({
 export type PushSubscribeRequest = z.infer<typeof pushSubscribeSchema>;
 export type PushUnsubscribeRequest = z.infer<typeof pushUnsubscribeSchema>;
 
+// E2EE devices — keys are base64-encoded raw bytes. The 44-char length cap
+// fits a base64-encoded 32-byte key (Ed25519/X25519 public keys); the signature
+// is 64 bytes → 88 chars base64. Bounds are deliberately tight so a malformed
+// or oversized blob is rejected before we touch the database.
+const base64Key = z.string().regex(/^[A-Za-z0-9+/]+=*$/, 'Must be base64').min(43).max(44);
+const base64Sig = z.string().regex(/^[A-Za-z0-9+/]+=*$/, 'Must be base64').min(86).max(88);
+
+export const registerDeviceSchema = z.object({
+  signingPublicKey: base64Key,
+  encryptionPublicKey: base64Key,
+  encryptionKeySig: base64Sig,
+  label: z.string().max(120).optional(),
+});
+
+export type RegisterDeviceRequest = z.infer<typeof registerDeviceSchema>;
+
 // Messages
 export const sendMessageSchema = z.object({
   content: z.string().min(1, 'Message cannot be empty').max(5000),
