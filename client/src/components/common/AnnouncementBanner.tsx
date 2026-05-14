@@ -48,7 +48,10 @@ export function AnnouncementBanner() {
         </p>
         <button
           onClick={handleDismiss}
-          aria-label={intl.formatMessage({ defaultMessage: "Dismiss announcement" })}
+          aria-label={intl.formatMessage({
+            id: "common.announcementBanner.dismissAriaLabel",
+            defaultMessage: "Dismiss announcement",
+          })}
           className="flex-shrink-0 p-0.5 rounded hover:bg-white/20"
         >
           <X className="w-4 h-4" aria-hidden="true" />

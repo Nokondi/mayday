@@ -5,7 +5,10 @@ export function LoadingSpinner({ className = '' }: { className?: string }) {
     <div role="status" aria-live="polite" className={`flex items-center justify-center ${className}`}>
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-mayday-500" />
       <span className="sr-only">
-        <FormattedMessage defaultMessage="Loading..." />
+        <FormattedMessage
+          id="common.loadingSpinner.srLabel"
+          defaultMessage="Loading..."
+        />
       </span>
     </div>
   );

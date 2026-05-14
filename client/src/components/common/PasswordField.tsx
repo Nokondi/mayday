@@ -19,8 +19,14 @@ export function PasswordField({
   const errorId = error ? `${id}-error` : undefined;
 
   const toggleLabel = showPassword
-    ? intl.formatMessage({ defaultMessage: "Hide password" })
-    : intl.formatMessage({ defaultMessage: "Show password" });
+    ? intl.formatMessage({
+        id: "common.passwordField.hideAriaLabel",
+        defaultMessage: "Hide password",
+      })
+    : intl.formatMessage({
+        id: "common.passwordField.showAriaLabel",
+        defaultMessage: "Show password",
+      });
 
   return (
     <div>

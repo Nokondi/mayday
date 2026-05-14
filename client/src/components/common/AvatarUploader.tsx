@@ -31,6 +31,7 @@ export function AvatarUploader({
     if (!ALLOWED_TYPES.includes(file.type)) {
       toast.error(
         intl.formatMessage({
+          id: 'common.avatarUploader.invalidTypeError',
           defaultMessage: 'Only JPEG, PNG, GIF, and WebP images are allowed',
         }),
       );
@@ -38,18 +39,29 @@ export function AvatarUploader({
     }
     if (file.size > MAX_SIZE) {
       toast.error(
-        intl.formatMessage({ defaultMessage: 'Image must be 5MB or smaller' }),
+        intl.formatMessage({
+          id: 'common.avatarUploader.fileTooLargeError',
+          defaultMessage: 'Image must be 5MB or smaller',
+        }),
       );
       return;
     }
     setUploading(true);
     try {
       await onUpload(file);
-      toast.success(intl.formatMessage({ defaultMessage: 'Avatar updated' }));
+      toast.success(
+        intl.formatMessage({
+          id: 'common.avatarUploader.uploadSuccess',
+          defaultMessage: 'Avatar updated',
+        }),
+      );
     } catch (err: any) {
       toast.error(
         err?.response?.data?.message ||
-          intl.formatMessage({ defaultMessage: 'Failed to upload avatar' }),
+          intl.formatMessage({
+            id: 'common.avatarUploader.uploadFailedFallback',
+            defaultMessage: 'Failed to upload avatar',
+          }),
       );
     } finally {
       setUploading(false);
@@ -59,8 +71,14 @@ export function AvatarUploader({
   const radius = shape === 'circle' ? 'rounded-full' : 'rounded-lg';
 
   const buttonLabel = uploading
-    ? intl.formatMessage({ defaultMessage: 'Uploading avatar' })
-    : intl.formatMessage({ defaultMessage: 'Upload avatar' });
+    ? intl.formatMessage({
+        id: 'common.avatarUploader.uploadingAriaLabel',
+        defaultMessage: 'Uploading avatar',
+      })
+    : intl.formatMessage({
+        id: 'common.avatarUploader.uploadAriaLabel',
+        defaultMessage: 'Upload avatar',
+      });
 
   return (
     <>

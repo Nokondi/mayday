@@ -29,17 +29,26 @@ export function ResetPasswordPage() {
             .string()
             .min(
               8,
-              intl.formatMessage({ defaultMessage: "Password must be at least 8 characters" }),
+              intl.formatMessage({
+                id: "auth.resetPasswordPage.passwordTooShortError",
+                defaultMessage: "Password must be at least 8 characters",
+              }),
             ),
           confirmPassword: z
             .string()
             .min(
               1,
-              intl.formatMessage({ defaultMessage: "Please confirm your new password" }),
+              intl.formatMessage({
+                id: "auth.resetPasswordPage.confirmPasswordRequiredError",
+                defaultMessage: "Please confirm your new password",
+              }),
             ),
         })
         .refine((v) => v.password === v.confirmPassword, {
-          message: intl.formatMessage({ defaultMessage: "Passwords do not match" }),
+          message: intl.formatMessage({
+            id: "auth.resetPasswordPage.passwordsMismatchError",
+            defaultMessage: "Passwords do not match",
+          }),
           path: ["confirmPassword"],
         }),
     [intl],
@@ -62,14 +71,21 @@ export function ResetPasswordPage() {
     return (
       <div className="max-w-md mx-auto px-4 py-16">
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
-          <FormattedMessage defaultMessage="Reset your password" />
+          <FormattedMessage
+            id="auth.resetPasswordPage.missingTokenHeading"
+            defaultMessage="Reset your password"
+          />
         </h1>
         <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
           <p className="text-red-600">
-            <FormattedMessage defaultMessage="Missing reset token." />
+            <FormattedMessage
+              id="auth.resetPasswordPage.missingTokenError"
+              defaultMessage="Missing reset token."
+            />
           </p>
           <p className="text-sm text-gray-600">
             <FormattedMessage
+              id="auth.resetPasswordPage.missingTokenInstructions"
               defaultMessage="Please use the link in your password reset email, or <request>request a new one</request>."
               values={{
                 request: (chunks) => (
@@ -92,18 +108,27 @@ export function ResetPasswordPage() {
     return (
       <div className="max-w-md mx-auto px-4 py-16">
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
-          <FormattedMessage defaultMessage="Password updated" />
+          <FormattedMessage
+            id="auth.resetPasswordPage.successHeading"
+            defaultMessage="Password updated"
+          />
         </h1>
         <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
           <p className="text-green-700">
-            <FormattedMessage defaultMessage="Your password has been reset." />
+            <FormattedMessage
+              id="auth.resetPasswordPage.successMessage"
+              defaultMessage="Your password has been reset."
+            />
           </p>
           <p className="text-center">
             <Link
               to="/login"
               className="text-mayday-600 hover:text-mayday-700 font-medium"
             >
-              <FormattedMessage defaultMessage="Log in" />
+              <FormattedMessage
+                id="auth.resetPasswordPage.successLoginLink"
+                defaultMessage="Log in"
+              />
             </Link>
           </p>
         </div>
@@ -116,13 +141,17 @@ export function ResetPasswordPage() {
     ((mutation.error as { response?: { data?: { error?: string } } })?.response
       ?.data?.error ||
       intl.formatMessage({
+        id: "auth.resetPasswordPage.resetFailedFallback",
         defaultMessage: "Could not reset your password. The link may have expired.",
       }));
 
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
-        <FormattedMessage defaultMessage="Choose a new password" />
+        <FormattedMessage
+          id="auth.resetPasswordPage.title"
+          defaultMessage="Choose a new password"
+        />
       </h1>
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <form
@@ -132,14 +161,20 @@ export function ResetPasswordPage() {
         >
           <PasswordField
             id="new-password"
-            label={intl.formatMessage({ defaultMessage: "New password" })}
+            label={intl.formatMessage({
+              id: "auth.resetPasswordPage.newPasswordLabel",
+              defaultMessage: "New password",
+            })}
             autoComplete="new-password"
             error={errors.password?.message}
             {...register("password")}
           />
           <PasswordField
             id="confirm-password"
-            label={intl.formatMessage({ defaultMessage: "Confirm new password" })}
+            label={intl.formatMessage({
+              id: "auth.resetPasswordPage.confirmPasswordLabel",
+              defaultMessage: "Confirm new password",
+            })}
             autoComplete="new-password"
             error={errors.confirmPassword?.message}
             {...register("confirmPassword")}
@@ -155,9 +190,15 @@ export function ResetPasswordPage() {
             className="w-full bg-mayday-700 text-white py-2 rounded-lg font-medium hover:bg-mayday-800 disabled:opacity-50"
           >
             {mutation.isPending ? (
-              <FormattedMessage defaultMessage="Saving…" />
+              <FormattedMessage
+                id="auth.resetPasswordPage.submittingButton"
+                defaultMessage="Saving…"
+              />
             ) : (
-              <FormattedMessage defaultMessage="Update password" />
+              <FormattedMessage
+                id="auth.resetPasswordPage.submitButton"
+                defaultMessage="Update password"
+              />
             )}
           </button>
         </form>

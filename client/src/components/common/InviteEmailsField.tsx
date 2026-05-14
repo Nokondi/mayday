@@ -29,6 +29,7 @@ export function InviteEmailsField({
   const resolvedLegend =
     legend === undefined ? (
       <FormattedMessage
+        id="common.inviteEmailsField.defaultLegend"
         defaultMessage="Invite people <opt>(optional)</opt>"
         values={{
           opt: (chunks) => (
@@ -42,13 +43,20 @@ export function InviteEmailsField({
 
   const resolvedHelpText =
     helpText === undefined ? (
-      <FormattedMessage defaultMessage="They'll get an email invite. People without a Mayday account will be invited to sign up." />
+      <FormattedMessage
+        id="common.inviteEmailsField.defaultHelpText"
+        defaultMessage="They'll get an email invite. People without a Mayday account will be invited to sign up."
+      />
     ) : (
       helpText
     );
 
   const resolvedSubmitLabel =
-    submitLabel ?? intl.formatMessage({ defaultMessage: "Send invites" });
+    submitLabel ??
+    intl.formatMessage({
+      id: "common.inviteEmailsField.defaultSubmitLabel",
+      defaultMessage: "Send invites",
+    });
 
   const updateAt = (idx: number, value: string) =>
     onEmailsChange(emails.map((e, i) => (i === idx ? value : e)));
@@ -74,10 +82,14 @@ export function InviteEmailsField({
               value={email}
               onChange={(e) => updateAt(idx, e.target.value)}
               placeholder={intl.formatMessage({
+                id: "common.inviteEmailsField.emailPlaceholder",
                 defaultMessage: "friend@example.com",
               })}
               aria-label={intl.formatMessage(
-                { defaultMessage: "Email to invite {n}" },
+                {
+                  id: "common.inviteEmailsField.emailRowAriaLabel",
+                  defaultMessage: "Email to invite {n}",
+                },
                 { n: idx + 1 },
               )}
               className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
@@ -87,7 +99,10 @@ export function InviteEmailsField({
                 type="button"
                 onClick={() => removeAt(idx)}
                 className="px-2 text-gray-500 hover:text-red-600"
-                aria-label={intl.formatMessage({ defaultMessage: "Remove email" })}
+                aria-label={intl.formatMessage({
+                  id: "common.inviteEmailsField.removeRowAriaLabel",
+                  defaultMessage: "Remove email",
+                })}
               >
                 <X className="w-4 h-4" aria-hidden="true" />
               </button>
@@ -100,7 +115,10 @@ export function InviteEmailsField({
         onClick={addRow}
         className="mt-2 text-sm text-mayday-600 hover:text-mayday-700 font-medium"
       >
-        <FormattedMessage defaultMessage="+ Add another" />
+        <FormattedMessage
+          id="common.inviteEmailsField.addAnotherButton"
+          defaultMessage="+ Add another"
+        />
       </button>
     </fieldset>
   );

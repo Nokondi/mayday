@@ -34,7 +34,10 @@ export function FormField(props: FormFieldProps) {
           <>
             {" "}
             <span className="text-gray-500 font-normal">
-              <FormattedMessage defaultMessage="(optional)" />
+              <FormattedMessage
+                id="common.formField.optionalSuffix"
+                defaultMessage="(optional)"
+              />
             </span>
           </>
         )}

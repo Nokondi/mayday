@@ -10,7 +10,11 @@ interface SearchBarProps {
 export function SearchBar({ value, onChange, placeholder }: SearchBarProps) {
   const intl = useIntl();
   const resolvedPlaceholder =
-    placeholder ?? intl.formatMessage({ defaultMessage: 'Search...' });
+    placeholder ??
+    intl.formatMessage({
+      id: 'common.searchBar.defaultPlaceholder',
+      defaultMessage: 'Search...',
+    });
 
   return (
     <div role="search" className="relative">

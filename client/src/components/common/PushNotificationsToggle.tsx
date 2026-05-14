@@ -84,19 +84,23 @@ function translatePushError(intl: IntlShape, code: PushErrorCode): string {
   switch (code) {
     case 'PERMISSION_DENIED':
       return intl.formatMessage({
+        id: 'common.pushNotificationsToggle.permissionDeniedError',
         defaultMessage:
           'You denied notification permission. Re-enable it in your browser site settings.',
       });
     case 'PERMISSION_NOT_GRANTED':
       return intl.formatMessage({
+        id: 'common.pushNotificationsToggle.permissionNotGrantedError',
         defaultMessage: 'Notification permission was not granted.',
       });
     case 'BLOCKED':
       return intl.formatMessage({
+        id: 'common.pushNotificationsToggle.blockedError',
         defaultMessage: 'Notifications are blocked in your browser.',
       });
     case 'NO_CONFIG':
       return intl.formatMessage({
+        id: 'common.pushNotificationsToggle.noConfigError',
         defaultMessage: 'Push notifications are not configured on the server.',
       });
   }
@@ -136,12 +140,19 @@ export function PushNotificationsToggle({
     },
     successMessage: (data) =>
       data.pushNotificationsEnabled
-        ? intl.formatMessage({ defaultMessage: 'Push notifications enabled' })
-        : intl.formatMessage({ defaultMessage: 'Push notifications disabled' }),
+        ? intl.formatMessage({
+            id: 'common.pushNotificationsToggle.enabledToast',
+            defaultMessage: 'Push notifications enabled',
+          })
+        : intl.formatMessage({
+            id: 'common.pushNotificationsToggle.disabledToast',
+            defaultMessage: 'Push notifications disabled',
+          }),
     errorMessage: (err) => {
       if (err instanceof PushError) return translatePushError(intl, err.code);
       if (err instanceof Error) return err.message;
       return intl.formatMessage({
+        id: 'common.pushNotificationsToggle.updateFailedFallback',
         defaultMessage: 'Failed to update push notifications',
       });
     },
@@ -164,21 +175,27 @@ export function PushNotificationsToggle({
   let helper: string;
   if (unsupported) {
     helper = intl.formatMessage({
+      id: 'common.pushNotificationsToggle.unsupportedHelper',
       defaultMessage: "Your browser doesn't support push notifications.",
     });
   } else if (denied) {
     helper = intl.formatMessage({
+      id: 'common.pushNotificationsToggle.deniedHelper',
       defaultMessage:
         'Notifications are blocked in your browser. Re-enable them in your browser site settings to use this.',
     });
   } else {
     helper = intl.formatMessage({
+      id: 'common.pushNotificationsToggle.defaultHelper',
       defaultMessage:
         "Get notified about activity even when Mayday isn't open in a tab.",
     });
   }
 
-  const heading = intl.formatMessage({ defaultMessage: 'Push notifications' });
+  const heading = intl.formatMessage({
+    id: 'common.pushNotificationsToggle.heading',
+    defaultMessage: 'Push notifications',
+  });
 
   return (
     <div>

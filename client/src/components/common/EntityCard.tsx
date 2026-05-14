@@ -47,6 +47,7 @@ export function EntityCard({
         <span className="flex items-center gap-1">
           <Users className="w-3 h-3" />
           <FormattedMessage
+            id="common.entityCard.memberCount"
             defaultMessage="{count, plural, one {# member} other {# members}}"
             values={{ count: memberCount }}
           />
@@ -60,6 +61,7 @@ export function EntityCard({
         {myRole && (
           <span className="text-mayday-600 font-medium">
             <FormattedMessage
+              id="common.entityCard.viewerRole"
               defaultMessage="You: {role}"
               values={{ role: myRole.toLowerCase() }}
             />

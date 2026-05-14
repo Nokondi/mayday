@@ -46,6 +46,7 @@ export function LinksEditor({ value, onChange, idPrefix = "link" }: LinksEditorP
     <fieldset>
       <legend className="block text-sm font-medium text-gray-700 mb-2">
         <FormattedMessage
+          id="common.linksEditor.legend"
           defaultMessage="Links <opt>(optional)</opt>"
           values={{
             opt: (chunks) => (
@@ -61,9 +62,13 @@ export function LinksEditor({ value, onChange, idPrefix = "link" }: LinksEditorP
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <input
                   id={`${idPrefix}-${i}-label`}
-                  aria-label={intl.formatMessage({ defaultMessage: "Link label" })}
+                  aria-label={intl.formatMessage({
+                    id: "common.linksEditor.labelAriaLabel",
+                    defaultMessage: "Link label",
+                  })}
                   type="text"
                   placeholder={intl.formatMessage({
+                    id: "common.linksEditor.labelPlaceholder",
                     defaultMessage: "Label (e.g. Website)",
                   })}
                   value={row.label ?? ""}
@@ -73,7 +78,10 @@ export function LinksEditor({ value, onChange, idPrefix = "link" }: LinksEditorP
                 />
                 <input
                   id={`${idPrefix}-${i}-url`}
-                  aria-label={intl.formatMessage({ defaultMessage: "Link URL" })}
+                  aria-label={intl.formatMessage({
+                    id: "common.linksEditor.urlAriaLabel",
+                    defaultMessage: "Link URL",
+                  })}
                   type="url"
                   inputMode="url"
                   placeholder="https://example.org"
@@ -87,7 +95,10 @@ export function LinksEditor({ value, onChange, idPrefix = "link" }: LinksEditorP
                 type="button"
                 onClick={() => remove(i)}
                 aria-label={intl.formatMessage(
-                  { defaultMessage: "Remove link {n}" },
+                  {
+                    id: "common.linksEditor.removeRowAriaLabel",
+                    defaultMessage: "Remove link {n}",
+                  },
                   { n: i + 1 },
                 )}
                 className="mt-2 text-gray-500 hover:text-red-600"
@@ -104,7 +115,10 @@ export function LinksEditor({ value, onChange, idPrefix = "link" }: LinksEditorP
         className="flex items-center gap-1 text-sm text-mayday-700 hover:text-mayday-800"
       >
         <Plus className="w-4 h-4" aria-hidden="true" />
-        <FormattedMessage defaultMessage="Add link" />
+        <FormattedMessage
+          id="common.linksEditor.addLinkButton"
+          defaultMessage="Add link"
+        />
       </button>
     </fieldset>
   );

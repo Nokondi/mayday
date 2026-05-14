@@ -1,10 +1,10 @@
 import { defineMessages, useIntl } from 'react-intl';
 
 const urgencyLabels = defineMessages({
-  LOW: { defaultMessage: 'Low' },
-  MEDIUM: { defaultMessage: 'Medium' },
-  HIGH: { defaultMessage: 'High' },
-  CRITICAL: { defaultMessage: 'Critical' },
+  LOW: { id: 'urgency.low', defaultMessage: 'Low' },
+  MEDIUM: { id: 'urgency.medium', defaultMessage: 'Medium' },
+  HIGH: { id: 'urgency.high', defaultMessage: 'High' },
+  CRITICAL: { id: 'urgency.critical', defaultMessage: 'Critical' },
 });
 
 const urgencyColors: Record<string, string> = {
