@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { IntlProvider } from 'react-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../../src/context/AuthContext.js', () => ({
@@ -43,21 +44,23 @@ function renderHeader(options: { initialPath?: string } = {}) {
     defaultOptions: { queries: { retry: false } },
   });
   return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[initialPath]}>
-        <Routes>
-          <Route
-            path="*"
-            element={
-              <>
-                <Header />
-                <LocationProbe />
-              </>
-            }
-          />
-        </Routes>
-      </MemoryRouter>
-    </QueryClientProvider>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[initialPath]}>
+          <Routes>
+            <Route
+              path="*"
+              element={
+                <>
+                  <Header />
+                  <LocationProbe />
+                </>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    </IntlProvider>,
   );
 }
 

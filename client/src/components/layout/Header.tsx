@@ -11,12 +11,14 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useAuth } from "../../context/AuthContext.js";
 import { getMyInvites } from "../../api/organizations.js";
 import { getMyCommunityInvites } from "../../api/communities.js";
 import MayDayLogo from "../../assets/mayday-logo.svg?react";
 
 export function Header() {
+  const intl = useIntl();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -57,43 +59,67 @@ export function Header() {
           </Link>
 
           <nav
-            aria-label="Main navigation"
+            aria-label={intl.formatMessage({
+              id: "layout.header.desktopNavAriaLabel",
+              defaultMessage: "Main navigation",
+            })}
             className="hidden md:flex items-center gap-6"
           >
             {user ? (
               <>
                 <Link to="/posts" className="text-gray-600 hover:text-gray-900">
-                  Browse
+                  <FormattedMessage
+                    id="layout.header.desktopNav.browse"
+                    defaultMessage="Browse"
+                  />
                 </Link>
                 <Link to="/map" className="text-gray-600 hover:text-gray-900">
-                  Map
+                  <FormattedMessage
+                    id="layout.header.desktopNav.map"
+                    defaultMessage="Map"
+                  />
                 </Link>
                 <Link
                   to="/calendar"
                   className="text-gray-600 hover:text-gray-900"
                 >
-                  Calendar
+                  <FormattedMessage
+                    id="layout.header.desktopNav.calendar"
+                    defaultMessage="Calendar"
+                  />
                 </Link>
                 <Link
                   to="/organizations"
                   className="text-gray-600 hover:text-gray-900"
                 >
-                  Orgs
+                  <FormattedMessage
+                    id="layout.header.desktopNav.orgs"
+                    defaultMessage="Orgs"
+                  />
                 </Link>
                 <Link
                   to="/communities"
                   className="text-gray-600 hover:text-gray-900"
                 >
-                  Communities
+                  <FormattedMessage
+                    id="layout.header.desktopNav.communities"
+                    defaultMessage="Communities"
+                  />
                 </Link>
                 <Link to="/about" className="text-gray-600 hover:text-gray-900">
-                  About
+                  <FormattedMessage
+                    id="layout.header.desktopNav.about"
+                    defaultMessage="About"
+                  />
                 </Link>
                 <Link
                   to="/support"
                   className="text-gray-600 hover:text-gray-900"
                 >
-                  Support
+                  <FormattedMessage
+                    id="layout.header.desktopNav.support"
+                    defaultMessage="Support"
+                  />
                 </Link>
                 <Link
                   to="/posts/new"
@@ -104,22 +130,31 @@ export function Header() {
                     className="w-4 h-4"
                     aria-hidden="true"
                   />
-                  New Post
+                  <FormattedMessage
+                    id="layout.header.desktopNav.newPost"
+                    defaultMessage="New Post"
+                  />
                 </Link>
                 <Link
                   to="/messages"
-                  aria-label="Messages"
+                  aria-label={intl.formatMessage({
+                    id: "layout.header.desktopNav.messagesAriaLabel",
+                    defaultMessage: "Messages",
+                  })}
                   className="text-gray-600 hover:text-gray-900"
                 >
                   <MessageSquare className="w-5 h-5" aria-hidden="true" />
                 </Link>
                 <Link
                   to="/invites"
-                  aria-label={
-                    inviteCount > 0
-                      ? `Invites (${inviteCount} pending)`
-                      : "Invites"
-                  }
+                  aria-label={intl.formatMessage(
+                    {
+                      id: "layout.header.desktopNav.invitesAriaLabel",
+                      defaultMessage:
+                        "{count, plural, =0 {Invites} other {Invites ({count} pending)}}",
+                    },
+                    { count: inviteCount },
+                  )}
                   className="relative text-gray-600 hover:text-gray-900"
                 >
                   <Mail className="w-5 h-5" aria-hidden="true" />
@@ -135,7 +170,10 @@ export function Header() {
                 {user.role === "ADMIN" && (
                   <Link
                     to="/admin"
-                    aria-label="Admin panel"
+                    aria-label={intl.formatMessage({
+                      id: "layout.header.desktopNav.adminAriaLabel",
+                      defaultMessage: "Admin panel",
+                    })}
                     className="text-gray-600 hover:text-gray-900"
                   >
                     <Shield className="w-5 h-5" aria-hidden="true" />
@@ -143,7 +181,10 @@ export function Header() {
                 )}
                 <Link
                   to={`/profile/${user.id}`}
-                  aria-label="Your profile"
+                  aria-label={intl.formatMessage({
+                    id: "layout.header.desktopNav.profileAriaLabel",
+                    defaultMessage: "Your profile",
+                  })}
                   className="text-gray-600 hover:text-gray-900"
                 >
                   {user.avatarUrl ? (
@@ -158,7 +199,10 @@ export function Header() {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  aria-label="Log out"
+                  aria-label={intl.formatMessage({
+                    id: "layout.header.desktopNav.logoutAriaLabel",
+                    defaultMessage: "Log out",
+                  })}
                   className="text-gray-600 hover:text-gray-900"
                 >
                   <LogOut className="w-5 h-5" aria-hidden="true" />
@@ -167,16 +211,25 @@ export function Header() {
             ) : (
               <>
                 <Link to="/about" className="text-gray-600 hover:text-gray-900">
-                  About
+                  <FormattedMessage
+                    id="layout.header.desktopNav.aboutLoggedOut"
+                    defaultMessage="About"
+                  />
                 </Link>
                 <Link to="/login" className="text-gray-600 hover:text-gray-900">
-                  Log in
+                  <FormattedMessage
+                    id="layout.header.desktopNav.login"
+                    defaultMessage="Log in"
+                  />
                 </Link>
                 <Link
                   to="/register"
                   className="bg-mayday-700 text-white font-bold px-4 py-2 rounded-lg hover:bg-mayday-800 text-nowrap"
                 >
-                  Sign up
+                  <FormattedMessage
+                    id="layout.header.desktopNav.signup"
+                    defaultMessage="Sign up"
+                  />
                 </Link>
               </>
             )}
@@ -186,7 +239,10 @@ export function Header() {
             className="md:hidden"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-expanded={menuOpen}
-            aria-label="Toggle menu"
+            aria-label={intl.formatMessage({
+              id: "layout.header.toggleMenuAriaLabel",
+              defaultMessage: "Toggle menu",
+            })}
           >
             {menuOpen ? (
               <X className="w-6 h-6" aria-hidden="true" />
@@ -198,7 +254,10 @@ export function Header() {
 
         {menuOpen && (
           <nav
-            aria-label="Mobile navigation"
+            aria-label={intl.formatMessage({
+              id: "layout.header.mobileNavAriaLabel",
+              defaultMessage: "Mobile navigation",
+            })}
             className="md:hidden pb-4 space-y-2"
           >
             {user ? (
@@ -208,86 +267,126 @@ export function Header() {
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Browse
+                  <FormattedMessage
+                    id="layout.header.mobileNav.browse"
+                    defaultMessage="Browse"
+                  />
                 </Link>
                 <Link
                   to="/map"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Map
+                  <FormattedMessage
+                    id="layout.header.mobileNav.map"
+                    defaultMessage="Map"
+                  />
                 </Link>
                 <Link
                   to="/calendar"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Calendar
+                  <FormattedMessage
+                    id="layout.header.mobileNav.calendar"
+                    defaultMessage="Calendar"
+                  />
                 </Link>
                 <Link
                   to="/organizations"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Organizations
+                  <FormattedMessage
+                    id="layout.header.mobileNav.organizations"
+                    defaultMessage="Organizations"
+                  />
                 </Link>
                 <Link
                   to="/communities"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Communities
+                  <FormattedMessage
+                    id="layout.header.mobileNav.communities"
+                    defaultMessage="Communities"
+                  />
                 </Link>
                 <Link
                   to="/about"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  About
+                  <FormattedMessage
+                    id="layout.header.mobileNav.about"
+                    defaultMessage="About"
+                  />
                 </Link>
                 <Link
                   to="/support"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Support
+                  <FormattedMessage
+                    id="layout.header.mobileNav.support"
+                    defaultMessage="Support"
+                  />
                 </Link>
                 <Link
                   to="/posts/new"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  New Post
+                  <FormattedMessage
+                    id="layout.header.mobileNav.newPost"
+                    defaultMessage="New Post"
+                  />
                 </Link>
                 <Link
                   to="/messages"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Messages
+                  <FormattedMessage
+                    id="layout.header.mobileNav.messages"
+                    defaultMessage="Messages"
+                  />
                 </Link>
                 <Link
                   to="/invites"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Invites{inviteCount > 0 ? ` (${inviteCount})` : ""}
+                  <FormattedMessage
+                    id="layout.header.mobileNav.invites"
+                    defaultMessage="{count, plural, =0 {Invites} other {Invites ({count})}}"
+                    values={{ count: inviteCount }}
+                  />
                 </Link>
                 <Link
                   to={`/profile/${user.id}`}
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Profile
+                  <FormattedMessage
+                    id="layout.header.mobileNav.profile"
+                    defaultMessage="Profile"
+                  />
                 </Link>
                 {user.role === "ADMIN" && (
                   <Link
                     to="/admin"
-                    aria-label="Admin panel"
+                    aria-label={intl.formatMessage({
+                      id: "layout.header.mobileNav.adminAriaLabel",
+                      defaultMessage: "Admin panel",
+                    })}
                     className="block px-3 py-2 rounded hover:bg-gray-100"
                     onClick={() => setMenuOpen(false)}
                   >
-                    Admin
+                    <FormattedMessage
+                      id="layout.header.mobileNav.admin"
+                      defaultMessage="Admin"
+                    />
                   </Link>
                 )}
                 <button
@@ -297,7 +396,10 @@ export function Header() {
                   }}
                   className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100"
                 >
-                  Log out
+                  <FormattedMessage
+                    id="layout.header.mobileNav.logout"
+                    defaultMessage="Log out"
+                  />
                 </button>
               </>
             ) : (
@@ -307,21 +409,30 @@ export function Header() {
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  About
+                  <FormattedMessage
+                    id="layout.header.mobileNav.aboutLoggedOut"
+                    defaultMessage="About"
+                  />
                 </Link>
                 <Link
                   to="/login"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Log in
+                  <FormattedMessage
+                    id="layout.header.mobileNav.login"
+                    defaultMessage="Log in"
+                  />
                 </Link>
                 <Link
                   to="/register"
                   className="block px-3 py-2 rounded hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Sign up
+                  <FormattedMessage
+                    id="layout.header.mobileNav.signup"
+                    defaultMessage="Sign up"
+                  />
                 </Link>
               </>
             )}

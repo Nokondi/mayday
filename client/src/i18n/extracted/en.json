@@ -317,6 +317,126 @@
   "common.searchBar.defaultPlaceholder": {
     "defaultMessage": "Search..."
   },
+  "layout.footer.brand": {
+    "defaultMessage": "MayDay Mutual Aid Hub"
+  },
+  "layout.footer.patreonLink": {
+    "defaultMessage": "Follow us on Patreon"
+  },
+  "layout.footer.tagline": {
+    "defaultMessage": "Built with <heart></heart><love>love</love> for community"
+  },
+  "layout.header.desktopNav.about": {
+    "defaultMessage": "About"
+  },
+  "layout.header.desktopNav.aboutLoggedOut": {
+    "defaultMessage": "About"
+  },
+  "layout.header.desktopNav.adminAriaLabel": {
+    "defaultMessage": "Admin panel"
+  },
+  "layout.header.desktopNav.browse": {
+    "defaultMessage": "Browse"
+  },
+  "layout.header.desktopNav.calendar": {
+    "defaultMessage": "Calendar"
+  },
+  "layout.header.desktopNav.communities": {
+    "defaultMessage": "Communities"
+  },
+  "layout.header.desktopNav.invitesAriaLabel": {
+    "defaultMessage": "{count, plural, =0 {Invites} other {Invites ({count} pending)}}"
+  },
+  "layout.header.desktopNav.login": {
+    "defaultMessage": "Log in"
+  },
+  "layout.header.desktopNav.logoutAriaLabel": {
+    "defaultMessage": "Log out"
+  },
+  "layout.header.desktopNav.map": {
+    "defaultMessage": "Map"
+  },
+  "layout.header.desktopNav.messagesAriaLabel": {
+    "defaultMessage": "Messages"
+  },
+  "layout.header.desktopNav.newPost": {
+    "defaultMessage": "New Post"
+  },
+  "layout.header.desktopNav.orgs": {
+    "defaultMessage": "Orgs"
+  },
+  "layout.header.desktopNav.profileAriaLabel": {
+    "defaultMessage": "Your profile"
+  },
+  "layout.header.desktopNav.signup": {
+    "defaultMessage": "Sign up"
+  },
+  "layout.header.desktopNav.support": {
+    "defaultMessage": "Support"
+  },
+  "layout.header.desktopNavAriaLabel": {
+    "defaultMessage": "Main navigation"
+  },
+  "layout.header.mobileNav.about": {
+    "defaultMessage": "About"
+  },
+  "layout.header.mobileNav.aboutLoggedOut": {
+    "defaultMessage": "About"
+  },
+  "layout.header.mobileNav.admin": {
+    "defaultMessage": "Admin"
+  },
+  "layout.header.mobileNav.adminAriaLabel": {
+    "defaultMessage": "Admin panel"
+  },
+  "layout.header.mobileNav.browse": {
+    "defaultMessage": "Browse"
+  },
+  "layout.header.mobileNav.calendar": {
+    "defaultMessage": "Calendar"
+  },
+  "layout.header.mobileNav.communities": {
+    "defaultMessage": "Communities"
+  },
+  "layout.header.mobileNav.invites": {
+    "defaultMessage": "{count, plural, =0 {Invites} other {Invites ({count})}}"
+  },
+  "layout.header.mobileNav.login": {
+    "defaultMessage": "Log in"
+  },
+  "layout.header.mobileNav.logout": {
+    "defaultMessage": "Log out"
+  },
+  "layout.header.mobileNav.map": {
+    "defaultMessage": "Map"
+  },
+  "layout.header.mobileNav.messages": {
+    "defaultMessage": "Messages"
+  },
+  "layout.header.mobileNav.newPost": {
+    "defaultMessage": "New Post"
+  },
+  "layout.header.mobileNav.organizations": {
+    "defaultMessage": "Organizations"
+  },
+  "layout.header.mobileNav.profile": {
+    "defaultMessage": "Profile"
+  },
+  "layout.header.mobileNav.signup": {
+    "defaultMessage": "Sign up"
+  },
+  "layout.header.mobileNav.support": {
+    "defaultMessage": "Support"
+  },
+  "layout.header.mobileNavAriaLabel": {
+    "defaultMessage": "Mobile navigation"
+  },
+  "layout.header.toggleMenuAriaLabel": {
+    "defaultMessage": "Toggle menu"
+  },
+  "layout.skipToMainContent": {
+    "defaultMessage": "Skip to main content"
+  },
   "urgency.critical": {
     "defaultMessage": "Critical"
   },
