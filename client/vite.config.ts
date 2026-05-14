@@ -5,7 +5,22 @@ import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 
 export default defineConfig({
-  plugins: [react(), svgr()],
+  plugins: [
+    react({
+      babel: {
+        plugins: [
+          [
+            'formatjs',
+            {
+              idInterpolationPattern: '[sha512:contenthash:base64:6]',
+              ast: true,
+            },
+          ],
+        ],
+      },
+    }),
+    svgr(),
+  ],
   resolve: {
     alias: {
       '@mayday/shared': path.resolve(__dirname, '../packages/shared/src/index.ts'),
