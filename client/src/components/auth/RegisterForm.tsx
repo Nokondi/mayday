@@ -46,7 +46,7 @@ export function RegisterForm({
         })
         .refine((v) => v.password === v.confirmPassword, {
           message: intl.formatMessage({
-            id: "auth.registerForm.passwordsMismatchError",
+            id: "common.errors.passwordsMismatch",
             defaultMessage: "Passwords do not match",
           }),
           path: ["confirmPassword"],
@@ -93,7 +93,7 @@ export function RegisterForm({
         id="register-email"
         type="email"
         label={intl.formatMessage({
-          id: "auth.registerForm.emailLabel",
+          id: "common.fields.email",
           defaultMessage: "Email",
         })}
         error={errors.email?.message}
@@ -103,7 +103,7 @@ export function RegisterForm({
       <PasswordField
         id="register-password"
         label={intl.formatMessage({
-          id: "auth.registerForm.passwordLabel",
+          id: "common.fields.password",
           defaultMessage: "Password",
         })}
         error={errors.password?.message}

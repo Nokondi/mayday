@@ -109,7 +109,7 @@ export function LoginPage() {
               >
                 {resendState === "sending" ? (
                   <FormattedMessage
-                    id="auth.loginPage.resendButtonSending"
+                    id="common.status.sending"
                     defaultMessage="Sending…"
                   />
                 ) : (

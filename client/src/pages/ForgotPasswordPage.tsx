@@ -32,7 +32,7 @@ export function ForgotPasswordPage() {
       <div className="max-w-md mx-auto px-4 py-16">
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
           <FormattedMessage
-            id="auth.forgotPasswordPage.successHeading"
+            id="auth.checkInboxHeading"
             defaultMessage="Check your inbox"
           />
         </h1>
@@ -59,7 +59,7 @@ export function ForgotPasswordPage() {
               className="text-mayday-600 hover:text-mayday-700 font-medium"
             >
               <FormattedMessage
-                id="auth.forgotPasswordPage.backToLogin"
+                id="auth.backToLogin"
                 defaultMessage="Back to log in"
               />
             </Link>
@@ -73,7 +73,7 @@ export function ForgotPasswordPage() {
     <div className="max-w-md mx-auto px-4 py-16">
       <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
         <FormattedMessage
-          id="auth.forgotPasswordPage.title"
+          id="auth.resetPasswordTitle"
           defaultMessage="Reset your password"
         />
       </h1>
@@ -95,7 +95,7 @@ export function ForgotPasswordPage() {
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               <FormattedMessage
-                id="auth.forgotPasswordPage.emailLabel"
+                id="common.fields.email"
                 defaultMessage="Email"
               />
             </label>
@@ -125,7 +125,7 @@ export function ForgotPasswordPage() {
           >
             {mutation.isPending ? (
               <FormattedMessage
-                id="auth.forgotPasswordPage.submittingButton"
+                id="common.status.sending"
                 defaultMessage="Sending…"
               />
             ) : (

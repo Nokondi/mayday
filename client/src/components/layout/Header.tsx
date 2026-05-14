@@ -69,13 +69,13 @@ export function Header() {
               <>
                 <Link to="/posts" className="text-gray-600 hover:text-gray-900">
                   <FormattedMessage
-                    id="layout.header.desktopNav.browse"
+                    id="layout.header.nav.browse"
                     defaultMessage="Browse"
                   />
                 </Link>
                 <Link to="/map" className="text-gray-600 hover:text-gray-900">
                   <FormattedMessage
-                    id="layout.header.desktopNav.map"
+                    id="layout.header.nav.map"
                     defaultMessage="Map"
                   />
                 </Link>
@@ -84,7 +84,7 @@ export function Header() {
                   className="text-gray-600 hover:text-gray-900"
                 >
                   <FormattedMessage
-                    id="layout.header.desktopNav.calendar"
+                    id="layout.header.nav.calendar"
                     defaultMessage="Calendar"
                   />
                 </Link>
@@ -102,13 +102,13 @@ export function Header() {
                   className="text-gray-600 hover:text-gray-900"
                 >
                   <FormattedMessage
-                    id="layout.header.desktopNav.communities"
+                    id="layout.header.nav.communities"
                     defaultMessage="Communities"
                   />
                 </Link>
                 <Link to="/about" className="text-gray-600 hover:text-gray-900">
                   <FormattedMessage
-                    id="layout.header.desktopNav.about"
+                    id="layout.header.nav.about"
                     defaultMessage="About"
                   />
                 </Link>
@@ -117,7 +117,7 @@ export function Header() {
                   className="text-gray-600 hover:text-gray-900"
                 >
                   <FormattedMessage
-                    id="layout.header.desktopNav.support"
+                    id="layout.header.nav.support"
                     defaultMessage="Support"
                   />
                 </Link>
@@ -131,14 +131,14 @@ export function Header() {
                     aria-hidden="true"
                   />
                   <FormattedMessage
-                    id="layout.header.desktopNav.newPost"
+                    id="layout.header.nav.newPost"
                     defaultMessage="New Post"
                   />
                 </Link>
                 <Link
                   to="/messages"
                   aria-label={intl.formatMessage({
-                    id: "layout.header.desktopNav.messagesAriaLabel",
+                    id: "layout.header.nav.messages",
                     defaultMessage: "Messages",
                   })}
                   className="text-gray-600 hover:text-gray-900"
@@ -171,7 +171,7 @@ export function Header() {
                   <Link
                     to="/admin"
                     aria-label={intl.formatMessage({
-                      id: "layout.header.desktopNav.adminAriaLabel",
+                      id: "layout.header.nav.adminPanelAria",
                       defaultMessage: "Admin panel",
                     })}
                     className="text-gray-600 hover:text-gray-900"
@@ -200,7 +200,7 @@ export function Header() {
                 <button
                   onClick={handleLogout}
                   aria-label={intl.formatMessage({
-                    id: "layout.header.desktopNav.logoutAriaLabel",
+                    id: "layout.header.nav.logout",
                     defaultMessage: "Log out",
                   })}
                   className="text-gray-600 hover:text-gray-900"
@@ -212,13 +212,13 @@ export function Header() {
               <>
                 <Link to="/about" className="text-gray-600 hover:text-gray-900">
                   <FormattedMessage
-                    id="layout.header.desktopNav.aboutLoggedOut"
+                    id="layout.header.nav.about"
                     defaultMessage="About"
                   />
                 </Link>
                 <Link to="/login" className="text-gray-600 hover:text-gray-900">
                   <FormattedMessage
-                    id="layout.header.desktopNav.login"
+                    id="common.actions.login"
                     defaultMessage="Log in"
                   />
                 </Link>
@@ -227,7 +227,7 @@ export function Header() {
                   className="bg-mayday-700 text-white font-bold px-4 py-2 rounded-lg hover:bg-mayday-800 text-nowrap"
                 >
                   <FormattedMessage
-                    id="layout.header.desktopNav.signup"
+                    id="layout.header.nav.signup"
                     defaultMessage="Sign up"
                   />
                 </Link>
@@ -268,7 +268,7 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <FormattedMessage
-                    id="layout.header.mobileNav.browse"
+                    id="layout.header.nav.browse"
                     defaultMessage="Browse"
                   />
                 </Link>
@@ -278,7 +278,7 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <FormattedMessage
-                    id="layout.header.mobileNav.map"
+                    id="layout.header.nav.map"
                     defaultMessage="Map"
                   />
                 </Link>
@@ -288,7 +288,7 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <FormattedMessage
-                    id="layout.header.mobileNav.calendar"
+                    id="layout.header.nav.calendar"
                     defaultMessage="Calendar"
                   />
                 </Link>
@@ -308,7 +308,7 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <FormattedMessage
-                    id="layout.header.mobileNav.communities"
+                    id="layout.header.nav.communities"
                     defaultMessage="Communities"
                   />
                 </Link>
@@ -318,7 +318,7 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <FormattedMessage
-                    id="layout.header.mobileNav.about"
+                    id="layout.header.nav.about"
                     defaultMessage="About"
                   />
                 </Link>
@@ -328,7 +328,7 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <FormattedMessage
-                    id="layout.header.mobileNav.support"
+                    id="layout.header.nav.support"
                     defaultMessage="Support"
                   />
                 </Link>
@@ -338,7 +338,7 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <FormattedMessage
-                    id="layout.header.mobileNav.newPost"
+                    id="layout.header.nav.newPost"
                     defaultMessage="New Post"
                   />
                 </Link>
@@ -348,7 +348,7 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <FormattedMessage
-                    id="layout.header.mobileNav.messages"
+                    id="layout.header.nav.messages"
                     defaultMessage="Messages"
                   />
                 </Link>
@@ -377,7 +377,7 @@ export function Header() {
                   <Link
                     to="/admin"
                     aria-label={intl.formatMessage({
-                      id: "layout.header.mobileNav.adminAriaLabel",
+                      id: "layout.header.nav.adminPanelAria",
                       defaultMessage: "Admin panel",
                     })}
                     className="block px-3 py-2 rounded hover:bg-gray-100"
@@ -397,7 +397,7 @@ export function Header() {
                   className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100"
                 >
                   <FormattedMessage
-                    id="layout.header.mobileNav.logout"
+                    id="layout.header.nav.logout"
                     defaultMessage="Log out"
                   />
                 </button>
@@ -410,7 +410,7 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <FormattedMessage
-                    id="layout.header.mobileNav.aboutLoggedOut"
+                    id="layout.header.nav.about"
                     defaultMessage="About"
                   />
                 </Link>
@@ -420,7 +420,7 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <FormattedMessage
-                    id="layout.header.mobileNav.login"
+                    id="common.actions.login"
                     defaultMessage="Log in"
                   />
                 </Link>
@@ -430,7 +430,7 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <FormattedMessage
-                    id="layout.header.mobileNav.signup"
+                    id="layout.header.nav.signup"
                     defaultMessage="Sign up"
                   />
                 </Link>
