@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useIntl, type IntlShape } from 'react-intl';
 import { updateUserSettings } from '../../api/users.js';
 import {
   getPushPublicKey,
@@ -22,6 +23,20 @@ type BrowserState =
   | { kind: 'unsupported' }
   | { kind: 'permission'; permission: NotificationPermission };
 
+type PushErrorCode =
+  | 'PERMISSION_DENIED'
+  | 'PERMISSION_NOT_GRANTED'
+  | 'BLOCKED'
+  | 'NO_CONFIG';
+
+// Throw codes from the push flow so the component can render translated
+// messages without `enablePush` itself needing intl access.
+class PushError extends Error {
+  constructor(public code: PushErrorCode) {
+    super(code);
+  }
+}
+
 function readBrowserState(): BrowserState {
   if (!isPushSupported()) return { kind: 'unsupported' };
   return { kind: 'permission', permission: Notification.permission };
@@ -33,21 +48,19 @@ async function enablePush(): Promise<void> {
   if (Notification.permission === 'default') {
     const result = await Notification.requestPermission();
     if (result !== 'granted') {
-      throw new Error(
-        result === 'denied'
-          ? 'You denied notification permission. Re-enable it in your browser site settings.'
-          : 'Notification permission was not granted.',
+      throw new PushError(
+        result === 'denied' ? 'PERMISSION_DENIED' : 'PERMISSION_NOT_GRANTED',
       );
     }
   }
   if (Notification.permission !== 'granted') {
-    throw new Error('Notifications are blocked in your browser.');
+    throw new PushError('BLOCKED');
   }
 
   const reg = await registerServiceWorker();
   const publicKey = await getPushPublicKey();
   if (!publicKey) {
-    throw new Error('Push notifications are not configured on the server.');
+    throw new PushError('NO_CONFIG');
   }
 
   const existing = await getCurrentSubscription(reg);
@@ -67,9 +80,32 @@ async function disablePush(): Promise<void> {
   await sub.unsubscribe();
 }
 
+function translatePushError(intl: IntlShape, code: PushErrorCode): string {
+  switch (code) {
+    case 'PERMISSION_DENIED':
+      return intl.formatMessage({
+        defaultMessage:
+          'You denied notification permission. Re-enable it in your browser site settings.',
+      });
+    case 'PERMISSION_NOT_GRANTED':
+      return intl.formatMessage({
+        defaultMessage: 'Notification permission was not granted.',
+      });
+    case 'BLOCKED':
+      return intl.formatMessage({
+        defaultMessage: 'Notifications are blocked in your browser.',
+      });
+    case 'NO_CONFIG':
+      return intl.formatMessage({
+        defaultMessage: 'Push notifications are not configured on the server.',
+      });
+  }
+}
+
 export function PushNotificationsToggle({
   initialEnabled,
 }: PushNotificationsToggleProps) {
+  const intl = useIntl();
   const [enabled, setEnabled] = useState(initialEnabled);
   const [browser, setBrowser] = useState<BrowserState>(() => readBrowserState());
 
@@ -100,10 +136,15 @@ export function PushNotificationsToggle({
     },
     successMessage: (data) =>
       data.pushNotificationsEnabled
-        ? 'Push notifications enabled'
-        : 'Push notifications disabled',
-    errorMessage: (err) =>
-      err instanceof Error ? err.message : 'Failed to update push notifications',
+        ? intl.formatMessage({ defaultMessage: 'Push notifications enabled' })
+        : intl.formatMessage({ defaultMessage: 'Push notifications disabled' }),
+    errorMessage: (err) => {
+      if (err instanceof PushError) return translatePushError(intl, err.code);
+      if (err instanceof Error) return err.message;
+      return intl.formatMessage({
+        defaultMessage: 'Failed to update push notifications',
+      });
+    },
     onSuccess: (data) => {
       setEnabled(data.pushNotificationsEnabled);
     },
@@ -122,20 +163,26 @@ export function PushNotificationsToggle({
 
   let helper: string;
   if (unsupported) {
-    helper = "Your browser doesn't support push notifications.";
+    helper = intl.formatMessage({
+      defaultMessage: "Your browser doesn't support push notifications.",
+    });
   } else if (denied) {
-    helper =
-      'Notifications are blocked in your browser. Re-enable them in your browser site settings to use this.';
+    helper = intl.formatMessage({
+      defaultMessage:
+        'Notifications are blocked in your browser. Re-enable them in your browser site settings to use this.',
+    });
   } else {
-    helper =
-      "Get notified about activity even when Mayday isn't open in a tab.";
+    helper = intl.formatMessage({
+      defaultMessage:
+        "Get notified about activity even when Mayday isn't open in a tab.",
+    });
   }
+
+  const heading = intl.formatMessage({ defaultMessage: 'Push notifications' });
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-gray-700 mb-2">
-        Push notifications
-      </h3>
+      <h3 className="text-sm font-semibold text-gray-700 mb-2">{heading}</h3>
       <label className="flex items-start gap-3 cursor-pointer">
         <input
           type="checkbox"
@@ -149,9 +196,7 @@ export function PushNotificationsToggle({
           className="mt-1 w-4 h-4 text-mayday-600 border-gray-300 rounded focus:ring-mayday-500 disabled:opacity-50"
         />
         <div className="flex-1">
-          <div className="text-sm font-medium text-gray-900">
-            Push notifications
-          </div>
+          <div className="text-sm font-medium text-gray-900">{heading}</div>
           <div className="text-xs text-gray-500 mt-0.5">{helper}</div>
         </div>
         {mutation.isPending && (

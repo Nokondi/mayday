@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { MapPin, Users } from "lucide-react";
+import { FormattedMessage } from "react-intl";
 
 interface EntityCardProps {
   to: string;
@@ -45,7 +46,10 @@ export function EntityCard({
       <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
         <span className="flex items-center gap-1">
           <Users className="w-3 h-3" />
-          {memberCount} member{memberCount !== 1 ? "s" : ""}
+          <FormattedMessage
+            defaultMessage="{count, plural, one {# member} other {# members}}"
+            values={{ count: memberCount }}
+          />
         </span>
         {location && (
           <span className="flex items-center gap-1">
@@ -55,7 +59,10 @@ export function EntityCard({
         )}
         {myRole && (
           <span className="text-mayday-600 font-medium">
-            You: {myRole.toLowerCase()}
+            <FormattedMessage
+              defaultMessage="You: {role}"
+              values={{ role: myRole.toLowerCase() }}
+            />
           </span>
         )}
       </div>

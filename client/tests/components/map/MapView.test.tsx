@@ -1,5 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { IntlProvider } from 'react-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PostWithAuthor } from '@mayday/shared';
 
@@ -109,9 +110,11 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
 
 function renderMap(props: Partial<Parameters<typeof MapView>[0]> = {}) {
   return render(
-    <MemoryRouter>
-      <MapView posts={[]} {...props} />
-    </MemoryRouter>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <MemoryRouter>
+        <MapView posts={[]} {...props} />
+      </MemoryRouter>
+    </IntlProvider>,
   );
 }
 
@@ -140,9 +143,11 @@ describe('MapView — container', () => {
     expect(screen.getByTestId('map-container').className).toContain('w-full');
 
     rerender(
-      <MemoryRouter>
-        <MapView posts={[]} className="h-[200px]" />
-      </MemoryRouter>,
+      <IntlProvider locale="en" defaultLocale="en">
+        <MemoryRouter>
+          <MapView posts={[]} className="h-[200px]" />
+        </MemoryRouter>
+      </IntlProvider>,
     );
     expect(screen.getByTestId('map-container').className).toContain('h-[200px]');
   });

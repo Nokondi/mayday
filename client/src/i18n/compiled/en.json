@@ -21,10 +21,40 @@
       "value": "login"
     }
   ],
+  "/1jdmY": [
+    {
+      "type": 0,
+      "value": "Label (e.g. Website)"
+    }
+  ],
+  "/jjIsU": [
+    {
+      "type": 0,
+      "value": "Push notifications disabled"
+    }
+  ],
+  "/pEU11": [
+    {
+      "type": 0,
+      "value": "Push notifications are not configured on the server."
+    }
+  ],
+  "0BUTMv": [
+    {
+      "type": 0,
+      "value": "Search..."
+    }
+  ],
   "1dJEn5": [
     {
       "type": 0,
       "value": "Log in to MayDay"
+    }
+  ],
+  "1e9zwh": [
+    {
+      "type": 0,
+      "value": "Link URL"
     }
   ],
   "1naKqh": [
@@ -39,6 +69,48 @@
       "value": "Click the button below to finish confirming your email address."
     }
   ],
+  "2pzTGC": [
+    {
+      "type": 0,
+      "value": "Critical"
+    }
+  ],
+  "3kNr3U": [
+    {
+      "type": 0,
+      "value": "Page "
+    },
+    {
+      "type": 1,
+      "value": "page"
+    },
+    {
+      "type": 0,
+      "value": " of "
+    },
+    {
+      "type": 1,
+      "value": "totalPages"
+    }
+  ],
+  "477I0g": [
+    {
+      "type": 0,
+      "value": "Low"
+    }
+  ],
+  "480yur": [
+    {
+      "type": 0,
+      "value": "Only JPEG, PNG, GIF, and WebP images are allowed"
+    }
+  ],
+  "4W18KR": [
+    {
+      "type": 0,
+      "value": "Uploading avatar"
+    }
+  ],
   "5sg7KC": [
     {
       "type": 0,
@@ -49,6 +121,12 @@
     {
       "type": 0,
       "value": "Verification failed."
+    }
+  ],
+  "6V+aAL": [
+    {
+      "type": 0,
+      "value": "Avatar updated"
     }
   ],
   "7Chrsf": [
@@ -75,16 +153,50 @@
       "value": "Confirm password"
     }
   ],
+  "9cQJVx": [
+    {
+      "type": 0,
+      "value": "+ Add another"
+    }
+  ],
   "9pk2C0": [
     {
       "type": 0,
       "value": "Please confirm your new password"
     }
   ],
+  "9w3h0G": [
+    {
+      "type": 0,
+      "value": "Email to invite "
+    },
+    {
+      "type": 1,
+      "value": "n"
+    }
+  ],
   "AWVk03": [
     {
       "type": 0,
       "value": "Logging in..."
+    }
+  ],
+  "Awq32I": [
+    {
+      "type": 0,
+      "value": "Push notifications"
+    }
+  ],
+  "AxMhQr": [
+    {
+      "type": 0,
+      "value": "High"
+    }
+  ],
+  "Di8KAY": [
+    {
+      "type": 0,
+      "value": "Your browser doesn't support push notifications."
     }
   ],
   "DkQ5Q8": [
@@ -99,6 +211,18 @@
       "value": "Registration failed"
     }
   ],
+  "GS3ZZc": [
+    {
+      "type": 0,
+      "value": "Send invites"
+    }
+  ],
+  "H240nZ": [
+    {
+      "type": 0,
+      "value": "Failed to upload avatar"
+    }
+  ],
   "HA3hsX": [
     {
       "type": 0,
@@ -109,6 +233,30 @@
     {
       "type": 0,
       "value": "Name"
+    }
+  ],
+  "IqTrt3": [
+    {
+      "type": 0,
+      "value": "They'll get an email invite. People without a Mayday account will be invited to sign up."
+    }
+  ],
+  "JHTwdB": [
+    {
+      "type": 0,
+      "value": "Show password"
+    }
+  ],
+  "JTqKVr": [
+    {
+      "type": 0,
+      "value": "Push notifications enabled"
+    }
+  ],
+  "JnxkKM": [
+    {
+      "type": 0,
+      "value": "Add link"
     }
   ],
   "K3ca7K": [
@@ -131,6 +279,12 @@
       "value": ". Click it to activate your account, then come back and log in."
     }
   ],
+  "K3fWTv": [
+    {
+      "type": 0,
+      "value": "Hide password"
+    }
+  ],
   "KcQzsj": [
     {
       "type": 0,
@@ -147,6 +301,18 @@
     {
       "type": 0,
       "value": "Password updated"
+    }
+  ],
+  "LRpTmj": [
+    {
+      "type": 0,
+      "value": "Remove email"
+    }
+  ],
+  "MPRyvQ": [
+    {
+      "type": 0,
+      "value": "Notifications are blocked in your browser. Re-enable them in your browser site settings to use this."
     }
   ],
   "Oag5Hv": [
@@ -179,6 +345,18 @@
       "value": "email"
     }
   ],
+  "OgYEC8": [
+    {
+      "type": 0,
+      "value": "Notification permission was not granted."
+    }
+  ],
+  "P++QQ6": [
+    {
+      "type": 0,
+      "value": "Failed to update push notifications"
+    }
+  ],
   "PwhG9W": [
     {
       "type": 0,
@@ -205,6 +383,12 @@
       "value": "."
     }
   ],
+  "WSuF/G": [
+    {
+      "type": 0,
+      "value": "Notifications are blocked in your browser."
+    }
+  ],
   "WUV28A": [
     {
       "type": 0,
@@ -215,6 +399,12 @@
     {
       "type": 0,
       "value": "Back to log in"
+    }
+  ],
+  "WzZ2qT": [
+    {
+      "type": 0,
+      "value": "You denied notification permission. Re-enable it in your browser site settings."
     }
   ],
   "XhI0nH": [
@@ -233,16 +423,34 @@
       "value": "login"
     }
   ],
+  "ZATT08": [
+    {
+      "type": 0,
+      "value": "Pagination"
+    }
+  ],
   "cyRU1N": [
     {
       "type": 0,
       "value": "Forgot your password?"
     }
   ],
+  "d1OgED": [
+    {
+      "type": 0,
+      "value": "(optional)"
+    }
+  ],
   "de3Nha": [
     {
       "type": 0,
       "value": "Join MayDay"
+    }
+  ],
+  "eOyDaW": [
+    {
+      "type": 0,
+      "value": "friend@example.com"
     }
   ],
   "fTHhSB": [
@@ -279,10 +487,42 @@
       "value": "signup"
     }
   ],
+  "g+VKko": [
+    {
+      "type": 0,
+      "value": "Link label"
+    }
+  ],
+  "g57Ca6": [
+    {
+      "type": 0,
+      "value": "Invite people "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "(optional)"
+        }
+      ],
+      "type": 8,
+      "value": "opt"
+    }
+  ],
   "gjBiyj": [
     {
       "type": 0,
       "value": "Loading..."
+    }
+  ],
+  "grtKDa": [
+    {
+      "type": 0,
+      "value": "You: "
+    },
+    {
+      "type": 1,
+      "value": "role"
     }
   ],
   "h/HeZb": [
@@ -321,10 +561,22 @@
       "value": "Confirm my email"
     }
   ],
+  "k9hDFZ": [
+    {
+      "type": 0,
+      "value": "Previous page"
+    }
+  ],
   "kjhGGf": [
     {
       "type": 0,
       "value": "Check your inbox"
+    }
+  ],
+  "lHnpuC": [
+    {
+      "type": 0,
+      "value": "Image must be 5MB or smaller"
     }
   ],
   "m0A0Fv": [
@@ -367,6 +619,12 @@
       "value": "."
     }
   ],
+  "mqa6CF": [
+    {
+      "type": 0,
+      "value": "Upload avatar"
+    }
+  ],
   "n0drHu": [
     {
       "type": 0,
@@ -387,6 +645,12 @@
       "value": " matches a Mayday account, we've sent a password reset link. Click it to choose a new password."
     }
   ],
+  "nNg1GL": [
+    {
+      "type": 0,
+      "value": "Get notified about activity even when Mayday isn't open in a tab."
+    }
+  ],
   "nuWwea": [
     {
       "type": 0,
@@ -399,10 +663,54 @@
       "value": "Log in"
     }
   ],
+  "otTBkE": [
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " member"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " members"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    }
+  ],
+  "ovJ26C": [
+    {
+      "type": 0,
+      "value": "Medium"
+    }
+  ],
   "p+kmJg": [
     {
       "type": 0,
       "value": "Reset your password"
+    }
+  ],
+  "pBs0r+": [
+    {
+      "type": 0,
+      "value": "Dismiss announcement"
     }
   ],
   "pSa43x": [
@@ -411,10 +719,32 @@
       "value": "The link expires in 1 hour. Don't see it? Check your spam folder, or try again in a few minutes."
     }
   ],
+  "rBj9Ib": [
+    {
+      "type": 0,
+      "value": "Next page"
+    }
+  ],
   "sy+pv5": [
     {
       "type": 0,
       "value": "Email"
+    }
+  ],
+  "tCLLfr": [
+    {
+      "type": 0,
+      "value": "Links "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "(optional)"
+        }
+      ],
+      "type": 8,
+      "value": "opt"
     }
   ],
   "v7Bl2J": [
@@ -439,6 +769,16 @@
     {
       "type": 0,
       "value": "Resend confirmation email"
+    }
+  ],
+  "xv/1HJ": [
+    {
+      "type": 0,
+      "value": "Remove link "
+    },
+    {
+      "type": 1,
+      "value": "n"
     }
   ]
 }

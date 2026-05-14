@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { UrgencyBadge } from '../../../src/components/common/UrgencyBadge.js';
+import { renderWithIntl as render } from '../../helpers/renderWithIntl.js';
 
 describe('UrgencyBadge', () => {
   it('renders the human-readable label for a known urgency', () => {

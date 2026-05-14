@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Camera, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useIntl } from 'react-intl';
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -22,30 +23,44 @@ export function AvatarUploader({
   size = 80,
   disabled = false,
 }: AvatarUploaderProps) {
+  const intl = useIntl();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
   const handleFile = async (file: File) => {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error('Only JPEG, PNG, GIF, and WebP images are allowed');
+      toast.error(
+        intl.formatMessage({
+          defaultMessage: 'Only JPEG, PNG, GIF, and WebP images are allowed',
+        }),
+      );
       return;
     }
     if (file.size > MAX_SIZE) {
-      toast.error('Image must be 5MB or smaller');
+      toast.error(
+        intl.formatMessage({ defaultMessage: 'Image must be 5MB or smaller' }),
+      );
       return;
     }
     setUploading(true);
     try {
       await onUpload(file);
-      toast.success('Avatar updated');
+      toast.success(intl.formatMessage({ defaultMessage: 'Avatar updated' }));
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to upload avatar');
+      toast.error(
+        err?.response?.data?.message ||
+          intl.formatMessage({ defaultMessage: 'Failed to upload avatar' }),
+      );
     } finally {
       setUploading(false);
     }
   };
 
   const radius = shape === 'circle' ? 'rounded-full' : 'rounded-lg';
+
+  const buttonLabel = uploading
+    ? intl.formatMessage({ defaultMessage: 'Uploading avatar' })
+    : intl.formatMessage({ defaultMessage: 'Upload avatar' });
 
   return (
     <>
@@ -64,7 +79,7 @@ export function AvatarUploader({
         type="button"
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled || uploading}
-        aria-label={uploading ? 'Uploading avatar' : 'Upload avatar'}
+        aria-label={buttonLabel}
         className={`${radius} bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0 relative group cursor-pointer disabled:cursor-not-allowed`}
         style={{ width: size, height: size }}
       >

@@ -1,5 +1,6 @@
 import { useState, type InputHTMLAttributes } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useIntl } from "react-intl";
 
 type PasswordFieldProps = {
   id: string;
@@ -13,8 +14,13 @@ export function PasswordField({
   error,
   ...rest
 }: PasswordFieldProps) {
+  const intl = useIntl();
   const [showPassword, setShowPassword] = useState(false);
   const errorId = error ? `${id}-error` : undefined;
+
+  const toggleLabel = showPassword
+    ? intl.formatMessage({ defaultMessage: "Hide password" })
+    : intl.formatMessage({ defaultMessage: "Show password" });
 
   return (
     <div>
@@ -36,7 +42,7 @@ export function PasswordField({
         <button
           type="button"
           onClick={() => setShowPassword((v) => !v)}
-          aria-label={showPassword ? "Hide password" : "Show password"}
+          aria-label={toggleLabel}
           aria-pressed={showPassword}
           className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-mayday-500 rounded-r-lg"
         >

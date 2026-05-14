@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { IntlProvider } from 'react-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('sonner', () => ({
@@ -47,14 +48,16 @@ function renderPage() {
     defaultOptions: { queries: { retry: false } },
   });
   return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/organizations/new']}>
-        <Routes>
-          <Route path="/organizations/new" element={<CreateOrganizationPage />} />
-          <Route path="/organizations/:id" element={<div>ORG DETAIL</div>} />
-        </Routes>
-      </MemoryRouter>
-    </QueryClientProvider>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/organizations/new']}>
+          <Routes>
+            <Route path="/organizations/new" element={<CreateOrganizationPage />} />
+            <Route path="/organizations/:id" element={<div>ORG DETAIL</div>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    </IntlProvider>,
   );
 }
 

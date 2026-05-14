@@ -5,8 +5,23 @@
   "+R29Eo": {
     "defaultMessage": "Remembered it? <login>Back to log in</login>"
   },
+  "/1jdmY": {
+    "defaultMessage": "Label (e.g. Website)"
+  },
+  "/jjIsU": {
+    "defaultMessage": "Push notifications disabled"
+  },
+  "/pEU11": {
+    "defaultMessage": "Push notifications are not configured on the server."
+  },
+  "0BUTMv": {
+    "defaultMessage": "Search..."
+  },
   "1dJEn5": {
     "defaultMessage": "Log in to MayDay"
+  },
+  "1e9zwh": {
+    "defaultMessage": "Link URL"
   },
   "1naKqh": {
     "defaultMessage": "Failed to resend. Try again shortly."
@@ -14,11 +29,29 @@
   "2J76q8": {
     "defaultMessage": "Click the button below to finish confirming your email address."
   },
+  "2pzTGC": {
+    "defaultMessage": "Critical"
+  },
+  "3kNr3U": {
+    "defaultMessage": "Page {page} of {totalPages}"
+  },
+  "477I0g": {
+    "defaultMessage": "Low"
+  },
+  "480yur": {
+    "defaultMessage": "Only JPEG, PNG, GIF, and WebP images are allowed"
+  },
+  "4W18KR": {
+    "defaultMessage": "Uploading avatar"
+  },
   "5sg7KC": {
     "defaultMessage": "Password"
   },
   "62vhQG": {
     "defaultMessage": "Verification failed."
+  },
+  "6V+aAL": {
+    "defaultMessage": "Avatar updated"
   },
   "7Chrsf": {
     "defaultMessage": "Passwords do not match"
@@ -32,11 +65,26 @@
   "8HimVK": {
     "defaultMessage": "Confirm password"
   },
+  "9cQJVx": {
+    "defaultMessage": "+ Add another"
+  },
   "9pk2C0": {
     "defaultMessage": "Please confirm your new password"
   },
+  "9w3h0G": {
+    "defaultMessage": "Email to invite {n}"
+  },
   "AWVk03": {
     "defaultMessage": "Logging in..."
+  },
+  "Awq32I": {
+    "defaultMessage": "Push notifications"
+  },
+  "AxMhQr": {
+    "defaultMessage": "High"
+  },
+  "Di8KAY": {
+    "defaultMessage": "Your browser doesn't support push notifications."
   },
   "DkQ5Q8": {
     "defaultMessage": "Send reset link"
@@ -44,14 +92,35 @@
   "G7yB8N": {
     "defaultMessage": "Registration failed"
   },
+  "GS3ZZc": {
+    "defaultMessage": "Send invites"
+  },
+  "H240nZ": {
+    "defaultMessage": "Failed to upload avatar"
+  },
   "HA3hsX": {
     "defaultMessage": "Your password has been reset."
   },
   "HAlOn1": {
     "defaultMessage": "Name"
   },
+  "IqTrt3": {
+    "defaultMessage": "They'll get an email invite. People without a Mayday account will be invited to sign up."
+  },
+  "JHTwdB": {
+    "defaultMessage": "Show password"
+  },
+  "JTqKVr": {
+    "defaultMessage": "Push notifications enabled"
+  },
+  "JnxkKM": {
+    "defaultMessage": "Add link"
+  },
   "K3ca7K": {
     "defaultMessage": "We've sent a confirmation link to <em>{email}</em>. Click it to activate your account, then come back and log in."
+  },
+  "K3fWTv": {
+    "defaultMessage": "Hide password"
   },
   "KcQzsj": {
     "defaultMessage": "Verifying your email…"
@@ -62,11 +131,23 @@
   "Kz7I2o": {
     "defaultMessage": "Password updated"
   },
+  "LRpTmj": {
+    "defaultMessage": "Remove email"
+  },
+  "MPRyvQ": {
+    "defaultMessage": "Notifications are blocked in your browser. Re-enable them in your browser site settings to use this."
+  },
   "Oag5Hv": {
     "defaultMessage": "Sent a new confirmation link to <em>{email}</em>."
   },
   "ObRe4K": {
     "defaultMessage": "Resend confirmation email to {email}"
+  },
+  "OgYEC8": {
+    "defaultMessage": "Notification permission was not granted."
+  },
+  "P++QQ6": {
+    "defaultMessage": "Failed to update push notifications"
   },
   "PwhG9W": {
     "defaultMessage": "you@example.com"
@@ -74,20 +155,35 @@
   "U6uo+0": {
     "defaultMessage": "Please use the link in your password reset email, or <request>request a new one</request>."
   },
+  "WSuF/G": {
+    "defaultMessage": "Notifications are blocked in your browser."
+  },
   "WUV28A": {
     "defaultMessage": "Saving…"
   },
   "WghPED": {
     "defaultMessage": "Back to log in"
   },
+  "WzZ2qT": {
+    "defaultMessage": "You denied notification permission. Re-enable it in your browser site settings."
+  },
   "XhI0nH": {
     "defaultMessage": "Already have an account? <login>Log in</login>"
+  },
+  "ZATT08": {
+    "defaultMessage": "Pagination"
   },
   "cyRU1N": {
     "defaultMessage": "Forgot your password?"
   },
+  "d1OgED": {
+    "defaultMessage": "(optional)"
+  },
   "de3Nha": {
     "defaultMessage": "Join MayDay"
+  },
+  "eOyDaW": {
+    "defaultMessage": "friend@example.com"
   },
   "fTHhSB": {
     "defaultMessage": "New password"
@@ -101,8 +197,17 @@
   "fuUMz0": {
     "defaultMessage": "Don't have an account? <signup>Sign up</signup>"
   },
+  "g+VKko": {
+    "defaultMessage": "Link label"
+  },
+  "g57Ca6": {
+    "defaultMessage": "Invite people <opt>(optional)</opt>"
+  },
   "gjBiyj": {
     "defaultMessage": "Loading..."
+  },
+  "grtKDa": {
+    "defaultMessage": "You: {role}"
   },
   "h/HeZb": {
     "defaultMessage": "Choose a new password"
@@ -122,8 +227,14 @@
   "jHolJz": {
     "defaultMessage": "Confirm my email"
   },
+  "k9hDFZ": {
+    "defaultMessage": "Previous page"
+  },
   "kjhGGf": {
     "defaultMessage": "Check your inbox"
+  },
+  "lHnpuC": {
+    "defaultMessage": "Image must be 5MB or smaller"
   },
   "m0A0Fv": {
     "defaultMessage": "Missing reset token."
@@ -131,8 +242,14 @@
   "mDDHqc": {
     "defaultMessage": "Need a new link? <login>Go to log in</login> and use <action>Resend confirmation email</action>."
   },
+  "mqa6CF": {
+    "defaultMessage": "Upload avatar"
+  },
   "n0drHu": {
     "defaultMessage": "If <em>{email}</em> matches a Mayday account, we've sent a password reset link. Click it to choose a new password."
+  },
+  "nNg1GL": {
+    "defaultMessage": "Get notified about activity even when Mayday isn't open in a tab."
   },
   "nuWwea": {
     "defaultMessage": "Login failed"
@@ -140,14 +257,29 @@
   "odXlk8": {
     "defaultMessage": "Log in"
   },
+  "otTBkE": {
+    "defaultMessage": "{count, plural, one {# member} other {# members}}"
+  },
+  "ovJ26C": {
+    "defaultMessage": "Medium"
+  },
   "p+kmJg": {
     "defaultMessage": "Reset your password"
+  },
+  "pBs0r+": {
+    "defaultMessage": "Dismiss announcement"
   },
   "pSa43x": {
     "defaultMessage": "The link expires in 1 hour. Don't see it? Check your spam folder, or try again in a few minutes."
   },
+  "rBj9Ib": {
+    "defaultMessage": "Next page"
+  },
   "sy+pv5": {
     "defaultMessage": "Email"
+  },
+  "tCLLfr": {
+    "defaultMessage": "Links <opt>(optional)</opt>"
   },
   "v7Bl2J": {
     "defaultMessage": "Creating account..."
@@ -160,5 +292,8 @@
   },
   "vc5ZPy": {
     "defaultMessage": "Resend confirmation email"
+  },
+  "xv/1HJ": {
+    "defaultMessage": "Remove link {n}"
   }
 }

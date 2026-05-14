@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { IntlProvider } from 'react-intl';
 import type { PostWithAuthor } from '@mayday/shared';
 import { PostList } from '../../../src/components/posts/PostList.js';
 
@@ -44,9 +45,11 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
 
 function renderList(posts: PostWithAuthor[]) {
   return render(
-    <MemoryRouter>
-      <PostList posts={posts} />
-    </MemoryRouter>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <MemoryRouter>
+        <PostList posts={posts} />
+      </MemoryRouter>
+    </IntlProvider>,
   );
 }
 

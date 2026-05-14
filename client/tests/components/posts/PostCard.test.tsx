@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
+import { IntlProvider } from "react-intl";
 import type { PostWithAuthor } from "@mayday/shared";
 import { PostCard } from "../../../src/components/posts/PostCard.js";
 
@@ -45,9 +46,11 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
 
 function renderCard(post: PostWithAuthor) {
   return render(
-    <MemoryRouter>
-      <PostCard post={post} />
-    </MemoryRouter>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <MemoryRouter>
+        <PostCard post={post} />
+      </MemoryRouter>
+    </IntlProvider>,
   );
 }
 

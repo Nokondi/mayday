@@ -1,4 +1,5 @@
 import { Plus, Trash2 } from "lucide-react";
+import { FormattedMessage, useIntl } from "react-intl";
 import type { ProfileLink } from "@mayday/shared";
 
 type LinksEditorProps = {
@@ -27,6 +28,8 @@ export function cleanLinks(rows: ProfileLink[]): ProfileLink[] | undefined {
 }
 
 export function LinksEditor({ value, onChange, idPrefix = "link" }: LinksEditorProps) {
+  const intl = useIntl();
+
   const update = (index: number, patch: Partial<ProfileLink>) => {
     onChange(value.map((row, i) => (i === index ? { ...row, ...patch } : row)));
   };
@@ -42,7 +45,14 @@ export function LinksEditor({ value, onChange, idPrefix = "link" }: LinksEditorP
   return (
     <fieldset>
       <legend className="block text-sm font-medium text-gray-700 mb-2">
-        Links <span className="text-gray-500 font-normal">(optional)</span>
+        <FormattedMessage
+          defaultMessage="Links <opt>(optional)</opt>"
+          values={{
+            opt: (chunks) => (
+              <span className="text-gray-500 font-normal">{chunks}</span>
+            ),
+          }}
+        />
       </legend>
       {value.length > 0 && (
         <ul className="space-y-2 mb-2">
@@ -51,9 +61,11 @@ export function LinksEditor({ value, onChange, idPrefix = "link" }: LinksEditorP
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <input
                   id={`${idPrefix}-${i}-label`}
-                  aria-label="Link label"
+                  aria-label={intl.formatMessage({ defaultMessage: "Link label" })}
                   type="text"
-                  placeholder="Label (e.g. Website)"
+                  placeholder={intl.formatMessage({
+                    defaultMessage: "Label (e.g. Website)",
+                  })}
                   value={row.label ?? ""}
                   onChange={(e) => update(i, { label: e.target.value })}
                   maxLength={50}
@@ -61,7 +73,7 @@ export function LinksEditor({ value, onChange, idPrefix = "link" }: LinksEditorP
                 />
                 <input
                   id={`${idPrefix}-${i}-url`}
-                  aria-label="Link URL"
+                  aria-label={intl.formatMessage({ defaultMessage: "Link URL" })}
                   type="url"
                   inputMode="url"
                   placeholder="https://example.org"
@@ -74,7 +86,10 @@ export function LinksEditor({ value, onChange, idPrefix = "link" }: LinksEditorP
               <button
                 type="button"
                 onClick={() => remove(i)}
-                aria-label={`Remove link ${i + 1}`}
+                aria-label={intl.formatMessage(
+                  { defaultMessage: "Remove link {n}" },
+                  { n: i + 1 },
+                )}
                 className="mt-2 text-gray-500 hover:text-red-600"
               >
                 <Trash2 className="w-4 h-4" aria-hidden="true" />
@@ -89,7 +104,7 @@ export function LinksEditor({ value, onChange, idPrefix = "link" }: LinksEditorP
         className="flex items-center gap-1 text-sm text-mayday-700 hover:text-mayday-800"
       >
         <Plus className="w-4 h-4" aria-hidden="true" />
-        Add link
+        <FormattedMessage defaultMessage="Add link" />
       </button>
     </fieldset>
   );

@@ -1,11 +1,12 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 
 import { EntityCard } from '../../../src/components/common/EntityCard.js';
+import { renderWithIntl } from '../../helpers/renderWithIntl.js';
 
 function renderCard(overrides: Partial<Parameters<typeof EntityCard>[0]> = {}) {
-  return render(
+  return renderWithIntl(
     <MemoryRouter>
       <EntityCard
         to="/organizations/o1"

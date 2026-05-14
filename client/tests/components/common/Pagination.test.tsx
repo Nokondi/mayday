@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Pagination } from '../../../src/components/common/Pagination.js';
+import { renderWithIntl as render } from '../../helpers/renderWithIntl.js';
 
 describe('Pagination', () => {
   it('renders nothing when there is only one page', () => {
