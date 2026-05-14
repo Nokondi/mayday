@@ -35,14 +35,20 @@ export function LoginForm({ onSubmit, isSubmitting, error }: LoginFormProps) {
       <FormField
         id="login-email"
         type="email"
-        label={intl.formatMessage({ defaultMessage: "Email" })}
+        label={intl.formatMessage({
+          id: "auth.loginForm.emailLabel",
+          defaultMessage: "Email",
+        })}
         error={errors.email?.message}
         {...register("email")}
       />
 
       <PasswordField
         id="login-password"
-        label={intl.formatMessage({ defaultMessage: "Password" })}
+        label={intl.formatMessage({
+          id: "auth.loginForm.passwordLabel",
+          defaultMessage: "Password",
+        })}
         error={errors.password?.message}
         {...register("password")}
       />
@@ -53,9 +59,15 @@ export function LoginForm({ onSubmit, isSubmitting, error }: LoginFormProps) {
         className="w-full bg-mayday-700 text-white text-md py-3 rounded-lg font-bold hover:bg-mayday-800 disabled:opacity-50"
       >
         {isSubmitting ? (
-          <FormattedMessage defaultMessage="Logging in..." />
+          <FormattedMessage
+            id="auth.loginForm.submittingButton"
+            defaultMessage="Logging in..."
+          />
         ) : (
-          <FormattedMessage defaultMessage="Log in" />
+          <FormattedMessage
+            id="auth.loginForm.submitButton"
+            defaultMessage="Log in"
+          />
         )}
       </button>
     </form>

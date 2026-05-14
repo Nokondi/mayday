@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Megaphone, X } from "lucide-react";
+import { useIntl } from "react-intl";
 import { getActiveAnnouncement } from "../../api/announcements.js";
 
 const DISMISSED_STORAGE_KEY = "mayday:dismissed-announcement-id";
 
 export function AnnouncementBanner() {
+  const intl = useIntl();
   const { data: announcement } = useQuery({
     queryKey: ["announcement", "active"],
     queryFn: getActiveAnnouncement,
@@ -46,7 +48,10 @@ export function AnnouncementBanner() {
         </p>
         <button
           onClick={handleDismiss}
-          aria-label="Dismiss announcement"
+          aria-label={intl.formatMessage({
+            id: "common.announcementBanner.dismissAriaLabel",
+            defaultMessage: "Dismiss announcement",
+          })}
           className="flex-shrink-0 p-0.5 rounded hover:bg-white/20"
         >
           <X className="w-4 h-4" aria-hidden="true" />

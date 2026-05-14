@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react';
+import { useIntl } from 'react-intl';
 
 interface SearchBarProps {
   value: string;
@@ -6,7 +7,15 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-export function SearchBar({ value, onChange, placeholder = 'Search...' }: SearchBarProps) {
+export function SearchBar({ value, onChange, placeholder }: SearchBarProps) {
+  const intl = useIntl();
+  const resolvedPlaceholder =
+    placeholder ??
+    intl.formatMessage({
+      id: 'common.searchBar.defaultPlaceholder',
+      defaultMessage: 'Search...',
+    });
+
   return (
     <div role="search" className="relative">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" aria-hidden="true" />
@@ -14,8 +23,8 @@ export function SearchBar({ value, onChange, placeholder = 'Search...' }: Search
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        aria-label={placeholder}
+        placeholder={resolvedPlaceholder}
+        aria-label={resolvedPlaceholder}
         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
       />
     </div>

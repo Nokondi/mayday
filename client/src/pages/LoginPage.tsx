@@ -27,7 +27,10 @@ export function LoginPage() {
       const status = err.response?.status;
       const message =
         err.response?.data?.error ||
-        intl.formatMessage({ defaultMessage: "Login failed" });
+        intl.formatMessage({
+          id: "auth.loginPage.loginFailedFallback",
+          defaultMessage: "Login failed",
+        });
       setError(message);
       if (status === 403 && /confirm your email/i.test(message)) {
         setUnverifiedEmail(vars.email);
@@ -47,7 +50,10 @@ export function LoginPage() {
       <div role="status" aria-live="polite" className="flex items-center justify-center min-h-[50vh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-mayday-500" />
         <span className="sr-only">
-          <FormattedMessage defaultMessage="Loading..." />
+          <FormattedMessage
+            id="common.loadingSpinner.srLabel"
+            defaultMessage="Loading..."
+          />
         </span>
       </div>
     );
@@ -71,7 +77,7 @@ export function LoginPage() {
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
-        <FormattedMessage defaultMessage="Log in to MayDay" />
+        <FormattedMessage id="auth.loginPage.title" defaultMessage="Log in to MayDay" />
       </h1>
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <LoginForm
@@ -84,6 +90,7 @@ export function LoginPage() {
             {resendState === "sent" ? (
               <p role="status" className="text-gray-700">
                 <FormattedMessage
+                  id="auth.loginPage.resendConfirmationSent"
                   defaultMessage="Sent a new confirmation link to <em>{email}</em>."
                   values={{
                     email: unverifiedEmail,
@@ -101,9 +108,13 @@ export function LoginPage() {
                 className="text-mayday-700 hover:text-mayday-800 font-medium disabled:opacity-60"
               >
                 {resendState === "sending" ? (
-                  <FormattedMessage defaultMessage="Sending…" />
+                  <FormattedMessage
+                    id="auth.loginPage.resendButtonSending"
+                    defaultMessage="Sending…"
+                  />
                 ) : (
                   <FormattedMessage
+                    id="auth.loginPage.resendButton"
                     defaultMessage="Resend confirmation email to {email}"
                     values={{ email: unverifiedEmail }}
                   />
@@ -117,11 +128,15 @@ export function LoginPage() {
             to="/forgot-password"
             className="text-mayday-700 hover:text-mayday-800 font-medium"
           >
-            <FormattedMessage defaultMessage="Forgot your password?" />
+            <FormattedMessage
+              id="auth.loginPage.forgotPasswordLink"
+              defaultMessage="Forgot your password?"
+            />
           </Link>
         </p>
         <p className="text-center text-sm text-gray-500 mt-2">
           <FormattedMessage
+            id="auth.loginPage.signupPrompt"
             defaultMessage="Don't have an account? <signup>Sign up</signup>"
             values={{
               signup: (chunks) => (

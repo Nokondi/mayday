@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { IntlProvider } from 'react-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('sonner', () => ({
@@ -90,15 +91,17 @@ function renderProfile(path = `/profile/${OWNER_ID}`) {
   });
 
   return render(
-    <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route path="/profile/:id" element={<><ProfilePage /><LocationProbe /></>} />
-          <Route path="/messages" element={<><div>MESSAGES PAGE</div><LocationProbe /></>} />
-          <Route path="/" element={<><div>HOME PAGE</div><LocationProbe /></>} />
-        </Routes>
-      </MemoryRouter>
-    </QueryClientProvider>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={[path]}>
+          <Routes>
+            <Route path="/profile/:id" element={<><ProfilePage /><LocationProbe /></>} />
+            <Route path="/messages" element={<><div>MESSAGES PAGE</div><LocationProbe /></>} />
+            <Route path="/" element={<><div>HOME PAGE</div><LocationProbe /></>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    </IntlProvider>,
   );
 }
 

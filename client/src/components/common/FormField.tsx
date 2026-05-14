@@ -3,6 +3,7 @@ import type {
   ReactNode,
   TextareaHTMLAttributes,
 } from "react";
+import { FormattedMessage } from "react-intl";
 
 type CommonProps = {
   id: string;
@@ -32,7 +33,12 @@ export function FormField(props: FormFieldProps) {
         {optional && (
           <>
             {" "}
-            <span className="text-gray-500 font-normal">(optional)</span>
+            <span className="text-gray-500 font-normal">
+              <FormattedMessage
+                id="common.formField.optionalSuffix"
+                defaultMessage="(optional)"
+              />
+            </span>
           </>
         )}
       </label>

@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { LoadingSpinner } from '../../../src/components/common/LoadingSpinner.js';
+import { renderWithIntl as render } from '../../helpers/renderWithIntl.js';
 
 describe('LoadingSpinner', () => {
   it('renders an accessible status region with polite announcements', () => {

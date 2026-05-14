@@ -1,11 +1,55 @@
 {
-  "+Dblp4": [
+  "auth.forgotPasswordPage.backToLogin": [
     {
       "type": 0,
-      "value": "Missing verification token."
+      "value": "Back to log in"
     }
   ],
-  "+R29Eo": [
+  "auth.forgotPasswordPage.confirmationSentMessage": [
+    {
+      "type": 0,
+      "value": "If "
+    },
+    {
+      "children": [
+        {
+          "type": 1,
+          "value": "email"
+        }
+      ],
+      "type": 8,
+      "value": "em"
+    },
+    {
+      "type": 0,
+      "value": " matches a Mayday account, we've sent a password reset link. Click it to choose a new password."
+    }
+  ],
+  "auth.forgotPasswordPage.emailLabel": [
+    {
+      "type": 0,
+      "value": "Email"
+    }
+  ],
+  "auth.forgotPasswordPage.emailPlaceholder": [
+    {
+      "type": 0,
+      "value": "you@example.com"
+    }
+  ],
+  "auth.forgotPasswordPage.instructions": [
+    {
+      "type": 0,
+      "value": "Enter the email address you signed up with and we'll send you a link to choose a new password."
+    }
+  ],
+  "auth.forgotPasswordPage.linkExpiryHint": [
+    {
+      "type": 0,
+      "value": "The link expires in 1 hour. Don't see it? Check your spam folder, or try again in a few minutes."
+    }
+  ],
+  "auth.forgotPasswordPage.loginPrompt": [
     {
       "type": 0,
       "value": "Remembered it? "
@@ -21,135 +65,83 @@
       "value": "login"
     }
   ],
-  "1dJEn5": [
-    {
-      "type": 0,
-      "value": "Log in to MayDay"
-    }
-  ],
-  "1naKqh": [
-    {
-      "type": 0,
-      "value": "Failed to resend. Try again shortly."
-    }
-  ],
-  "2J76q8": [
-    {
-      "type": 0,
-      "value": "Click the button below to finish confirming your email address."
-    }
-  ],
-  "5sg7KC": [
-    {
-      "type": 0,
-      "value": "Password"
-    }
-  ],
-  "62vhQG": [
-    {
-      "type": 0,
-      "value": "Verification failed."
-    }
-  ],
-  "7Chrsf": [
-    {
-      "type": 0,
-      "value": "Passwords do not match"
-    }
-  ],
-  "7G3Soa": [
-    {
-      "type": 0,
-      "value": "Confirmation email resent."
-    }
-  ],
-  "8AYCVV": [
-    {
-      "type": 0,
-      "value": "Enter the email address you signed up with and we'll send you a link to choose a new password."
-    }
-  ],
-  "8HimVK": [
-    {
-      "type": 0,
-      "value": "Confirm password"
-    }
-  ],
-  "9pk2C0": [
-    {
-      "type": 0,
-      "value": "Please confirm your new password"
-    }
-  ],
-  "AWVk03": [
-    {
-      "type": 0,
-      "value": "Logging in..."
-    }
-  ],
-  "DkQ5Q8": [
+  "auth.forgotPasswordPage.submitButton": [
     {
       "type": 0,
       "value": "Send reset link"
     }
   ],
-  "G7yB8N": [
+  "auth.forgotPasswordPage.submittingButton": [
     {
       "type": 0,
-      "value": "Registration failed"
+      "value": "Sending…"
     }
   ],
-  "HA3hsX": [
+  "auth.forgotPasswordPage.successHeading": [
     {
       "type": 0,
-      "value": "Your password has been reset."
+      "value": "Check your inbox"
     }
   ],
-  "HAlOn1": [
+  "auth.forgotPasswordPage.title": [
     {
       "type": 0,
-      "value": "Name"
+      "value": "Reset your password"
     }
   ],
-  "K3ca7K": [
+  "auth.loginForm.emailLabel": [
     {
       "type": 0,
-      "value": "We've sent a confirmation link to "
+      "value": "Email"
+    }
+  ],
+  "auth.loginForm.passwordLabel": [
+    {
+      "type": 0,
+      "value": "Password"
+    }
+  ],
+  "auth.loginForm.submitButton": [
+    {
+      "type": 0,
+      "value": "Log in"
+    }
+  ],
+  "auth.loginForm.submittingButton": [
+    {
+      "type": 0,
+      "value": "Logging in..."
+    }
+  ],
+  "auth.loginPage.forgotPasswordLink": [
+    {
+      "type": 0,
+      "value": "Forgot your password?"
+    }
+  ],
+  "auth.loginPage.loginFailedFallback": [
+    {
+      "type": 0,
+      "value": "Login failed"
+    }
+  ],
+  "auth.loginPage.resendButton": [
+    {
+      "type": 0,
+      "value": "Resend confirmation email to "
     },
     {
-      "children": [
-        {
-          "type": 1,
-          "value": "email"
-        }
-      ],
-      "type": 8,
-      "value": "em"
-    },
-    {
-      "type": 0,
-      "value": ". Click it to activate your account, then come back and log in."
+      "type": 1,
+      "value": "email"
     }
   ],
-  "KcQzsj": [
+  "auth.loginPage.resendButtonSending": [
     {
       "type": 0,
-      "value": "Verifying your email…"
+      "value": "Sending…"
     }
   ],
-  "KkT/Fh": [
-    {
-      "type": 0,
-      "value": "Update password"
-    }
-  ],
-  "Kz7I2o": [
-    {
-      "type": 0,
-      "value": "Password updated"
-    }
-  ],
-  "Oag5Hv": [
+  "auth.loginPage.resendConfirmationSent": [
     {
       "type": 0,
       "value": "Sent a new confirmation link to "
@@ -169,23 +161,191 @@
       "value": "."
     }
   ],
-  "ObRe4K": [
+  "auth.loginPage.signupPrompt": [
     {
       "type": 0,
-      "value": "Resend confirmation email to "
+      "value": "Don't have an account? "
     },
     {
-      "type": 1,
-      "value": "email"
+      "children": [
+        {
+          "type": 0,
+          "value": "Sign up"
+        }
+      ],
+      "type": 8,
+      "value": "signup"
     }
   ],
-  "PwhG9W": [
+  "auth.loginPage.title": [
     {
       "type": 0,
-      "value": "you@example.com"
+      "value": "Log in to MayDay"
     }
   ],
-  "U6uo+0": [
+  "auth.registerForm.confirmPasswordLabel": [
+    {
+      "type": 0,
+      "value": "Confirm password"
+    }
+  ],
+  "auth.registerForm.confirmPasswordRequiredError": [
+    {
+      "type": 0,
+      "value": "Please confirm your password"
+    }
+  ],
+  "auth.registerForm.emailLabel": [
+    {
+      "type": 0,
+      "value": "Email"
+    }
+  ],
+  "auth.registerForm.nameLabel": [
+    {
+      "type": 0,
+      "value": "Name"
+    }
+  ],
+  "auth.registerForm.passwordLabel": [
+    {
+      "type": 0,
+      "value": "Password"
+    }
+  ],
+  "auth.registerForm.passwordsMismatchError": [
+    {
+      "type": 0,
+      "value": "Passwords do not match"
+    }
+  ],
+  "auth.registerForm.submitButton": [
+    {
+      "type": 0,
+      "value": "Create account"
+    }
+  ],
+  "auth.registerForm.submittingButton": [
+    {
+      "type": 0,
+      "value": "Creating account..."
+    }
+  ],
+  "auth.registerPage.backToLogin": [
+    {
+      "type": 0,
+      "value": "Back to log in"
+    }
+  ],
+  "auth.registerPage.confirmationSentMessage": [
+    {
+      "type": 0,
+      "value": "We've sent a confirmation link to "
+    },
+    {
+      "children": [
+        {
+          "type": 1,
+          "value": "email"
+        }
+      ],
+      "type": 8,
+      "value": "em"
+    },
+    {
+      "type": 0,
+      "value": ". Click it to activate your account, then come back and log in."
+    }
+  ],
+  "auth.registerPage.linkExpiryHint": [
+    {
+      "type": 0,
+      "value": "The link expires in 24 hours. Don't see the email? Check your spam folder."
+    }
+  ],
+  "auth.registerPage.loginPrompt": [
+    {
+      "type": 0,
+      "value": "Already have an account? "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Log in"
+        }
+      ],
+      "type": 8,
+      "value": "login"
+    }
+  ],
+  "auth.registerPage.registrationFailedFallback": [
+    {
+      "type": 0,
+      "value": "Registration failed"
+    }
+  ],
+  "auth.registerPage.resendButton": [
+    {
+      "type": 0,
+      "value": "Resend confirmation email"
+    }
+  ],
+  "auth.registerPage.resendButtonSending": [
+    {
+      "type": 0,
+      "value": "Sending…"
+    }
+  ],
+  "auth.registerPage.resendFailedFallback": [
+    {
+      "type": 0,
+      "value": "Failed to resend. Try again shortly."
+    }
+  ],
+  "auth.registerPage.resendSuccessStatus": [
+    {
+      "type": 0,
+      "value": "Confirmation email resent."
+    }
+  ],
+  "auth.registerPage.successHeading": [
+    {
+      "type": 0,
+      "value": "Check your inbox"
+    }
+  ],
+  "auth.registerPage.title": [
+    {
+      "type": 0,
+      "value": "Join MayDay"
+    }
+  ],
+  "auth.resetPasswordPage.confirmPasswordLabel": [
+    {
+      "type": 0,
+      "value": "Confirm new password"
+    }
+  ],
+  "auth.resetPasswordPage.confirmPasswordRequiredError": [
+    {
+      "type": 0,
+      "value": "Please confirm your new password"
+    }
+  ],
+  "auth.resetPasswordPage.missingTokenError": [
+    {
+      "type": 0,
+      "value": "Missing reset token."
+    }
+  ],
+  "auth.resetPasswordPage.missingTokenHeading": [
+    {
+      "type": 0,
+      "value": "Reset your password"
+    }
+  ],
+  "auth.resetPasswordPage.missingTokenInstructions": [
     {
       "type": 0,
       "value": "Please use the link in your password reset email, or "
@@ -205,135 +365,73 @@
       "value": "."
     }
   ],
-  "WUV28A": [
-    {
-      "type": 0,
-      "value": "Saving…"
-    }
-  ],
-  "WghPED": [
-    {
-      "type": 0,
-      "value": "Back to log in"
-    }
-  ],
-  "XhI0nH": [
-    {
-      "type": 0,
-      "value": "Already have an account? "
-    },
-    {
-      "children": [
-        {
-          "type": 0,
-          "value": "Log in"
-        }
-      ],
-      "type": 8,
-      "value": "login"
-    }
-  ],
-  "cyRU1N": [
-    {
-      "type": 0,
-      "value": "Forgot your password?"
-    }
-  ],
-  "de3Nha": [
-    {
-      "type": 0,
-      "value": "Join MayDay"
-    }
-  ],
-  "fTHhSB": [
+  "auth.resetPasswordPage.newPasswordLabel": [
     {
       "type": 0,
       "value": "New password"
     }
   ],
-  "fe7Y2Z": [
-    {
-      "type": 0,
-      "value": "Confirm new password"
-    }
-  ],
-  "ff2VGL": [
-    {
-      "type": 0,
-      "value": "Sending…"
-    }
-  ],
-  "fuUMz0": [
-    {
-      "type": 0,
-      "value": "Don't have an account? "
-    },
-    {
-      "children": [
-        {
-          "type": 0,
-          "value": "Sign up"
-        }
-      ],
-      "type": 8,
-      "value": "signup"
-    }
-  ],
-  "gjBiyj": [
-    {
-      "type": 0,
-      "value": "Loading..."
-    }
-  ],
-  "h/HeZb": [
-    {
-      "type": 0,
-      "value": "Choose a new password"
-    }
-  ],
-  "hVmLJP": [
+  "auth.resetPasswordPage.passwordTooShortError": [
     {
       "type": 0,
       "value": "Password must be at least 8 characters"
     }
   ],
-  "huqKGl": [
+  "auth.resetPasswordPage.passwordsMismatchError": [
     {
       "type": 0,
-      "value": "Create account"
+      "value": "Passwords do not match"
     }
   ],
-  "ijnuqm": [
+  "auth.resetPasswordPage.resetFailedFallback": [
     {
       "type": 0,
-      "value": "Confirm your email"
+      "value": "Could not reset your password. The link may have expired."
     }
   ],
-  "jHdnFq": [
+  "auth.resetPasswordPage.submitButton": [
     {
       "type": 0,
-      "value": "The link expires in 24 hours. Don't see the email? Check your spam folder."
+      "value": "Update password"
     }
   ],
-  "jHolJz": [
+  "auth.resetPasswordPage.submittingButton": [
+    {
+      "type": 0,
+      "value": "Saving…"
+    }
+  ],
+  "auth.resetPasswordPage.successHeading": [
+    {
+      "type": 0,
+      "value": "Password updated"
+    }
+  ],
+  "auth.resetPasswordPage.successLoginLink": [
+    {
+      "type": 0,
+      "value": "Log in"
+    }
+  ],
+  "auth.resetPasswordPage.successMessage": [
+    {
+      "type": 0,
+      "value": "Your password has been reset."
+    }
+  ],
+  "auth.resetPasswordPage.title": [
+    {
+      "type": 0,
+      "value": "Choose a new password"
+    }
+  ],
+  "auth.verifyEmailPage.confirmButton": [
     {
       "type": 0,
       "value": "Confirm my email"
     }
   ],
-  "kjhGGf": [
-    {
-      "type": 0,
-      "value": "Check your inbox"
-    }
-  ],
-  "m0A0Fv": [
-    {
-      "type": 0,
-      "value": "Missing reset token."
-    }
-  ],
-  "mDDHqc": [
+  "auth.verifyEmailPage.errorRecoveryInstructions": [
     {
       "type": 0,
       "value": "Need a new link? "
@@ -367,78 +465,386 @@
       "value": "."
     }
   ],
-  "n0drHu": [
+  "auth.verifyEmailPage.idleInstructions": [
     {
       "type": 0,
-      "value": "If "
-    },
-    {
-      "children": [
-        {
-          "type": 1,
-          "value": "email"
-        }
-      ],
-      "type": 8,
-      "value": "em"
-    },
-    {
-      "type": 0,
-      "value": " matches a Mayday account, we've sent a password reset link. Click it to choose a new password."
+      "value": "Click the button below to finish confirming your email address."
     }
   ],
-  "nuWwea": [
+  "auth.verifyEmailPage.missingTokenError": [
     {
       "type": 0,
-      "value": "Login failed"
+      "value": "Missing verification token."
     }
   ],
-  "odXlk8": [
+  "auth.verifyEmailPage.successLoginLink": [
     {
       "type": 0,
       "value": "Log in"
     }
   ],
-  "p+kmJg": [
+  "auth.verifyEmailPage.title": [
     {
       "type": 0,
-      "value": "Reset your password"
+      "value": "Confirm your email"
     }
   ],
-  "pSa43x": [
+  "auth.verifyEmailPage.verificationFailedFallback": [
     {
       "type": 0,
-      "value": "The link expires in 1 hour. Don't see it? Check your spam folder, or try again in a few minutes."
+      "value": "Verification failed."
     }
   ],
-  "sy+pv5": [
+  "auth.verifyEmailPage.verifyingStatus": [
     {
       "type": 0,
-      "value": "Email"
+      "value": "Verifying your email…"
     }
   ],
-  "v7Bl2J": [
+  "common.announcementBanner.dismissAriaLabel": [
     {
       "type": 0,
-      "value": "Creating account..."
+      "value": "Dismiss announcement"
     }
   ],
-  "vNd9Bt": [
+  "common.avatarUploader.fileTooLargeError": [
     {
       "type": 0,
-      "value": "Please confirm your password"
+      "value": "Image must be 5MB or smaller"
     }
   ],
-  "vRcOWF": [
+  "common.avatarUploader.invalidTypeError": [
     {
       "type": 0,
-      "value": "Could not reset your password. The link may have expired."
+      "value": "Only JPEG, PNG, GIF, and WebP images are allowed"
     }
   ],
-  "vc5ZPy": [
+  "common.avatarUploader.uploadAriaLabel": [
     {
       "type": 0,
-      "value": "Resend confirmation email"
+      "value": "Upload avatar"
+    }
+  ],
+  "common.avatarUploader.uploadFailedFallback": [
+    {
+      "type": 0,
+      "value": "Failed to upload avatar"
+    }
+  ],
+  "common.avatarUploader.uploadSuccess": [
+    {
+      "type": 0,
+      "value": "Avatar updated"
+    }
+  ],
+  "common.avatarUploader.uploadingAriaLabel": [
+    {
+      "type": 0,
+      "value": "Uploading avatar"
+    }
+  ],
+  "common.entityCard.memberCount": [
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " member"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " members"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    }
+  ],
+  "common.entityCard.viewerRole": [
+    {
+      "type": 0,
+      "value": "You: "
+    },
+    {
+      "type": 1,
+      "value": "role"
+    }
+  ],
+  "common.formField.optionalSuffix": [
+    {
+      "type": 0,
+      "value": "(optional)"
+    }
+  ],
+  "common.inviteEmailsField.addAnotherButton": [
+    {
+      "type": 0,
+      "value": "+ Add another"
+    }
+  ],
+  "common.inviteEmailsField.defaultHelpText": [
+    {
+      "type": 0,
+      "value": "They'll get an email invite. People without a Mayday account will be invited to sign up."
+    }
+  ],
+  "common.inviteEmailsField.defaultLegend": [
+    {
+      "type": 0,
+      "value": "Invite people "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "(optional)"
+        }
+      ],
+      "type": 8,
+      "value": "opt"
+    }
+  ],
+  "common.inviteEmailsField.defaultSubmitLabel": [
+    {
+      "type": 0,
+      "value": "Send invites"
+    }
+  ],
+  "common.inviteEmailsField.emailPlaceholder": [
+    {
+      "type": 0,
+      "value": "friend@example.com"
+    }
+  ],
+  "common.inviteEmailsField.emailRowAriaLabel": [
+    {
+      "type": 0,
+      "value": "Email to invite "
+    },
+    {
+      "type": 1,
+      "value": "n"
+    }
+  ],
+  "common.inviteEmailsField.removeRowAriaLabel": [
+    {
+      "type": 0,
+      "value": "Remove email"
+    }
+  ],
+  "common.linksEditor.addLinkButton": [
+    {
+      "type": 0,
+      "value": "Add link"
+    }
+  ],
+  "common.linksEditor.labelAriaLabel": [
+    {
+      "type": 0,
+      "value": "Link label"
+    }
+  ],
+  "common.linksEditor.labelPlaceholder": [
+    {
+      "type": 0,
+      "value": "Label (e.g. Website)"
+    }
+  ],
+  "common.linksEditor.legend": [
+    {
+      "type": 0,
+      "value": "Links "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "(optional)"
+        }
+      ],
+      "type": 8,
+      "value": "opt"
+    }
+  ],
+  "common.linksEditor.removeRowAriaLabel": [
+    {
+      "type": 0,
+      "value": "Remove link "
+    },
+    {
+      "type": 1,
+      "value": "n"
+    }
+  ],
+  "common.linksEditor.urlAriaLabel": [
+    {
+      "type": 0,
+      "value": "Link URL"
+    }
+  ],
+  "common.loadingSpinner.srLabel": [
+    {
+      "type": 0,
+      "value": "Loading..."
+    }
+  ],
+  "common.pagination.navAriaLabel": [
+    {
+      "type": 0,
+      "value": "Pagination"
+    }
+  ],
+  "common.pagination.nextAriaLabel": [
+    {
+      "type": 0,
+      "value": "Next page"
+    }
+  ],
+  "common.pagination.pageOf": [
+    {
+      "type": 0,
+      "value": "Page "
+    },
+    {
+      "type": 1,
+      "value": "page"
+    },
+    {
+      "type": 0,
+      "value": " of "
+    },
+    {
+      "type": 1,
+      "value": "totalPages"
+    }
+  ],
+  "common.pagination.previousAriaLabel": [
+    {
+      "type": 0,
+      "value": "Previous page"
+    }
+  ],
+  "common.passwordField.hideAriaLabel": [
+    {
+      "type": 0,
+      "value": "Hide password"
+    }
+  ],
+  "common.passwordField.showAriaLabel": [
+    {
+      "type": 0,
+      "value": "Show password"
+    }
+  ],
+  "common.pushNotificationsToggle.blockedError": [
+    {
+      "type": 0,
+      "value": "Notifications are blocked in your browser."
+    }
+  ],
+  "common.pushNotificationsToggle.defaultHelper": [
+    {
+      "type": 0,
+      "value": "Get notified about activity even when Mayday isn't open in a tab."
+    }
+  ],
+  "common.pushNotificationsToggle.deniedHelper": [
+    {
+      "type": 0,
+      "value": "Notifications are blocked in your browser. Re-enable them in your browser site settings to use this."
+    }
+  ],
+  "common.pushNotificationsToggle.disabledToast": [
+    {
+      "type": 0,
+      "value": "Push notifications disabled"
+    }
+  ],
+  "common.pushNotificationsToggle.enabledToast": [
+    {
+      "type": 0,
+      "value": "Push notifications enabled"
+    }
+  ],
+  "common.pushNotificationsToggle.heading": [
+    {
+      "type": 0,
+      "value": "Push notifications"
+    }
+  ],
+  "common.pushNotificationsToggle.noConfigError": [
+    {
+      "type": 0,
+      "value": "Push notifications are not configured on the server."
+    }
+  ],
+  "common.pushNotificationsToggle.permissionDeniedError": [
+    {
+      "type": 0,
+      "value": "You denied notification permission. Re-enable it in your browser site settings."
+    }
+  ],
+  "common.pushNotificationsToggle.permissionNotGrantedError": [
+    {
+      "type": 0,
+      "value": "Notification permission was not granted."
+    }
+  ],
+  "common.pushNotificationsToggle.unsupportedHelper": [
+    {
+      "type": 0,
+      "value": "Your browser doesn't support push notifications."
+    }
+  ],
+  "common.pushNotificationsToggle.updateFailedFallback": [
+    {
+      "type": 0,
+      "value": "Failed to update push notifications"
+    }
+  ],
+  "common.searchBar.defaultPlaceholder": [
+    {
+      "type": 0,
+      "value": "Search..."
+    }
+  ],
+  "urgency.critical": [
+    {
+      "type": 0,
+      "value": "Critical"
+    }
+  ],
+  "urgency.high": [
+    {
+      "type": 0,
+      "value": "High"
+    }
+  ],
+  "urgency.low": [
+    {
+      "type": 0,
+      "value": "Low"
+    }
+  ],
+  "urgency.medium": [
+    {
+      "type": 0,
+      "value": "Medium"
     }
   ]
 }

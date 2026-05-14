@@ -23,7 +23,10 @@ export function RegisterPage() {
     onError: (err: any) => {
       setError(
         err.response?.data?.error ||
-          intl.formatMessage({ defaultMessage: 'Registration failed' }),
+          intl.formatMessage({
+            id: 'auth.registerPage.registrationFailedFallback',
+            defaultMessage: 'Registration failed',
+          }),
       );
     },
   });
@@ -44,7 +47,10 @@ export function RegisterPage() {
       setResendState('idle');
       setResendError(
         err.response?.data?.error ||
-          intl.formatMessage({ defaultMessage: 'Failed to resend. Try again shortly.' }),
+          intl.formatMessage({
+            id: 'auth.registerPage.resendFailedFallback',
+            defaultMessage: 'Failed to resend. Try again shortly.',
+          }),
       );
     }
   };
@@ -53,11 +59,15 @@ export function RegisterPage() {
     return (
       <div className="max-w-md mx-auto px-4 py-16">
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
-          <FormattedMessage defaultMessage="Check your inbox" />
+          <FormattedMessage
+            id="auth.registerPage.successHeading"
+            defaultMessage="Check your inbox"
+          />
         </h1>
         <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
           <p className="text-gray-700">
             <FormattedMessage
+              id="auth.registerPage.confirmationSentMessage"
               defaultMessage="We've sent a confirmation link to <em>{email}</em>. Click it to activate your account, then come back and log in."
               values={{
                 email: submittedEmail,
@@ -66,12 +76,18 @@ export function RegisterPage() {
             />
           </p>
           <p className="text-sm text-gray-500">
-            <FormattedMessage defaultMessage="The link expires in 24 hours. Don't see the email? Check your spam folder." />
+            <FormattedMessage
+              id="auth.registerPage.linkExpiryHint"
+              defaultMessage="The link expires in 24 hours. Don't see the email? Check your spam folder."
+            />
           </p>
           <div className="pt-2 border-t border-gray-200">
             {resendState === 'sent' ? (
               <p role="status" className="text-sm text-green-700">
-                <FormattedMessage defaultMessage="Confirmation email resent." />
+                <FormattedMessage
+                  id="auth.registerPage.resendSuccessStatus"
+                  defaultMessage="Confirmation email resent."
+                />
               </p>
             ) : (
               <button
@@ -81,9 +97,15 @@ export function RegisterPage() {
                 className="text-sm text-mayday-600 hover:text-mayday-700 font-medium disabled:opacity-60"
               >
                 {resendState === 'sending' ? (
-                  <FormattedMessage defaultMessage="Sending…" />
+                  <FormattedMessage
+                    id="auth.registerPage.resendButtonSending"
+                    defaultMessage="Sending…"
+                  />
                 ) : (
-                  <FormattedMessage defaultMessage="Resend confirmation email" />
+                  <FormattedMessage
+                    id="auth.registerPage.resendButton"
+                    defaultMessage="Resend confirmation email"
+                  />
                 )}
               </button>
             )}
@@ -91,7 +113,10 @@ export function RegisterPage() {
           </div>
           <p className="text-center text-sm text-gray-500">
             <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">
-              <FormattedMessage defaultMessage="Back to log in" />
+              <FormattedMessage
+                id="auth.registerPage.backToLogin"
+                defaultMessage="Back to log in"
+              />
             </Link>
           </p>
         </div>
@@ -102,12 +127,13 @@ export function RegisterPage() {
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
-        <FormattedMessage defaultMessage="Join MayDay" />
+        <FormattedMessage id="auth.registerPage.title" defaultMessage="Join MayDay" />
       </h1>
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <RegisterForm onSubmit={handleSubmit} isSubmitting={registerMutation.isPending} error={error} defaultEmail={prefilledEmail} />
         <p className="text-center text-sm text-gray-500 mt-4">
           <FormattedMessage
+            id="auth.registerPage.loginPrompt"
             defaultMessage="Already have an account? <login>Log in</login>"
             values={{
               login: (chunks) => (

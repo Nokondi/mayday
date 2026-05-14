@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { IntlProvider } from 'react-intl';
 import { toast } from 'sonner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ReportUserForm } from '../../../src/components/support/ReportUserForm.js';
@@ -20,9 +21,11 @@ const mockedToast = vi.mocked(toast);
 function renderForm() {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return render(
-    <QueryClientProvider client={client}>
-      <ReportUserForm />
-    </QueryClientProvider>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <QueryClientProvider client={client}>
+        <ReportUserForm />
+      </QueryClientProvider>
+    </IntlProvider>,
   );
 }
 

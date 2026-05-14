@@ -19,7 +19,12 @@ export function VerifyEmailPage() {
   const handleConfirm = async () => {
     if (!token) {
       setStatus('error');
-      setMessage(intl.formatMessage({ defaultMessage: 'Missing verification token.' }));
+      setMessage(
+        intl.formatMessage({
+          id: 'auth.verifyEmailPage.missingTokenError',
+          defaultMessage: 'Missing verification token.',
+        }),
+      );
       return;
     }
 
@@ -32,7 +37,10 @@ export function VerifyEmailPage() {
       setStatus('error');
       setMessage(
         err.response?.data?.error ||
-          intl.formatMessage({ defaultMessage: 'Verification failed.' }),
+          intl.formatMessage({
+            id: 'auth.verifyEmailPage.verificationFailedFallback',
+            defaultMessage: 'Verification failed.',
+          }),
       );
     }
   };
@@ -40,13 +48,19 @@ export function VerifyEmailPage() {
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
-        <FormattedMessage defaultMessage="Confirm your email" />
+        <FormattedMessage
+          id="auth.verifyEmailPage.title"
+          defaultMessage="Confirm your email"
+        />
       </h1>
       <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
         {status === 'idle' && (
           <>
             <p className="text-gray-700">
-              <FormattedMessage defaultMessage="Click the button below to finish confirming your email address." />
+              <FormattedMessage
+                id="auth.verifyEmailPage.idleInstructions"
+                defaultMessage="Click the button below to finish confirming your email address."
+              />
             </p>
             <button
               type="button"
@@ -54,18 +68,27 @@ export function VerifyEmailPage() {
               disabled={!token}
               className="w-full bg-mayday-600 hover:bg-mayday-700 text-white font-medium py-2 rounded-md disabled:opacity-60"
             >
-              <FormattedMessage defaultMessage="Confirm my email" />
+              <FormattedMessage
+                id="auth.verifyEmailPage.confirmButton"
+                defaultMessage="Confirm my email"
+              />
             </button>
             {!token && (
               <p className="text-sm text-red-600">
-                <FormattedMessage defaultMessage="Missing verification token." />
+                <FormattedMessage
+                  id="auth.verifyEmailPage.missingTokenError"
+                  defaultMessage="Missing verification token."
+                />
               </p>
             )}
           </>
         )}
         {status === 'verifying' && (
           <p role="status" className="text-gray-700">
-            <FormattedMessage defaultMessage="Verifying your email…" />
+            <FormattedMessage
+              id="auth.verifyEmailPage.verifyingStatus"
+              defaultMessage="Verifying your email…"
+            />
           </p>
         )}
         {status === 'success' && (
@@ -73,7 +96,10 @@ export function VerifyEmailPage() {
             <p role="status" className="text-green-700">{message}</p>
             <p className="text-center">
               <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">
-                <FormattedMessage defaultMessage="Log in" />
+                <FormattedMessage
+                  id="auth.verifyEmailPage.successLoginLink"
+                  defaultMessage="Log in"
+                />
               </Link>
             </p>
           </>
@@ -83,6 +109,7 @@ export function VerifyEmailPage() {
             <p role="alert" className="text-red-600">{message}</p>
             <p className="text-center text-sm text-gray-600">
               <FormattedMessage
+                id="auth.verifyEmailPage.errorRecoveryInstructions"
                 defaultMessage="Need a new link? <login>Go to log in</login> and use <action>Resend confirmation email</action>."
                 values={{
                   login: (chunks) => (

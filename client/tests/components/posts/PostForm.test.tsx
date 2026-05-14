@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { IntlProvider } from 'react-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../../src/context/AuthContext.js', () => ({
@@ -45,9 +46,11 @@ function renderForm(
     defaultOptions: { queries: { retry: false } },
   });
   const utils = render(
-    <QueryClientProvider client={queryClient}>
-      <PostForm onSubmit={onSubmit} isSubmitting={false} {...overrides} />
-    </QueryClientProvider>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <QueryClientProvider client={queryClient}>
+        <PostForm onSubmit={onSubmit} isSubmitting={false} {...overrides} />
+      </QueryClientProvider>
+    </IntlProvider>,
   );
   const fileInput = document.querySelector(
     'input[type="file"]',

@@ -1,164 +1,332 @@
 {
-  "+Dblp4": {
-    "defaultMessage": "Missing verification token."
-  },
-  "+R29Eo": {
-    "defaultMessage": "Remembered it? <login>Back to log in</login>"
-  },
-  "1dJEn5": {
-    "defaultMessage": "Log in to MayDay"
-  },
-  "1naKqh": {
-    "defaultMessage": "Failed to resend. Try again shortly."
-  },
-  "2J76q8": {
-    "defaultMessage": "Click the button below to finish confirming your email address."
-  },
-  "5sg7KC": {
-    "defaultMessage": "Password"
-  },
-  "62vhQG": {
-    "defaultMessage": "Verification failed."
-  },
-  "7Chrsf": {
-    "defaultMessage": "Passwords do not match"
-  },
-  "7G3Soa": {
-    "defaultMessage": "Confirmation email resent."
-  },
-  "8AYCVV": {
-    "defaultMessage": "Enter the email address you signed up with and we'll send you a link to choose a new password."
-  },
-  "8HimVK": {
-    "defaultMessage": "Confirm password"
-  },
-  "9pk2C0": {
-    "defaultMessage": "Please confirm your new password"
-  },
-  "AWVk03": {
-    "defaultMessage": "Logging in..."
-  },
-  "DkQ5Q8": {
-    "defaultMessage": "Send reset link"
-  },
-  "G7yB8N": {
-    "defaultMessage": "Registration failed"
-  },
-  "HA3hsX": {
-    "defaultMessage": "Your password has been reset."
-  },
-  "HAlOn1": {
-    "defaultMessage": "Name"
-  },
-  "K3ca7K": {
-    "defaultMessage": "We've sent a confirmation link to <em>{email}</em>. Click it to activate your account, then come back and log in."
-  },
-  "KcQzsj": {
-    "defaultMessage": "Verifying your email…"
-  },
-  "KkT/Fh": {
-    "defaultMessage": "Update password"
-  },
-  "Kz7I2o": {
-    "defaultMessage": "Password updated"
-  },
-  "Oag5Hv": {
-    "defaultMessage": "Sent a new confirmation link to <em>{email}</em>."
-  },
-  "ObRe4K": {
-    "defaultMessage": "Resend confirmation email to {email}"
-  },
-  "PwhG9W": {
-    "defaultMessage": "you@example.com"
-  },
-  "U6uo+0": {
-    "defaultMessage": "Please use the link in your password reset email, or <request>request a new one</request>."
-  },
-  "WUV28A": {
-    "defaultMessage": "Saving…"
-  },
-  "WghPED": {
+  "auth.forgotPasswordPage.backToLogin": {
     "defaultMessage": "Back to log in"
   },
-  "XhI0nH": {
-    "defaultMessage": "Already have an account? <login>Log in</login>"
-  },
-  "cyRU1N": {
-    "defaultMessage": "Forgot your password?"
-  },
-  "de3Nha": {
-    "defaultMessage": "Join MayDay"
-  },
-  "fTHhSB": {
-    "defaultMessage": "New password"
-  },
-  "fe7Y2Z": {
-    "defaultMessage": "Confirm new password"
-  },
-  "ff2VGL": {
-    "defaultMessage": "Sending…"
-  },
-  "fuUMz0": {
-    "defaultMessage": "Don't have an account? <signup>Sign up</signup>"
-  },
-  "gjBiyj": {
-    "defaultMessage": "Loading..."
-  },
-  "h/HeZb": {
-    "defaultMessage": "Choose a new password"
-  },
-  "hVmLJP": {
-    "defaultMessage": "Password must be at least 8 characters"
-  },
-  "huqKGl": {
-    "defaultMessage": "Create account"
-  },
-  "ijnuqm": {
-    "defaultMessage": "Confirm your email"
-  },
-  "jHdnFq": {
-    "defaultMessage": "The link expires in 24 hours. Don't see the email? Check your spam folder."
-  },
-  "jHolJz": {
-    "defaultMessage": "Confirm my email"
-  },
-  "kjhGGf": {
-    "defaultMessage": "Check your inbox"
-  },
-  "m0A0Fv": {
-    "defaultMessage": "Missing reset token."
-  },
-  "mDDHqc": {
-    "defaultMessage": "Need a new link? <login>Go to log in</login> and use <action>Resend confirmation email</action>."
-  },
-  "n0drHu": {
+  "auth.forgotPasswordPage.confirmationSentMessage": {
     "defaultMessage": "If <em>{email}</em> matches a Mayday account, we've sent a password reset link. Click it to choose a new password."
   },
-  "nuWwea": {
-    "defaultMessage": "Login failed"
-  },
-  "odXlk8": {
-    "defaultMessage": "Log in"
-  },
-  "p+kmJg": {
-    "defaultMessage": "Reset your password"
-  },
-  "pSa43x": {
-    "defaultMessage": "The link expires in 1 hour. Don't see it? Check your spam folder, or try again in a few minutes."
-  },
-  "sy+pv5": {
+  "auth.forgotPasswordPage.emailLabel": {
     "defaultMessage": "Email"
   },
-  "v7Bl2J": {
-    "defaultMessage": "Creating account..."
+  "auth.forgotPasswordPage.emailPlaceholder": {
+    "defaultMessage": "you@example.com"
   },
-  "vNd9Bt": {
+  "auth.forgotPasswordPage.instructions": {
+    "defaultMessage": "Enter the email address you signed up with and we'll send you a link to choose a new password."
+  },
+  "auth.forgotPasswordPage.linkExpiryHint": {
+    "defaultMessage": "The link expires in 1 hour. Don't see it? Check your spam folder, or try again in a few minutes."
+  },
+  "auth.forgotPasswordPage.loginPrompt": {
+    "defaultMessage": "Remembered it? <login>Back to log in</login>"
+  },
+  "auth.forgotPasswordPage.submitButton": {
+    "defaultMessage": "Send reset link"
+  },
+  "auth.forgotPasswordPage.submittingButton": {
+    "defaultMessage": "Sending…"
+  },
+  "auth.forgotPasswordPage.successHeading": {
+    "defaultMessage": "Check your inbox"
+  },
+  "auth.forgotPasswordPage.title": {
+    "defaultMessage": "Reset your password"
+  },
+  "auth.loginForm.emailLabel": {
+    "defaultMessage": "Email"
+  },
+  "auth.loginForm.passwordLabel": {
+    "defaultMessage": "Password"
+  },
+  "auth.loginForm.submitButton": {
+    "defaultMessage": "Log in"
+  },
+  "auth.loginForm.submittingButton": {
+    "defaultMessage": "Logging in..."
+  },
+  "auth.loginPage.forgotPasswordLink": {
+    "defaultMessage": "Forgot your password?"
+  },
+  "auth.loginPage.loginFailedFallback": {
+    "defaultMessage": "Login failed"
+  },
+  "auth.loginPage.resendButton": {
+    "defaultMessage": "Resend confirmation email to {email}"
+  },
+  "auth.loginPage.resendButtonSending": {
+    "defaultMessage": "Sending…"
+  },
+  "auth.loginPage.resendConfirmationSent": {
+    "defaultMessage": "Sent a new confirmation link to <em>{email}</em>."
+  },
+  "auth.loginPage.signupPrompt": {
+    "defaultMessage": "Don't have an account? <signup>Sign up</signup>"
+  },
+  "auth.loginPage.title": {
+    "defaultMessage": "Log in to MayDay"
+  },
+  "auth.registerForm.confirmPasswordLabel": {
+    "defaultMessage": "Confirm password"
+  },
+  "auth.registerForm.confirmPasswordRequiredError": {
     "defaultMessage": "Please confirm your password"
   },
-  "vRcOWF": {
+  "auth.registerForm.emailLabel": {
+    "defaultMessage": "Email"
+  },
+  "auth.registerForm.nameLabel": {
+    "defaultMessage": "Name"
+  },
+  "auth.registerForm.passwordLabel": {
+    "defaultMessage": "Password"
+  },
+  "auth.registerForm.passwordsMismatchError": {
+    "defaultMessage": "Passwords do not match"
+  },
+  "auth.registerForm.submitButton": {
+    "defaultMessage": "Create account"
+  },
+  "auth.registerForm.submittingButton": {
+    "defaultMessage": "Creating account..."
+  },
+  "auth.registerPage.backToLogin": {
+    "defaultMessage": "Back to log in"
+  },
+  "auth.registerPage.confirmationSentMessage": {
+    "defaultMessage": "We've sent a confirmation link to <em>{email}</em>. Click it to activate your account, then come back and log in."
+  },
+  "auth.registerPage.linkExpiryHint": {
+    "defaultMessage": "The link expires in 24 hours. Don't see the email? Check your spam folder."
+  },
+  "auth.registerPage.loginPrompt": {
+    "defaultMessage": "Already have an account? <login>Log in</login>"
+  },
+  "auth.registerPage.registrationFailedFallback": {
+    "defaultMessage": "Registration failed"
+  },
+  "auth.registerPage.resendButton": {
+    "defaultMessage": "Resend confirmation email"
+  },
+  "auth.registerPage.resendButtonSending": {
+    "defaultMessage": "Sending…"
+  },
+  "auth.registerPage.resendFailedFallback": {
+    "defaultMessage": "Failed to resend. Try again shortly."
+  },
+  "auth.registerPage.resendSuccessStatus": {
+    "defaultMessage": "Confirmation email resent."
+  },
+  "auth.registerPage.successHeading": {
+    "defaultMessage": "Check your inbox"
+  },
+  "auth.registerPage.title": {
+    "defaultMessage": "Join MayDay"
+  },
+  "auth.resetPasswordPage.confirmPasswordLabel": {
+    "defaultMessage": "Confirm new password"
+  },
+  "auth.resetPasswordPage.confirmPasswordRequiredError": {
+    "defaultMessage": "Please confirm your new password"
+  },
+  "auth.resetPasswordPage.missingTokenError": {
+    "defaultMessage": "Missing reset token."
+  },
+  "auth.resetPasswordPage.missingTokenHeading": {
+    "defaultMessage": "Reset your password"
+  },
+  "auth.resetPasswordPage.missingTokenInstructions": {
+    "defaultMessage": "Please use the link in your password reset email, or <request>request a new one</request>."
+  },
+  "auth.resetPasswordPage.newPasswordLabel": {
+    "defaultMessage": "New password"
+  },
+  "auth.resetPasswordPage.passwordTooShortError": {
+    "defaultMessage": "Password must be at least 8 characters"
+  },
+  "auth.resetPasswordPage.passwordsMismatchError": {
+    "defaultMessage": "Passwords do not match"
+  },
+  "auth.resetPasswordPage.resetFailedFallback": {
     "defaultMessage": "Could not reset your password. The link may have expired."
   },
-  "vc5ZPy": {
-    "defaultMessage": "Resend confirmation email"
+  "auth.resetPasswordPage.submitButton": {
+    "defaultMessage": "Update password"
+  },
+  "auth.resetPasswordPage.submittingButton": {
+    "defaultMessage": "Saving…"
+  },
+  "auth.resetPasswordPage.successHeading": {
+    "defaultMessage": "Password updated"
+  },
+  "auth.resetPasswordPage.successLoginLink": {
+    "defaultMessage": "Log in"
+  },
+  "auth.resetPasswordPage.successMessage": {
+    "defaultMessage": "Your password has been reset."
+  },
+  "auth.resetPasswordPage.title": {
+    "defaultMessage": "Choose a new password"
+  },
+  "auth.verifyEmailPage.confirmButton": {
+    "defaultMessage": "Confirm my email"
+  },
+  "auth.verifyEmailPage.errorRecoveryInstructions": {
+    "defaultMessage": "Need a new link? <login>Go to log in</login> and use <action>Resend confirmation email</action>."
+  },
+  "auth.verifyEmailPage.idleInstructions": {
+    "defaultMessage": "Click the button below to finish confirming your email address."
+  },
+  "auth.verifyEmailPage.missingTokenError": {
+    "defaultMessage": "Missing verification token."
+  },
+  "auth.verifyEmailPage.successLoginLink": {
+    "defaultMessage": "Log in"
+  },
+  "auth.verifyEmailPage.title": {
+    "defaultMessage": "Confirm your email"
+  },
+  "auth.verifyEmailPage.verificationFailedFallback": {
+    "defaultMessage": "Verification failed."
+  },
+  "auth.verifyEmailPage.verifyingStatus": {
+    "defaultMessage": "Verifying your email…"
+  },
+  "common.announcementBanner.dismissAriaLabel": {
+    "defaultMessage": "Dismiss announcement"
+  },
+  "common.avatarUploader.fileTooLargeError": {
+    "defaultMessage": "Image must be 5MB or smaller"
+  },
+  "common.avatarUploader.invalidTypeError": {
+    "defaultMessage": "Only JPEG, PNG, GIF, and WebP images are allowed"
+  },
+  "common.avatarUploader.uploadAriaLabel": {
+    "defaultMessage": "Upload avatar"
+  },
+  "common.avatarUploader.uploadFailedFallback": {
+    "defaultMessage": "Failed to upload avatar"
+  },
+  "common.avatarUploader.uploadSuccess": {
+    "defaultMessage": "Avatar updated"
+  },
+  "common.avatarUploader.uploadingAriaLabel": {
+    "defaultMessage": "Uploading avatar"
+  },
+  "common.entityCard.memberCount": {
+    "defaultMessage": "{count, plural, one {# member} other {# members}}"
+  },
+  "common.entityCard.viewerRole": {
+    "defaultMessage": "You: {role}"
+  },
+  "common.formField.optionalSuffix": {
+    "defaultMessage": "(optional)"
+  },
+  "common.inviteEmailsField.addAnotherButton": {
+    "defaultMessage": "+ Add another"
+  },
+  "common.inviteEmailsField.defaultHelpText": {
+    "defaultMessage": "They'll get an email invite. People without a Mayday account will be invited to sign up."
+  },
+  "common.inviteEmailsField.defaultLegend": {
+    "defaultMessage": "Invite people <opt>(optional)</opt>"
+  },
+  "common.inviteEmailsField.defaultSubmitLabel": {
+    "defaultMessage": "Send invites"
+  },
+  "common.inviteEmailsField.emailPlaceholder": {
+    "defaultMessage": "friend@example.com"
+  },
+  "common.inviteEmailsField.emailRowAriaLabel": {
+    "defaultMessage": "Email to invite {n}"
+  },
+  "common.inviteEmailsField.removeRowAriaLabel": {
+    "defaultMessage": "Remove email"
+  },
+  "common.linksEditor.addLinkButton": {
+    "defaultMessage": "Add link"
+  },
+  "common.linksEditor.labelAriaLabel": {
+    "defaultMessage": "Link label"
+  },
+  "common.linksEditor.labelPlaceholder": {
+    "defaultMessage": "Label (e.g. Website)"
+  },
+  "common.linksEditor.legend": {
+    "defaultMessage": "Links <opt>(optional)</opt>"
+  },
+  "common.linksEditor.removeRowAriaLabel": {
+    "defaultMessage": "Remove link {n}"
+  },
+  "common.linksEditor.urlAriaLabel": {
+    "defaultMessage": "Link URL"
+  },
+  "common.loadingSpinner.srLabel": {
+    "defaultMessage": "Loading..."
+  },
+  "common.pagination.navAriaLabel": {
+    "defaultMessage": "Pagination"
+  },
+  "common.pagination.nextAriaLabel": {
+    "defaultMessage": "Next page"
+  },
+  "common.pagination.pageOf": {
+    "defaultMessage": "Page {page} of {totalPages}"
+  },
+  "common.pagination.previousAriaLabel": {
+    "defaultMessage": "Previous page"
+  },
+  "common.passwordField.hideAriaLabel": {
+    "defaultMessage": "Hide password"
+  },
+  "common.passwordField.showAriaLabel": {
+    "defaultMessage": "Show password"
+  },
+  "common.pushNotificationsToggle.blockedError": {
+    "defaultMessage": "Notifications are blocked in your browser."
+  },
+  "common.pushNotificationsToggle.defaultHelper": {
+    "defaultMessage": "Get notified about activity even when Mayday isn't open in a tab."
+  },
+  "common.pushNotificationsToggle.deniedHelper": {
+    "defaultMessage": "Notifications are blocked in your browser. Re-enable them in your browser site settings to use this."
+  },
+  "common.pushNotificationsToggle.disabledToast": {
+    "defaultMessage": "Push notifications disabled"
+  },
+  "common.pushNotificationsToggle.enabledToast": {
+    "defaultMessage": "Push notifications enabled"
+  },
+  "common.pushNotificationsToggle.heading": {
+    "defaultMessage": "Push notifications"
+  },
+  "common.pushNotificationsToggle.noConfigError": {
+    "defaultMessage": "Push notifications are not configured on the server."
+  },
+  "common.pushNotificationsToggle.permissionDeniedError": {
+    "defaultMessage": "You denied notification permission. Re-enable it in your browser site settings."
+  },
+  "common.pushNotificationsToggle.permissionNotGrantedError": {
+    "defaultMessage": "Notification permission was not granted."
+  },
+  "common.pushNotificationsToggle.unsupportedHelper": {
+    "defaultMessage": "Your browser doesn't support push notifications."
+  },
+  "common.pushNotificationsToggle.updateFailedFallback": {
+    "defaultMessage": "Failed to update push notifications"
+  },
+  "common.searchBar.defaultPlaceholder": {
+    "defaultMessage": "Search..."
+  },
+  "urgency.critical": {
+    "defaultMessage": "Critical"
+  },
+  "urgency.high": {
+    "defaultMessage": "High"
+  },
+  "urgency.low": {
+    "defaultMessage": "Low"
+  },
+  "urgency.medium": {
+    "defaultMessage": "Medium"
   }
 }

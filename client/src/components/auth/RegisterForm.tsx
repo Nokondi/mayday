@@ -38,11 +38,17 @@ export function RegisterForm({
         .extend({
           confirmPassword: z.string().min(
             1,
-            intl.formatMessage({ defaultMessage: "Please confirm your password" }),
+            intl.formatMessage({
+              id: "auth.registerForm.confirmPasswordRequiredError",
+              defaultMessage: "Please confirm your password",
+            }),
           ),
         })
         .refine((v) => v.password === v.confirmPassword, {
-          message: intl.formatMessage({ defaultMessage: "Passwords do not match" }),
+          message: intl.formatMessage({
+            id: "auth.registerForm.passwordsMismatchError",
+            defaultMessage: "Passwords do not match",
+          }),
           path: ["confirmPassword"],
         }),
     [intl],
@@ -75,7 +81,10 @@ export function RegisterForm({
 
       <FormField
         id="register-name"
-        label={intl.formatMessage({ defaultMessage: "Name" })}
+        label={intl.formatMessage({
+          id: "auth.registerForm.nameLabel",
+          defaultMessage: "Name",
+        })}
         error={errors.name?.message}
         {...register("name")}
       />
@@ -83,21 +92,30 @@ export function RegisterForm({
       <FormField
         id="register-email"
         type="email"
-        label={intl.formatMessage({ defaultMessage: "Email" })}
+        label={intl.formatMessage({
+          id: "auth.registerForm.emailLabel",
+          defaultMessage: "Email",
+        })}
         error={errors.email?.message}
         {...register("email")}
       />
 
       <PasswordField
         id="register-password"
-        label={intl.formatMessage({ defaultMessage: "Password" })}
+        label={intl.formatMessage({
+          id: "auth.registerForm.passwordLabel",
+          defaultMessage: "Password",
+        })}
         error={errors.password?.message}
         {...register("password")}
       />
 
       <PasswordField
         id="register-confirm-password"
-        label={intl.formatMessage({ defaultMessage: "Confirm password" })}
+        label={intl.formatMessage({
+          id: "auth.registerForm.confirmPasswordLabel",
+          defaultMessage: "Confirm password",
+        })}
         error={errors.confirmPassword?.message}
         {...register("confirmPassword")}
       />
@@ -108,9 +126,15 @@ export function RegisterForm({
         className="w-full bg-mayday-700 text-white py-3 rounded-lg font-medium hover:bg-mayday-800 disabled:opacity-50"
       >
         {isSubmitting ? (
-          <FormattedMessage defaultMessage="Creating account..." />
+          <FormattedMessage
+            id="auth.registerForm.submittingButton"
+            defaultMessage="Creating account..."
+          />
         ) : (
-          <FormattedMessage defaultMessage="Create account" />
+          <FormattedMessage
+            id="auth.registerForm.submitButton"
+            defaultMessage="Create account"
+          />
         )}
       </button>
     </form>
