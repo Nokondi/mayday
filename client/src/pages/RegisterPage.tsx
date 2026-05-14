@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { useAuth } from '../context/AuthContext.js';
 import { RegisterForm } from '../components/auth/RegisterForm.js';
 import { resendVerification } from '../api/auth.js';
 import type { RegisterRequest } from '@mayday/shared';
 
 export function RegisterPage() {
+  const intl = useIntl();
   const { register } = useAuth();
   const [searchParams] = useSearchParams();
   const prefilledEmail = searchParams.get('email')?.trim() || undefined;
@@ -19,7 +21,10 @@ export function RegisterPage() {
     mutationFn: register,
     onSuccess: (_data, vars) => setSubmittedEmail(vars.email),
     onError: (err: any) => {
-      setError(err.response?.data?.error || 'Registration failed');
+      setError(
+        err.response?.data?.error ||
+          intl.formatMessage({ defaultMessage: 'Registration failed' }),
+      );
     },
   });
 
@@ -37,25 +42,37 @@ export function RegisterPage() {
       setResendState('sent');
     } catch (err: any) {
       setResendState('idle');
-      setResendError(err.response?.data?.error || 'Failed to resend. Try again shortly.');
+      setResendError(
+        err.response?.data?.error ||
+          intl.formatMessage({ defaultMessage: 'Failed to resend. Try again shortly.' }),
+      );
     }
   };
 
   if (submittedEmail) {
     return (
       <div className="max-w-md mx-auto px-4 py-16">
-        <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">Check your inbox</h1>
+        <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
+          <FormattedMessage defaultMessage="Check your inbox" />
+        </h1>
         <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
           <p className="text-gray-700">
-            We've sent a confirmation link to <span className="font-medium">{submittedEmail}</span>.
-            Click it to activate your account, then come back and log in.
+            <FormattedMessage
+              defaultMessage="We've sent a confirmation link to <em>{email}</em>. Click it to activate your account, then come back and log in."
+              values={{
+                email: submittedEmail,
+                em: (chunks) => <span className="font-medium">{chunks}</span>,
+              }}
+            />
           </p>
           <p className="text-sm text-gray-500">
-            The link expires in 24 hours. Don't see the email? Check your spam folder.
+            <FormattedMessage defaultMessage="The link expires in 24 hours. Don't see the email? Check your spam folder." />
           </p>
           <div className="pt-2 border-t border-gray-200">
             {resendState === 'sent' ? (
-              <p role="status" className="text-sm text-green-700">Confirmation email resent.</p>
+              <p role="status" className="text-sm text-green-700">
+                <FormattedMessage defaultMessage="Confirmation email resent." />
+              </p>
             ) : (
               <button
                 type="button"
@@ -63,13 +80,19 @@ export function RegisterPage() {
                 disabled={resendState === 'sending'}
                 className="text-sm text-mayday-600 hover:text-mayday-700 font-medium disabled:opacity-60"
               >
-                {resendState === 'sending' ? 'Sending…' : 'Resend confirmation email'}
+                {resendState === 'sending' ? (
+                  <FormattedMessage defaultMessage="Sending…" />
+                ) : (
+                  <FormattedMessage defaultMessage="Resend confirmation email" />
+                )}
               </button>
             )}
             {resendError && <p role="alert" className="text-sm text-red-600 mt-2">{resendError}</p>}
           </div>
           <p className="text-center text-sm text-gray-500">
-            <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">Back to log in</Link>
+            <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">
+              <FormattedMessage defaultMessage="Back to log in" />
+            </Link>
           </p>
         </div>
       </div>
@@ -78,12 +101,22 @@ export function RegisterPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-16">
-      <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">Join MayDay</h1>
+      <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
+        <FormattedMessage defaultMessage="Join MayDay" />
+      </h1>
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <RegisterForm onSubmit={handleSubmit} isSubmitting={registerMutation.isPending} error={error} defaultEmail={prefilledEmail} />
         <p className="text-center text-sm text-gray-500 mt-4">
-          Already have an account?{' '}
-          <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">Log in</Link>
+          <FormattedMessage
+            defaultMessage="Already have an account? <login>Log in</login>"
+            values={{
+              login: (chunks) => (
+                <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">
+                  {chunks}
+                </Link>
+              ),
+            }}
+          />
         </p>
       </div>
     </div>

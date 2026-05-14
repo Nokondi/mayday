@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { verifyEmail } from '../api/auth.js';
 
 type Status = 'idle' | 'verifying' | 'success' | 'error';
 
 export function VerifyEmailPage() {
+  const intl = useIntl();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const [status, setStatus] = useState<Status>('idle');
@@ -17,7 +19,7 @@ export function VerifyEmailPage() {
   const handleConfirm = async () => {
     if (!token) {
       setStatus('error');
-      setMessage('Missing verification token.');
+      setMessage(intl.formatMessage({ defaultMessage: 'Missing verification token.' }));
       return;
     }
 
@@ -28,18 +30,23 @@ export function VerifyEmailPage() {
       setMessage(res.message);
     } catch (err: any) {
       setStatus('error');
-      setMessage(err.response?.data?.error || 'Verification failed.');
+      setMessage(
+        err.response?.data?.error ||
+          intl.formatMessage({ defaultMessage: 'Verification failed.' }),
+      );
     }
   };
 
   return (
     <div className="max-w-md mx-auto px-4 py-16">
-      <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">Confirm your email</h1>
+      <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
+        <FormattedMessage defaultMessage="Confirm your email" />
+      </h1>
       <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
         {status === 'idle' && (
           <>
             <p className="text-gray-700">
-              Click the button below to finish confirming your email address.
+              <FormattedMessage defaultMessage="Click the button below to finish confirming your email address." />
             </p>
             <button
               type="button"
@@ -47,21 +54,27 @@ export function VerifyEmailPage() {
               disabled={!token}
               className="w-full bg-mayday-600 hover:bg-mayday-700 text-white font-medium py-2 rounded-md disabled:opacity-60"
             >
-              Confirm my email
+              <FormattedMessage defaultMessage="Confirm my email" />
             </button>
             {!token && (
-              <p className="text-sm text-red-600">Missing verification token.</p>
+              <p className="text-sm text-red-600">
+                <FormattedMessage defaultMessage="Missing verification token." />
+              </p>
             )}
           </>
         )}
         {status === 'verifying' && (
-          <p role="status" className="text-gray-700">Verifying your email…</p>
+          <p role="status" className="text-gray-700">
+            <FormattedMessage defaultMessage="Verifying your email…" />
+          </p>
         )}
         {status === 'success' && (
           <>
             <p role="status" className="text-green-700">{message}</p>
             <p className="text-center">
-              <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">Log in</Link>
+              <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">
+                <FormattedMessage defaultMessage="Log in" />
+              </Link>
             </p>
           </>
         )}
@@ -69,11 +82,17 @@ export function VerifyEmailPage() {
           <>
             <p role="alert" className="text-red-600">{message}</p>
             <p className="text-center text-sm text-gray-600">
-              Need a new link?{' '}
-              <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">
-                Go to log in
-              </Link>{' '}
-              and use <span className="font-medium">Resend confirmation email</span>.
+              <FormattedMessage
+                defaultMessage="Need a new link? <login>Go to log in</login> and use <action>Resend confirmation email</action>."
+                values={{
+                  login: (chunks) => (
+                    <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">
+                      {chunks}
+                    </Link>
+                  ),
+                  action: (chunks) => <span className="font-medium">{chunks}</span>,
+                }}
+              />
             </p>
           </>
         )}
