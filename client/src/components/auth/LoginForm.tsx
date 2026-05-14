@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { FormattedMessage, useIntl } from "react-intl";
 import { loginSchema, type LoginRequest } from "@mayday/shared";
 import { FormField } from "../common/FormField.js";
 import { PasswordField } from "../common/PasswordField.js";
@@ -11,6 +12,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSubmit, isSubmitting, error }: LoginFormProps) {
+  const intl = useIntl();
   const {
     register,
     handleSubmit,
@@ -33,14 +35,14 @@ export function LoginForm({ onSubmit, isSubmitting, error }: LoginFormProps) {
       <FormField
         id="login-email"
         type="email"
-        label="Email"
+        label={intl.formatMessage({ defaultMessage: "Email" })}
         error={errors.email?.message}
         {...register("email")}
       />
 
       <PasswordField
         id="login-password"
-        label="Password"
+        label={intl.formatMessage({ defaultMessage: "Password" })}
         error={errors.password?.message}
         {...register("password")}
       />
@@ -50,7 +52,11 @@ export function LoginForm({ onSubmit, isSubmitting, error }: LoginFormProps) {
         disabled={isSubmitting}
         className="w-full bg-mayday-700 text-white text-md py-3 rounded-lg font-bold hover:bg-mayday-800 disabled:opacity-50"
       >
-        {isSubmitting ? "Logging in..." : "Log in"}
+        {isSubmitting ? (
+          <FormattedMessage defaultMessage="Logging in..." />
+        ) : (
+          <FormattedMessage defaultMessage="Log in" />
+        )}
       </button>
     </form>
   );

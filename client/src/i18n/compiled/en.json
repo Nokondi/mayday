@@ -1,0 +1,102 @@
+{
+  "1dJEn5": [
+    {
+      "type": 0,
+      "value": "Log in to MayDay"
+    }
+  ],
+  "5sg7KC": [
+    {
+      "type": 0,
+      "value": "Password"
+    }
+  ],
+  "AWVk03": [
+    {
+      "type": 0,
+      "value": "Logging in..."
+    }
+  ],
+  "Oag5Hv": [
+    {
+      "type": 0,
+      "value": "Sent a new confirmation link to "
+    },
+    {
+      "children": [
+        {
+          "type": 1,
+          "value": "email"
+        }
+      ],
+      "type": 8,
+      "value": "em"
+    },
+    {
+      "type": 0,
+      "value": "."
+    }
+  ],
+  "ObRe4K": [
+    {
+      "type": 0,
+      "value": "Resend confirmation email to "
+    },
+    {
+      "type": 1,
+      "value": "email"
+    }
+  ],
+  "cyRU1N": [
+    {
+      "type": 0,
+      "value": "Forgot your password?"
+    }
+  ],
+  "ff2VGL": [
+    {
+      "type": 0,
+      "value": "Sending…"
+    }
+  ],
+  "fuUMz0": [
+    {
+      "type": 0,
+      "value": "Don't have an account? "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Sign up"
+        }
+      ],
+      "type": 8,
+      "value": "signup"
+    }
+  ],
+  "gjBiyj": [
+    {
+      "type": 0,
+      "value": "Loading..."
+    }
+  ],
+  "nuWwea": [
+    {
+      "type": 0,
+      "value": "Login failed"
+    }
+  ],
+  "odXlk8": [
+    {
+      "type": 0,
+      "value": "Log in"
+    }
+  ],
+  "sy+pv5": [
+    {
+      "type": 0,
+      "value": "Email"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "1dJEn5": {
+    "defaultMessage": "Log in to MayDay"
+  },
+  "5sg7KC": {
+    "defaultMessage": "Password"
+  },
+  "AWVk03": {
+    "defaultMessage": "Logging in..."
+  },
+  "Oag5Hv": {
+    "defaultMessage": "Sent a new confirmation link to <em>{email}</em>."
+  },
+  "ObRe4K": {
+    "defaultMessage": "Resend confirmation email to {email}"
+  },
+  "cyRU1N": {
+    "defaultMessage": "Forgot your password?"
+  },
+  "ff2VGL": {
+    "defaultMessage": "Sending…"
+  },
+  "fuUMz0": {
+    "defaultMessage": "Don't have an account? <signup>Sign up</signup>"
+  },
+  "gjBiyj": {
+    "defaultMessage": "Loading..."
+  },
+  "nuWwea": {
+    "defaultMessage": "Login failed"
+  },
+  "odXlk8": {
+    "defaultMessage": "Log in"
+  },
+  "sy+pv5": {
+    "defaultMessage": "Email"
+  }
+}

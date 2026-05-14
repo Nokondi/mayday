@@ -1,10 +1,11 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LoginForm } from '../../../src/components/auth/LoginForm.js';
+import { renderWithIntl } from '../../helpers/renderWithIntl.js';
 
 function renderForm(overrides: Partial<Parameters<typeof LoginForm>[0]> = {}) {
   const onSubmit = vi.fn().mockResolvedValue(undefined);
-  const utils = render(
+  const utils = renderWithIntl(
     <LoginForm onSubmit={onSubmit} isSubmitting={false} {...overrides} />,
   );
   return { onSubmit, ...utils };
