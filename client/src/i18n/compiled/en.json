@@ -1,8 +1,42 @@
 {
+  "+Dblp4": [
+    {
+      "type": 0,
+      "value": "Missing verification token."
+    }
+  ],
+  "+R29Eo": [
+    {
+      "type": 0,
+      "value": "Remembered it? "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Back to log in"
+        }
+      ],
+      "type": 8,
+      "value": "login"
+    }
+  ],
   "1dJEn5": [
     {
       "type": 0,
       "value": "Log in to MayDay"
+    }
+  ],
+  "1naKqh": [
+    {
+      "type": 0,
+      "value": "Failed to resend. Try again shortly."
+    }
+  ],
+  "2J76q8": [
+    {
+      "type": 0,
+      "value": "Click the button below to finish confirming your email address."
     }
   ],
   "5sg7KC": [
@@ -11,10 +45,108 @@
       "value": "Password"
     }
   ],
+  "62vhQG": [
+    {
+      "type": 0,
+      "value": "Verification failed."
+    }
+  ],
+  "7Chrsf": [
+    {
+      "type": 0,
+      "value": "Passwords do not match"
+    }
+  ],
+  "7G3Soa": [
+    {
+      "type": 0,
+      "value": "Confirmation email resent."
+    }
+  ],
+  "8AYCVV": [
+    {
+      "type": 0,
+      "value": "Enter the email address you signed up with and we'll send you a link to choose a new password."
+    }
+  ],
+  "8HimVK": [
+    {
+      "type": 0,
+      "value": "Confirm password"
+    }
+  ],
+  "9pk2C0": [
+    {
+      "type": 0,
+      "value": "Please confirm your new password"
+    }
+  ],
   "AWVk03": [
     {
       "type": 0,
       "value": "Logging in..."
+    }
+  ],
+  "DkQ5Q8": [
+    {
+      "type": 0,
+      "value": "Send reset link"
+    }
+  ],
+  "G7yB8N": [
+    {
+      "type": 0,
+      "value": "Registration failed"
+    }
+  ],
+  "HA3hsX": [
+    {
+      "type": 0,
+      "value": "Your password has been reset."
+    }
+  ],
+  "HAlOn1": [
+    {
+      "type": 0,
+      "value": "Name"
+    }
+  ],
+  "K3ca7K": [
+    {
+      "type": 0,
+      "value": "We've sent a confirmation link to "
+    },
+    {
+      "children": [
+        {
+          "type": 1,
+          "value": "email"
+        }
+      ],
+      "type": 8,
+      "value": "em"
+    },
+    {
+      "type": 0,
+      "value": ". Click it to activate your account, then come back and log in."
+    }
+  ],
+  "KcQzsj": [
+    {
+      "type": 0,
+      "value": "Verifying your email…"
+    }
+  ],
+  "KkT/Fh": [
+    {
+      "type": 0,
+      "value": "Update password"
+    }
+  ],
+  "Kz7I2o": [
+    {
+      "type": 0,
+      "value": "Password updated"
     }
   ],
   "Oag5Hv": [
@@ -47,10 +179,82 @@
       "value": "email"
     }
   ],
+  "PwhG9W": [
+    {
+      "type": 0,
+      "value": "you@example.com"
+    }
+  ],
+  "U6uo+0": [
+    {
+      "type": 0,
+      "value": "Please use the link in your password reset email, or "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "request a new one"
+        }
+      ],
+      "type": 8,
+      "value": "request"
+    },
+    {
+      "type": 0,
+      "value": "."
+    }
+  ],
+  "WUV28A": [
+    {
+      "type": 0,
+      "value": "Saving…"
+    }
+  ],
+  "WghPED": [
+    {
+      "type": 0,
+      "value": "Back to log in"
+    }
+  ],
+  "XhI0nH": [
+    {
+      "type": 0,
+      "value": "Already have an account? "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Log in"
+        }
+      ],
+      "type": 8,
+      "value": "login"
+    }
+  ],
   "cyRU1N": [
     {
       "type": 0,
       "value": "Forgot your password?"
+    }
+  ],
+  "de3Nha": [
+    {
+      "type": 0,
+      "value": "Join MayDay"
+    }
+  ],
+  "fTHhSB": [
+    {
+      "type": 0,
+      "value": "New password"
+    }
+  ],
+  "fe7Y2Z": [
+    {
+      "type": 0,
+      "value": "Confirm new password"
     }
   ],
   "ff2VGL": [
@@ -81,6 +285,108 @@
       "value": "Loading..."
     }
   ],
+  "h/HeZb": [
+    {
+      "type": 0,
+      "value": "Choose a new password"
+    }
+  ],
+  "hVmLJP": [
+    {
+      "type": 0,
+      "value": "Password must be at least 8 characters"
+    }
+  ],
+  "huqKGl": [
+    {
+      "type": 0,
+      "value": "Create account"
+    }
+  ],
+  "ijnuqm": [
+    {
+      "type": 0,
+      "value": "Confirm your email"
+    }
+  ],
+  "jHdnFq": [
+    {
+      "type": 0,
+      "value": "The link expires in 24 hours. Don't see the email? Check your spam folder."
+    }
+  ],
+  "jHolJz": [
+    {
+      "type": 0,
+      "value": "Confirm my email"
+    }
+  ],
+  "kjhGGf": [
+    {
+      "type": 0,
+      "value": "Check your inbox"
+    }
+  ],
+  "m0A0Fv": [
+    {
+      "type": 0,
+      "value": "Missing reset token."
+    }
+  ],
+  "mDDHqc": [
+    {
+      "type": 0,
+      "value": "Need a new link? "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Go to log in"
+        }
+      ],
+      "type": 8,
+      "value": "login"
+    },
+    {
+      "type": 0,
+      "value": " and use "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Resend confirmation email"
+        }
+      ],
+      "type": 8,
+      "value": "action"
+    },
+    {
+      "type": 0,
+      "value": "."
+    }
+  ],
+  "n0drHu": [
+    {
+      "type": 0,
+      "value": "If "
+    },
+    {
+      "children": [
+        {
+          "type": 1,
+          "value": "email"
+        }
+      ],
+      "type": 8,
+      "value": "em"
+    },
+    {
+      "type": 0,
+      "value": " matches a Mayday account, we've sent a password reset link. Click it to choose a new password."
+    }
+  ],
   "nuWwea": [
     {
       "type": 0,
@@ -93,10 +399,46 @@
       "value": "Log in"
     }
   ],
+  "p+kmJg": [
+    {
+      "type": 0,
+      "value": "Reset your password"
+    }
+  ],
+  "pSa43x": [
+    {
+      "type": 0,
+      "value": "The link expires in 1 hour. Don't see it? Check your spam folder, or try again in a few minutes."
+    }
+  ],
   "sy+pv5": [
     {
       "type": 0,
       "value": "Email"
+    }
+  ],
+  "v7Bl2J": [
+    {
+      "type": 0,
+      "value": "Creating account..."
+    }
+  ],
+  "vNd9Bt": [
+    {
+      "type": 0,
+      "value": "Please confirm your password"
+    }
+  ],
+  "vRcOWF": [
+    {
+      "type": 0,
+      "value": "Could not reset your password. The link may have expired."
+    }
+  ],
+  "vc5ZPy": [
+    {
+      "type": 0,
+      "value": "Resend confirmation email"
     }
   ]
 }

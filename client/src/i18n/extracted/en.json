@@ -1,12 +1,66 @@
 {
+  "+Dblp4": {
+    "defaultMessage": "Missing verification token."
+  },
+  "+R29Eo": {
+    "defaultMessage": "Remembered it? <login>Back to log in</login>"
+  },
   "1dJEn5": {
     "defaultMessage": "Log in to MayDay"
+  },
+  "1naKqh": {
+    "defaultMessage": "Failed to resend. Try again shortly."
+  },
+  "2J76q8": {
+    "defaultMessage": "Click the button below to finish confirming your email address."
   },
   "5sg7KC": {
     "defaultMessage": "Password"
   },
+  "62vhQG": {
+    "defaultMessage": "Verification failed."
+  },
+  "7Chrsf": {
+    "defaultMessage": "Passwords do not match"
+  },
+  "7G3Soa": {
+    "defaultMessage": "Confirmation email resent."
+  },
+  "8AYCVV": {
+    "defaultMessage": "Enter the email address you signed up with and we'll send you a link to choose a new password."
+  },
+  "8HimVK": {
+    "defaultMessage": "Confirm password"
+  },
+  "9pk2C0": {
+    "defaultMessage": "Please confirm your new password"
+  },
   "AWVk03": {
     "defaultMessage": "Logging in..."
+  },
+  "DkQ5Q8": {
+    "defaultMessage": "Send reset link"
+  },
+  "G7yB8N": {
+    "defaultMessage": "Registration failed"
+  },
+  "HA3hsX": {
+    "defaultMessage": "Your password has been reset."
+  },
+  "HAlOn1": {
+    "defaultMessage": "Name"
+  },
+  "K3ca7K": {
+    "defaultMessage": "We've sent a confirmation link to <em>{email}</em>. Click it to activate your account, then come back and log in."
+  },
+  "KcQzsj": {
+    "defaultMessage": "Verifying your email…"
+  },
+  "KkT/Fh": {
+    "defaultMessage": "Update password"
+  },
+  "Kz7I2o": {
+    "defaultMessage": "Password updated"
   },
   "Oag5Hv": {
     "defaultMessage": "Sent a new confirmation link to <em>{email}</em>."
@@ -14,8 +68,32 @@
   "ObRe4K": {
     "defaultMessage": "Resend confirmation email to {email}"
   },
+  "PwhG9W": {
+    "defaultMessage": "you@example.com"
+  },
+  "U6uo+0": {
+    "defaultMessage": "Please use the link in your password reset email, or <request>request a new one</request>."
+  },
+  "WUV28A": {
+    "defaultMessage": "Saving…"
+  },
+  "WghPED": {
+    "defaultMessage": "Back to log in"
+  },
+  "XhI0nH": {
+    "defaultMessage": "Already have an account? <login>Log in</login>"
+  },
   "cyRU1N": {
     "defaultMessage": "Forgot your password?"
+  },
+  "de3Nha": {
+    "defaultMessage": "Join MayDay"
+  },
+  "fTHhSB": {
+    "defaultMessage": "New password"
+  },
+  "fe7Y2Z": {
+    "defaultMessage": "Confirm new password"
   },
   "ff2VGL": {
     "defaultMessage": "Sending…"
@@ -26,13 +104,61 @@
   "gjBiyj": {
     "defaultMessage": "Loading..."
   },
+  "h/HeZb": {
+    "defaultMessage": "Choose a new password"
+  },
+  "hVmLJP": {
+    "defaultMessage": "Password must be at least 8 characters"
+  },
+  "huqKGl": {
+    "defaultMessage": "Create account"
+  },
+  "ijnuqm": {
+    "defaultMessage": "Confirm your email"
+  },
+  "jHdnFq": {
+    "defaultMessage": "The link expires in 24 hours. Don't see the email? Check your spam folder."
+  },
+  "jHolJz": {
+    "defaultMessage": "Confirm my email"
+  },
+  "kjhGGf": {
+    "defaultMessage": "Check your inbox"
+  },
+  "m0A0Fv": {
+    "defaultMessage": "Missing reset token."
+  },
+  "mDDHqc": {
+    "defaultMessage": "Need a new link? <login>Go to log in</login> and use <action>Resend confirmation email</action>."
+  },
+  "n0drHu": {
+    "defaultMessage": "If <em>{email}</em> matches a Mayday account, we've sent a password reset link. Click it to choose a new password."
+  },
   "nuWwea": {
     "defaultMessage": "Login failed"
   },
   "odXlk8": {
     "defaultMessage": "Log in"
   },
+  "p+kmJg": {
+    "defaultMessage": "Reset your password"
+  },
+  "pSa43x": {
+    "defaultMessage": "The link expires in 1 hour. Don't see it? Check your spam folder, or try again in a few minutes."
+  },
   "sy+pv5": {
     "defaultMessage": "Email"
+  },
+  "v7Bl2J": {
+    "defaultMessage": "Creating account..."
+  },
+  "vNd9Bt": {
+    "defaultMessage": "Please confirm your password"
+  },
+  "vRcOWF": {
+    "defaultMessage": "Could not reset your password. The link may have expired."
+  },
+  "vc5ZPy": {
+    "defaultMessage": "Resend confirmation email"
   }
 }

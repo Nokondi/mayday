@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
+import { IntlProvider } from 'react-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../src/api/auth.js', () => ({
@@ -16,11 +17,13 @@ const mockedResetPassword = vi.mocked(resetPassword);
 function renderPage(path = '/reset-password?token=tok123') {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return render(
-    <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={[path]}>
-        <ResetPasswordPage />
-      </MemoryRouter>
-    </QueryClientProvider>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={[path]}>
+          <ResetPasswordPage />
+        </MemoryRouter>
+      </QueryClientProvider>
+    </IntlProvider>,
   );
 }
 
