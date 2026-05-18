@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToastMutation } from "../hooks/useToastMutation.js";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   User as UserIcon,
   MapPin,
@@ -16,7 +16,7 @@ import {
   Settings,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import type { ProfileLink } from "@mayday/shared";
+import type { DeleteAccountRequest, ProfileLink } from "@mayday/shared";
 import {
   getUser,
   updateProfile,
@@ -24,6 +24,7 @@ import {
   uploadUserAvatar,
   deleteProfile,
   createReport,
+  getOwnedGroups,
 } from "../api/users.js";
 import { startConversation } from "../api/messages.js";
 import { useAuth } from "../context/AuthContext.js";
@@ -52,6 +53,10 @@ export function ProfilePage() {
   const [showReportConfirm, setShowReportConfirm] = useState(false);
   const [reportDetails, setReportDetails] = useState("");
   const reportDialogRef = useRef<HTMLDialogElement>(null);
+  // Heir selections — `communityHeirs[id]` / `organizationHeirs[id]` is the picked userId,
+  // or '' meaning "fall back to server auto-pick". Solo-owner groups have no entry.
+  const [communityHeirs, setCommunityHeirs] = useState<Record<string, string>>({});
+  const [organizationHeirs, setOrganizationHeirs] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const dialog = reportDialogRef.current;
@@ -97,10 +102,57 @@ export function ProfilePage() {
     onError: () => setShowReportConfirm(false),
   });
 
+  // Fetched only once the user opens the confirm step, so listing owned groups
+  // isn't a side-effect of viewing your own profile.
+  const ownedGroupsEnabled = isOwnProfile && confirmingDelete;
+  const { data: ownedGroups, isLoading: ownedGroupsLoading } = useQuery({
+    queryKey: ["users", "me", "owned-groups"],
+    queryFn: getOwnedGroups,
+    enabled: ownedGroupsEnabled,
+  });
+
+  // Seed heir selects with the server's auto-pick suggestion the first time
+  // owned-groups data arrives, so the dropdown isn't empty.
+  useEffect(() => {
+    if (!ownedGroups) return;
+    setCommunityHeirs((prev) => {
+      const next = { ...prev };
+      for (const g of ownedGroups.communities) {
+        if (g.candidates.length > 0 && next[g.id] === undefined) {
+          next[g.id] = g.defaultHeirUserId ?? "";
+        }
+      }
+      return next;
+    });
+    setOrganizationHeirs((prev) => {
+      const next = { ...prev };
+      for (const g of ownedGroups.organizations) {
+        if (g.candidates.length > 0 && next[g.id] === undefined) {
+          next[g.id] = g.defaultHeirUserId ?? "";
+        }
+      }
+      return next;
+    });
+  }, [ownedGroups]);
+
+  const deleteRequestBody = useMemo<DeleteAccountRequest>(() => {
+    const body: DeleteAccountRequest = {};
+    const cm = Object.fromEntries(
+      Object.entries(communityHeirs).filter(([, v]) => v),
+    );
+    const om = Object.fromEntries(
+      Object.entries(organizationHeirs).filter(([, v]) => v),
+    );
+    if (Object.keys(cm).length) body.communityHeirs = cm;
+    if (Object.keys(om).length) body.organizationHeirs = om;
+    return body;
+  }, [communityHeirs, organizationHeirs]);
+
   const deleteMutation = useToastMutation({
-    mutationFn: () => deleteProfile(id!),
+    mutationFn: () => deleteProfile(id!, deleteRequestBody),
     successMessage: "Your account has been deleted.",
-    errorMessage: "Failed to delete account",
+    errorMessage: (e: any) =>
+      e?.response?.data?.message || "Failed to delete account",
     onSuccess: async () => {
       queryClient.clear();
       // Clear client-side session state; the server has already cleared the refresh cookie.
@@ -372,18 +424,94 @@ export function ProfilePage() {
           </h2>
           <p className="text-sm text-red-700 mb-4">
             Deleting your account removes your profile, posts, messages, and
-            reports. Communities and organizations you own will be handed off to
-            the next member, or deleted if you're the only member.
+            reports. Communities and organizations you own are transferred to
+            the member you choose below, or deleted if you're the only member.
           </p>
           {confirmingDelete ? (
-            <div className="space-y-3">
+            <div className="space-y-4">
+              {ownedGroupsLoading && (
+                <p className="text-sm text-red-800">Loading owned groups…</p>
+              )}
+              {ownedGroups &&
+                (ownedGroups.communities.length > 0 ||
+                  ownedGroups.organizations.length > 0) && (
+                  <div className="bg-white border border-red-200 rounded-lg p-4 space-y-4">
+                    <p className="text-sm font-medium text-gray-900">
+                      Choose who inherits each group you own:
+                    </p>
+                    {[
+                      {
+                        kind: "community" as const,
+                        groups: ownedGroups.communities,
+                        state: communityHeirs,
+                        setState: setCommunityHeirs,
+                      },
+                      {
+                        kind: "organization" as const,
+                        groups: ownedGroups.organizations,
+                        state: organizationHeirs,
+                        setState: setOrganizationHeirs,
+                      },
+                    ].map(({ kind, groups, state, setState }) =>
+                      groups.map((g) => {
+                        const selectId = `heir-${kind}-${g.id}`;
+                        if (g.candidates.length === 0) {
+                          return (
+                            <div
+                              key={`${kind}-${g.id}`}
+                              className="flex items-center justify-between gap-3"
+                            >
+                              <span className="text-sm text-gray-900 truncate">
+                                {g.name}
+                              </span>
+                              <span className="text-xs text-gray-500 italic">
+                                no other members — will be deleted
+                              </span>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div
+                            key={`${kind}-${g.id}`}
+                            className="flex items-center justify-between gap-3"
+                          >
+                            <label
+                              htmlFor={selectId}
+                              className="text-sm text-gray-900 truncate flex-1"
+                            >
+                              {g.name}
+                            </label>
+                            <select
+                              id={selectId}
+                              value={state[g.id] ?? ""}
+                              onChange={(e) =>
+                                setState((prev) => ({
+                                  ...prev,
+                                  [g.id]: e.target.value,
+                                }))
+                              }
+                              disabled={deleteMutation.isPending}
+                              className="text-sm border border-gray-300 rounded px-2 py-1 max-w-[60%]"
+                            >
+                              {g.candidates.map((c) => (
+                                <option key={c.userId} value={c.userId}>
+                                  {c.name} ({c.role.toLowerCase()})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        );
+                      }),
+                    )}
+                  </div>
+                )}
               <p className="text-sm font-medium text-red-800">
                 This cannot be undone. Are you sure?
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => deleteMutation.mutate()}
-                  disabled={deleteMutation.isPending}
+                  disabled={deleteMutation.isPending || ownedGroupsLoading}
                   className="flex items-center gap-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
                 >
                   <Trash2 className="w-4 h-4" aria-hidden="true" />

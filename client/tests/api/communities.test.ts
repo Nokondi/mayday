@@ -29,6 +29,7 @@ import {
   removeCommunityMember,
   requestToJoinCommunity,
   revokeCommunityInvite,
+  transferCommunityOwnership,
   updateCommunity,
   updateCommunityMemberRole,
   uploadCommunityAvatar,
@@ -145,6 +146,15 @@ describe('communities api — members', () => {
     mockedApi.delete.mockResolvedValueOnce({ data: undefined });
     await removeCommunityMember('c1', 'u1');
     expect(mockedApi.delete).toHaveBeenCalledWith('/communities/c1/members/u1');
+  });
+
+  it('transferCommunityOwnership POSTs /communities/:id/transfer-ownership with newOwnerId', async () => {
+    mockedApi.post.mockResolvedValueOnce({ data: { message: 'Ownership transferred' } });
+    await transferCommunityOwnership('c1', { newOwnerId: 'u2' });
+    expect(mockedApi.post).toHaveBeenCalledWith(
+      '/communities/c1/transfer-ownership',
+      { newOwnerId: 'u2' },
+    );
   });
 });
 

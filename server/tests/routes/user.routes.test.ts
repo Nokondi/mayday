@@ -22,6 +22,7 @@ vi.mock('../../src/config/database.js', () => {
     communityMember: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
+      findUnique: vi.fn(),
       update: vi.fn(),
     },
     communityInvite: {
@@ -33,6 +34,7 @@ vi.mock('../../src/config/database.js', () => {
     organizationMember: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
+      findUnique: vi.fn(),
       update: vi.fn(),
     },
     organizationInvite: {
@@ -407,5 +409,198 @@ describe('DELETE /api/users/:id', () => {
     });
     expect(mockedOrganization.delete).toHaveBeenCalledWith({ where: { id: ORG_ID } });
     expect(mockedOrganizationMember.update).not.toHaveBeenCalled();
+  });
+
+  it('honours an explicit communityHeirs pick instead of auto-picking', async () => {
+    const COMMUNITY_ID = '00000000-0000-4000-a000-000000000100';
+    const PICKED_HEIR = '00000000-0000-4000-a000-000000000101';
+
+    mockNoAvatar();
+    mockedCommunityMember.findMany.mockResolvedValueOnce([
+      { communityId: COMMUNITY_ID },
+    ] as never);
+    // The handler looks up the picked heir membership directly — no findFirst auto-pick.
+    mockedCommunityMember.findUnique.mockResolvedValueOnce({
+      userId: PICKED_HEIR,
+      role: 'MEMBER',
+    } as never);
+    mockedOrganizationMember.findMany.mockResolvedValueOnce([] as never);
+
+    const res = await request(makeApp())
+      .delete(`/api/users/${USER_ID}`)
+      .set('Authorization', authHeader())
+      .send({ communityHeirs: { [COMMUNITY_ID]: PICKED_HEIR } });
+
+    expect(res.status).toBe(200);
+    expect(mockedCommunityMember.findFirst).not.toHaveBeenCalled();
+    expect(mockedCommunityMember.update).toHaveBeenCalledWith({
+      where: {
+        communityId_userId: { communityId: COMMUNITY_ID, userId: PICKED_HEIR },
+      },
+      data: { role: 'OWNER' },
+    });
+  });
+
+  it('honours an explicit organizationHeirs pick instead of auto-picking', async () => {
+    const ORG_ID = '00000000-0000-4000-a000-000000000200';
+    const PICKED_HEIR = '00000000-0000-4000-a000-000000000201';
+
+    mockNoAvatar();
+    mockedCommunityMember.findMany.mockResolvedValueOnce([] as never);
+    mockedOrganizationMember.findMany.mockResolvedValueOnce([
+      { organizationId: ORG_ID },
+    ] as never);
+    mockedOrganizationMember.findUnique.mockResolvedValueOnce({
+      userId: PICKED_HEIR,
+      role: 'ADMIN',
+    } as never);
+
+    const res = await request(makeApp())
+      .delete(`/api/users/${USER_ID}`)
+      .set('Authorization', authHeader())
+      .send({ organizationHeirs: { [ORG_ID]: PICKED_HEIR } });
+
+    expect(res.status).toBe(200);
+    expect(mockedOrganizationMember.findFirst).not.toHaveBeenCalled();
+    expect(mockedOrganizationMember.update).toHaveBeenCalledWith({
+      where: { organizationId_userId: { organizationId: ORG_ID, userId: PICKED_HEIR } },
+      data: { role: 'OWNER' },
+    });
+  });
+
+  it('rejects a heir who is not a member of the community', async () => {
+    const COMMUNITY_ID = '00000000-0000-4000-a000-000000000300';
+    const BAD_HEIR = '00000000-0000-4000-a000-000000000301';
+
+    mockNoAvatar();
+    mockedCommunityMember.findMany.mockResolvedValueOnce([
+      { communityId: COMMUNITY_ID },
+    ] as never);
+    mockedCommunityMember.findUnique.mockResolvedValueOnce(null as never);
+
+    const res = await request(makeApp())
+      .delete(`/api/users/${USER_ID}`)
+      .set('Authorization', authHeader())
+      .send({ communityHeirs: { [COMMUNITY_ID]: BAD_HEIR } });
+
+    expect(res.status).toBe(400);
+    expect(mockedUser.delete).not.toHaveBeenCalled();
+  });
+
+  it('rejects designating yourself as heir', async () => {
+    const COMMUNITY_ID = '00000000-0000-4000-a000-000000000400';
+
+    mockNoAvatar();
+    mockedCommunityMember.findMany.mockResolvedValueOnce([
+      { communityId: COMMUNITY_ID },
+    ] as never);
+    mockedOrganizationMember.findMany.mockResolvedValueOnce([] as never);
+
+    const res = await request(makeApp())
+      .delete(`/api/users/${USER_ID}`)
+      .set('Authorization', authHeader())
+      .send({ communityHeirs: { [COMMUNITY_ID]: USER_ID } });
+
+    expect(res.status).toBe(400);
+    expect(mockedUser.delete).not.toHaveBeenCalled();
+  });
+
+  it('rejects malformed heir maps (non-uuid values)', async () => {
+    const res = await request(makeApp())
+      .delete(`/api/users/${USER_ID}`)
+      .set('Authorization', authHeader())
+      .send({ communityHeirs: { 'not-a-uuid': 'also-not-a-uuid' } });
+
+    expect(res.status).toBe(400);
+    expect(mockedUser.delete).not.toHaveBeenCalled();
+  });
+});
+
+describe('GET /api/users/me/owned-groups', () => {
+  const mockedCommunityMember = vi.mocked(prisma.communityMember);
+  const mockedOrganizationMember = vi.mocked(prisma.organizationMember);
+
+  // Wipe any once-queues left over from preceding DELETE tests (whose handlers
+  // throw before consuming everything they queued). `mockReset` drops both the
+  // queue and the default implementation, so call dispatch is purely from
+  // setupCommunityMember/setupOrgMember below.
+  beforeEach(() => {
+    mockedCommunityMember.findMany.mockReset();
+    mockedOrganizationMember.findMany.mockReset();
+  });
+
+  // Dispatch by call-args so test order can't cause once-queue starvation. The
+  // route makes two distinct calls per mock (owner-list vs candidate-list),
+  // differentiated by the presence of `role: 'OWNER'` in the where clause.
+  function setupCommunityMember(ownerList: unknown[], candidateList: unknown[]) {
+    mockedCommunityMember.findMany.mockImplementation((args: unknown) => {
+      const where = (args as { where?: { role?: string } } | undefined)?.where;
+      return Promise.resolve(where?.role === 'OWNER' ? ownerList : candidateList) as never;
+    });
+  }
+  function setupOrgMember(ownerList: unknown[], candidateList: unknown[]) {
+    mockedOrganizationMember.findMany.mockImplementation((args: unknown) => {
+      const where = (args as { where?: { role?: string } } | undefined)?.where;
+      return Promise.resolve(where?.role === 'OWNER' ? ownerList : candidateList) as never;
+    });
+  }
+
+  it('returns owned communities and orgs with candidate lists', async () => {
+    setupCommunityMember(
+      [{ community: { id: 'c1', name: 'C1', avatarUrl: null } }],
+      [{ userId: 'heir-c', role: 'ADMIN', user: { id: 'heir-c', name: 'Heir C', avatarUrl: null } }],
+    );
+    setupOrgMember(
+      [{ organization: { id: 'o1', name: 'O1', avatarUrl: null } }],
+      [{ userId: 'heir-o', role: 'MEMBER', user: { id: 'heir-o', name: 'Heir O', avatarUrl: null } }],
+    );
+
+    const res = await request(makeApp())
+      .get('/api/users/me/owned-groups')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      communities: [
+        {
+          id: 'c1',
+          name: 'C1',
+          defaultHeirUserId: 'heir-c',
+          candidates: [{ userId: 'heir-c', role: 'ADMIN' }],
+        },
+      ],
+      organizations: [
+        {
+          id: 'o1',
+          name: 'O1',
+          defaultHeirUserId: 'heir-o',
+          candidates: [{ userId: 'heir-o', role: 'MEMBER' }],
+        },
+      ],
+    });
+  });
+
+  it('reports defaultHeirUserId null when the owner is the only member', async () => {
+    setupCommunityMember(
+      [{ community: { id: 'c-solo', name: 'Solo', avatarUrl: null } }],
+      [],
+    );
+    setupOrgMember([], []);
+
+    const res = await request(makeApp())
+      .get('/api/users/me/owned-groups')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+    expect(res.body.communities[0]).toMatchObject({
+      id: 'c-solo',
+      defaultHeirUserId: null,
+      candidates: [],
+    });
+  });
+
+  it('requires authentication', async () => {
+    const res = await request(makeApp()).get('/api/users/me/owned-groups');
+    expect(res.status).toBe(401);
   });
 });

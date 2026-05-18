@@ -1,4 +1,12 @@
-import type { UserPublicProfile, UpdateProfileRequest, UpdateUserSettingsRequest, PaginatedResponse, PostWithAuthor } from '@mayday/shared';
+import type {
+  UserPublicProfile,
+  UpdateProfileRequest,
+  UpdateUserSettingsRequest,
+  DeleteAccountRequest,
+  OwnedGroupsResponse,
+  PaginatedResponse,
+  PostWithAuthor,
+} from '@mayday/shared';
 import { api } from './client.js';
 
 export async function getUser(id: string): Promise<UserPublicProfile> {
@@ -35,8 +43,13 @@ export async function reportUser(data: { email: string; reason: string; details?
   return res.data;
 }
 
-export async function deleteProfile(id: string): Promise<void> {
-  await api.delete(`/users/${id}`);
+export async function deleteProfile(id: string, body?: DeleteAccountRequest): Promise<void> {
+  await api.delete(`/users/${id}`, { data: body });
+}
+
+export async function getOwnedGroups(): Promise<OwnedGroupsResponse> {
+  const res = await api.get('/users/me/owned-groups');
+  return res.data;
 }
 
 export async function updateUserSettings(

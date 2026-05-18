@@ -5,6 +5,7 @@ import {
   updateOrganizationSchema,
   inviteToOrganizationSchema,
   updateMemberRoleSchema,
+  transferOwnershipSchema,
 } from "@mayday/shared";
 import { validate } from "../middleware/validate.middleware.js";
 import {
@@ -415,6 +416,59 @@ organizationRoutes.patch(
       include: memberInclude,
     });
     res.json(updated);
+  }),
+);
+
+// POST /api/organizations/:id/transfer-ownership — OWNER hands the role to another member.
+// The previous owner is demoted to ADMIN.
+organizationRoutes.post(
+  "/:id/transfer-ownership",
+  validate(transferOwnershipSchema),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const orgId = req.params.id as string;
+    const { newOwnerId } = req.body as { newOwnerId: string };
+
+    if (newOwnerId === req.user!.id) {
+      throw new AppError(400, "You are already the owner");
+    }
+
+    const myMembership = await prisma.organizationMember.findUnique({
+      where: {
+        organizationId_userId: { organizationId: orgId, userId: req.user!.id },
+      },
+    });
+    if (!myMembership || myMembership.role !== "OWNER") {
+      throw new AppError(403, "Only the owner can transfer ownership");
+    }
+
+    const target = await prisma.organizationMember.findUnique({
+      where: {
+        organizationId_userId: { organizationId: orgId, userId: newOwnerId },
+      },
+    });
+    if (!target) {
+      throw new AppError(
+        404,
+        "New owner must be a member of this organization",
+      );
+    }
+
+    await prisma.$transaction([
+      prisma.organizationMember.update({
+        where: {
+          organizationId_userId: { organizationId: orgId, userId: req.user!.id },
+        },
+        data: { role: "ADMIN" },
+      }),
+      prisma.organizationMember.update({
+        where: {
+          organizationId_userId: { organizationId: orgId, userId: newOwnerId },
+        },
+        data: { role: "OWNER" },
+      }),
+    ]);
+
+    res.json({ message: "Ownership transferred" });
   }),
 );
 

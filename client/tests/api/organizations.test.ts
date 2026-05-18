@@ -25,6 +25,7 @@ import {
   listOrganizations,
   removeMember,
   revokeInvite,
+  transferOrganizationOwnership,
   updateMemberRole,
   updateOrganization,
   uploadOrganizationAvatar,
@@ -140,6 +141,15 @@ describe('organizations api — members', () => {
     mockedApi.delete.mockResolvedValueOnce({ data: undefined });
     await removeMember('o1', 'u1');
     expect(mockedApi.delete).toHaveBeenCalledWith('/organizations/o1/members/u1');
+  });
+
+  it('transferOrganizationOwnership POSTs /organizations/:id/transfer-ownership with newOwnerId', async () => {
+    mockedApi.post.mockResolvedValueOnce({ data: { message: 'Ownership transferred' } });
+    await transferOrganizationOwnership('o1', { newOwnerId: 'u2' });
+    expect(mockedApi.post).toHaveBeenCalledWith(
+      '/organizations/o1/transfer-ownership',
+      { newOwnerId: 'u2' },
+    );
   });
 });
 
