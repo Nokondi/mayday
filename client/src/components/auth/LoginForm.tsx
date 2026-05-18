@@ -36,7 +36,7 @@ export function LoginForm({ onSubmit, isSubmitting, error }: LoginFormProps) {
         id="login-email"
         type="email"
         label={intl.formatMessage({
-          id: "auth.loginForm.emailLabel",
+          id: "common.fields.email",
           defaultMessage: "Email",
         })}
         error={errors.email?.message}
@@ -46,7 +46,7 @@ export function LoginForm({ onSubmit, isSubmitting, error }: LoginFormProps) {
       <PasswordField
         id="login-password"
         label={intl.formatMessage({
-          id: "auth.loginForm.passwordLabel",
+          id: "common.fields.password",
           defaultMessage: "Password",
         })}
         error={errors.password?.message}
@@ -65,7 +65,7 @@ export function LoginForm({ onSubmit, isSubmitting, error }: LoginFormProps) {
           />
         ) : (
           <FormattedMessage
-            id="auth.loginForm.submitButton"
+            id="common.actions.login"
             defaultMessage="Log in"
           />
         )}

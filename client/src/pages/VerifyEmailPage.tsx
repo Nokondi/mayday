@@ -97,7 +97,7 @@ export function VerifyEmailPage() {
             <p className="text-center">
               <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">
                 <FormattedMessage
-                  id="auth.verifyEmailPage.successLoginLink"
+                  id="common.actions.login"
                   defaultMessage="Log in"
                 />
               </Link>

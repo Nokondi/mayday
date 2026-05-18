@@ -46,7 +46,7 @@ export function ResetPasswordPage() {
         })
         .refine((v) => v.password === v.confirmPassword, {
           message: intl.formatMessage({
-            id: "auth.resetPasswordPage.passwordsMismatchError",
+            id: "common.errors.passwordsMismatch",
             defaultMessage: "Passwords do not match",
           }),
           path: ["confirmPassword"],
@@ -72,7 +72,7 @@ export function ResetPasswordPage() {
       <div className="max-w-md mx-auto px-4 py-16">
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
           <FormattedMessage
-            id="auth.resetPasswordPage.missingTokenHeading"
+            id="auth.resetPasswordTitle"
             defaultMessage="Reset your password"
           />
         </h1>
@@ -126,7 +126,7 @@ export function ResetPasswordPage() {
               className="text-mayday-600 hover:text-mayday-700 font-medium"
             >
               <FormattedMessage
-                id="auth.resetPasswordPage.successLoginLink"
+                id="common.actions.login"
                 defaultMessage="Log in"
               />
             </Link>

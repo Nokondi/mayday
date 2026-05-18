@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { IntlProvider } from "react-intl";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../../src/context/AuthContext.js", () => ({
@@ -27,9 +28,11 @@ function setAuth(state: AuthState = {}) {
 
 function renderFooter() {
   return render(
-    <MemoryRouter>
-      <Footer />
-    </MemoryRouter>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <MemoryRouter>
+        <Footer />
+      </MemoryRouter>
+    </IntlProvider>,
   );
 }
 

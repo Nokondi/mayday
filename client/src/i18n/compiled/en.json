@@ -1,8 +1,14 @@
 {
-  "auth.forgotPasswordPage.backToLogin": [
+  "auth.backToLogin": [
     {
       "type": 0,
       "value": "Back to log in"
+    }
+  ],
+  "auth.checkInboxHeading": [
+    {
+      "type": 0,
+      "value": "Check your inbox"
     }
   ],
   "auth.forgotPasswordPage.confirmationSentMessage": [
@@ -23,12 +29,6 @@
     {
       "type": 0,
       "value": " matches a Mayday account, we've sent a password reset link. Click it to choose a new password."
-    }
-  ],
-  "auth.forgotPasswordPage.emailLabel": [
-    {
-      "type": 0,
-      "value": "Email"
     }
   ],
   "auth.forgotPasswordPage.emailPlaceholder": [
@@ -71,42 +71,6 @@
       "value": "Send reset link"
     }
   ],
-  "auth.forgotPasswordPage.submittingButton": [
-    {
-      "type": 0,
-      "value": "Sending…"
-    }
-  ],
-  "auth.forgotPasswordPage.successHeading": [
-    {
-      "type": 0,
-      "value": "Check your inbox"
-    }
-  ],
-  "auth.forgotPasswordPage.title": [
-    {
-      "type": 0,
-      "value": "Reset your password"
-    }
-  ],
-  "auth.loginForm.emailLabel": [
-    {
-      "type": 0,
-      "value": "Email"
-    }
-  ],
-  "auth.loginForm.passwordLabel": [
-    {
-      "type": 0,
-      "value": "Password"
-    }
-  ],
-  "auth.loginForm.submitButton": [
-    {
-      "type": 0,
-      "value": "Log in"
-    }
-  ],
   "auth.loginForm.submittingButton": [
     {
       "type": 0,
@@ -133,12 +97,6 @@
     {
       "type": 1,
       "value": "email"
-    }
-  ],
-  "auth.loginPage.resendButtonSending": [
-    {
-      "type": 0,
-      "value": "Sending…"
     }
   ],
   "auth.loginPage.resendConfirmationSent": [
@@ -195,28 +153,10 @@
       "value": "Please confirm your password"
     }
   ],
-  "auth.registerForm.emailLabel": [
-    {
-      "type": 0,
-      "value": "Email"
-    }
-  ],
   "auth.registerForm.nameLabel": [
     {
       "type": 0,
       "value": "Name"
-    }
-  ],
-  "auth.registerForm.passwordLabel": [
-    {
-      "type": 0,
-      "value": "Password"
-    }
-  ],
-  "auth.registerForm.passwordsMismatchError": [
-    {
-      "type": 0,
-      "value": "Passwords do not match"
     }
   ],
   "auth.registerForm.submitButton": [
@@ -229,12 +169,6 @@
     {
       "type": 0,
       "value": "Creating account..."
-    }
-  ],
-  "auth.registerPage.backToLogin": [
-    {
-      "type": 0,
-      "value": "Back to log in"
     }
   ],
   "auth.registerPage.confirmationSentMessage": [
@@ -291,12 +225,6 @@
       "value": "Resend confirmation email"
     }
   ],
-  "auth.registerPage.resendButtonSending": [
-    {
-      "type": 0,
-      "value": "Sending…"
-    }
-  ],
   "auth.registerPage.resendFailedFallback": [
     {
       "type": 0,
@@ -307,12 +235,6 @@
     {
       "type": 0,
       "value": "Confirmation email resent."
-    }
-  ],
-  "auth.registerPage.successHeading": [
-    {
-      "type": 0,
-      "value": "Check your inbox"
     }
   ],
   "auth.registerPage.title": [
@@ -337,12 +259,6 @@
     {
       "type": 0,
       "value": "Missing reset token."
-    }
-  ],
-  "auth.resetPasswordPage.missingTokenHeading": [
-    {
-      "type": 0,
-      "value": "Reset your password"
     }
   ],
   "auth.resetPasswordPage.missingTokenInstructions": [
@@ -377,12 +293,6 @@
       "value": "Password must be at least 8 characters"
     }
   ],
-  "auth.resetPasswordPage.passwordsMismatchError": [
-    {
-      "type": 0,
-      "value": "Passwords do not match"
-    }
-  ],
   "auth.resetPasswordPage.resetFailedFallback": [
     {
       "type": 0,
@@ -407,12 +317,6 @@
       "value": "Password updated"
     }
   ],
-  "auth.resetPasswordPage.successLoginLink": [
-    {
-      "type": 0,
-      "value": "Log in"
-    }
-  ],
   "auth.resetPasswordPage.successMessage": [
     {
       "type": 0,
@@ -423,6 +327,12 @@
     {
       "type": 0,
       "value": "Choose a new password"
+    }
+  ],
+  "auth.resetPasswordTitle": [
+    {
+      "type": 0,
+      "value": "Reset your password"
     }
   ],
   "auth.verifyEmailPage.confirmButton": [
@@ -477,12 +387,6 @@
       "value": "Missing verification token."
     }
   ],
-  "auth.verifyEmailPage.successLoginLink": [
-    {
-      "type": 0,
-      "value": "Log in"
-    }
-  ],
   "auth.verifyEmailPage.title": [
     {
       "type": 0,
@@ -499,6 +403,12 @@
     {
       "type": 0,
       "value": "Verifying your email…"
+    }
+  ],
+  "common.actions.login": [
+    {
+      "type": 0,
+      "value": "Log in"
     }
   ],
   "common.announcementBanner.dismissAriaLabel": [
@@ -583,6 +493,24 @@
     {
       "type": 1,
       "value": "role"
+    }
+  ],
+  "common.errors.passwordsMismatch": [
+    {
+      "type": 0,
+      "value": "Passwords do not match"
+    }
+  ],
+  "common.fields.email": [
+    {
+      "type": 0,
+      "value": "Email"
+    }
+  ],
+  "common.fields.password": [
+    {
+      "type": 0,
+      "value": "Password"
     }
   ],
   "common.formField.optionalSuffix": [
@@ -821,6 +749,238 @@
     {
       "type": 0,
       "value": "Search..."
+    }
+  ],
+  "common.status.sending": [
+    {
+      "type": 0,
+      "value": "Sending…"
+    }
+  ],
+  "layout.footer.brand": [
+    {
+      "type": 0,
+      "value": "MayDay Mutual Aid Hub"
+    }
+  ],
+  "layout.footer.patreonLink": [
+    {
+      "type": 0,
+      "value": "Follow us on Patreon"
+    }
+  ],
+  "layout.footer.tagline": [
+    {
+      "type": 0,
+      "value": "Built with "
+    },
+    {
+      "children": [
+      ],
+      "type": 8,
+      "value": "heart"
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "love"
+        }
+      ],
+      "type": 8,
+      "value": "love"
+    },
+    {
+      "type": 0,
+      "value": " for community"
+    }
+  ],
+  "layout.header.desktopNav.invitesAriaLabel": [
+    {
+      "offset": 0,
+      "options": {
+        "=0": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Invites"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Invites ("
+            },
+            {
+              "type": 1,
+              "value": "count"
+            },
+            {
+              "type": 0,
+              "value": " pending)"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    }
+  ],
+  "layout.header.desktopNav.orgs": [
+    {
+      "type": 0,
+      "value": "Orgs"
+    }
+  ],
+  "layout.header.desktopNav.profileAriaLabel": [
+    {
+      "type": 0,
+      "value": "Your profile"
+    }
+  ],
+  "layout.header.desktopNavAriaLabel": [
+    {
+      "type": 0,
+      "value": "Main navigation"
+    }
+  ],
+  "layout.header.mobileNav.admin": [
+    {
+      "type": 0,
+      "value": "Admin"
+    }
+  ],
+  "layout.header.mobileNav.invites": [
+    {
+      "offset": 0,
+      "options": {
+        "=0": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Invites"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Invites ("
+            },
+            {
+              "type": 1,
+              "value": "count"
+            },
+            {
+              "type": 0,
+              "value": ")"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    }
+  ],
+  "layout.header.mobileNav.organizations": [
+    {
+      "type": 0,
+      "value": "Organizations"
+    }
+  ],
+  "layout.header.mobileNav.profile": [
+    {
+      "type": 0,
+      "value": "Profile"
+    }
+  ],
+  "layout.header.mobileNavAriaLabel": [
+    {
+      "type": 0,
+      "value": "Mobile navigation"
+    }
+  ],
+  "layout.header.nav.about": [
+    {
+      "type": 0,
+      "value": "About"
+    }
+  ],
+  "layout.header.nav.adminPanelAria": [
+    {
+      "type": 0,
+      "value": "Admin panel"
+    }
+  ],
+  "layout.header.nav.browse": [
+    {
+      "type": 0,
+      "value": "Browse"
+    }
+  ],
+  "layout.header.nav.calendar": [
+    {
+      "type": 0,
+      "value": "Calendar"
+    }
+  ],
+  "layout.header.nav.communities": [
+    {
+      "type": 0,
+      "value": "Communities"
+    }
+  ],
+  "layout.header.nav.logout": [
+    {
+      "type": 0,
+      "value": "Log out"
+    }
+  ],
+  "layout.header.nav.map": [
+    {
+      "type": 0,
+      "value": "Map"
+    }
+  ],
+  "layout.header.nav.messages": [
+    {
+      "type": 0,
+      "value": "Messages"
+    }
+  ],
+  "layout.header.nav.newPost": [
+    {
+      "type": 0,
+      "value": "New Post"
+    }
+  ],
+  "layout.header.nav.signup": [
+    {
+      "type": 0,
+      "value": "Sign up"
+    }
+  ],
+  "layout.header.nav.support": [
+    {
+      "type": 0,
+      "value": "Support"
+    }
+  ],
+  "layout.header.toggleMenuAriaLabel": [
+    {
+      "type": 0,
+      "value": "Toggle menu"
+    }
+  ],
+  "layout.skipToMainContent": [
+    {
+      "type": 0,
+      "value": "Skip to main content"
     }
   ],
   "urgency.critical": [

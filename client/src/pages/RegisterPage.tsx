@@ -60,7 +60,7 @@ export function RegisterPage() {
       <div className="max-w-md mx-auto px-4 py-16">
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
           <FormattedMessage
-            id="auth.registerPage.successHeading"
+            id="auth.checkInboxHeading"
             defaultMessage="Check your inbox"
           />
         </h1>
@@ -98,7 +98,7 @@ export function RegisterPage() {
               >
                 {resendState === 'sending' ? (
                   <FormattedMessage
-                    id="auth.registerPage.resendButtonSending"
+                    id="common.status.sending"
                     defaultMessage="Sending…"
                   />
                 ) : (
@@ -114,7 +114,7 @@ export function RegisterPage() {
           <p className="text-center text-sm text-gray-500">
             <Link to="/login" className="text-mayday-600 hover:text-mayday-700 font-medium">
               <FormattedMessage
-                id="auth.registerPage.backToLogin"
+                id="auth.backToLogin"
                 defaultMessage="Back to log in"
               />
             </Link>

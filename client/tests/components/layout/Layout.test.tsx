@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { IntlProvider } from 'react-intl';
 import { describe, expect, it, vi } from 'vitest';
 
 // Stub the Header, Footer, and AnnouncementBanner so the Layout test does not
@@ -20,14 +21,16 @@ import { Layout } from '../../../src/components/layout/Layout.js';
 
 function renderLayout(initialPath = '/') {
   return render(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<div data-testid="outlet-content">HOME</div>} />
-          <Route path="/other" element={<div data-testid="outlet-content">OTHER</div>} />
-        </Route>
-      </Routes>
-    </MemoryRouter>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <MemoryRouter initialEntries={[initialPath]}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<div data-testid="outlet-content">HOME</div>} />
+            <Route path="/other" element={<div data-testid="outlet-content">OTHER</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </IntlProvider>,
   );
 }
 
