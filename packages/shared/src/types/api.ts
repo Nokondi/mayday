@@ -248,10 +248,50 @@ export const updateMemberRoleSchema = z.object({
   role: z.enum(['ADMIN', 'MEMBER']),
 });
 
+export const transferOwnershipSchema = z.object({
+  newOwnerId: z.string().uuid(),
+});
+
 export type CreateOrganizationRequest = z.infer<typeof createOrganizationSchema>;
 export type UpdateOrganizationRequest = z.infer<typeof updateOrganizationSchema>;
 export type InviteToOrganizationRequest = z.infer<typeof inviteToOrganizationSchema>;
 export type UpdateMemberRoleRequest = z.infer<typeof updateMemberRoleSchema>;
+export type TransferOwnershipRequest = z.infer<typeof transferOwnershipSchema>;
+
+// Account deletion — optional heir assignments per owned community/org.
+// Maps are `<communityId|organizationId, newOwnerUserId>`. Any owned group
+// omitted from the map falls back to the server's auto-pick (oldest ADMIN,
+// else oldest MEMBER); solo-owner groups are deleted regardless.
+export const deleteAccountSchema = z.object({
+  communityHeirs: z.record(z.string().uuid(), z.string().uuid()).optional(),
+  organizationHeirs: z.record(z.string().uuid(), z.string().uuid()).optional(),
+});
+
+export type DeleteAccountRequest = z.infer<typeof deleteAccountSchema>;
+
+// Snapshot of communities/orgs the current user owns, used by the
+// account-delete picker UI. `candidates` is empty when the user is the sole
+// member, in which case the group is deleted on account removal.
+export interface OwnedGroupHeirCandidate {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  role: 'ADMIN' | 'MEMBER';
+}
+
+export interface OwnedGroupSummary {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  /** Member who would inherit if no heir is selected. `null` when solo-owned. */
+  defaultHeirUserId: string | null;
+  candidates: OwnedGroupHeirCandidate[];
+}
+
+export interface OwnedGroupsResponse {
+  communities: OwnedGroupSummary[];
+  organizations: OwnedGroupSummary[];
+}
 
 // Communities
 // Avatar is set via the dedicated upload endpoint (POST /api/communities/:id/avatar),
