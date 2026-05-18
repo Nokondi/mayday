@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { X, Plus, User, Building2, Loader2 } from 'lucide-react';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { fulfillPost, searchFulfillers } from '../../api/posts.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useToastMutation } from '../../hooks/useToastMutation.js';
@@ -18,6 +19,7 @@ interface FulfillModalProps {
 }
 
 export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
+  const intl = useIntl();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const queryClient = useQueryClient();
   const [fulfillers, setFulfillers] = useState<Fulfiller[]>([{ name: '' }]);
@@ -70,8 +72,14 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
     mutationFn: () => fulfillPost(postId, {
       fulfillers: fulfillers.filter(f => f.name.trim()),
     }),
-    successMessage: 'Post marked as fulfilled',
-    errorMessage: 'Failed to mark post as fulfilled',
+    successMessage: intl.formatMessage({
+      id: 'posts.fulfillModal.successToast',
+      defaultMessage: 'Post marked as fulfilled',
+    }),
+    errorMessage: intl.formatMessage({
+      id: 'posts.fulfillModal.failureToast',
+      defaultMessage: 'Failed to mark post as fulfilled',
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
@@ -142,14 +150,29 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
     >
       <div className="bg-white rounded-lg shadow-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 id="fulfill-modal-title" className="text-lg font-bold text-gray-900">Mark as Fulfilled</h2>
-          <button onClick={resetAndClose} aria-label="Close" className="text-gray-500 hover:text-gray-600">
+          <h2 id="fulfill-modal-title" className="text-lg font-bold text-gray-900">
+            <FormattedMessage
+              id="posts.actions.markAsFulfilled"
+              defaultMessage="Mark as Fulfilled"
+            />
+          </h2>
+          <button
+            onClick={resetAndClose}
+            aria-label={intl.formatMessage({
+              id: 'common.actions.close',
+              defaultMessage: 'Close',
+            })}
+            className="text-gray-500 hover:text-gray-600"
+          >
             <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
         <p className="text-sm text-gray-600 mb-4">
-          Who helped fulfill this request? You can add multiple people or organizations.
+          <FormattedMessage
+            id="posts.fulfillModal.instructions"
+            defaultMessage="Who helped fulfill this request? You can add multiple people or organizations."
+          />
         </p>
 
         <div className="space-y-3 mb-4">
@@ -162,7 +185,10 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
                   onChange={(e) => handleNameChange(index, e.target.value)}
                   onFocus={() => { setActiveIndex(index); setSearchQuery(fulfiller.name); }}
                   onBlur={handleNameBlur}
-                  placeholder="Type a name to search..."
+                  placeholder={intl.formatMessage({
+                    id: 'posts.fulfillModal.searchPlaceholder',
+                    defaultMessage: 'Type a name to search...',
+                  })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
                 />
                 {fulfiller.userId && (
@@ -176,12 +202,21 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
                   <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                     {searching && (
                       <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500">
-                        <Loader2 className="w-4 h-4 animate-spin" /> Searching...
+                        <Loader2 className="w-4 h-4 animate-spin" />{' '}
+                        <FormattedMessage
+                          id="posts.fulfillModal.searchingStatus"
+                          defaultMessage="Searching..."
+                        />
                       </div>
                     )}
                     {searchResults.users.length > 0 && (
                       <>
-                        <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase bg-gray-50">Users</div>
+                        <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                          <FormattedMessage
+                            id="posts.fulfillModal.usersHeading"
+                            defaultMessage="Users"
+                          />
+                        </div>
                         {searchResults.users.map((u) => (
                           <button
                             key={`user-${u.id}`}
@@ -202,7 +237,12 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
                     )}
                     {searchResults.organizations.length > 0 && (
                       <>
-                        <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase bg-gray-50">Organizations</div>
+                        <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                          <FormattedMessage
+                            id="posts.fulfillModal.orgsHeading"
+                            defaultMessage="Organizations"
+                          />
+                        </div>
                         {searchResults.organizations.map((o) => (
                           <button
                             key={`org-${o.id}`}
@@ -229,7 +269,13 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
                 <button
                   type="button"
                   onClick={() => removeFulfiller(index)}
-                  aria-label={`Remove fulfiller ${index + 1}`}
+                  aria-label={intl.formatMessage(
+                    {
+                      id: 'posts.fulfillModal.removeFulfillerAria',
+                      defaultMessage: 'Remove fulfiller {n}',
+                    },
+                    { n: index + 1 },
+                  )}
                   className="text-gray-500 hover:text-red-500 p-1"
                 >
                   <X className="w-4 h-4" aria-hidden="true" />
@@ -244,7 +290,11 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
           onClick={addFulfiller}
           className="flex items-center gap-1 text-sm text-mayday-600 hover:text-mayday-700 mb-6"
         >
-          <Plus className="w-4 h-4" /> Add another
+          <Plus className="w-4 h-4" />{' '}
+          <FormattedMessage
+            id="posts.fulfillModal.addAnother"
+            defaultMessage="Add another"
+          />
         </button>
 
         <div className="flex justify-end gap-3">
@@ -253,7 +303,10 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
             onClick={resetAndClose}
             className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
           >
-            Cancel
+            <FormattedMessage
+              id="common.actions.cancel"
+              defaultMessage="Cancel"
+            />
           </button>
           <button
             type="button"
@@ -262,7 +315,10 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
             className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {fulfillMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-            Mark as Fulfilled
+            <FormattedMessage
+              id="posts.actions.markAsFulfilled"
+              defaultMessage="Mark as Fulfilled"
+            />
           </button>
         </div>
       </div>

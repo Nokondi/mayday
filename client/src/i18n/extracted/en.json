@@ -143,6 +143,12 @@
   "auth.verifyEmailPage.verifyingStatus": {
     "defaultMessage": "Verifying your email…"
   },
+  "common.actions.cancel": {
+    "defaultMessage": "Cancel"
+  },
+  "common.actions.close": {
+    "defaultMessage": "Close"
+  },
   "common.actions.login": {
     "defaultMessage": "Log in"
   },
@@ -358,6 +364,303 @@
   },
   "layout.skipToMainContent": {
     "defaultMessage": "Skip to main content"
+  },
+  "posts.actions.contact": {
+    "defaultMessage": "Contact"
+  },
+  "posts.actions.delete": {
+    "defaultMessage": "Delete"
+  },
+  "posts.actions.markAsFulfilled": {
+    "defaultMessage": "Mark as Fulfilled"
+  },
+  "posts.actions.reopen": {
+    "defaultMessage": "Reopen"
+  },
+  "posts.actions.reportPost": {
+    "defaultMessage": "Report post"
+  },
+  "posts.browsePage.resultCount": {
+    "defaultMessage": "{count, plural, one {# post found} other {# posts found}}"
+  },
+  "posts.browsePage.searchPlaceholder": {
+    "defaultMessage": "Search requests and offers..."
+  },
+  "posts.browsePage.title": {
+    "defaultMessage": "Browse Posts"
+  },
+  "posts.createPage.failureToast": {
+    "defaultMessage": "Failed to create post"
+  },
+  "posts.createPage.successToast": {
+    "defaultMessage": "Post created!"
+  },
+  "posts.createPage.title": {
+    "defaultMessage": "Create a Post"
+  },
+  "posts.detailPage.contactFailedToast": {
+    "defaultMessage": "Failed to start conversation"
+  },
+  "posts.detailPage.deleteSuccessToast": {
+    "defaultMessage": "Post deleted"
+  },
+  "posts.detailPage.fulfilledByHeading": {
+    "defaultMessage": "Fulfilled by"
+  },
+  "posts.detailPage.matchingOffers": {
+    "defaultMessage": "Matching Offers"
+  },
+  "posts.detailPage.matchingRequests": {
+    "defaultMessage": "Matching Requests"
+  },
+  "posts.detailPage.messageDraftPrefix": {
+    "defaultMessage": "Re: {title}"
+  },
+  "posts.detailPage.notFound": {
+    "defaultMessage": "Post not found"
+  },
+  "posts.detailPage.organizationByLine": {
+    "defaultMessage": "· by {name}"
+  },
+  "posts.detailPage.reopenFailedToast": {
+    "defaultMessage": "Failed to reopen post"
+  },
+  "posts.detailPage.reopenSuccessToast": {
+    "defaultMessage": "Post reopened"
+  },
+  "posts.detailPage.reportDetailsLabel": {
+    "defaultMessage": "Additional details"
+  },
+  "posts.detailPage.reportDetailsPlaceholder": {
+    "defaultMessage": "What's wrong with this post? Any context that will help the admin team is welcome."
+  },
+  "posts.detailPage.reportDialogBody": {
+    "defaultMessage": "The admin team will review this post for inappropriate content. You can't undo a report, but you can file a new one later if needed."
+  },
+  "posts.detailPage.reportDialogTitle": {
+    "defaultMessage": "Report this post?"
+  },
+  "posts.detailPage.reportFailedToast": {
+    "defaultMessage": "Failed to submit report"
+  },
+  "posts.detailPage.reportSubmittingButton": {
+    "defaultMessage": "Submitting…"
+  },
+  "posts.detailPage.reportSuccessToast": {
+    "defaultMessage": "Report submitted"
+  },
+  "posts.filters.allCategories": {
+    "defaultMessage": "All Categories"
+  },
+  "posts.filters.allCommunities": {
+    "defaultMessage": "All Communities"
+  },
+  "posts.filters.allTypes": {
+    "defaultMessage": "All Types"
+  },
+  "posts.filters.allUrgency": {
+    "defaultMessage": "All Urgency"
+  },
+  "posts.filters.categoryAria": {
+    "defaultMessage": "Filter by category"
+  },
+  "posts.filters.communityAria": {
+    "defaultMessage": "Filter by community"
+  },
+  "posts.filters.offers": {
+    "defaultMessage": "Offers"
+  },
+  "posts.filters.requests": {
+    "defaultMessage": "Requests"
+  },
+  "posts.filters.sortAria": {
+    "defaultMessage": "Sort posts"
+  },
+  "posts.filters.sortRecent": {
+    "defaultMessage": "Most Recent"
+  },
+  "posts.filters.sortUrgency": {
+    "defaultMessage": "Most Urgent"
+  },
+  "posts.filters.typeAria": {
+    "defaultMessage": "Filter by type"
+  },
+  "posts.filters.urgencyAria": {
+    "defaultMessage": "Filter by urgency"
+  },
+  "posts.form.addImagesButton": {
+    "defaultMessage": "Add images"
+  },
+  "posts.form.categoryLabel": {
+    "defaultMessage": "Category"
+  },
+  "posts.form.clearLocationAria": {
+    "defaultMessage": "Clear location"
+  },
+  "posts.form.descriptionLabel": {
+    "defaultMessage": "Description"
+  },
+  "posts.form.descriptionPlaceholder": {
+    "defaultMessage": "Provide details about your request or offer..."
+  },
+  "posts.form.endsLabel": {
+    "defaultMessage": "Ends"
+  },
+  "posts.form.imagePreviewAlt": {
+    "defaultMessage": "Upload preview {n}"
+  },
+  "posts.form.imagesHelperText": {
+    "defaultMessage": "(optional, maximum of 5 images, 5mb per image)"
+  },
+  "posts.form.imagesLabel": {
+    "defaultMessage": "Images"
+  },
+  "posts.form.locationLabel": {
+    "defaultMessage": "Location"
+  },
+  "posts.form.locationPlaceholder": {
+    "defaultMessage": "Search for an address or place..."
+  },
+  "posts.form.locationSuggestionsAria": {
+    "defaultMessage": "Location suggestions"
+  },
+  "posts.form.offerRadioLabel": {
+    "defaultMessage": "I can help (Offer)"
+  },
+  "posts.form.postAsLabel": {
+    "defaultMessage": "Post as"
+  },
+  "posts.form.postAsYourselfDefault": {
+    "defaultMessage": "Yourself"
+  },
+  "posts.form.recurrenceDays": {
+    "defaultMessage": "day(s)"
+  },
+  "posts.form.recurrenceFrequencyAria": {
+    "defaultMessage": "Recurrence frequency"
+  },
+  "posts.form.recurrenceIntervalAria": {
+    "defaultMessage": "Recurrence interval"
+  },
+  "posts.form.recurrenceMonths": {
+    "defaultMessage": "month(s)"
+  },
+  "posts.form.recurrenceNone": {
+    "defaultMessage": "Does not repeat"
+  },
+  "posts.form.recurrenceWeeks": {
+    "defaultMessage": "week(s)"
+  },
+  "posts.form.removeImageAria": {
+    "defaultMessage": "Remove image {n}"
+  },
+  "posts.form.repeatEvery": {
+    "defaultMessage": "every"
+  },
+  "posts.form.repeatsLegend": {
+    "defaultMessage": "Repeats"
+  },
+  "posts.form.requestRadioLabel": {
+    "defaultMessage": "I need help (Request)"
+  },
+  "posts.form.selectCategoryPlaceholder": {
+    "defaultMessage": "Select a category"
+  },
+  "posts.form.startsLabel": {
+    "defaultMessage": "Starts"
+  },
+  "posts.form.submitButton": {
+    "defaultMessage": "Create Post"
+  },
+  "posts.form.submittingButton": {
+    "defaultMessage": "Creating..."
+  },
+  "posts.form.titleLabel": {
+    "defaultMessage": "Title"
+  },
+  "posts.form.titlePlaceholder": {
+    "defaultMessage": "Brief description of what you need or can offer"
+  },
+  "posts.form.typeLegend": {
+    "defaultMessage": "Type"
+  },
+  "posts.form.urgencyLabel": {
+    "defaultMessage": "Urgency"
+  },
+  "posts.form.visibilityCommunity": {
+    "defaultMessage": "{name} members only"
+  },
+  "posts.form.visibilityLabel": {
+    "defaultMessage": "Visibility"
+  },
+  "posts.form.visibilityPublic": {
+    "defaultMessage": "Public (visible to everyone)"
+  },
+  "posts.fulfillModal.addAnother": {
+    "defaultMessage": "Add another"
+  },
+  "posts.fulfillModal.failureToast": {
+    "defaultMessage": "Failed to mark post as fulfilled"
+  },
+  "posts.fulfillModal.instructions": {
+    "defaultMessage": "Who helped fulfill this request? You can add multiple people or organizations."
+  },
+  "posts.fulfillModal.orgsHeading": {
+    "defaultMessage": "Organizations"
+  },
+  "posts.fulfillModal.removeFulfillerAria": {
+    "defaultMessage": "Remove fulfiller {n}"
+  },
+  "posts.fulfillModal.searchPlaceholder": {
+    "defaultMessage": "Type a name to search..."
+  },
+  "posts.fulfillModal.searchingStatus": {
+    "defaultMessage": "Searching..."
+  },
+  "posts.fulfillModal.successToast": {
+    "defaultMessage": "Post marked as fulfilled"
+  },
+  "posts.fulfillModal.usersHeading": {
+    "defaultMessage": "Users"
+  },
+  "posts.imageCarousel.imageAlt": {
+    "defaultMessage": "Attachment {n} of {total} (opens in new tab)"
+  },
+  "posts.imageCarousel.nextAria": {
+    "defaultMessage": "Next image"
+  },
+  "posts.imageCarousel.previousAria": {
+    "defaultMessage": "Previous image"
+  },
+  "posts.postList.emptyState": {
+    "defaultMessage": "No posts found. Try adjusting your filters."
+  },
+  "posts.recurrence": {
+    "defaultMessage": "{count, plural, one {every {unit, select, DAY {day} WEEK {week} MONTH {month} other {month}}} other {every # {unit, select, DAY {days} WEEK {weeks} MONTH {months} other {months}}}}"
+  },
+  "posts.schedule.endsAt": {
+    "defaultMessage": "Ends {date}"
+  },
+  "posts.schedule.startsAt": {
+    "defaultMessage": "Starts {date}"
+  },
+  "posts.statuses.closed": {
+    "defaultMessage": "Closed"
+  },
+  "posts.statuses.fulfilled": {
+    "defaultMessage": "Fulfilled"
+  },
+  "posts.statuses.open": {
+    "defaultMessage": "Open"
+  },
+  "posts.typeAriaPrefix": {
+    "defaultMessage": "Post type:"
+  },
+  "posts.types.offer": {
+    "defaultMessage": "Offer"
+  },
+  "posts.types.request": {
+    "defaultMessage": "Request"
   },
   "urgency.critical": {
     "defaultMessage": "Critical"

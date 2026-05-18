@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { getPosts } from '../api/posts.js';
 import { listMyCommunities } from '../api/communities.js';
 import { PostList } from '../components/posts/PostList.js';
@@ -11,6 +12,7 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
 import { useDebounce } from '../hooks/useDebounce.js';
 
 export function PostsPage() {
+  const intl = useIntl();
   const [searchParams] = useSearchParams();
   const [type, setType] = useState(searchParams.get('type') || '');
   const [category, setCategory] = useState('');
@@ -43,13 +45,21 @@ export function PostsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Browse Posts</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        <FormattedMessage
+          id="posts.browsePage.title"
+          defaultMessage="Browse Posts"
+        />
+      </h1>
 
       <div className="space-y-4 mb-6">
         <SearchBar
           value={search}
           onChange={(v) => { setSearch(v); setPage(1); }}
-          placeholder="Search requests and offers..."
+          placeholder={intl.formatMessage({
+            id: 'posts.browsePage.searchPlaceholder',
+            defaultMessage: 'Search requests and offers...',
+          })}
         />
         <PostFilters
           type={type} category={category} urgency={urgency} sort={sort}
@@ -66,7 +76,13 @@ export function PostsPage() {
         <LoadingSpinner className="py-12" />
       ) : data ? (
         <>
-          <p className="text-sm text-gray-500 mb-4">{data.total} post{data.total !== 1 ? 's' : ''} found</p>
+          <p className="text-sm text-gray-500 mb-4">
+            <FormattedMessage
+              id="posts.browsePage.resultCount"
+              defaultMessage="{count, plural, one {# post found} other {# posts found}}"
+              values={{ count: data.total }}
+            />
+          </p>
           <PostList posts={data.data} />
           <Pagination page={data.page} totalPages={data.totalPages} onPageChange={setPage} />
         </>

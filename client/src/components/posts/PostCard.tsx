@@ -10,11 +10,29 @@ import {
   Repeat,
 } from "lucide-react";
 import { formatDistanceToNow, format, isSameDay } from "date-fns";
+import {
+  defineMessages,
+  FormattedMessage,
+  useIntl,
+  type IntlShape,
+} from "react-intl";
 import type { PostWithAuthor, RecurrenceFrequency } from "@mayday/shared";
 import { CategoryBadge } from "../common/CategoryBadge.js";
 import { UrgencyBadge } from "../common/UrgencyBadge.js";
 
+const typeLabels = defineMessages({
+  REQUEST: { id: "posts.types.request", defaultMessage: "Request" },
+  OFFER: { id: "posts.types.offer", defaultMessage: "Offer" },
+});
+
+const statusLabels = defineMessages({
+  OPEN: { id: "posts.statuses.open", defaultMessage: "Open" },
+  FULFILLED: { id: "posts.statuses.fulfilled", defaultMessage: "Fulfilled" },
+  CLOSED: { id: "posts.statuses.closed", defaultMessage: "Closed" },
+});
+
 function formatSchedule(
+  intl: IntlShape,
   startAt: string | null,
   endAt: string | null,
 ): string | null {
@@ -28,24 +46,43 @@ function formatSchedule(
       return `${format(start, dateFmt)} – ${format(end, timeFmt)}`;
     return `${format(start, dateFmt)} – ${format(end, dateFmt)}`;
   }
-  if (startAt) return `Starts ${format(new Date(startAt), dateFmt)}`;
-  return `Ends ${format(new Date(endAt!), dateFmt)}`;
+  if (startAt) {
+    return intl.formatMessage(
+      { id: "posts.schedule.startsAt", defaultMessage: "Starts {date}" },
+      { date: format(new Date(startAt), dateFmt) },
+    );
+  }
+  return intl.formatMessage(
+    { id: "posts.schedule.endsAt", defaultMessage: "Ends {date}" },
+    { date: format(new Date(endAt!), dateFmt) },
+  );
 }
 
+/**
+ * Render the human-readable recurrence ("every day", "every 3 weeks", etc.) for
+ * a post. Returns null when the post doesn't recur. Takes `intl` so callers can
+ * use the same translated formatter both in PostCard and PostDetailPage.
+ */
 export function formatRecurrence(
+  intl: IntlShape,
   freq: RecurrenceFrequency | null,
   interval: number | null,
 ): string | null {
   if (!freq || !interval) return null;
-  const unit = freq === "DAY" ? "day" : freq === "WEEK" ? "week" : "month";
-  return interval === 1 ? `every ${unit}` : `every ${interval} ${unit}s`;
+  return intl.formatMessage(
+    {
+      id: "posts.recurrence",
+      defaultMessage:
+        "{count, plural, one {every {unit, select, DAY {day} WEEK {week} MONTH {month} other {month}}} other {every # {unit, select, DAY {days} WEEK {weeks} MONTH {months} other {months}}}}",
+    },
+    { count: interval, unit: freq },
+  );
 }
 
 export function PostCard({ post }: { post: PostWithAuthor }) {
+  const intl = useIntl();
   const typeColor =
     post.type === "REQUEST" ? "border-l-orange-700" : "border-l-green-700";
-
-  const typeLabel = post.type === "REQUEST" ? "Request" : "Offer";
 
   return (
     <Link
@@ -58,8 +95,13 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             <span
               className={`text-s font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-700" : "text-green-700"}`}
             >
-              <span className="sr-only">Post type: </span>
-              {typeLabel}
+              <span className="sr-only">
+                <FormattedMessage
+                  id="posts.typeAriaPrefix"
+                  defaultMessage="Post type: "
+                />
+              </span>
+              {intl.formatMessage(typeLabels[post.type])}
             </span>
             <div className="flex gap-2">
               {post.images?.length > 0 && (
@@ -85,12 +127,12 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             {post.status === "FULFILLED" && (
               <span className="flex items-center gap-0.5 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
                 <CheckCircle className="w-3 h-3" aria-hidden="true" />
-                Fulfilled
+                {intl.formatMessage(statusLabels.FULFILLED)}
               </span>
             )}
             {post.status === "CLOSED" && (
               <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                Closed
+                {intl.formatMessage(statusLabels.CLOSED)}
               </span>
             )}
             {post.community && (
@@ -125,7 +167,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
               </span>
             )}
             {(() => {
-              const schedule = formatSchedule(post.startAt, post.endAt);
+              const schedule = formatSchedule(intl, post.startAt, post.endAt);
               return schedule ? (
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" aria-hidden="true" />
@@ -135,6 +177,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             })()}
             {(() => {
               const repeat = formatRecurrence(
+                intl,
                 post.recurrenceFreq,
                 post.recurrenceInterval,
               );
@@ -157,3 +200,5 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
     </Link>
   );
 }
+
+export { typeLabels, statusLabels };

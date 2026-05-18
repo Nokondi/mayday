@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { IntlProvider } from 'react-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('sonner', () => ({
@@ -33,9 +34,11 @@ function renderModal(props: { open?: boolean; onClose?: () => void } = {}) {
     defaultOptions: { queries: { retry: false } },
   });
   render(
-    <QueryClientProvider client={queryClient}>
-      <FulfillModal postId="p1" open={props.open ?? true} onClose={onClose} />
-    </QueryClientProvider>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <QueryClientProvider client={queryClient}>
+        <FulfillModal postId="p1" open={props.open ?? true} onClose={onClose} />
+      </QueryClientProvider>
+    </IntlProvider>,
   );
   return { onClose };
 }
