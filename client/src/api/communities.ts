@@ -3,6 +3,7 @@ import type {
   UpdateCommunityRequest,
   InviteToCommunityRequest,
   UpdateMemberRoleRequest,
+  TransferOwnershipRequest,
   CommunityJoinRequestInput,
   Community,
   CommunityDetail,
@@ -65,6 +66,13 @@ export async function updateCommunityMemberRole(communityId: string, userId: str
 
 export async function removeCommunityMember(communityId: string, userId: string): Promise<void> {
   await api.delete(`/communities/${communityId}/members/${userId}`);
+}
+
+export async function transferCommunityOwnership(
+  communityId: string,
+  data: TransferOwnershipRequest,
+): Promise<void> {
+  await api.post(`/communities/${communityId}/transfer-ownership`, data);
 }
 
 // Invites (community-side)

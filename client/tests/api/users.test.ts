@@ -14,6 +14,7 @@ import { api } from '../../src/api/client.js';
 import {
   createReport,
   deleteProfile,
+  getOwnedGroups,
   getUser,
   getUserPosts,
   reportUser,
@@ -136,7 +137,42 @@ describe('users api', () => {
     it('DELETEs /users/:id and resolves to undefined', async () => {
       mockedApi.delete.mockResolvedValueOnce({ data: { message: 'Account deleted' } });
       await expect(deleteProfile('u1')).resolves.toBeUndefined();
-      expect(mockedApi.delete).toHaveBeenCalledWith('/users/u1');
+      expect(mockedApi.delete).toHaveBeenCalledWith('/users/u1', { data: undefined });
+    });
+
+    it('forwards heir assignments in the request body', async () => {
+      mockedApi.delete.mockResolvedValueOnce({ data: { message: 'Account deleted' } });
+      const body = {
+        communityHeirs: { 'c1': 'heir-1' },
+        organizationHeirs: { 'o1': 'heir-2' },
+      };
+
+      await deleteProfile('u1', body);
+
+      expect(mockedApi.delete).toHaveBeenCalledWith('/users/u1', { data: body });
+    });
+  });
+
+  describe('getOwnedGroups', () => {
+    it('GETs /users/me/owned-groups and returns the response body', async () => {
+      const response = {
+        communities: [
+          {
+            id: 'c1',
+            name: 'C1',
+            avatarUrl: null,
+            defaultHeirUserId: 'h1',
+            candidates: [{ userId: 'h1', name: 'H', avatarUrl: null, role: 'ADMIN' }],
+          },
+        ],
+        organizations: [],
+      };
+      mockedApi.get.mockResolvedValueOnce({ data: response });
+
+      const result = await getOwnedGroups();
+
+      expect(mockedApi.get).toHaveBeenCalledWith('/users/me/owned-groups');
+      expect(result).toEqual(response);
     });
   });
 });

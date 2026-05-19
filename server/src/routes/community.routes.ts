@@ -6,6 +6,7 @@ import {
   inviteToCommunitySchema,
   updateMemberRoleSchema,
   communityJoinRequestSchema,
+  transferOwnershipSchema,
 } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.middleware.js';
@@ -287,6 +288,48 @@ communityRoutes.patch('/:id/members/:userId', validate(updateMemberRoleSchema), 
   });
   res.json(updated);
 }));
+
+// POST /api/communities/:id/transfer-ownership — OWNER hands the role to another member.
+// The previous owner is demoted to ADMIN.
+communityRoutes.post(
+  '/:id/transfer-ownership',
+  validate(transferOwnershipSchema),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const cid = req.params.id as string;
+    const { newOwnerId } = req.body as { newOwnerId: string };
+
+    if (newOwnerId === req.user!.id) {
+      throw new AppError(400, 'You are already the owner');
+    }
+
+    const myMembership = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+    });
+    if (!myMembership || myMembership.role !== 'OWNER') {
+      throw new AppError(403, 'Only the owner can transfer ownership');
+    }
+
+    const target = await prisma.communityMember.findUnique({
+      where: { communityId_userId: { communityId: cid, userId: newOwnerId } },
+    });
+    if (!target) {
+      throw new AppError(404, 'New owner must be a member of this community');
+    }
+
+    await prisma.$transaction([
+      prisma.communityMember.update({
+        where: { communityId_userId: { communityId: cid, userId: req.user!.id } },
+        data: { role: 'ADMIN' },
+      }),
+      prisma.communityMember.update({
+        where: { communityId_userId: { communityId: cid, userId: newOwnerId } },
+        data: { role: 'OWNER' },
+      }),
+    ]);
+
+    res.json({ message: 'Ownership transferred' });
+  }),
+);
 
 communityRoutes.delete('/:id/members/:userId', asyncHandler(async (req: AuthRequest, res) => {
   const cid = req.params.id as string;

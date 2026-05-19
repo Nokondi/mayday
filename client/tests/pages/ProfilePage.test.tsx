@@ -20,6 +20,7 @@ vi.mock('../../src/api/users.js', () => ({
   uploadUserAvatar: vi.fn(),
   deleteProfile: vi.fn(),
   createReport: vi.fn(),
+  getOwnedGroups: vi.fn(),
 }));
 
 vi.mock('../../src/api/messages.js', () => ({
@@ -27,7 +28,13 @@ vi.mock('../../src/api/messages.js', () => ({
 }));
 
 import { useAuth } from '../../src/context/AuthContext.js';
-import { getUser, getUserPosts, deleteProfile, createReport } from '../../src/api/users.js';
+import {
+  getUser,
+  getUserPosts,
+  deleteProfile,
+  createReport,
+  getOwnedGroups,
+} from '../../src/api/users.js';
 import { startConversation } from '../../src/api/messages.js';
 import { toast } from 'sonner';
 import { ProfilePage } from '../../src/pages/ProfilePage.js';
@@ -38,6 +45,7 @@ const mockedGetUserPosts = vi.mocked(getUserPosts);
 const mockedStartConversation = vi.mocked(startConversation);
 const mockedDeleteProfile = vi.mocked(deleteProfile);
 const mockedCreateReport = vi.mocked(createReport);
+const mockedGetOwnedGroups = vi.mocked(getOwnedGroups);
 const mockedToast = vi.mocked(toast);
 
 const VIEWER_ID = 'viewer-1';
@@ -109,6 +117,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockedGetUser.mockResolvedValue(profile() as never);
   mockedGetUserPosts.mockResolvedValue({ data: [], total: 0, page: 1, limit: 20, totalPages: 0 } as never);
+  // Default: viewer doesn't own anything. Individual tests override for the
+  // heir-picker scenarios.
+  mockedGetOwnedGroups.mockResolvedValue({ communities: [], organizations: [] } as never);
 });
 
 describe('ProfilePage message button', () => {
@@ -235,7 +246,8 @@ describe('ProfilePage delete account', () => {
     await user.click(await screen.findByRole('button', { name: /delete my account/i }));
     await user.click(screen.getByRole('button', { name: /yes, delete my account/i }));
 
-    await waitFor(() => expect(mockedDeleteProfile).toHaveBeenCalledWith(OWNER_ID));
+    // The picker hands the deletion an empty heir-map when the user owns nothing.
+    await waitFor(() => expect(mockedDeleteProfile).toHaveBeenCalledWith(OWNER_ID, {}));
     await waitFor(() => expect(mockedLogout).toHaveBeenCalled());
     expect(mockedToast.success).toHaveBeenCalledWith(expect.stringMatching(/deleted/i));
     await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(/^\/$/));
@@ -274,6 +286,103 @@ describe('ProfilePage delete account', () => {
     expect(confirm).toHaveTextContent(/deleting/i);
 
     resolve();
+  });
+
+  it('shows an heir-picker per owned community/org when entering the confirm step', async () => {
+    setAuth(OWNER_ID);
+    mockedGetOwnedGroups.mockResolvedValueOnce({
+      communities: [
+        {
+          id: 'c1',
+          name: 'Sunset Mutual Aid',
+          avatarUrl: null,
+          defaultHeirUserId: 'h1',
+          candidates: [{ userId: 'h1', name: 'Alex Chen', avatarUrl: null, role: 'ADMIN' }],
+        },
+      ],
+      organizations: [
+        {
+          id: 'o1',
+          name: 'Food Pantry',
+          avatarUrl: null,
+          defaultHeirUserId: 'h2',
+          candidates: [{ userId: 'h2', name: 'Dana Park', avatarUrl: null, role: 'MEMBER' }],
+        },
+      ],
+    } as never);
+
+    const user = userEvent.setup();
+    renderProfile();
+
+    await user.click(await screen.findByRole('button', { name: /delete my account/i }));
+
+    expect(
+      await screen.findByText(/choose who inherits each group you own/i),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText(/sunset mutual aid/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/food pantry/i)).toBeInTheDocument();
+  });
+
+  it('renders a "will be deleted" notice for solo-owned groups instead of a dropdown', async () => {
+    setAuth(OWNER_ID);
+    mockedGetOwnedGroups.mockResolvedValueOnce({
+      communities: [
+        {
+          id: 'c-solo',
+          name: 'Solo Community',
+          avatarUrl: null,
+          defaultHeirUserId: null,
+          candidates: [],
+        },
+      ],
+      organizations: [],
+    } as never);
+
+    const user = userEvent.setup();
+    renderProfile();
+
+    await user.click(await screen.findByRole('button', { name: /delete my account/i }));
+
+    await screen.findByText(/solo community/i);
+    expect(screen.getByText(/no other members.*will be deleted/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/solo community/i)).not.toBeInTheDocument();
+  });
+
+  it('forwards the picked heirs to deleteProfile when confirming', async () => {
+    setAuth(OWNER_ID);
+    mockedGetOwnedGroups.mockResolvedValueOnce({
+      communities: [
+        {
+          id: 'c1',
+          name: 'Sunset Mutual Aid',
+          avatarUrl: null,
+          defaultHeirUserId: 'h1',
+          candidates: [
+            { userId: 'h1', name: 'Alex Chen', avatarUrl: null, role: 'ADMIN' },
+            { userId: 'h2', name: 'Dana Park', avatarUrl: null, role: 'MEMBER' },
+          ],
+        },
+      ],
+      organizations: [],
+    } as never);
+    mockedDeleteProfile.mockResolvedValueOnce(undefined);
+
+    const user = userEvent.setup();
+    renderProfile();
+
+    await user.click(await screen.findByRole('button', { name: /delete my account/i }));
+
+    // Default selection mirrors the server's defaultHeirUserId. Change it to h2.
+    const select = await screen.findByLabelText<HTMLSelectElement>(/sunset mutual aid/i);
+    await user.selectOptions(select, 'h2');
+
+    await user.click(screen.getByRole('button', { name: /yes, delete my account/i }));
+
+    await waitFor(() =>
+      expect(mockedDeleteProfile).toHaveBeenCalledWith(OWNER_ID, {
+        communityHeirs: { c1: 'h2' },
+      }),
+    );
   });
 });
 

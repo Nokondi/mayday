@@ -386,6 +386,74 @@ describe('DELETE /api/organizations/:id/members/:userId', () => {
   });
 });
 
+describe('POST /api/organizations/:id/transfer-ownership', () => {
+  it('demotes caller to ADMIN and promotes target to OWNER', async () => {
+    mockedMember.findUnique
+      .mockResolvedValueOnce({ role: 'OWNER' } as never) // caller
+      .mockResolvedValueOnce({ role: 'MEMBER', userId: OTHER_USER_ID } as never); // target
+    mockedTx.mockResolvedValueOnce([{}, {}] as never);
+
+    const res = await request(makeApp())
+      .post(`/api/organizations/${ORG_ID}/transfer-ownership`)
+      .set('Authorization', authHeader())
+      .send({ newOwnerId: OTHER_USER_ID });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/transferred/i);
+    expect(mockedTx).toHaveBeenCalledTimes(1);
+  });
+
+  it('forbids non-OWNERs', async () => {
+    mockedMember.findUnique.mockResolvedValueOnce({ role: 'ADMIN' } as never);
+
+    const res = await request(makeApp())
+      .post(`/api/organizations/${ORG_ID}/transfer-ownership`)
+      .set('Authorization', authHeader())
+      .send({ newOwnerId: OTHER_USER_ID });
+
+    expect(res.status).toBe(403);
+    expect(mockedTx).not.toHaveBeenCalled();
+  });
+
+  it('rejects self-transfer', async () => {
+    const res = await request(makeApp())
+      .post(`/api/organizations/${ORG_ID}/transfer-ownership`)
+      .set('Authorization', authHeader())
+      .send({ newOwnerId: USER_ID });
+    expect(res.status).toBe(400);
+    expect(mockedTx).not.toHaveBeenCalled();
+  });
+
+  it('rejects a non-member target', async () => {
+    mockedMember.findUnique
+      .mockResolvedValueOnce({ role: 'OWNER' } as never)
+      .mockResolvedValueOnce(null as never);
+
+    const res = await request(makeApp())
+      .post(`/api/organizations/${ORG_ID}/transfer-ownership`)
+      .set('Authorization', authHeader())
+      .send({ newOwnerId: OTHER_USER_ID });
+
+    expect(res.status).toBe(404);
+    expect(mockedTx).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 when newOwnerId is not a uuid', async () => {
+    const res = await request(makeApp())
+      .post(`/api/organizations/${ORG_ID}/transfer-ownership`)
+      .set('Authorization', authHeader())
+      .send({ newOwnerId: 'nope' });
+    expect(res.status).toBe(400);
+  });
+
+  it('requires auth', async () => {
+    const res = await request(makeApp())
+      .post(`/api/organizations/${ORG_ID}/transfer-ownership`)
+      .send({ newOwnerId: OTHER_USER_ID });
+    expect(res.status).toBe(401);
+  });
+});
+
 describe('POST /api/organizations/:id/invites', () => {
   it('creates a new invite for an eligible email', async () => {
     mockedMember.findUnique

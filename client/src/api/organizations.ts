@@ -3,6 +3,7 @@ import type {
   UpdateOrganizationRequest,
   InviteToOrganizationRequest,
   UpdateMemberRoleRequest,
+  TransferOwnershipRequest,
   Organization,
   OrganizationDetail,
   OrganizationMember,
@@ -69,6 +70,13 @@ export async function updateMemberRole(orgId: string, userId: string, data: Upda
 
 export async function removeMember(orgId: string, userId: string): Promise<void> {
   await api.delete(`/organizations/${orgId}/members/${userId}`);
+}
+
+export async function transferOrganizationOwnership(
+  orgId: string,
+  data: TransferOwnershipRequest,
+): Promise<void> {
+  await api.post(`/organizations/${orgId}/transfer-ownership`, data);
 }
 
 // Invites (org-side)

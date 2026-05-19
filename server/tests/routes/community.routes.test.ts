@@ -665,6 +665,76 @@ describe('POST /api/communities/:id/join-requests/:reqId/approve', () => {
   });
 });
 
+describe('POST /api/communities/:id/transfer-ownership', () => {
+  it('transfers ownership: demotes caller to ADMIN and promotes target to OWNER', async () => {
+    mockedMember.findUnique
+      .mockResolvedValueOnce({ role: 'OWNER' } as never) // caller
+      .mockResolvedValueOnce({ role: 'MEMBER', userId: OTHER_USER_ID } as never); // target
+    mockedTx.mockResolvedValueOnce([{}, {}] as never);
+
+    const res = await request(makeApp())
+      .post(`/api/communities/${COMMUNITY_ID}/transfer-ownership`)
+      .set('Authorization', authHeader())
+      .send({ newOwnerId: OTHER_USER_ID });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/transferred/i);
+    expect(mockedTx).toHaveBeenCalledTimes(1);
+  });
+
+  it('forbids non-OWNERs from transferring', async () => {
+    mockedMember.findUnique.mockResolvedValueOnce({ role: 'ADMIN' } as never);
+
+    const res = await request(makeApp())
+      .post(`/api/communities/${COMMUNITY_ID}/transfer-ownership`)
+      .set('Authorization', authHeader())
+      .send({ newOwnerId: OTHER_USER_ID });
+
+    expect(res.status).toBe(403);
+    expect(mockedTx).not.toHaveBeenCalled();
+  });
+
+  it('rejects transferring to yourself', async () => {
+    const res = await request(makeApp())
+      .post(`/api/communities/${COMMUNITY_ID}/transfer-ownership`)
+      .set('Authorization', authHeader())
+      .send({ newOwnerId: USER_ID });
+
+    expect(res.status).toBe(400);
+    expect(mockedTx).not.toHaveBeenCalled();
+  });
+
+  it('rejects a target who is not a member of the community', async () => {
+    mockedMember.findUnique
+      .mockResolvedValueOnce({ role: 'OWNER' } as never) // caller
+      .mockResolvedValueOnce(null as never); // target missing
+
+    const res = await request(makeApp())
+      .post(`/api/communities/${COMMUNITY_ID}/transfer-ownership`)
+      .set('Authorization', authHeader())
+      .send({ newOwnerId: OTHER_USER_ID });
+
+    expect(res.status).toBe(404);
+    expect(mockedTx).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 when newOwnerId is missing or not a uuid', async () => {
+    const res = await request(makeApp())
+      .post(`/api/communities/${COMMUNITY_ID}/transfer-ownership`)
+      .set('Authorization', authHeader())
+      .send({ newOwnerId: 'not-a-uuid' });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('requires authentication', async () => {
+    const res = await request(makeApp())
+      .post(`/api/communities/${COMMUNITY_ID}/transfer-ownership`)
+      .send({ newOwnerId: OTHER_USER_ID });
+    expect(res.status).toBe(401);
+  });
+});
+
 describe('POST /api/communities/:id/join-requests/:reqId/reject', () => {
   it('marks the request declined', async () => {
     mockedMember.findUnique.mockResolvedValueOnce({ role: 'ADMIN' } as never);

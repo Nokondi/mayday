@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { updateProfileSchema, updateUserSettingsSchema } from '@mayday/shared';
+import {
+  updateProfileSchema,
+  updateUserSettingsSchema,
+  deleteAccountSchema,
+  type OwnedGroupsResponse,
+  type OwnedGroupSummary,
+} from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
 import { uploadAvatar } from '../middleware/upload.middleware.js';
@@ -11,6 +17,79 @@ import { publicUserSelect } from '../utils/prisma-selects.js';
 import { postInclude } from './post.routes.js';
 
 export const userRoutes = Router();
+
+// GET /api/users/me/owned-groups — communities/orgs the current user owns,
+// plus the candidates that could inherit ownership when their account is deleted.
+// Drives the heir-picker UI in the danger-zone delete flow.
+userRoutes.get('/me/owned-groups', requireAuth, asyncHandler(async (req: AuthRequest, res) => {
+  const userId = req.user!.id;
+
+  const [ownedCommunities, ownedOrgs] = await Promise.all([
+    prisma.communityMember.findMany({
+      where: { userId, role: 'OWNER' },
+      select: {
+        community: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    }),
+    prisma.organizationMember.findMany({
+      where: { userId, role: 'OWNER' },
+      select: {
+        organization: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    }),
+  ]);
+
+  async function summarizeCommunity(
+    c: { id: string; name: string; avatarUrl: string | null },
+  ): Promise<OwnedGroupSummary> {
+    const candidates = await prisma.communityMember.findMany({
+      where: { communityId: c.id, userId: { not: userId } },
+      include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+      orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
+    });
+    return {
+      id: c.id,
+      name: c.name,
+      avatarUrl: c.avatarUrl,
+      defaultHeirUserId: candidates[0]?.userId ?? null,
+      candidates: candidates.map((m) => ({
+        userId: m.userId,
+        name: m.user.name,
+        avatarUrl: m.user.avatarUrl,
+        role: m.role as 'ADMIN' | 'MEMBER',
+      })),
+    };
+  }
+
+  async function summarizeOrg(
+    o: { id: string; name: string; avatarUrl: string | null },
+  ): Promise<OwnedGroupSummary> {
+    const candidates = await prisma.organizationMember.findMany({
+      where: { organizationId: o.id, userId: { not: userId } },
+      include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+      orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
+    });
+    return {
+      id: o.id,
+      name: o.name,
+      avatarUrl: o.avatarUrl,
+      defaultHeirUserId: candidates[0]?.userId ?? null,
+      candidates: candidates.map((m) => ({
+        userId: m.userId,
+        name: m.user.name,
+        avatarUrl: m.user.avatarUrl,
+        role: m.role as 'ADMIN' | 'MEMBER',
+      })),
+    };
+  }
+
+  const response: OwnedGroupsResponse = {
+    communities: await Promise.all(ownedCommunities.map((m) => summarizeCommunity(m.community))),
+    organizations: await Promise.all(ownedOrgs.map((m) => summarizeOrg(m.organization))),
+  };
+
+  res.json(response);
+}));
 
 // PUT /api/users/me/settings — update private settings for the current user
 userRoutes.put('/me/settings', requireAuth, validate(updateUserSettingsSchema), asyncHandler(async (req: AuthRequest, res) => {
@@ -92,18 +171,27 @@ userRoutes.post('/:id/avatar', requireAuth, uploadAvatar, asyncHandler(async (re
 }));
 
 // DELETE /api/users/:id — self-service account deletion.
+// Body (optional): { communityHeirs?: Record<communityId, userId>,
+//                    organizationHeirs?: Record<organizationId, userId> }.
+// Explicit heir picks must reference an existing member of the relevant group;
+// any owned group not listed falls back to the oldest ADMIN (else oldest MEMBER).
+//
 // In a single transaction:
 //   - owned communities/orgs with other members: ownership transfers to the
-//     oldest remaining ADMIN (else oldest MEMBER) by joinedAt
+//     caller-chosen heir (or auto-pick fallback)
 //   - owned communities/orgs with no other members: deleted (posts are detached first)
 //   - the user's posts, messages, conversations, reports, bug reports, and
 //     sent invites are deleted to clear restrict-FK constraints
 //   - the user is deleted; cascades clean up the rest (memberships, invites received, etc.)
-userRoutes.delete('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res) => {
+userRoutes.delete('/:id', requireAuth, validate(deleteAccountSchema), asyncHandler(async (req: AuthRequest, res) => {
   if (req.params.id !== req.user!.id) {
     throw new AppError(403, 'Not authorized');
   }
   const userId = req.user!.id;
+  const { communityHeirs = {}, organizationHeirs = {} } = req.body as {
+    communityHeirs?: Record<string, string>;
+    organizationHeirs?: Record<string, string>;
+  };
 
   const avatarUrl = (await prisma.user.findUnique({
     where: { id: userId },
@@ -118,13 +206,31 @@ userRoutes.delete('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res
     })).map((m) => m.communityId);
 
     for (const communityId of ownedCommunityIds) {
-      const heir = await tx.communityMember.findFirst({
-        where: { communityId, userId: { not: userId } },
-        orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
-      });
-      if (heir) {
+      const pickedHeirId = communityHeirs[communityId];
+      let heirUserId: string | undefined;
+
+      if (pickedHeirId) {
+        if (pickedHeirId === userId) {
+          throw new AppError(400, 'Cannot designate yourself as heir');
+        }
+        const picked = await tx.communityMember.findUnique({
+          where: { communityId_userId: { communityId, userId: pickedHeirId } },
+        });
+        if (!picked) {
+          throw new AppError(400, 'Designated heir is not a member of the community');
+        }
+        heirUserId = pickedHeirId;
+      } else {
+        const heir = await tx.communityMember.findFirst({
+          where: { communityId, userId: { not: userId } },
+          orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
+        });
+        heirUserId = heir?.userId;
+      }
+
+      if (heirUserId) {
         await tx.communityMember.update({
-          where: { communityId_userId: { communityId, userId: heir.userId } },
+          where: { communityId_userId: { communityId, userId: heirUserId } },
           data: { role: 'OWNER' },
         });
         // Departing user's OWNER membership row is cascade-deleted with the user.
@@ -144,13 +250,31 @@ userRoutes.delete('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res
     })).map((m) => m.organizationId);
 
     for (const organizationId of ownedOrgIds) {
-      const heir = await tx.organizationMember.findFirst({
-        where: { organizationId, userId: { not: userId } },
-        orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
-      });
-      if (heir) {
+      const pickedHeirId = organizationHeirs[organizationId];
+      let heirUserId: string | undefined;
+
+      if (pickedHeirId) {
+        if (pickedHeirId === userId) {
+          throw new AppError(400, 'Cannot designate yourself as heir');
+        }
+        const picked = await tx.organizationMember.findUnique({
+          where: { organizationId_userId: { organizationId, userId: pickedHeirId } },
+        });
+        if (!picked) {
+          throw new AppError(400, 'Designated heir is not a member of the organization');
+        }
+        heirUserId = pickedHeirId;
+      } else {
+        const heir = await tx.organizationMember.findFirst({
+          where: { organizationId, userId: { not: userId } },
+          orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
+        });
+        heirUserId = heir?.userId;
+      }
+
+      if (heirUserId) {
         await tx.organizationMember.update({
-          where: { organizationId_userId: { organizationId, userId: heir.userId } },
+          where: { organizationId_userId: { organizationId, userId: heirUserId } },
           data: { role: 'OWNER' },
         });
       } else {

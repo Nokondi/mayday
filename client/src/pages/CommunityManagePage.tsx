@@ -10,6 +10,7 @@ import {
   UserCheck,
   UserX,
   Users as UsersIcon,
+  Crown,
 } from "lucide-react";
 import {
   updateCommunitySchema,
@@ -28,12 +29,14 @@ import {
   getCommunityJoinRequests,
   approveJoinRequest,
   rejectJoinRequest,
+  transferCommunityOwnership,
 } from "../api/communities.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { AvatarUploader } from "../components/common/AvatarUploader.js";
 import { InviteEmailsField } from "../components/common/InviteEmailsField.js";
 import { FormField } from "../components/common/FormField.js";
 import { LinksEditor, cleanLinks } from "../components/common/LinksEditor.js";
+import { TransferOwnershipDialog } from "../components/common/TransferOwnershipDialog.js";
 import { useBatchInvite } from "../hooks/useBatchInvite.js";
 import { useAuth } from "../context/AuthContext.js";
 
@@ -107,6 +110,21 @@ export function CommunityManagePage() {
   useEffect(() => {
     setLinks(community?.links ?? []);
   }, [community?.id, community?.links]);
+
+  const [transferOpen, setTransferOpen] = useState(false);
+
+  const transferMutation = useToastMutation({
+    mutationFn: (newOwnerId: string) =>
+      transferCommunityOwnership(id!, { newOwnerId }),
+    successMessage: "Ownership transferred",
+    errorMessage: (e: any) =>
+      e?.response?.data?.message || "Failed to transfer ownership",
+    onSuccess: () => {
+      setTransferOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["community", id] });
+      queryClient.invalidateQueries({ queryKey: ["communities"] });
+    },
+  });
 
   const revokeMutation = useToastMutation({
     mutationFn: (inviteId: string) => revokeCommunityInvite(id!, inviteId),
@@ -333,6 +351,27 @@ export function CommunityManagePage() {
         </div>
       )}
 
+      {/* Transfer ownership (OWNER only) */}
+      {isOwner && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+            Transfer ownership
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Hand this community over to another member. You'll be demoted to
+            Admin and the new owner will take over.
+          </p>
+          <button
+            type="button"
+            onClick={() => setTransferOpen(true)}
+            className="flex items-center gap-1 border border-amber-300 bg-white text-amber-800 px-4 py-2 rounded-lg hover:bg-amber-50"
+          >
+            <Crown className="w-4 h-4" aria-hidden="true" />
+            Transfer ownership
+          </button>
+        </div>
+      )}
+
       {/* Members */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Members</h2>
@@ -399,6 +438,24 @@ export function CommunityManagePage() {
           })}
         </ul>
       </div>
+
+      <TransferOwnershipDialog
+        open={transferOpen}
+        onClose={() => setTransferOpen(false)}
+        groupKind="community"
+        groupName={community.name}
+        candidates={community.members
+          .filter((m) => m.userId !== user?.id && m.role !== "OWNER")
+          .map((m) => ({
+            userId: m.userId,
+            name: m.user.name,
+            role: m.role as "ADMIN" | "MEMBER",
+          }))}
+        onTransfer={(newOwnerId) =>
+          transferMutation.mutateAsync(newOwnerId).then(() => undefined)
+        }
+        isPending={transferMutation.isPending}
+      />
     </div>
   );
 }
