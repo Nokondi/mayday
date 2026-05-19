@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToastMutation } from "../hooks/useToastMutation.js";
 import { Trash2, ArrowLeft, Building2, Crown } from "lucide-react";
+import { FormattedMessage, useIntl } from "react-intl";
 import {
   updateOrganizationSchema,
   type UpdateOrganizationRequest,
@@ -31,6 +32,7 @@ import { useBatchInvite } from "../hooks/useBatchInvite.js";
 import { useAuth } from "../context/AuthContext.js";
 
 export function OrganizationManagePage() {
+  const intl = useIntl();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -77,9 +79,16 @@ export function OrganizationManagePage() {
   const transferMutation = useToastMutation({
     mutationFn: (newOwnerId: string) =>
       transferOrganizationOwnership(id!, { newOwnerId }),
-    successMessage: "Ownership transferred",
+    successMessage: intl.formatMessage({
+      id: "groups.transferOwnership.successToast",
+      defaultMessage: "Ownership transferred",
+    }),
     errorMessage: (e: any) =>
-      e?.response?.data?.message || "Failed to transfer ownership",
+      e?.response?.data?.message ||
+      intl.formatMessage({
+        id: "groups.transferOwnership.failureToast",
+        defaultMessage: "Failed to transfer ownership",
+      }),
     onSuccess: () => {
       setTransferOpen(false);
       queryClient.invalidateQueries({ queryKey: ["organization", id] });
@@ -89,7 +98,10 @@ export function OrganizationManagePage() {
 
   const revokeMutation = useToastMutation({
     mutationFn: (inviteId: string) => revokeInvite(id!, inviteId),
-    successMessage: "Invite revoked",
+    successMessage: intl.formatMessage({
+      id: "groups.managePage.inviteRevokedToast",
+      defaultMessage: "Invite revoked",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["organization", id, "invites"],
@@ -99,9 +111,16 @@ export function OrganizationManagePage() {
 
   const removeMutation = useToastMutation({
     mutationFn: (userId: string) => removeMember(id!, userId),
-    successMessage: "Member removed",
+    successMessage: intl.formatMessage({
+      id: "groups.managePage.memberRemovedToast",
+      defaultMessage: "Member removed",
+    }),
     errorMessage: (e: any) =>
-      e?.response?.data?.message || "Failed to remove member",
+      e?.response?.data?.message ||
+      intl.formatMessage({
+        id: "groups.managePage.removeMemberFailedFallback",
+        defaultMessage: "Failed to remove member",
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organization", id] });
     },
@@ -115,9 +134,16 @@ export function OrganizationManagePage() {
       userId: string;
       role: "ADMIN" | "MEMBER";
     }) => updateMemberRole(id!, userId, { role }),
-    successMessage: "Role updated",
+    successMessage: intl.formatMessage({
+      id: "groups.managePage.roleUpdatedToast",
+      defaultMessage: "Role updated",
+    }),
     errorMessage: (e: any) =>
-      e?.response?.data?.message || "Failed to update role",
+      e?.response?.data?.message ||
+      intl.formatMessage({
+        id: "groups.managePage.updateRoleFailedFallback",
+        defaultMessage: "Failed to update role",
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organization", id] });
     },
@@ -126,8 +152,14 @@ export function OrganizationManagePage() {
   const editMutation = useToastMutation({
     mutationFn: (data: UpdateOrganizationRequest) =>
       updateOrganization(id!, data),
-    successMessage: "Organization updated",
-    errorMessage: "Failed to update",
+    successMessage: intl.formatMessage({
+      id: "orgs.managePage.updateSuccessToast",
+      defaultMessage: "Organization updated",
+    }),
+    errorMessage: intl.formatMessage({
+      id: "groups.managePage.updateFailedToast",
+      defaultMessage: "Failed to update",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organization", id] });
       queryClient.invalidateQueries({ queryKey: ["organizations"] });
@@ -137,7 +169,12 @@ export function OrganizationManagePage() {
   if (isLoading) return <LoadingSpinner className="py-12" />;
   if (!org)
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8">Organization not found.</div>
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <FormattedMessage
+          id="orgs.detailPage.notFound"
+          defaultMessage="Organization not found."
+        />
+      </div>
     );
 
   if (org.myRole !== "OWNER" && org.myRole !== "ADMIN") {
@@ -154,18 +191,34 @@ export function OrganizationManagePage() {
         className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to {org.name}
+        <FormattedMessage
+          id="groups.managePage.backToLink"
+          defaultMessage="Back to {name}"
+          values={{ name: org.name }}
+        />
       </Link>
 
       {/* Edit org details */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Organization Details
+          <FormattedMessage
+            id="orgs.managePage.detailsHeading"
+            defaultMessage="Organization Details"
+          />
         </h2>
 
         <div className="mb-4">
           <p className="block text-sm font-medium text-gray-700 mb-2">
-            Avatar <span className="text-gray-500 font-normal">(optional)</span>
+            <FormattedMessage
+              id="common.fields.avatar"
+              defaultMessage="Avatar"
+            />{" "}
+            <span className="text-gray-500 font-normal">
+              <FormattedMessage
+                id="common.formField.optionalSuffix"
+                defaultMessage="(optional)"
+              />
+            </span>
           </p>
           <AvatarUploader
             currentUrl={org.avatarUrl}
@@ -192,21 +245,30 @@ export function OrganizationManagePage() {
         >
           <FormField
             id="org-edit-name"
-            label="Name"
+            label={intl.formatMessage({
+              id: "common.fields.name",
+              defaultMessage: "Name",
+            })}
             error={editForm.formState.errors.name?.message}
             {...editForm.register("name")}
           />
           <FormField
             multiline
             id="org-edit-description"
-            label="Description"
+            label={intl.formatMessage({
+              id: "common.fields.description",
+              defaultMessage: "Description",
+            })}
             error={editForm.formState.errors.description?.message}
             rows={3}
             {...editForm.register("description")}
           />
           <FormField
             id="org-edit-location"
-            label="Location"
+            label={intl.formatMessage({
+              id: "common.fields.location",
+              defaultMessage: "Location",
+            })}
             error={editForm.formState.errors.location?.message}
             {...editForm.register("location")}
             optional
@@ -221,7 +283,10 @@ export function OrganizationManagePage() {
             disabled={editMutation.isPending}
             className="bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800 disabled:opacity-50"
           >
-            Save changes
+            <FormattedMessage
+              id="groups.managePage.saveChangesButton"
+              defaultMessage="Save changes"
+            />
           </button>
         </form>
       </div>
@@ -229,7 +294,10 @@ export function OrganizationManagePage() {
       {/* Invite form */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Invite Members
+          <FormattedMessage
+            id="groups.managePage.inviteMembersHeading"
+            defaultMessage="Invite Members"
+          />
         </h2>
         <InviteEmailsField
           emails={inviteBatch.emails}
@@ -242,7 +310,10 @@ export function OrganizationManagePage() {
         {invites && invites.length > 0 && (
           <div className="mt-6">
             <h3 className="text-sm font-medium text-gray-700 mb-2">
-              Pending invites
+              <FormattedMessage
+                id="groups.managePage.pendingInvitesHeading"
+                defaultMessage="Pending invites"
+              />
             </h3>
             <ul className="divide-y divide-gray-100">
               {invites.map((inv) => (
@@ -251,13 +322,20 @@ export function OrganizationManagePage() {
                   className="py-2 flex items-center justify-between"
                 >
                   <span className="text-sm text-gray-900">
-                    {inv.invitedUser?.name ?? "Pending invite"}
+                    {inv.invitedUser?.name ??
+                      intl.formatMessage({
+                        id: "groups.managePage.pendingInviteFallback",
+                        defaultMessage: "Pending invite",
+                      })}
                   </span>
                   <button
                     onClick={() => revokeMutation.mutate(inv.id)}
                     className="text-sm text-red-600 hover:text-red-700"
                   >
-                    Revoke
+                    <FormattedMessage
+                      id="groups.managePage.revokeButton"
+                      defaultMessage="Revoke"
+                    />
                   </button>
                 </li>
               ))}
@@ -270,11 +348,17 @@ export function OrganizationManagePage() {
       {isOwner && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            Transfer ownership
+            <FormattedMessage
+              id="groups.transferOwnership.title"
+              defaultMessage="Transfer ownership"
+            />
           </h2>
           <p className="text-sm text-gray-600 mb-4">
-            Hand this organization over to another member. You'll be demoted to
-            Admin and the new owner will take over.
+            <FormattedMessage
+              id="groups.transferOwnership.sectionBody"
+              defaultMessage="Hand this {kind, select, community {community} organization {organization} other {group}} over to another member. You'll be demoted to Admin and the new owner will take over."
+              values={{ kind: "organization" }}
+            />
           </p>
           <button
             type="button"
@@ -282,14 +366,22 @@ export function OrganizationManagePage() {
             className="flex items-center gap-1 border border-amber-300 bg-white text-amber-800 px-4 py-2 rounded-lg hover:bg-amber-50"
           >
             <Crown className="w-4 h-4" aria-hidden="true" />
-            Transfer ownership
+            <FormattedMessage
+              id="groups.transferOwnership.title"
+              defaultMessage="Transfer ownership"
+            />
           </button>
         </div>
       )}
 
       {/* Members */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Members</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <FormattedMessage
+            id="groups.managePage.membersHeading"
+            defaultMessage="Members"
+          />
+        </h2>
         <ul className="divide-y divide-gray-100">
           {org.members.map((m) => {
             const isSelf = m.userId === user?.id;
@@ -311,7 +403,12 @@ export function OrganizationManagePage() {
                 >
                   {m.user.name}{" "}
                   {isSelf && (
-                    <span className="text-xs text-gray-500">(you)</span>
+                    <span className="text-xs text-gray-500">
+                      <FormattedMessage
+                        id="groups.managePage.youMarker"
+                        defaultMessage="(you)"
+                      />
+                    </span>
                   )}
                 </Link>
                 <div className="flex items-center gap-2">
@@ -324,11 +421,27 @@ export function OrganizationManagePage() {
                           role: e.target.value as "ADMIN" | "MEMBER",
                         })
                       }
-                      aria-label={`Role for ${m.user.name}`}
+                      aria-label={intl.formatMessage(
+                        {
+                          id: "groups.managePage.roleSelectAria",
+                          defaultMessage: "Role for {name}",
+                        },
+                        { name: m.user.name },
+                      )}
                       className="text-xs border border-gray-300 rounded px-2 py-1"
                     >
-                      <option value="MEMBER">Member</option>
-                      <option value="ADMIN">Admin</option>
+                      <option value="MEMBER">
+                        {intl.formatMessage({
+                          id: "groups.roles.member",
+                          defaultMessage: "Member",
+                        })}
+                      </option>
+                      <option value="ADMIN">
+                        {intl.formatMessage({
+                          id: "groups.roles.admin",
+                          defaultMessage: "Admin",
+                        })}
+                      </option>
                     </select>
                   ) : (
                     <span className="text-xs uppercase tracking-wider text-gray-500">
@@ -340,13 +453,26 @@ export function OrganizationManagePage() {
                       onClick={() => {
                         if (
                           confirm(
-                            `Remove ${m.user.name} from the organization?`,
+                            intl.formatMessage(
+                              {
+                                id: "orgs.managePage.removeMemberConfirm",
+                                defaultMessage:
+                                  "Remove {name} from the organization?",
+                              },
+                              { name: m.user.name },
+                            ),
                           )
                         ) {
                           removeMutation.mutate(m.userId);
                         }
                       }}
-                      aria-label={`Remove ${m.user.name}`}
+                      aria-label={intl.formatMessage(
+                        {
+                          id: "groups.managePage.removeMemberAria",
+                          defaultMessage: "Remove {name}",
+                        },
+                        { name: m.user.name },
+                      )}
                       className="text-gray-500 hover:text-red-600"
                     >
                       <Trash2 className="w-4 h-4" aria-hidden="true" />

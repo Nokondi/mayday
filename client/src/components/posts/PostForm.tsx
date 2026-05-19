@@ -331,7 +331,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         multiline
         id="post-description"
         label={intl.formatMessage({
-          id: "posts.form.descriptionLabel",
+          id: "common.fields.description",
           defaultMessage: "Description",
         })}
         error={errors.description?.message}
@@ -607,7 +607,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           className="block text-sm font-medium text-gray-700 mb-1"
         >
           <FormattedMessage
-            id="posts.form.locationLabel"
+            id="common.fields.location"
             defaultMessage="Location"
           />{" "}
           <span className="text-gray-500 font-normal">

@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ImagePlus, X } from "lucide-react";
+import { FormattedMessage, useIntl } from "react-intl";
 import {
   createOrganizationSchema,
   type CreateOrganizationRequest,
@@ -28,6 +29,7 @@ const AVATAR_ALLOWED_TYPES = [
 ];
 
 export function CreateOrganizationPage() {
+  const intl = useIntl();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [inviteEmails, setInviteEmails] = useState<string[]>([""]);
@@ -48,11 +50,21 @@ export function CreateOrganizationPage() {
     e.target.value = "";
     if (!file) return;
     if (!AVATAR_ALLOWED_TYPES.includes(file.type)) {
-      toast.error("Only JPEG, PNG, GIF, and WebP images are allowed");
+      toast.error(
+        intl.formatMessage({
+          id: "common.avatarUploader.invalidTypeError",
+          defaultMessage: "Only JPEG, PNG, GIF, and WebP images are allowed",
+        }),
+      );
       return;
     }
     if (file.size > AVATAR_MAX_SIZE) {
-      toast.error("Image must be 5MB or smaller");
+      toast.error(
+        intl.formatMessage({
+          id: "common.avatarUploader.fileTooLargeError",
+          defaultMessage: "Image must be 5MB or smaller",
+        }),
+      );
       return;
     }
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
@@ -77,7 +89,11 @@ export function CreateOrganizationPage() {
           await uploadOrganizationAvatar(org.id, avatarFile);
         } catch {
           toast.error(
-            "Avatar upload failed — you can try again from the manage page",
+            intl.formatMessage({
+              id: "groups.create.avatarUploadFailedToast",
+              defaultMessage:
+                "Avatar upload failed — you can try again from the manage page",
+            }),
           );
         }
       }
@@ -93,27 +109,72 @@ export function CreateOrganizationPage() {
         const failed = emails.length - ok;
         if (ok && !failed) {
           toast.success(
-            `Organization created · ${ok} invite${ok === 1 ? "" : "s"} sent`,
+            intl.formatMessage(
+              {
+                id: "groups.create.successWithInvitesSentToast",
+                defaultMessage:
+                  "{kind, select, organization {Organization} community {Community} other {Group}} created · {count, plural, one {# invite} other {# invites}} sent",
+              },
+              { kind: "organization", count: ok },
+            ),
           );
         } else if (ok && failed) {
           toast.success(
-            `Organization created · ${ok} invited, ${failed} failed`,
+            intl.formatMessage(
+              {
+                id: "groups.create.successWithPartialFailuresToast",
+                defaultMessage:
+                  "{kind, select, organization {Organization} community {Community} other {Group}} created · {ok} invited, {failed} failed",
+              },
+              { kind: "organization", ok, failed },
+            ),
           );
         } else {
-          toast.success("Organization created · invites failed to send");
+          toast.success(
+            intl.formatMessage(
+              {
+                id: "groups.create.successAllInvitesFailedToast",
+                defaultMessage:
+                  "{kind, select, organization {Organization} community {Community} other {Group}} created · invites failed to send",
+              },
+              { kind: "organization" },
+            ),
+          );
         }
       } else {
-        toast.success("Organization created");
+        toast.success(
+          intl.formatMessage(
+            {
+              id: "groups.create.successToast",
+              defaultMessage:
+                "{kind, select, organization {Organization} community {Community} other {Group}} created",
+            },
+            { kind: "organization" },
+          ),
+        );
       }
       navigate(`/organizations/${org.id}`);
     },
-    onError: () => toast.error("Failed to create organization"),
+    onError: () =>
+      toast.error(
+        intl.formatMessage(
+          {
+            id: "groups.create.failureToast",
+            defaultMessage:
+              "Failed to create {kind, select, organization {organization} community {community} other {group}}",
+          },
+          { kind: "organization" },
+        ),
+      ),
   });
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        Create an Organization
+        <FormattedMessage
+          id="orgs.createPage.title"
+          defaultMessage="Create an Organization"
+        />
       </h1>
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <form
@@ -130,20 +191,34 @@ export function CreateOrganizationPage() {
         >
           <div>
             <p className="block text-sm font-medium text-gray-700 mb-2">
-              Avatar{" "}
-              <span className="text-gray-500 font-normal">(optional)</span>
+              <FormattedMessage
+                id="common.fields.avatar"
+                defaultMessage="Avatar"
+              />{" "}
+              <span className="text-gray-500 font-normal">
+                <FormattedMessage
+                  id="common.formField.optionalSuffix"
+                  defaultMessage="(optional)"
+                />
+              </span>
             </p>
             {avatarPreview ? (
               <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 group">
                 <img
                   src={avatarPreview}
-                  alt="Avatar preview"
+                  alt={intl.formatMessage({
+                    id: "groups.create.avatarPreviewAlt",
+                    defaultMessage: "Avatar preview",
+                  })}
                   className="w-full h-full object-cover"
                 />
                 <button
                   type="button"
                   onClick={removeAvatar}
-                  aria-label="Remove avatar"
+                  aria-label={intl.formatMessage({
+                    id: "groups.create.removeAvatarAria",
+                    defaultMessage: "Remove avatar",
+                  })}
                   className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
                 >
                   <X className="w-3.5 h-3.5" aria-hidden="true" />
@@ -156,7 +231,10 @@ export function CreateOrganizationPage() {
                 className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-mayday-400 hover:text-mayday-500 transition-colors"
               >
                 <ImagePlus className="w-5 h-5" aria-hidden="true" />
-                Add avatar
+                <FormattedMessage
+                  id="groups.create.addAvatarButton"
+                  defaultMessage="Add avatar"
+                />
               </button>
             )}
             <input
@@ -170,26 +248,44 @@ export function CreateOrganizationPage() {
 
           <FormField
             id="org-name"
-            label="Name"
+            label={intl.formatMessage({
+              id: "common.fields.name",
+              defaultMessage: "Name",
+            })}
             error={errors.name?.message}
-            placeholder="e.g. Riverside Mutual Aid"
+            placeholder={intl.formatMessage({
+              id: "orgs.createPage.namePlaceholder",
+              defaultMessage: "e.g. Riverside Mutual Aid",
+            })}
             {...register("name")}
           />
 
           <FormField
             multiline
             id="org-description"
-            label="Description"
+            label={intl.formatMessage({
+              id: "common.fields.description",
+              defaultMessage: "Description",
+            })}
             error={errors.description?.message}
             rows={4}
-            placeholder="What does your organization do?"
+            placeholder={intl.formatMessage({
+              id: "orgs.createPage.descriptionPlaceholder",
+              defaultMessage: "What does your organization do?",
+            })}
             {...register("description")}
           />
 
           <FormField
             id="org-location"
-            label="Location"
-            placeholder="e.g. Little Rock, AR"
+            label={intl.formatMessage({
+              id: "common.fields.location",
+              defaultMessage: "Location",
+            })}
+            placeholder={intl.formatMessage({
+              id: "groups.create.locationPlaceholder",
+              defaultMessage: "e.g. Little Rock, AR",
+            })}
             {...register("location")}
             optional
           />
@@ -206,7 +302,17 @@ export function CreateOrganizationPage() {
             disabled={mutation.isPending}
             className="w-full bg-mayday-700 text-white py-3 rounded-lg font-medium hover:bg-mayday-800 disabled:opacity-50"
           >
-            {mutation.isPending ? "Creating..." : "Create Organization"}
+            {mutation.isPending ? (
+              <FormattedMessage
+                id="groups.create.submittingButton"
+                defaultMessage="Creating..."
+              />
+            ) : (
+              <FormattedMessage
+                id="orgs.createPage.submitButton"
+                defaultMessage="Create Organization"
+              />
+            )}
           </button>
         </form>
       </div>

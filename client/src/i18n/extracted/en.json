@@ -50,9 +50,6 @@
   "auth.registerForm.confirmPasswordRequiredError": {
     "defaultMessage": "Please confirm your password"
   },
-  "auth.registerForm.nameLabel": {
-    "defaultMessage": "Name"
-  },
   "auth.registerForm.submitButton": {
     "defaultMessage": "Create account"
   },
@@ -182,8 +179,20 @@
   "common.errors.passwordsMismatch": {
     "defaultMessage": "Passwords do not match"
   },
+  "common.fields.avatar": {
+    "defaultMessage": "Avatar"
+  },
+  "common.fields.description": {
+    "defaultMessage": "Description"
+  },
   "common.fields.email": {
     "defaultMessage": "Email"
+  },
+  "common.fields.location": {
+    "defaultMessage": "Location"
+  },
+  "common.fields.name": {
+    "defaultMessage": "Name"
   },
   "common.fields.password": {
     "defaultMessage": "Password"
@@ -290,6 +299,240 @@
   "common.status.sending": {
     "defaultMessage": "Sending…"
   },
+  "communities.browsePage.allCommunitiesHeading": {
+    "defaultMessage": "All Communities"
+  },
+  "communities.browsePage.newButton": {
+    "defaultMessage": "New Community"
+  },
+  "communities.browsePage.resultCount": {
+    "defaultMessage": "{count, plural, one {# community found} other {# communities found}}"
+  },
+  "communities.browsePage.searchPlaceholder": {
+    "defaultMessage": "Search communities..."
+  },
+  "communities.browsePage.searchResultsHeading": {
+    "defaultMessage": "Search Results"
+  },
+  "communities.browsePage.title": {
+    "defaultMessage": "Communities"
+  },
+  "communities.browsePage.yourCommunitiesHeading": {
+    "defaultMessage": "Your Communities"
+  },
+  "communities.createPage.descriptionPlaceholder": {
+    "defaultMessage": "What is this community about?"
+  },
+  "communities.createPage.namePlaceholder": {
+    "defaultMessage": "e.g. Little Rock Mutual Aid"
+  },
+  "communities.createPage.submitButton": {
+    "defaultMessage": "Create Community"
+  },
+  "communities.createPage.title": {
+    "defaultMessage": "Create a Community"
+  },
+  "communities.detailPage.deleteConfirm": {
+    "defaultMessage": "Delete this community? This cannot be undone."
+  },
+  "communities.detailPage.deleteFailedToast": {
+    "defaultMessage": "Failed to delete community"
+  },
+  "communities.detailPage.deleteSuccessToast": {
+    "defaultMessage": "Community deleted"
+  },
+  "communities.detailPage.joinRequestFailedFallback": {
+    "defaultMessage": "Failed to send request"
+  },
+  "communities.detailPage.joinRequestSentToast": {
+    "defaultMessage": "Join request sent"
+  },
+  "communities.detailPage.leaveConfirm": {
+    "defaultMessage": "Leave this community?"
+  },
+  "communities.detailPage.leaveSuccessToast": {
+    "defaultMessage": "Left community"
+  },
+  "communities.detailPage.notFound": {
+    "defaultMessage": "Community not found."
+  },
+  "communities.detailPage.postsHeading": {
+    "defaultMessage": "Community Posts"
+  },
+  "communities.detailPage.requestPendingLabel": {
+    "defaultMessage": "Request Pending"
+  },
+  "communities.detailPage.requestToJoinButton": {
+    "defaultMessage": "Request to Join"
+  },
+  "communities.detailPage.withdrawButton": {
+    "defaultMessage": "Withdraw"
+  },
+  "communities.detailPage.withdrawFailedFallback": {
+    "defaultMessage": "Failed to withdraw request"
+  },
+  "communities.detailPage.withdrawSuccessToast": {
+    "defaultMessage": "Request withdrawn"
+  },
+  "communities.managePage.approveButton": {
+    "defaultMessage": "Approve"
+  },
+  "communities.managePage.approveFailedFallback": {
+    "defaultMessage": "Failed to approve"
+  },
+  "communities.managePage.detailsHeading": {
+    "defaultMessage": "Community Details"
+  },
+  "communities.managePage.joinRequestsHeading": {
+    "defaultMessage": "Join Requests"
+  },
+  "communities.managePage.rejectButton": {
+    "defaultMessage": "Reject"
+  },
+  "communities.managePage.rejectFailedFallback": {
+    "defaultMessage": "Failed to reject"
+  },
+  "communities.managePage.removeMemberConfirm": {
+    "defaultMessage": "Remove {name}?"
+  },
+  "communities.managePage.requestApprovedToast": {
+    "defaultMessage": "Request approved"
+  },
+  "communities.managePage.requestRejectedToast": {
+    "defaultMessage": "Request rejected"
+  },
+  "communities.managePage.unknownUserFallback": {
+    "defaultMessage": "Unknown user"
+  },
+  "communities.managePage.updateSuccessToast": {
+    "defaultMessage": "Community updated"
+  },
+  "groups.create.addAvatarButton": {
+    "defaultMessage": "Add avatar"
+  },
+  "groups.create.avatarPreviewAlt": {
+    "defaultMessage": "Avatar preview"
+  },
+  "groups.create.avatarUploadFailedToast": {
+    "defaultMessage": "Avatar upload failed — you can try again from the manage page"
+  },
+  "groups.create.failureToast": {
+    "defaultMessage": "Failed to create {kind, select, organization {organization} community {community} other {group}}"
+  },
+  "groups.create.locationPlaceholder": {
+    "defaultMessage": "e.g. Little Rock, AR"
+  },
+  "groups.create.removeAvatarAria": {
+    "defaultMessage": "Remove avatar"
+  },
+  "groups.create.submittingButton": {
+    "defaultMessage": "Creating..."
+  },
+  "groups.create.successAllInvitesFailedToast": {
+    "defaultMessage": "{kind, select, organization {Organization} community {Community} other {Group}} created · invites failed to send"
+  },
+  "groups.create.successToast": {
+    "defaultMessage": "{kind, select, organization {Organization} community {Community} other {Group}} created"
+  },
+  "groups.create.successWithInvitesSentToast": {
+    "defaultMessage": "{kind, select, organization {Organization} community {Community} other {Group}} created · {count, plural, one {# invite} other {# invites}} sent"
+  },
+  "groups.create.successWithPartialFailuresToast": {
+    "defaultMessage": "{kind, select, organization {Organization} community {Community} other {Group}} created · {ok} invited, {failed} failed"
+  },
+  "groups.detailPage.deleteButton": {
+    "defaultMessage": "Delete"
+  },
+  "groups.detailPage.leaveButton": {
+    "defaultMessage": "Leave"
+  },
+  "groups.detailPage.leaveFailedFallback": {
+    "defaultMessage": "Failed to leave"
+  },
+  "groups.detailPage.manageButton": {
+    "defaultMessage": "Manage"
+  },
+  "groups.managePage.backToLink": {
+    "defaultMessage": "Back to {name}"
+  },
+  "groups.managePage.inviteMembersHeading": {
+    "defaultMessage": "Invite Members"
+  },
+  "groups.managePage.inviteRevokedToast": {
+    "defaultMessage": "Invite revoked"
+  },
+  "groups.managePage.memberRemovedToast": {
+    "defaultMessage": "Member removed"
+  },
+  "groups.managePage.membersHeading": {
+    "defaultMessage": "Members"
+  },
+  "groups.managePage.pendingInviteFallback": {
+    "defaultMessage": "Pending invite"
+  },
+  "groups.managePage.pendingInvitesHeading": {
+    "defaultMessage": "Pending invites"
+  },
+  "groups.managePage.removeMemberAria": {
+    "defaultMessage": "Remove {name}"
+  },
+  "groups.managePage.removeMemberFailedFallback": {
+    "defaultMessage": "Failed to remove member"
+  },
+  "groups.managePage.revokeButton": {
+    "defaultMessage": "Revoke"
+  },
+  "groups.managePage.roleSelectAria": {
+    "defaultMessage": "Role for {name}"
+  },
+  "groups.managePage.roleUpdatedToast": {
+    "defaultMessage": "Role updated"
+  },
+  "groups.managePage.saveChangesButton": {
+    "defaultMessage": "Save changes"
+  },
+  "groups.managePage.updateFailedToast": {
+    "defaultMessage": "Failed to update"
+  },
+  "groups.managePage.updateRoleFailedFallback": {
+    "defaultMessage": "Failed to update role"
+  },
+  "groups.managePage.youMarker": {
+    "defaultMessage": "(you)"
+  },
+  "groups.roles.admin": {
+    "defaultMessage": "Admin"
+  },
+  "groups.roles.member": {
+    "defaultMessage": "Member"
+  },
+  "groups.transferOwnership.dialogBody": {
+    "defaultMessage": "Pick a member to become the new owner of <strong>{groupName}</strong>. You'll be demoted to <strong>Admin</strong>. This can't be undone from the {kind, select, community {community} organization {organization} other {group}} page — the new owner will have to hand it back."
+  },
+  "groups.transferOwnership.emptyState": {
+    "defaultMessage": "There are no other members to transfer to. Invite someone first, or delete the {kind, select, community {community} organization {organization} other {group}} from the danger zone."
+  },
+  "groups.transferOwnership.failureToast": {
+    "defaultMessage": "Failed to transfer ownership"
+  },
+  "groups.transferOwnership.makeOwnerButton": {
+    "defaultMessage": "Make {name} owner"
+  },
+  "groups.transferOwnership.sectionBody": {
+    "defaultMessage": "Hand this {kind, select, community {community} organization {organization} other {group}} over to another member. You'll be demoted to Admin and the new owner will take over."
+  },
+  "groups.transferOwnership.selectNewOwnerLegend": {
+    "defaultMessage": "Select new owner"
+  },
+  "groups.transferOwnership.successToast": {
+    "defaultMessage": "Ownership transferred"
+  },
+  "groups.transferOwnership.title": {
+    "defaultMessage": "Transfer ownership"
+  },
+  "groups.transferOwnership.transferringButton": {
+    "defaultMessage": "Transferring…"
+  },
   "layout.footer.brand": {
     "defaultMessage": "MayDay Mutual Aid Hub"
   },
@@ -364,6 +607,63 @@
   },
   "layout.skipToMainContent": {
     "defaultMessage": "Skip to main content"
+  },
+  "orgs.browsePage.newButton": {
+    "defaultMessage": "New Organization"
+  },
+  "orgs.browsePage.resultCount": {
+    "defaultMessage": "{count, plural, one {# organization found} other {# organizations found}}"
+  },
+  "orgs.browsePage.searchPlaceholder": {
+    "defaultMessage": "Search organizations..."
+  },
+  "orgs.browsePage.title": {
+    "defaultMessage": "Organizations"
+  },
+  "orgs.createPage.descriptionPlaceholder": {
+    "defaultMessage": "What does your organization do?"
+  },
+  "orgs.createPage.namePlaceholder": {
+    "defaultMessage": "e.g. Riverside Mutual Aid"
+  },
+  "orgs.createPage.submitButton": {
+    "defaultMessage": "Create Organization"
+  },
+  "orgs.createPage.title": {
+    "defaultMessage": "Create an Organization"
+  },
+  "orgs.detailPage.deleteConfirm": {
+    "defaultMessage": "Delete this organization? This cannot be undone."
+  },
+  "orgs.detailPage.deleteFailedToast": {
+    "defaultMessage": "Failed to delete organization"
+  },
+  "orgs.detailPage.deleteSuccessToast": {
+    "defaultMessage": "Organization deleted"
+  },
+  "orgs.detailPage.fulfilledCount": {
+    "defaultMessage": "{count, plural, one {# request} other {# requests}} fulfilled"
+  },
+  "orgs.detailPage.leaveConfirm": {
+    "defaultMessage": "Leave this organization?"
+  },
+  "orgs.detailPage.leaveSuccessToast": {
+    "defaultMessage": "Left organization"
+  },
+  "orgs.detailPage.notFound": {
+    "defaultMessage": "Organization not found."
+  },
+  "orgs.detailPage.postsHeading": {
+    "defaultMessage": "Posts"
+  },
+  "orgs.managePage.detailsHeading": {
+    "defaultMessage": "Organization Details"
+  },
+  "orgs.managePage.removeMemberConfirm": {
+    "defaultMessage": "Remove {name} from the organization?"
+  },
+  "orgs.managePage.updateSuccessToast": {
+    "defaultMessage": "Organization updated"
   },
   "posts.actions.contact": {
     "defaultMessage": "Contact"
@@ -497,9 +797,6 @@
   "posts.form.clearLocationAria": {
     "defaultMessage": "Clear location"
   },
-  "posts.form.descriptionLabel": {
-    "defaultMessage": "Description"
-  },
   "posts.form.descriptionPlaceholder": {
     "defaultMessage": "Provide details about your request or offer..."
   },
@@ -514,9 +811,6 @@
   },
   "posts.form.imagesLabel": {
     "defaultMessage": "Images"
-  },
-  "posts.form.locationLabel": {
-    "defaultMessage": "Location"
   },
   "posts.form.locationPlaceholder": {
     "defaultMessage": "Search for an address or place..."

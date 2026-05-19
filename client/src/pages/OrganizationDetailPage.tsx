@@ -9,6 +9,7 @@ import {
   LogOut,
   Trash2,
 } from "lucide-react";
+import { FormattedMessage, useIntl } from "react-intl";
 import {
   getOrganization,
   getOrganizationInvites,
@@ -25,6 +26,7 @@ import { PostList } from "../components/posts/PostList.js";
 import { useAuth } from "../context/AuthContext.js";
 
 export function OrganizationDetailPage() {
+  const intl = useIntl();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -52,8 +54,16 @@ export function OrganizationDetailPage() {
 
   const leaveMutation = useToastMutation({
     mutationFn: () => removeMember(id!, user!.id),
-    successMessage: "Left organization",
-    errorMessage: (e: any) => e?.response?.data?.message || "Failed to leave",
+    successMessage: intl.formatMessage({
+      id: "orgs.detailPage.leaveSuccessToast",
+      defaultMessage: "Left organization",
+    }),
+    errorMessage: (e: any) =>
+      e?.response?.data?.message ||
+      intl.formatMessage({
+        id: "groups.detailPage.leaveFailedFallback",
+        defaultMessage: "Failed to leave",
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organizations"] });
       queryClient.invalidateQueries({ queryKey: ["my-organizations"] });
@@ -63,8 +73,14 @@ export function OrganizationDetailPage() {
 
   const deleteMutation = useToastMutation({
     mutationFn: () => deleteOrganization(id!),
-    successMessage: "Organization deleted",
-    errorMessage: "Failed to delete organization",
+    successMessage: intl.formatMessage({
+      id: "orgs.detailPage.deleteSuccessToast",
+      defaultMessage: "Organization deleted",
+    }),
+    errorMessage: intl.formatMessage({
+      id: "orgs.detailPage.deleteFailedToast",
+      defaultMessage: "Failed to delete organization",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organizations"] });
       queryClient.invalidateQueries({ queryKey: ["my-organizations"] });
@@ -75,7 +91,12 @@ export function OrganizationDetailPage() {
   if (isLoading) return <LoadingSpinner className="py-12" />;
   if (!org)
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8">Organization not found.</div>
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <FormattedMessage
+          id="orgs.detailPage.notFound"
+          defaultMessage="Organization not found."
+        />
+      </div>
     );
 
   const isOwner = org.myRole === "OWNER";
@@ -103,7 +124,11 @@ export function OrganizationDetailPage() {
             <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500">
               <span className="flex items-center gap-1">
                 <Users className="w-4 h-4" />
-                {org.memberCount} member{org.memberCount !== 1 ? "s" : ""}
+                <FormattedMessage
+                  id="common.entityCard.memberCount"
+                  defaultMessage="{count, plural, one {# member} other {# members}}"
+                  values={{ count: org.memberCount }}
+                />
               </span>
               {org.location && (
                 <span className="flex items-center gap-1">
@@ -114,13 +139,20 @@ export function OrganizationDetailPage() {
               {!!org.fulfilledCount && (
                 <span className="flex items-center gap-1">
                   <CheckCircle2 className="w-4 h-4" />
-                  {org.fulfilledCount}{" "}
-                  {org.fulfilledCount === 1 ? "request" : "requests"} fulfilled
+                  <FormattedMessage
+                    id="orgs.detailPage.fulfilledCount"
+                    defaultMessage="{count, plural, one {# request} other {# requests}} fulfilled"
+                    values={{ count: org.fulfilledCount }}
+                  />
                 </span>
               )}
               {org.myRole && (
                 <span className="text-mayday-600 font-medium">
-                  You: {org.myRole.toLowerCase()}
+                  <FormattedMessage
+                    id="common.entityCard.viewerRole"
+                    defaultMessage="You: {role}"
+                    values={{ role: org.myRole.toLowerCase() }}
+                  />
                 </span>
               )}
             </div>
@@ -136,33 +168,55 @@ export function OrganizationDetailPage() {
               className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
             >
               <Settings className="w-4 h-4" />
-              Manage
+              <FormattedMessage
+                id="groups.detailPage.manageButton"
+                defaultMessage="Manage"
+              />
             </Link>
           )}
           {isMember && !isOwner && (
             <button
               onClick={() => {
-                if (confirm("Leave this organization?"))
+                if (
+                  confirm(
+                    intl.formatMessage({
+                      id: "orgs.detailPage.leaveConfirm",
+                      defaultMessage: "Leave this organization?",
+                    }),
+                  )
+                )
                   leaveMutation.mutate();
               }}
               className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
             >
               <LogOut className="w-4 h-4" />
-              Leave
+              <FormattedMessage
+                id="groups.detailPage.leaveButton"
+                defaultMessage="Leave"
+              />
             </button>
           )}
           {isOwner && (
             <button
               onClick={() => {
                 if (
-                  confirm("Delete this organization? This cannot be undone.")
+                  confirm(
+                    intl.formatMessage({
+                      id: "orgs.detailPage.deleteConfirm",
+                      defaultMessage:
+                        "Delete this organization? This cannot be undone.",
+                    }),
+                  )
                 )
                   deleteMutation.mutate();
               }}
               className="flex items-center gap-1 px-3 py-2 border border-red-300 rounded-lg text-sm text-red-700 hover:bg-red-50"
             >
               <Trash2 className="w-4 h-4" />
-              Delete
+              <FormattedMessage
+                id="groups.detailPage.deleteButton"
+                defaultMessage="Delete"
+              />
             </button>
           )}
         </div>
@@ -192,7 +246,12 @@ export function OrganizationDetailPage() {
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Posts</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <FormattedMessage
+            id="orgs.detailPage.postsHeading"
+            defaultMessage="Posts"
+          />
+        </h2>
         {postsData ? <PostList posts={postsData.data} /> : <LoadingSpinner />}
       </div>
     </div>

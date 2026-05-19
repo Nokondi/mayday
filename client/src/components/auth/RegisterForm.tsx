@@ -82,7 +82,7 @@ export function RegisterForm({
       <FormField
         id="register-name"
         label={intl.formatMessage({
-          id: "auth.registerForm.nameLabel",
+          id: "common.fields.name",
           defaultMessage: "Name",
         })}
         error={errors.name?.message}

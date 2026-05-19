@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Crown, X } from 'lucide-react';
+import { FormattedMessage, useIntl } from 'react-intl';
 
 export interface TransferOwnershipCandidate {
   userId: string;
@@ -27,6 +28,7 @@ export function TransferOwnershipDialog({
   onTransfer,
   isPending,
 }: TransferOwnershipDialogProps) {
+  const intl = useIntl();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [selectedId, setSelectedId] = useState<string>('');
 
@@ -60,7 +62,6 @@ export function TransferOwnershipDialog({
   };
 
   const selectedCandidate = candidates.find((c) => c.userId === selectedId);
-  const subjectLabel = groupKind === 'community' ? 'community' : 'organization';
 
   return (
     <dialog
@@ -75,31 +76,51 @@ export function TransferOwnershipDialog({
             className="text-lg font-semibold text-gray-900 flex items-center gap-2"
           >
             <Crown className="w-5 h-5 text-amber-600" aria-hidden="true" />
-            Transfer ownership
+            <FormattedMessage
+              id="groups.transferOwnership.title"
+              defaultMessage="Transfer ownership"
+            />
           </h2>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={intl.formatMessage({
+              id: 'common.actions.close',
+              defaultMessage: 'Close',
+            })}
             className="text-gray-500 hover:text-gray-600"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
         <p className="mt-3 text-sm text-gray-700">
-          Pick a member to become the new owner of <strong>{groupName}</strong>.
-          You'll be demoted to <strong>Admin</strong>. This can't be undone from
-          the {subjectLabel} page — the new owner will have to hand it back.
+          <FormattedMessage
+            id="groups.transferOwnership.dialogBody"
+            defaultMessage="Pick a member to become the new owner of <strong>{groupName}</strong>. You'll be demoted to <strong>Admin</strong>. This can't be undone from the {kind, select, community {community} organization {organization} other {group}} page — the new owner will have to hand it back."
+            values={{
+              groupName,
+              kind: groupKind,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            }}
+          />
         </p>
 
         {candidates.length === 0 ? (
           <p className="mt-4 text-sm text-gray-500">
-            There are no other members to transfer to. Invite someone first, or
-            delete the {subjectLabel} from the danger zone.
+            <FormattedMessage
+              id="groups.transferOwnership.emptyState"
+              defaultMessage="There are no other members to transfer to. Invite someone first, or delete the {kind, select, community {community} organization {organization} other {group}} from the danger zone."
+              values={{ kind: groupKind }}
+            />
           </p>
         ) : (
           <fieldset className="mt-4 max-h-60 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
-            <legend className="sr-only">Select new owner</legend>
+            <legend className="sr-only">
+              <FormattedMessage
+                id="groups.transferOwnership.selectNewOwnerLegend"
+                defaultMessage="Select new owner"
+              />
+            </legend>
             {candidates.map((c) => {
               const inputId = `transfer-candidate-${c.userId}`;
               return (
@@ -137,7 +158,10 @@ export function TransferOwnershipDialog({
             disabled={isPending}
             className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            Cancel
+            <FormattedMessage
+              id="common.actions.cancel"
+              defaultMessage="Cancel"
+            />
           </button>
           <button
             type="button"
@@ -146,11 +170,23 @@ export function TransferOwnershipDialog({
             className="flex items-center gap-2 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800 disabled:opacity-50"
           >
             <Crown className="w-4 h-4" aria-hidden="true" />
-            {isPending
-              ? 'Transferring…'
-              : selectedCandidate
-              ? `Make ${selectedCandidate.name} owner`
-              : 'Transfer ownership'}
+            {isPending ? (
+              <FormattedMessage
+                id="groups.transferOwnership.transferringButton"
+                defaultMessage="Transferring…"
+              />
+            ) : selectedCandidate ? (
+              <FormattedMessage
+                id="groups.transferOwnership.makeOwnerButton"
+                defaultMessage="Make {name} owner"
+                values={{ name: selectedCandidate.name }}
+              />
+            ) : (
+              <FormattedMessage
+                id="groups.transferOwnership.title"
+                defaultMessage="Transfer ownership"
+              />
+            )}
           </button>
         </div>
       </div>
