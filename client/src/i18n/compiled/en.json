@@ -1865,6 +1865,125 @@
       "value": "Skip to main content"
     }
   ],
+  "messages.input.ariaLabel": [
+    {
+      "type": 0,
+      "value": "Type a message"
+    }
+  ],
+  "messages.input.placeholder": [
+    {
+      "type": 0,
+      "value": "Type a message..."
+    }
+  ],
+  "messages.input.sendButtonAriaLabel": [
+    {
+      "type": 0,
+      "value": "Send message"
+    }
+  ],
+  "messages.list.ariaLabel": [
+    {
+      "type": 0,
+      "value": "Conversations"
+    }
+  ],
+  "messages.list.conversationAriaLabel": [
+    {
+      "type": 0,
+      "value": "Conversation with "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    },
+    {
+      "offset": 0,
+      "options": {
+        "=0": {
+          "value": [
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 0,
+              "value": ", "
+            },
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " unread"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "unread"
+    }
+  ],
+  "messages.list.emptyState": [
+    {
+      "type": 0,
+      "value": "No conversations yet. Contact someone from a post to start chatting."
+    }
+  ],
+  "messages.page.emptyState": [
+    {
+      "type": 0,
+      "value": "Select a conversation to start messaging"
+    }
+  ],
+  "messages.page.title": [
+    {
+      "type": 0,
+      "value": "Messages"
+    }
+  ],
+  "messages.thread.ariaLabel": [
+    {
+      "type": 0,
+      "value": "Message history"
+    }
+  ],
+  "messages.thread.messageAriaLabel": [
+    {
+      "type": 1,
+      "value": "sender"
+    },
+    {
+      "type": 0,
+      "value": " said "
+    },
+    {
+      "type": 1,
+      "value": "content"
+    },
+    {
+      "type": 0,
+      "value": ", "
+    },
+    {
+      "type": 1,
+      "value": "time"
+    }
+  ],
+  "messages.thread.senderOther": [
+    {
+      "type": 0,
+      "value": "Other participant"
+    }
+  ],
+  "messages.thread.senderYou": [
+    {
+      "type": 0,
+      "value": "You"
+    }
+  ],
   "orgs.browsePage.newButton": [
     {
       "type": 0,
