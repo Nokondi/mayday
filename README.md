@@ -1,6 +1,6 @@
 # MayDay
 
-A web application for coordinating mutual aid between individuals and organizations. Users can post requests for help or offer resources and services, and the app helps connect them through search, filtering, map-based discovery, and direct messaging.
+A web application for coordinating mutual aid between individuals, organizations, and communities. Members post requests for help or offers of resources and services, and connect through search, filtering, map-based discovery, and direct messaging. Also includes image uploads, push notifications, content moderation and bug reporting, admin announcements, and internationalization (English now, with Spanish in progress).
 
 ## Prerequisites
 
@@ -21,7 +21,11 @@ npm install
 cp .env.example .env
 ```
 
-The defaults in `.env.example` work out of the box with the Docker Compose database. If you need to change the JWT secrets, edit `.env` before starting the server.
+The defaults in `.env.example` work out of the box with the Docker Compose database, but a few things need attention before everything works end-to-end:
+
+- `JWT_SECRET` / `JWT_REFRESH_SECRET` — change from the placeholder values before deploying anywhere non-local.
+- `SMTP_*` — required for account confirmation emails. Without these, new signups will not be able to verify their email. The seeded accounts are pre-verified, so they work without SMTP configured.
+- `SPACES_*` — optional. Set these if you want to use DigitalOcean Spaces for image uploads on posts.
 
 ### 3. Start PostgreSQL
 
@@ -97,22 +101,24 @@ mayday/
 
 ## Available Scripts
 
-| Command                | Description                                  |
-| ---------------------- | -------------------------------------------- |
-| `npm run dev:client`   | Start the Vite dev server                    |
-| `npm run dev:server`   | Start the Express dev server with hot reload |
-| `npm run build:shared` | Build the shared types package               |
-| `npm run build:client` | Build the client for production              |
-| `npm run build:server` | Build the server for production              |
-| `npm run build`        | Build all packages                           |
-| `npm run db:migrate`   | Run Prisma migrations                        |
-| `npm run db:seed`      | Seed the database with sample data           |
-| `npm run db:clear`     | Delete all data from the database            |
+| Command                | Description                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| `npm run dev:client`   | Start the Vite dev server                                    |
+| `npm run dev:server`   | Start the Express dev server with hot reload                 |
+| `npm run build:shared` | Build the shared types package                               |
+| `npm run build:client` | Build the client for production                              |
+| `npm run build:server` | Build the server for production                              |
+| `npm run build`        | Build all packages                                           |
+| `npm start`            | Build shared types and run the server in production mode     |
+| `npm test`             | Run the client and server test suites                        |
+| `npm run db:migrate`   | Run Prisma migrations                                        |
+| `npm run db:seed`      | Seed the database with sample data                           |
+| `npm run db:clear`     | Delete all data from the database                            |
 
 ## Tech Stack
 
-- **Frontend:** React 19, Vite, Tailwind CSS, TanStack Query, React Router, Leaflet, React Hook Form
-- **Backend:** Express, Prisma, PostgreSQL, WebSocket (`ws`), JWT authentication
+- **Frontend:** React 19, Vite, Tailwind CSS, TanStack Query, React Router, React Hook Form, Leaflet, react-intl (FormatJS), Sonner, libsodium-wrappers
+- **Backend:** Express, Prisma, PostgreSQL, WebSocket (`ws`), JWT authentication, bcrypt, Helmet, express-rate-limit, multer + `@aws-sdk/client-s3` (DigitalOcean Spaces), Nodemailer, web-push
 - **Shared:** TypeScript, Zod
 
 ## Notes
