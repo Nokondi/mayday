@@ -8,6 +8,7 @@ import {
   type CreatePostRequest,
 } from "@mayday/shared";
 import { ImagePlus, X, MapPin, Loader2 } from "lucide-react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useDebounce } from "../../hooks/useDebounce.js";
 import { listMyOrganizations } from "../../api/organizations.js";
 import { listMyCommunities } from "../../api/communities.js";
@@ -20,6 +21,7 @@ interface PostFormProps {
 }
 
 export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
+  const intl = useIntl();
   const { user } = useAuth();
   const {
     register,
@@ -205,7 +207,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <fieldset className="border-0 p-0 m-0">
         <legend className="block text-sm font-medium text-gray-700 mb-2">
-          Type
+          <FormattedMessage
+            id="posts.form.typeLegend"
+            defaultMessage="Type"
+          />
         </legend>
         <div className="flex gap-4">
           <label className="flex items-center gap-2">
@@ -215,7 +220,12 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
               {...register("type")}
               className="text-mayday-700"
             />
-            <span>I need help (Request)</span>
+            <span>
+              <FormattedMessage
+                id="posts.form.requestRadioLabel"
+                defaultMessage="I need help (Request)"
+              />
+            </span>
           </label>
           <label className="flex items-center gap-2">
             <input
@@ -224,7 +234,12 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
               {...register("type")}
               className="text-mayday-700"
             />
-            <span>I can help (Offer)</span>
+            <span>
+              <FormattedMessage
+                id="posts.form.offerRadioLabel"
+                defaultMessage="I can help (Offer)"
+              />
+            </span>
           </label>
         </div>
       </fieldset>
@@ -235,14 +250,23 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             htmlFor="post-organization"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Post as
+            <FormattedMessage
+              id="posts.form.postAsLabel"
+              defaultMessage="Post as"
+            />
           </label>
           <select
             id="post-organization"
             {...register("organizationId")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
-            <option value="">{user?.name ?? "Yourself"}</option>
+            <option value="">
+              {user?.name ??
+                intl.formatMessage({
+                  id: "posts.form.postAsYourselfDefault",
+                  defaultMessage: "Yourself",
+                })}
+            </option>
             {myOrgs.map((org) => (
               <option key={org.id} value={org.id}>
                 {org.name}
@@ -258,17 +282,31 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             htmlFor="post-community"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Visibility
+            <FormattedMessage
+              id="posts.form.visibilityLabel"
+              defaultMessage="Visibility"
+            />
           </label>
           <select
             id="post-community"
             {...register("communityId")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
-            <option value="">Public (visible to everyone)</option>
+            <option value="">
+              {intl.formatMessage({
+                id: "posts.form.visibilityPublic",
+                defaultMessage: "Public (visible to everyone)",
+              })}
+            </option>
             {myCommunities.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.name} members only
+                {intl.formatMessage(
+                  {
+                    id: "posts.form.visibilityCommunity",
+                    defaultMessage: "{name} members only",
+                  },
+                  { name: c.name },
+                )}
               </option>
             ))}
           </select>
@@ -277,28 +315,46 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
       <FormField
         id="post-title"
-        label="Title"
+        label={intl.formatMessage({
+          id: "posts.form.titleLabel",
+          defaultMessage: "Title",
+        })}
         error={errors.title?.message}
-        placeholder="Brief description of what you need or can offer"
+        placeholder={intl.formatMessage({
+          id: "posts.form.titlePlaceholder",
+          defaultMessage: "Brief description of what you need or can offer",
+        })}
         {...register("title")}
       />
 
       <FormField
         multiline
         id="post-description"
-        label="Description"
+        label={intl.formatMessage({
+          id: "common.fields.description",
+          defaultMessage: "Description",
+        })}
         error={errors.description?.message}
         rows={4}
-        placeholder="Provide details about your request or offer..."
+        placeholder={intl.formatMessage({
+          id: "posts.form.descriptionPlaceholder",
+          defaultMessage: "Provide details about your request or offer...",
+        })}
         {...register("description")}
       />
 
       {/* Image upload */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Images{" "}
+          <FormattedMessage
+            id="posts.form.imagesLabel"
+            defaultMessage="Images"
+          />{" "}
           <span className="text-gray-500 font-normal">
-            (optional, maximum of 5 images, 5mb per image)
+            <FormattedMessage
+              id="posts.form.imagesHelperText"
+              defaultMessage="(optional, maximum of 5 images, 5mb per image)"
+            />
           </span>
         </label>
 
@@ -311,13 +367,25 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
               >
                 <img
                   src={src}
-                  alt={`Upload preview ${i + 1}`}
+                  alt={intl.formatMessage(
+                    {
+                      id: "posts.form.imagePreviewAlt",
+                      defaultMessage: "Upload preview {n}",
+                    },
+                    { n: i + 1 },
+                  )}
                   className="w-full h-full object-cover"
                 />
                 <button
                   type="button"
                   onClick={() => removeImage(i)}
-                  aria-label={`Remove image ${i + 1}`}
+                  aria-label={intl.formatMessage(
+                    {
+                      id: "posts.form.removeImageAria",
+                      defaultMessage: "Remove image {n}",
+                    },
+                    { n: i + 1 },
+                  )}
                   className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
                 >
                   <X className="w-3.5 h-3.5" aria-hidden="true" />
@@ -334,7 +402,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-mayday-400 hover:text-mayday-500 transition-colors"
           >
             <ImagePlus className="w-5 h-5" />
-            Add images
+            <FormattedMessage
+              id="posts.form.addImagesButton"
+              defaultMessage="Add images"
+            />
           </button>
         )}
 
@@ -354,7 +425,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             htmlFor="post-category"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Category
+            <FormattedMessage
+              id="posts.form.categoryLabel"
+              defaultMessage="Category"
+            />
           </label>
           <select
             id="post-category"
@@ -365,7 +439,12 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             {...register("category")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
-            <option value="">Select a category</option>
+            <option value="">
+              {intl.formatMessage({
+                id: "posts.form.selectCategoryPlaceholder",
+                defaultMessage: "Select a category",
+              })}
+            </option>
             {CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
@@ -384,17 +463,37 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             htmlFor="post-urgency"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Urgency
+            <FormattedMessage
+              id="posts.form.urgencyLabel"
+              defaultMessage="Urgency"
+            />
           </label>
           <select
             id="post-urgency"
             {...register("urgency")}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-            <option value="CRITICAL">Critical</option>
+            <option value="LOW">
+              {intl.formatMessage({ id: "urgency.low", defaultMessage: "Low" })}
+            </option>
+            <option value="MEDIUM">
+              {intl.formatMessage({
+                id: "urgency.medium",
+                defaultMessage: "Medium",
+              })}
+            </option>
+            <option value="HIGH">
+              {intl.formatMessage({
+                id: "urgency.high",
+                defaultMessage: "High",
+              })}
+            </option>
+            <option value="CRITICAL">
+              {intl.formatMessage({
+                id: "urgency.critical",
+                defaultMessage: "Critical",
+              })}
+            </option>
           </select>
         </div>
       </div>
@@ -403,7 +502,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         <FormField
           id="post-startAt"
           type="datetime-local"
-          label="Starts"
+          label={intl.formatMessage({
+            id: "posts.form.startsLabel",
+            defaultMessage: "Starts",
+          })}
           optional
           error={errors.startAt?.message}
           {...register("startAt")}
@@ -411,7 +513,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         <FormField
           id="post-endAt"
           type="datetime-local"
-          label="Ends"
+          label={intl.formatMessage({
+            id: "posts.form.endsLabel",
+            defaultMessage: "Ends",
+          })}
           optional
           error={errors.endAt?.message}
           {...register("endAt")}
@@ -420,13 +525,30 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
       <fieldset className="border-0 p-0 m-0">
         <legend className="block text-sm font-medium text-gray-700 mb-1">
-          Repeats <span className="text-gray-500 font-normal">(optional)</span>
+          <FormattedMessage
+            id="posts.form.repeatsLegend"
+            defaultMessage="Repeats"
+          />{" "}
+          <span className="text-gray-500 font-normal">
+            <FormattedMessage
+              id="common.formField.optionalSuffix"
+              defaultMessage="(optional)"
+            />
+          </span>
         </legend>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">every</span>
+          <span className="text-sm text-gray-600">
+            <FormattedMessage
+              id="posts.form.repeatEvery"
+              defaultMessage="every"
+            />
+          </span>
           <input
             type="number"
-            aria-label="Recurrence interval"
+            aria-label={intl.formatMessage({
+              id: "posts.form.recurrenceIntervalAria",
+              defaultMessage: "Recurrence interval",
+            })}
             min={1}
             max={365}
             {...register("recurrenceInterval")}
@@ -434,14 +556,37 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             className="w-20 border border-gray-300 rounded-lg px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500"
           />
           <select
-            aria-label="Recurrence frequency"
+            aria-label={intl.formatMessage({
+              id: "posts.form.recurrenceFrequencyAria",
+              defaultMessage: "Recurrence frequency",
+            })}
             {...register("recurrenceFreq")}
             className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
           >
-            <option value="">Does not repeat</option>
-            <option value="DAY">day(s)</option>
-            <option value="WEEK">week(s)</option>
-            <option value="MONTH">month(s)</option>
+            <option value="">
+              {intl.formatMessage({
+                id: "posts.form.recurrenceNone",
+                defaultMessage: "Does not repeat",
+              })}
+            </option>
+            <option value="DAY">
+              {intl.formatMessage({
+                id: "posts.form.recurrenceDays",
+                defaultMessage: "day(s)",
+              })}
+            </option>
+            <option value="WEEK">
+              {intl.formatMessage({
+                id: "posts.form.recurrenceWeeks",
+                defaultMessage: "week(s)",
+              })}
+            </option>
+            <option value="MONTH">
+              {intl.formatMessage({
+                id: "posts.form.recurrenceMonths",
+                defaultMessage: "month(s)",
+              })}
+            </option>
           </select>
         </div>
         {errors.recurrenceFreq && (
@@ -461,7 +606,16 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           htmlFor="post-location"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Location <span className="text-gray-500 font-normal">(optional)</span>
+          <FormattedMessage
+            id="common.fields.location"
+            defaultMessage="Location"
+          />{" "}
+          <span className="text-gray-500 font-normal">
+            <FormattedMessage
+              id="common.formField.optionalSuffix"
+              defaultMessage="(optional)"
+            />
+          </span>
         </label>
         {resolvedLocation ? (
           <div className="flex items-center gap-2 border border-green-300 bg-green-50 rounded-lg px-3 py-2">
@@ -475,7 +629,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             <button
               type="button"
               onClick={clearLocation}
-              aria-label="Clear location"
+              aria-label={intl.formatMessage({
+                id: "posts.form.clearLocationAria",
+                defaultMessage: "Clear location",
+              })}
               className="text-gray-500 hover:text-gray-600"
             >
               <X className="w-4 h-4" aria-hidden="true" />
@@ -503,7 +660,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
               }}
               onKeyDown={handleLocationKeyDown}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
-              placeholder="Search for an address or place..."
+              placeholder={intl.formatMessage({
+                id: "posts.form.locationPlaceholder",
+                defaultMessage: "Search for an address or place...",
+              })}
             />
             {isGeocoding && (
               <Loader2
@@ -518,7 +678,10 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           <ul
             id="post-location-listbox"
             role="listbox"
-            aria-label="Location suggestions"
+            aria-label={intl.formatMessage({
+              id: "posts.form.locationSuggestionsAria",
+              defaultMessage: "Location suggestions",
+            })}
             className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
           >
             {geocodeResults.map((result, i) => (
@@ -555,7 +718,17 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         disabled={isSubmitting}
         className="w-full bg-mayday-700 text-white py-3 rounded-lg font-medium hover:bg-mayday-800 disabled:opacity-50"
       >
-        {isSubmitting ? "Creating..." : "Create Post"}
+        {isSubmitting ? (
+          <FormattedMessage
+            id="posts.form.submittingButton"
+            defaultMessage="Creating..."
+          />
+        ) : (
+          <FormattedMessage
+            id="posts.form.submitButton"
+            defaultMessage="Create Post"
+          />
+        )}
       </button>
     </form>
   );

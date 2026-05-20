@@ -153,12 +153,6 @@
       "value": "Please confirm your password"
     }
   ],
-  "auth.registerForm.nameLabel": [
-    {
-      "type": 0,
-      "value": "Name"
-    }
-  ],
   "auth.registerForm.submitButton": [
     {
       "type": 0,
@@ -405,6 +399,18 @@
       "value": "Verifying your email…"
     }
   ],
+  "common.actions.cancel": [
+    {
+      "type": 0,
+      "value": "Cancel"
+    }
+  ],
+  "common.actions.close": [
+    {
+      "type": 0,
+      "value": "Close"
+    }
+  ],
   "common.actions.login": [
     {
       "type": 0,
@@ -501,10 +507,34 @@
       "value": "Passwords do not match"
     }
   ],
+  "common.fields.avatar": [
+    {
+      "type": 0,
+      "value": "Avatar"
+    }
+  ],
+  "common.fields.description": [
+    {
+      "type": 0,
+      "value": "Description"
+    }
+  ],
   "common.fields.email": [
     {
       "type": 0,
       "value": "Email"
+    }
+  ],
+  "common.fields.location": [
+    {
+      "type": 0,
+      "value": "Location"
+    }
+  ],
+  "common.fields.name": [
+    {
+      "type": 0,
+      "value": "Name"
     }
   ],
   "common.fields.password": [
@@ -757,6 +787,858 @@
       "value": "Sending…"
     }
   ],
+  "communities.browsePage.allCommunitiesHeading": [
+    {
+      "type": 0,
+      "value": "All Communities"
+    }
+  ],
+  "communities.browsePage.newButton": [
+    {
+      "type": 0,
+      "value": "New Community"
+    }
+  ],
+  "communities.browsePage.resultCount": [
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " community found"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " communities found"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    }
+  ],
+  "communities.browsePage.searchPlaceholder": [
+    {
+      "type": 0,
+      "value": "Search communities..."
+    }
+  ],
+  "communities.browsePage.searchResultsHeading": [
+    {
+      "type": 0,
+      "value": "Search Results"
+    }
+  ],
+  "communities.browsePage.title": [
+    {
+      "type": 0,
+      "value": "Communities"
+    }
+  ],
+  "communities.browsePage.yourCommunitiesHeading": [
+    {
+      "type": 0,
+      "value": "Your Communities"
+    }
+  ],
+  "communities.createPage.descriptionPlaceholder": [
+    {
+      "type": 0,
+      "value": "What is this community about?"
+    }
+  ],
+  "communities.createPage.namePlaceholder": [
+    {
+      "type": 0,
+      "value": "e.g. Little Rock Mutual Aid"
+    }
+  ],
+  "communities.createPage.submitButton": [
+    {
+      "type": 0,
+      "value": "Create Community"
+    }
+  ],
+  "communities.createPage.title": [
+    {
+      "type": 0,
+      "value": "Create a Community"
+    }
+  ],
+  "communities.detailPage.deleteConfirm": [
+    {
+      "type": 0,
+      "value": "Delete this community? This cannot be undone."
+    }
+  ],
+  "communities.detailPage.deleteFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to delete community"
+    }
+  ],
+  "communities.detailPage.deleteSuccessToast": [
+    {
+      "type": 0,
+      "value": "Community deleted"
+    }
+  ],
+  "communities.detailPage.joinRequestFailedFallback": [
+    {
+      "type": 0,
+      "value": "Failed to send request"
+    }
+  ],
+  "communities.detailPage.joinRequestSentToast": [
+    {
+      "type": 0,
+      "value": "Join request sent"
+    }
+  ],
+  "communities.detailPage.leaveConfirm": [
+    {
+      "type": 0,
+      "value": "Leave this community?"
+    }
+  ],
+  "communities.detailPage.leaveSuccessToast": [
+    {
+      "type": 0,
+      "value": "Left community"
+    }
+  ],
+  "communities.detailPage.notFound": [
+    {
+      "type": 0,
+      "value": "Community not found."
+    }
+  ],
+  "communities.detailPage.postsHeading": [
+    {
+      "type": 0,
+      "value": "Community Posts"
+    }
+  ],
+  "communities.detailPage.requestPendingLabel": [
+    {
+      "type": 0,
+      "value": "Request Pending"
+    }
+  ],
+  "communities.detailPage.requestToJoinButton": [
+    {
+      "type": 0,
+      "value": "Request to Join"
+    }
+  ],
+  "communities.detailPage.withdrawButton": [
+    {
+      "type": 0,
+      "value": "Withdraw"
+    }
+  ],
+  "communities.detailPage.withdrawFailedFallback": [
+    {
+      "type": 0,
+      "value": "Failed to withdraw request"
+    }
+  ],
+  "communities.detailPage.withdrawSuccessToast": [
+    {
+      "type": 0,
+      "value": "Request withdrawn"
+    }
+  ],
+  "communities.managePage.approveButton": [
+    {
+      "type": 0,
+      "value": "Approve"
+    }
+  ],
+  "communities.managePage.approveFailedFallback": [
+    {
+      "type": 0,
+      "value": "Failed to approve"
+    }
+  ],
+  "communities.managePage.detailsHeading": [
+    {
+      "type": 0,
+      "value": "Community Details"
+    }
+  ],
+  "communities.managePage.joinRequestsHeading": [
+    {
+      "type": 0,
+      "value": "Join Requests"
+    }
+  ],
+  "communities.managePage.rejectButton": [
+    {
+      "type": 0,
+      "value": "Reject"
+    }
+  ],
+  "communities.managePage.rejectFailedFallback": [
+    {
+      "type": 0,
+      "value": "Failed to reject"
+    }
+  ],
+  "communities.managePage.removeMemberConfirm": [
+    {
+      "type": 0,
+      "value": "Remove "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    },
+    {
+      "type": 0,
+      "value": "?"
+    }
+  ],
+  "communities.managePage.requestApprovedToast": [
+    {
+      "type": 0,
+      "value": "Request approved"
+    }
+  ],
+  "communities.managePage.requestRejectedToast": [
+    {
+      "type": 0,
+      "value": "Request rejected"
+    }
+  ],
+  "communities.managePage.unknownUserFallback": [
+    {
+      "type": 0,
+      "value": "Unknown user"
+    }
+  ],
+  "communities.managePage.updateSuccessToast": [
+    {
+      "type": 0,
+      "value": "Community updated"
+    }
+  ],
+  "groups.create.addAvatarButton": [
+    {
+      "type": 0,
+      "value": "Add avatar"
+    }
+  ],
+  "groups.create.avatarPreviewAlt": [
+    {
+      "type": 0,
+      "value": "Avatar preview"
+    }
+  ],
+  "groups.create.avatarUploadFailedToast": [
+    {
+      "type": 0,
+      "value": "Avatar upload failed — you can try again from the manage page"
+    }
+  ],
+  "groups.create.failureToast": [
+    {
+      "type": 0,
+      "value": "Failed to create "
+    },
+    {
+      "options": {
+        "community": {
+          "value": [
+            {
+              "type": 0,
+              "value": "community"
+            }
+          ]
+        },
+        "organization": {
+          "value": [
+            {
+              "type": 0,
+              "value": "organization"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 0,
+              "value": "group"
+            }
+          ]
+        }
+      },
+      "type": 5,
+      "value": "kind"
+    }
+  ],
+  "groups.create.locationPlaceholder": [
+    {
+      "type": 0,
+      "value": "e.g. Little Rock, AR"
+    }
+  ],
+  "groups.create.removeAvatarAria": [
+    {
+      "type": 0,
+      "value": "Remove avatar"
+    }
+  ],
+  "groups.create.submittingButton": [
+    {
+      "type": 0,
+      "value": "Creating..."
+    }
+  ],
+  "groups.create.successAllInvitesFailedToast": [
+    {
+      "options": {
+        "community": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Community"
+            }
+          ]
+        },
+        "organization": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Organization"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Group"
+            }
+          ]
+        }
+      },
+      "type": 5,
+      "value": "kind"
+    },
+    {
+      "type": 0,
+      "value": " created · invites failed to send"
+    }
+  ],
+  "groups.create.successToast": [
+    {
+      "options": {
+        "community": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Community"
+            }
+          ]
+        },
+        "organization": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Organization"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Group"
+            }
+          ]
+        }
+      },
+      "type": 5,
+      "value": "kind"
+    },
+    {
+      "type": 0,
+      "value": " created"
+    }
+  ],
+  "groups.create.successWithInvitesSentToast": [
+    {
+      "options": {
+        "community": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Community"
+            }
+          ]
+        },
+        "organization": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Organization"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Group"
+            }
+          ]
+        }
+      },
+      "type": 5,
+      "value": "kind"
+    },
+    {
+      "type": 0,
+      "value": " created · "
+    },
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " invite"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " invites"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    },
+    {
+      "type": 0,
+      "value": " sent"
+    }
+  ],
+  "groups.create.successWithPartialFailuresToast": [
+    {
+      "options": {
+        "community": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Community"
+            }
+          ]
+        },
+        "organization": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Organization"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 0,
+              "value": "Group"
+            }
+          ]
+        }
+      },
+      "type": 5,
+      "value": "kind"
+    },
+    {
+      "type": 0,
+      "value": " created · "
+    },
+    {
+      "type": 1,
+      "value": "ok"
+    },
+    {
+      "type": 0,
+      "value": " invited, "
+    },
+    {
+      "type": 1,
+      "value": "failed"
+    },
+    {
+      "type": 0,
+      "value": " failed"
+    }
+  ],
+  "groups.detailPage.deleteButton": [
+    {
+      "type": 0,
+      "value": "Delete"
+    }
+  ],
+  "groups.detailPage.leaveButton": [
+    {
+      "type": 0,
+      "value": "Leave"
+    }
+  ],
+  "groups.detailPage.leaveFailedFallback": [
+    {
+      "type": 0,
+      "value": "Failed to leave"
+    }
+  ],
+  "groups.detailPage.manageButton": [
+    {
+      "type": 0,
+      "value": "Manage"
+    }
+  ],
+  "groups.managePage.backToLink": [
+    {
+      "type": 0,
+      "value": "Back to "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    }
+  ],
+  "groups.managePage.inviteMembersHeading": [
+    {
+      "type": 0,
+      "value": "Invite Members"
+    }
+  ],
+  "groups.managePage.inviteRevokedToast": [
+    {
+      "type": 0,
+      "value": "Invite revoked"
+    }
+  ],
+  "groups.managePage.memberRemovedToast": [
+    {
+      "type": 0,
+      "value": "Member removed"
+    }
+  ],
+  "groups.managePage.membersHeading": [
+    {
+      "type": 0,
+      "value": "Members"
+    }
+  ],
+  "groups.managePage.pendingInviteFallback": [
+    {
+      "type": 0,
+      "value": "Pending invite"
+    }
+  ],
+  "groups.managePage.pendingInvitesHeading": [
+    {
+      "type": 0,
+      "value": "Pending invites"
+    }
+  ],
+  "groups.managePage.removeMemberAria": [
+    {
+      "type": 0,
+      "value": "Remove "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    }
+  ],
+  "groups.managePage.removeMemberFailedFallback": [
+    {
+      "type": 0,
+      "value": "Failed to remove member"
+    }
+  ],
+  "groups.managePage.revokeButton": [
+    {
+      "type": 0,
+      "value": "Revoke"
+    }
+  ],
+  "groups.managePage.roleSelectAria": [
+    {
+      "type": 0,
+      "value": "Role for "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    }
+  ],
+  "groups.managePage.roleUpdatedToast": [
+    {
+      "type": 0,
+      "value": "Role updated"
+    }
+  ],
+  "groups.managePage.saveChangesButton": [
+    {
+      "type": 0,
+      "value": "Save changes"
+    }
+  ],
+  "groups.managePage.updateFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to update"
+    }
+  ],
+  "groups.managePage.updateRoleFailedFallback": [
+    {
+      "type": 0,
+      "value": "Failed to update role"
+    }
+  ],
+  "groups.managePage.youMarker": [
+    {
+      "type": 0,
+      "value": "(you)"
+    }
+  ],
+  "groups.roles.admin": [
+    {
+      "type": 0,
+      "value": "Admin"
+    }
+  ],
+  "groups.roles.member": [
+    {
+      "type": 0,
+      "value": "Member"
+    }
+  ],
+  "groups.transferOwnership.dialogBody": [
+    {
+      "type": 0,
+      "value": "Pick a member to become the new owner of "
+    },
+    {
+      "children": [
+        {
+          "type": 1,
+          "value": "groupName"
+        }
+      ],
+      "type": 8,
+      "value": "strong"
+    },
+    {
+      "type": 0,
+      "value": ". You'll be demoted to "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Admin"
+        }
+      ],
+      "type": 8,
+      "value": "strong"
+    },
+    {
+      "type": 0,
+      "value": ". This can't be undone from the "
+    },
+    {
+      "options": {
+        "community": {
+          "value": [
+            {
+              "type": 0,
+              "value": "community"
+            }
+          ]
+        },
+        "organization": {
+          "value": [
+            {
+              "type": 0,
+              "value": "organization"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 0,
+              "value": "group"
+            }
+          ]
+        }
+      },
+      "type": 5,
+      "value": "kind"
+    },
+    {
+      "type": 0,
+      "value": " page — the new owner will have to hand it back."
+    }
+  ],
+  "groups.transferOwnership.emptyState": [
+    {
+      "type": 0,
+      "value": "There are no other members to transfer to. Invite someone first, or delete the "
+    },
+    {
+      "options": {
+        "community": {
+          "value": [
+            {
+              "type": 0,
+              "value": "community"
+            }
+          ]
+        },
+        "organization": {
+          "value": [
+            {
+              "type": 0,
+              "value": "organization"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 0,
+              "value": "group"
+            }
+          ]
+        }
+      },
+      "type": 5,
+      "value": "kind"
+    },
+    {
+      "type": 0,
+      "value": " from the danger zone."
+    }
+  ],
+  "groups.transferOwnership.failureToast": [
+    {
+      "type": 0,
+      "value": "Failed to transfer ownership"
+    }
+  ],
+  "groups.transferOwnership.makeOwnerButton": [
+    {
+      "type": 0,
+      "value": "Make "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    },
+    {
+      "type": 0,
+      "value": " owner"
+    }
+  ],
+  "groups.transferOwnership.sectionBody": [
+    {
+      "type": 0,
+      "value": "Hand this "
+    },
+    {
+      "options": {
+        "community": {
+          "value": [
+            {
+              "type": 0,
+              "value": "community"
+            }
+          ]
+        },
+        "organization": {
+          "value": [
+            {
+              "type": 0,
+              "value": "organization"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 0,
+              "value": "group"
+            }
+          ]
+        }
+      },
+      "type": 5,
+      "value": "kind"
+    },
+    {
+      "type": 0,
+      "value": " over to another member. You'll be demoted to Admin and the new owner will take over."
+    }
+  ],
+  "groups.transferOwnership.selectNewOwnerLegend": [
+    {
+      "type": 0,
+      "value": "Select new owner"
+    }
+  ],
+  "groups.transferOwnership.successToast": [
+    {
+      "type": 0,
+      "value": "Ownership transferred"
+    }
+  ],
+  "groups.transferOwnership.title": [
+    {
+      "type": 0,
+      "value": "Transfer ownership"
+    }
+  ],
+  "groups.transferOwnership.transferringButton": [
+    {
+      "type": 0,
+      "value": "Transferring…"
+    }
+  ],
   "layout.footer.brand": [
     {
       "type": 0,
@@ -981,6 +1863,943 @@
     {
       "type": 0,
       "value": "Skip to main content"
+    }
+  ],
+  "orgs.browsePage.newButton": [
+    {
+      "type": 0,
+      "value": "New Organization"
+    }
+  ],
+  "orgs.browsePage.resultCount": [
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " organization found"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " organizations found"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    }
+  ],
+  "orgs.browsePage.searchPlaceholder": [
+    {
+      "type": 0,
+      "value": "Search organizations..."
+    }
+  ],
+  "orgs.browsePage.title": [
+    {
+      "type": 0,
+      "value": "Organizations"
+    }
+  ],
+  "orgs.createPage.descriptionPlaceholder": [
+    {
+      "type": 0,
+      "value": "What does your organization do?"
+    }
+  ],
+  "orgs.createPage.namePlaceholder": [
+    {
+      "type": 0,
+      "value": "e.g. Riverside Mutual Aid"
+    }
+  ],
+  "orgs.createPage.submitButton": [
+    {
+      "type": 0,
+      "value": "Create Organization"
+    }
+  ],
+  "orgs.createPage.title": [
+    {
+      "type": 0,
+      "value": "Create an Organization"
+    }
+  ],
+  "orgs.detailPage.deleteConfirm": [
+    {
+      "type": 0,
+      "value": "Delete this organization? This cannot be undone."
+    }
+  ],
+  "orgs.detailPage.deleteFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to delete organization"
+    }
+  ],
+  "orgs.detailPage.deleteSuccessToast": [
+    {
+      "type": 0,
+      "value": "Organization deleted"
+    }
+  ],
+  "orgs.detailPage.fulfilledCount": [
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " request"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " requests"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    },
+    {
+      "type": 0,
+      "value": " fulfilled"
+    }
+  ],
+  "orgs.detailPage.leaveConfirm": [
+    {
+      "type": 0,
+      "value": "Leave this organization?"
+    }
+  ],
+  "orgs.detailPage.leaveSuccessToast": [
+    {
+      "type": 0,
+      "value": "Left organization"
+    }
+  ],
+  "orgs.detailPage.notFound": [
+    {
+      "type": 0,
+      "value": "Organization not found."
+    }
+  ],
+  "orgs.detailPage.postsHeading": [
+    {
+      "type": 0,
+      "value": "Posts"
+    }
+  ],
+  "orgs.managePage.detailsHeading": [
+    {
+      "type": 0,
+      "value": "Organization Details"
+    }
+  ],
+  "orgs.managePage.removeMemberConfirm": [
+    {
+      "type": 0,
+      "value": "Remove "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    },
+    {
+      "type": 0,
+      "value": " from the organization?"
+    }
+  ],
+  "orgs.managePage.updateSuccessToast": [
+    {
+      "type": 0,
+      "value": "Organization updated"
+    }
+  ],
+  "posts.actions.contact": [
+    {
+      "type": 0,
+      "value": "Contact"
+    }
+  ],
+  "posts.actions.delete": [
+    {
+      "type": 0,
+      "value": "Delete"
+    }
+  ],
+  "posts.actions.markAsFulfilled": [
+    {
+      "type": 0,
+      "value": "Mark as Fulfilled"
+    }
+  ],
+  "posts.actions.reopen": [
+    {
+      "type": 0,
+      "value": "Reopen"
+    }
+  ],
+  "posts.actions.reportPost": [
+    {
+      "type": 0,
+      "value": "Report post"
+    }
+  ],
+  "posts.browsePage.resultCount": [
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " post found"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " posts found"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    }
+  ],
+  "posts.browsePage.searchPlaceholder": [
+    {
+      "type": 0,
+      "value": "Search requests and offers..."
+    }
+  ],
+  "posts.browsePage.title": [
+    {
+      "type": 0,
+      "value": "Browse Posts"
+    }
+  ],
+  "posts.createPage.failureToast": [
+    {
+      "type": 0,
+      "value": "Failed to create post"
+    }
+  ],
+  "posts.createPage.successToast": [
+    {
+      "type": 0,
+      "value": "Post created!"
+    }
+  ],
+  "posts.createPage.title": [
+    {
+      "type": 0,
+      "value": "Create a Post"
+    }
+  ],
+  "posts.detailPage.contactFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to start conversation"
+    }
+  ],
+  "posts.detailPage.deleteSuccessToast": [
+    {
+      "type": 0,
+      "value": "Post deleted"
+    }
+  ],
+  "posts.detailPage.fulfilledByHeading": [
+    {
+      "type": 0,
+      "value": "Fulfilled by"
+    }
+  ],
+  "posts.detailPage.matchingOffers": [
+    {
+      "type": 0,
+      "value": "Matching Offers"
+    }
+  ],
+  "posts.detailPage.matchingRequests": [
+    {
+      "type": 0,
+      "value": "Matching Requests"
+    }
+  ],
+  "posts.detailPage.messageDraftPrefix": [
+    {
+      "type": 0,
+      "value": "Re: "
+    },
+    {
+      "type": 1,
+      "value": "title"
+    }
+  ],
+  "posts.detailPage.notFound": [
+    {
+      "type": 0,
+      "value": "Post not found"
+    }
+  ],
+  "posts.detailPage.organizationByLine": [
+    {
+      "type": 0,
+      "value": "· by "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    }
+  ],
+  "posts.detailPage.reopenFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to reopen post"
+    }
+  ],
+  "posts.detailPage.reopenSuccessToast": [
+    {
+      "type": 0,
+      "value": "Post reopened"
+    }
+  ],
+  "posts.detailPage.reportDetailsLabel": [
+    {
+      "type": 0,
+      "value": "Additional details"
+    }
+  ],
+  "posts.detailPage.reportDetailsPlaceholder": [
+    {
+      "type": 0,
+      "value": "What's wrong with this post? Any context that will help the admin team is welcome."
+    }
+  ],
+  "posts.detailPage.reportDialogBody": [
+    {
+      "type": 0,
+      "value": "The admin team will review this post for inappropriate content. You can't undo a report, but you can file a new one later if needed."
+    }
+  ],
+  "posts.detailPage.reportDialogTitle": [
+    {
+      "type": 0,
+      "value": "Report this post?"
+    }
+  ],
+  "posts.detailPage.reportFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to submit report"
+    }
+  ],
+  "posts.detailPage.reportSubmittingButton": [
+    {
+      "type": 0,
+      "value": "Submitting…"
+    }
+  ],
+  "posts.detailPage.reportSuccessToast": [
+    {
+      "type": 0,
+      "value": "Report submitted"
+    }
+  ],
+  "posts.filters.allCategories": [
+    {
+      "type": 0,
+      "value": "All Categories"
+    }
+  ],
+  "posts.filters.allCommunities": [
+    {
+      "type": 0,
+      "value": "All Communities"
+    }
+  ],
+  "posts.filters.allTypes": [
+    {
+      "type": 0,
+      "value": "All Types"
+    }
+  ],
+  "posts.filters.allUrgency": [
+    {
+      "type": 0,
+      "value": "All Urgency"
+    }
+  ],
+  "posts.filters.categoryAria": [
+    {
+      "type": 0,
+      "value": "Filter by category"
+    }
+  ],
+  "posts.filters.communityAria": [
+    {
+      "type": 0,
+      "value": "Filter by community"
+    }
+  ],
+  "posts.filters.offers": [
+    {
+      "type": 0,
+      "value": "Offers"
+    }
+  ],
+  "posts.filters.requests": [
+    {
+      "type": 0,
+      "value": "Requests"
+    }
+  ],
+  "posts.filters.sortAria": [
+    {
+      "type": 0,
+      "value": "Sort posts"
+    }
+  ],
+  "posts.filters.sortRecent": [
+    {
+      "type": 0,
+      "value": "Most Recent"
+    }
+  ],
+  "posts.filters.sortUrgency": [
+    {
+      "type": 0,
+      "value": "Most Urgent"
+    }
+  ],
+  "posts.filters.typeAria": [
+    {
+      "type": 0,
+      "value": "Filter by type"
+    }
+  ],
+  "posts.filters.urgencyAria": [
+    {
+      "type": 0,
+      "value": "Filter by urgency"
+    }
+  ],
+  "posts.form.addImagesButton": [
+    {
+      "type": 0,
+      "value": "Add images"
+    }
+  ],
+  "posts.form.categoryLabel": [
+    {
+      "type": 0,
+      "value": "Category"
+    }
+  ],
+  "posts.form.clearLocationAria": [
+    {
+      "type": 0,
+      "value": "Clear location"
+    }
+  ],
+  "posts.form.descriptionPlaceholder": [
+    {
+      "type": 0,
+      "value": "Provide details about your request or offer..."
+    }
+  ],
+  "posts.form.endsLabel": [
+    {
+      "type": 0,
+      "value": "Ends"
+    }
+  ],
+  "posts.form.imagePreviewAlt": [
+    {
+      "type": 0,
+      "value": "Upload preview "
+    },
+    {
+      "type": 1,
+      "value": "n"
+    }
+  ],
+  "posts.form.imagesHelperText": [
+    {
+      "type": 0,
+      "value": "(optional, maximum of 5 images, 5mb per image)"
+    }
+  ],
+  "posts.form.imagesLabel": [
+    {
+      "type": 0,
+      "value": "Images"
+    }
+  ],
+  "posts.form.locationPlaceholder": [
+    {
+      "type": 0,
+      "value": "Search for an address or place..."
+    }
+  ],
+  "posts.form.locationSuggestionsAria": [
+    {
+      "type": 0,
+      "value": "Location suggestions"
+    }
+  ],
+  "posts.form.offerRadioLabel": [
+    {
+      "type": 0,
+      "value": "I can help (Offer)"
+    }
+  ],
+  "posts.form.postAsLabel": [
+    {
+      "type": 0,
+      "value": "Post as"
+    }
+  ],
+  "posts.form.postAsYourselfDefault": [
+    {
+      "type": 0,
+      "value": "Yourself"
+    }
+  ],
+  "posts.form.recurrenceDays": [
+    {
+      "type": 0,
+      "value": "day(s)"
+    }
+  ],
+  "posts.form.recurrenceFrequencyAria": [
+    {
+      "type": 0,
+      "value": "Recurrence frequency"
+    }
+  ],
+  "posts.form.recurrenceIntervalAria": [
+    {
+      "type": 0,
+      "value": "Recurrence interval"
+    }
+  ],
+  "posts.form.recurrenceMonths": [
+    {
+      "type": 0,
+      "value": "month(s)"
+    }
+  ],
+  "posts.form.recurrenceNone": [
+    {
+      "type": 0,
+      "value": "Does not repeat"
+    }
+  ],
+  "posts.form.recurrenceWeeks": [
+    {
+      "type": 0,
+      "value": "week(s)"
+    }
+  ],
+  "posts.form.removeImageAria": [
+    {
+      "type": 0,
+      "value": "Remove image "
+    },
+    {
+      "type": 1,
+      "value": "n"
+    }
+  ],
+  "posts.form.repeatEvery": [
+    {
+      "type": 0,
+      "value": "every"
+    }
+  ],
+  "posts.form.repeatsLegend": [
+    {
+      "type": 0,
+      "value": "Repeats"
+    }
+  ],
+  "posts.form.requestRadioLabel": [
+    {
+      "type": 0,
+      "value": "I need help (Request)"
+    }
+  ],
+  "posts.form.selectCategoryPlaceholder": [
+    {
+      "type": 0,
+      "value": "Select a category"
+    }
+  ],
+  "posts.form.startsLabel": [
+    {
+      "type": 0,
+      "value": "Starts"
+    }
+  ],
+  "posts.form.submitButton": [
+    {
+      "type": 0,
+      "value": "Create Post"
+    }
+  ],
+  "posts.form.submittingButton": [
+    {
+      "type": 0,
+      "value": "Creating..."
+    }
+  ],
+  "posts.form.titleLabel": [
+    {
+      "type": 0,
+      "value": "Title"
+    }
+  ],
+  "posts.form.titlePlaceholder": [
+    {
+      "type": 0,
+      "value": "Brief description of what you need or can offer"
+    }
+  ],
+  "posts.form.typeLegend": [
+    {
+      "type": 0,
+      "value": "Type"
+    }
+  ],
+  "posts.form.urgencyLabel": [
+    {
+      "type": 0,
+      "value": "Urgency"
+    }
+  ],
+  "posts.form.visibilityCommunity": [
+    {
+      "type": 1,
+      "value": "name"
+    },
+    {
+      "type": 0,
+      "value": " members only"
+    }
+  ],
+  "posts.form.visibilityLabel": [
+    {
+      "type": 0,
+      "value": "Visibility"
+    }
+  ],
+  "posts.form.visibilityPublic": [
+    {
+      "type": 0,
+      "value": "Public (visible to everyone)"
+    }
+  ],
+  "posts.fulfillModal.addAnother": [
+    {
+      "type": 0,
+      "value": "Add another"
+    }
+  ],
+  "posts.fulfillModal.failureToast": [
+    {
+      "type": 0,
+      "value": "Failed to mark post as fulfilled"
+    }
+  ],
+  "posts.fulfillModal.instructions": [
+    {
+      "type": 0,
+      "value": "Who helped fulfill this request? You can add multiple people or organizations."
+    }
+  ],
+  "posts.fulfillModal.orgsHeading": [
+    {
+      "type": 0,
+      "value": "Organizations"
+    }
+  ],
+  "posts.fulfillModal.removeFulfillerAria": [
+    {
+      "type": 0,
+      "value": "Remove fulfiller "
+    },
+    {
+      "type": 1,
+      "value": "n"
+    }
+  ],
+  "posts.fulfillModal.searchPlaceholder": [
+    {
+      "type": 0,
+      "value": "Type a name to search..."
+    }
+  ],
+  "posts.fulfillModal.searchingStatus": [
+    {
+      "type": 0,
+      "value": "Searching..."
+    }
+  ],
+  "posts.fulfillModal.successToast": [
+    {
+      "type": 0,
+      "value": "Post marked as fulfilled"
+    }
+  ],
+  "posts.fulfillModal.usersHeading": [
+    {
+      "type": 0,
+      "value": "Users"
+    }
+  ],
+  "posts.imageCarousel.imageAlt": [
+    {
+      "type": 0,
+      "value": "Attachment "
+    },
+    {
+      "type": 1,
+      "value": "n"
+    },
+    {
+      "type": 0,
+      "value": " of "
+    },
+    {
+      "type": 1,
+      "value": "total"
+    },
+    {
+      "type": 0,
+      "value": " (opens in new tab)"
+    }
+  ],
+  "posts.imageCarousel.nextAria": [
+    {
+      "type": 0,
+      "value": "Next image"
+    }
+  ],
+  "posts.imageCarousel.previousAria": [
+    {
+      "type": 0,
+      "value": "Previous image"
+    }
+  ],
+  "posts.postList.emptyState": [
+    {
+      "type": 0,
+      "value": "No posts found. Try adjusting your filters."
+    }
+  ],
+  "posts.recurrence": [
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 0,
+              "value": "every "
+            },
+            {
+              "options": {
+                "DAY": {
+                  "value": [
+                    {
+                      "type": 0,
+                      "value": "day"
+                    }
+                  ]
+                },
+                "MONTH": {
+                  "value": [
+                    {
+                      "type": 0,
+                      "value": "month"
+                    }
+                  ]
+                },
+                "WEEK": {
+                  "value": [
+                    {
+                      "type": 0,
+                      "value": "week"
+                    }
+                  ]
+                },
+                "other": {
+                  "value": [
+                    {
+                      "type": 0,
+                      "value": "month"
+                    }
+                  ]
+                }
+              },
+              "type": 5,
+              "value": "unit"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 0,
+              "value": "every "
+            },
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " "
+            },
+            {
+              "options": {
+                "DAY": {
+                  "value": [
+                    {
+                      "type": 0,
+                      "value": "days"
+                    }
+                  ]
+                },
+                "MONTH": {
+                  "value": [
+                    {
+                      "type": 0,
+                      "value": "months"
+                    }
+                  ]
+                },
+                "WEEK": {
+                  "value": [
+                    {
+                      "type": 0,
+                      "value": "weeks"
+                    }
+                  ]
+                },
+                "other": {
+                  "value": [
+                    {
+                      "type": 0,
+                      "value": "months"
+                    }
+                  ]
+                }
+              },
+              "type": 5,
+              "value": "unit"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    }
+  ],
+  "posts.schedule.endsAt": [
+    {
+      "type": 0,
+      "value": "Ends "
+    },
+    {
+      "type": 1,
+      "value": "date"
+    }
+  ],
+  "posts.schedule.startsAt": [
+    {
+      "type": 0,
+      "value": "Starts "
+    },
+    {
+      "type": 1,
+      "value": "date"
+    }
+  ],
+  "posts.statuses.closed": [
+    {
+      "type": 0,
+      "value": "Closed"
+    }
+  ],
+  "posts.statuses.fulfilled": [
+    {
+      "type": 0,
+      "value": "Fulfilled"
+    }
+  ],
+  "posts.statuses.open": [
+    {
+      "type": 0,
+      "value": "Open"
+    }
+  ],
+  "posts.typeAriaPrefix": [
+    {
+      "type": 0,
+      "value": "Post type:"
+    }
+  ],
+  "posts.types.offer": [
+    {
+      "type": 0,
+      "value": "Offer"
+    }
+  ],
+  "posts.types.request": [
+    {
+      "type": 0,
+      "value": "Request"
     }
   ],
   "urgency.critical": [

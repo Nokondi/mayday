@@ -19,7 +19,12 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { formatDistanceToNow, format, isSameDay } from "date-fns";
-import { formatRecurrence } from "../components/posts/PostCard.js";
+import { FormattedMessage, useIntl } from "react-intl";
+import {
+  formatRecurrence,
+  typeLabels,
+  statusLabels,
+} from "../components/posts/PostCard.js";
 import {
   getPost,
   getPostMatches,
@@ -36,6 +41,7 @@ import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { FulfillModal } from "../components/posts/FulfillModal.js";
 
 function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
+  const intl = useIntl();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -86,7 +92,14 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
           >
             <img
               src={img.url}
-              alt={`Attachment ${i + 1} of ${images.length} (opens in new tab)`}
+              alt={intl.formatMessage(
+                {
+                  id: "posts.imageCarousel.imageAlt",
+                  defaultMessage:
+                    "Attachment {n} of {total} (opens in new tab)",
+                },
+                { n: i + 1, total: images.length },
+              )}
               className="w-40 h-40 object-cover"
             />
           </a>
@@ -96,7 +109,10 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
         <button
           type="button"
           onClick={() => scrollByCard(-1)}
-          aria-label="Previous image"
+          aria-label={intl.formatMessage({
+            id: "posts.imageCarousel.previousAria",
+            defaultMessage: "Previous image",
+          })}
           className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-1.5 shadow"
         >
           <ChevronLeft className="w-4 h-4 text-gray-700" />
@@ -106,7 +122,10 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
         <button
           type="button"
           onClick={() => scrollByCard(1)}
-          aria-label="Next image"
+          aria-label={intl.formatMessage({
+            id: "posts.imageCarousel.nextAria",
+            defaultMessage: "Next image",
+          })}
           className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-1.5 shadow"
         >
           <ChevronRight className="w-4 h-4 text-gray-700" />
@@ -117,6 +136,7 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
 }
 
 export function PostDetailPage() {
+  const intl = useIntl();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -160,16 +180,28 @@ export function PostDetailPage() {
 
   const contactMutation = useToastMutation({
     mutationFn: () => startConversation({ participantId: post!.authorId }),
-    errorMessage: "Failed to start conversation",
+    errorMessage: intl.formatMessage({
+      id: "posts.detailPage.contactFailedToast",
+      defaultMessage: "Failed to start conversation",
+    }),
     onSuccess: (conv) => {
-      const draft = `Re: ${post!.title} `;
+      const draft = intl.formatMessage(
+        {
+          id: "posts.detailPage.messageDraftPrefix",
+          defaultMessage: "Re: {title} ",
+        },
+        { title: post!.title },
+      );
       navigate(`/messages?conversation=${conv.id}`, { state: { draft } });
     },
   });
 
   const deleteMutation = useToastMutation({
     mutationFn: () => deletePost(id!),
-    successMessage: "Post deleted",
+    successMessage: intl.formatMessage({
+      id: "posts.detailPage.deleteSuccessToast",
+      defaultMessage: "Post deleted",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       navigate("/posts");
@@ -178,8 +210,14 @@ export function PostDetailPage() {
 
   const reopenMutation = useToastMutation({
     mutationFn: () => reopenPost(id!),
-    successMessage: "Post reopened",
-    errorMessage: "Failed to reopen post",
+    successMessage: intl.formatMessage({
+      id: "posts.detailPage.reopenSuccessToast",
+      defaultMessage: "Post reopened",
+    }),
+    errorMessage: intl.formatMessage({
+      id: "posts.detailPage.reopenFailedToast",
+      defaultMessage: "Failed to reopen post",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["post", id] });
       queryClient.invalidateQueries({ queryKey: ["posts"] });
@@ -193,8 +231,14 @@ export function PostDetailPage() {
         postId: id,
         details: reportDetails.trim() || undefined,
       }),
-    successMessage: "Report submitted",
-    errorMessage: "Failed to submit report",
+    successMessage: intl.formatMessage({
+      id: "posts.detailPage.reportSuccessToast",
+      defaultMessage: "Report submitted",
+    }),
+    errorMessage: intl.formatMessage({
+      id: "posts.detailPage.reportFailedToast",
+      defaultMessage: "Failed to submit report",
+    }),
     onSuccess: () => setShowReportConfirm(false),
     onError: () => setShowReportConfirm(false),
   });
@@ -202,7 +246,12 @@ export function PostDetailPage() {
   if (isLoading) return <LoadingSpinner className="py-20" />;
   if (!post)
     return (
-      <div className="text-center py-20 text-gray-500">Post not found</div>
+      <div className="text-center py-20 text-gray-500">
+        <FormattedMessage
+          id="posts.detailPage.notFound"
+          defaultMessage="Post not found"
+        />
+      </div>
     );
 
   const isOwner = user?.id === post.authorId;
@@ -215,8 +264,14 @@ export function PostDetailPage() {
           <button
             type="button"
             onClick={() => setShowReportConfirm(true)}
-            aria-label="Report post"
-            title="Report post"
+            aria-label={intl.formatMessage({
+              id: "posts.actions.reportPost",
+              defaultMessage: "Report post",
+            })}
+            title={intl.formatMessage({
+              id: "posts.actions.reportPost",
+              defaultMessage: "Report post",
+            })}
             className="absolute top-3 right-3 p-1.5 text-red-600 hover:bg-red-50 rounded"
           >
             <Flag className="w-4 h-4" aria-hidden="true" />
@@ -225,8 +280,13 @@ export function PostDetailPage() {
         <span
           className={`text-sm font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-700" : "text-green-700"}`}
         >
-          <span className="sr-only">Post type: </span>
-          {post.type === "REQUEST" ? "Request" : "Offer"}
+          <span className="sr-only">
+            <FormattedMessage
+              id="posts.typeAriaPrefix"
+              defaultMessage="Post type: "
+            />
+          </span>
+          {intl.formatMessage(typeLabels[post.type])}
         </span>
         <h1 className="text-2xl font-bold text-gray-900 mb-3">{post.title}</h1>
         <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 mb-3">
@@ -242,7 +302,7 @@ export function PostDetailPage() {
                     : "bg-gray-100 text-gray-700"
               }`}
             >
-              {post.status}
+              {intl.formatMessage(statusLabels[post.status])}
             </span>
           </div>
           {post.community && (
@@ -266,7 +326,12 @@ export function PostDetailPage() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-5 h-5 text-blue-600" />
-              <span className="font-semibold text-blue-900">Fulfilled by</span>
+              <span className="font-semibold text-blue-900">
+                <FormattedMessage
+                  id="posts.detailPage.fulfilledByHeading"
+                  defaultMessage="Fulfilled by"
+                />
+              </span>
             </div>
             <ul className="space-y-1">
               {post.fulfillments.map((f) => (
@@ -303,7 +368,11 @@ export function PostDetailPage() {
               <Building2 className="w-4 h-4" />
               {post.organization.name}
               <span className="text-gray-500 ml-1">
-                · by {post.author.name}
+                <FormattedMessage
+                  id="posts.detailPage.organizationByLine"
+                  defaultMessage="· by {name}"
+                  values={{ name: post.author.name }}
+                />
               </span>
             </Link>
           ) : (
@@ -342,9 +411,15 @@ export function PostDetailPage() {
                 ? `${format(start, dateFmt)} – ${format(end, timeFmt)}`
                 : `${format(start, dateFmt)} – ${format(end, dateFmt)}`;
             } else if (post.startAt) {
-              label = `Starts ${format(new Date(post.startAt), dateFmt)}`;
+              label = intl.formatMessage(
+                { id: "posts.schedule.startsAt", defaultMessage: "Starts {date}" },
+                { date: format(new Date(post.startAt), dateFmt) },
+              );
             } else {
-              label = `Ends ${format(new Date(post.endAt!), dateFmt)}`;
+              label = intl.formatMessage(
+                { id: "posts.schedule.endsAt", defaultMessage: "Ends {date}" },
+                { date: format(new Date(post.endAt!), dateFmt) },
+              );
             }
             return (
               <span className="flex items-center gap-1">
@@ -355,6 +430,7 @@ export function PostDetailPage() {
           })()}
           {(() => {
             const repeat = formatRecurrence(
+              intl,
               post.recurrenceFreq,
               post.recurrenceInterval,
             );
@@ -376,12 +452,23 @@ export function PostDetailPage() {
             <button
               onClick={() => contactMutation.mutate()}
               disabled={contactMutation.isPending}
-              aria-label="Contact"
-              title="Contact"
+              aria-label={intl.formatMessage({
+                id: "posts.actions.contact",
+                defaultMessage: "Contact",
+              })}
+              title={intl.formatMessage({
+                id: "posts.actions.contact",
+                defaultMessage: "Contact",
+              })}
               className="flex items-center gap-2 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800"
             >
               <MessageSquare className="w-4 h-4" />
-              <span className="hidden sm:inline">Contact</span>
+              <span className="hidden sm:inline">
+                <FormattedMessage
+                  id="posts.actions.contact"
+                  defaultMessage="Contact"
+                />
+              </span>
             </button>
           )}
           {(isOwner || isAdmin) &&
@@ -389,36 +476,69 @@ export function PostDetailPage() {
             post.type === "REQUEST" && (
               <button
                 onClick={() => setShowFulfillModal(true)}
-                aria-label="Mark as Fulfilled"
-                title="Mark as Fulfilled"
+                aria-label={intl.formatMessage({
+                  id: "posts.actions.markAsFulfilled",
+                  defaultMessage: "Mark as Fulfilled",
+                })}
+                title={intl.formatMessage({
+                  id: "posts.actions.markAsFulfilled",
+                  defaultMessage: "Mark as Fulfilled",
+                })}
                 className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
               >
                 <CheckCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">Mark as Fulfilled</span>
+                <span className="hidden sm:inline">
+                  <FormattedMessage
+                    id="posts.actions.markAsFulfilled"
+                    defaultMessage="Mark as Fulfilled"
+                  />
+                </span>
               </button>
             )}
           {(isOwner || isAdmin) && post.status === "FULFILLED" && (
             <button
               onClick={() => reopenMutation.mutate()}
               disabled={reopenMutation.isPending}
-              aria-label="Reopen"
-              title="Reopen"
+              aria-label={intl.formatMessage({
+                id: "posts.actions.reopen",
+                defaultMessage: "Reopen",
+              })}
+              title={intl.formatMessage({
+                id: "posts.actions.reopen",
+                defaultMessage: "Reopen",
+              })}
               className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50"
             >
               <RotateCcw className="w-4 h-4" />
-              <span className="hidden sm:inline">Reopen</span>
+              <span className="hidden sm:inline">
+                <FormattedMessage
+                  id="posts.actions.reopen"
+                  defaultMessage="Reopen"
+                />
+              </span>
             </button>
           )}
           {(isOwner || isAdmin) && (
             <button
               onClick={() => deleteMutation.mutate()}
               disabled={deleteMutation.isPending}
-              aria-label="Delete"
-              title="Delete"
+              aria-label={intl.formatMessage({
+                id: "posts.actions.delete",
+                defaultMessage: "Delete",
+              })}
+              title={intl.formatMessage({
+                id: "posts.actions.delete",
+                defaultMessage: "Delete",
+              })}
               className="flex items-center gap-2 border border-red-300 text-red-600 px-4 py-2 rounded-lg hover:bg-red-50"
             >
               <Trash2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Delete</span>
+              <span className="hidden sm:inline">
+                <FormattedMessage
+                  id="posts.actions.delete"
+                  defaultMessage="Delete"
+                />
+              </span>
             </button>
           )}
         </div>
@@ -427,7 +547,17 @@ export function PostDetailPage() {
       {matches && matches.length > 0 && (
         <div className="mt-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">
-            {post.type === "REQUEST" ? "Matching Offers" : "Matching Requests"}
+            {post.type === "REQUEST" ? (
+              <FormattedMessage
+                id="posts.detailPage.matchingOffers"
+                defaultMessage="Matching Offers"
+              />
+            ) : (
+              <FormattedMessage
+                id="posts.detailPage.matchingRequests"
+                defaultMessage="Matching Requests"
+              />
+            )}
           </h2>
           <div className="space-y-3">
             {matches.map((match) => (
@@ -454,19 +584,32 @@ export function PostDetailPage() {
             className="text-lg font-semibold text-gray-900 flex items-center gap-2"
           >
             <Flag className="w-5 h-5 text-red-600" aria-hidden="true" />
-            Report this post?
+            <FormattedMessage
+              id="posts.detailPage.reportDialogTitle"
+              defaultMessage="Report this post?"
+            />
           </h2>
           <p className="mt-3 text-sm text-gray-700">
-            The admin team will review this post for inappropriate content. You
-            can't undo a report, but you can file a new one later if needed.
+            <FormattedMessage
+              id="posts.detailPage.reportDialogBody"
+              defaultMessage="The admin team will review this post for inappropriate content. You can't undo a report, but you can file a new one later if needed."
+            />
           </p>
           <div className="mt-4">
             <label
               htmlFor="report-post-details"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Additional details{" "}
-              <span className="text-gray-500 font-normal">(optional)</span>
+              <FormattedMessage
+                id="posts.detailPage.reportDetailsLabel"
+                defaultMessage="Additional details"
+              />{" "}
+              <span className="text-gray-500 font-normal">
+                <FormattedMessage
+                  id="common.formField.optionalSuffix"
+                  defaultMessage="(optional)"
+                />
+              </span>
             </label>
             <textarea
               id="report-post-details"
@@ -474,7 +617,11 @@ export function PostDetailPage() {
               onChange={(e) => setReportDetails(e.target.value)}
               rows={4}
               maxLength={2000}
-              placeholder="What's wrong with this post? Any context that will help the admin team is welcome."
+              placeholder={intl.formatMessage({
+                id: "posts.detailPage.reportDetailsPlaceholder",
+                defaultMessage:
+                  "What's wrong with this post? Any context that will help the admin team is welcome.",
+              })}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
             />
           </div>
@@ -485,7 +632,10 @@ export function PostDetailPage() {
               disabled={reportMutation.isPending}
               className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
             >
-              Cancel
+              <FormattedMessage
+                id="common.actions.cancel"
+                defaultMessage="Cancel"
+              />
             </button>
             <button
               type="button"
@@ -494,7 +644,17 @@ export function PostDetailPage() {
               className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
             >
               <Flag className="w-4 h-4" aria-hidden="true" />
-              {reportMutation.isPending ? "Submitting…" : "Report post"}
+              {reportMutation.isPending ? (
+                <FormattedMessage
+                  id="posts.detailPage.reportSubmittingButton"
+                  defaultMessage="Submitting…"
+                />
+              ) : (
+                <FormattedMessage
+                  id="posts.actions.reportPost"
+                  defaultMessage="Report post"
+                />
+              )}
             </button>
           </div>
         </div>

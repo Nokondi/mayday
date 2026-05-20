@@ -50,9 +50,6 @@
   "auth.registerForm.confirmPasswordRequiredError": {
     "defaultMessage": "Please confirm your password"
   },
-  "auth.registerForm.nameLabel": {
-    "defaultMessage": "Name"
-  },
   "auth.registerForm.submitButton": {
     "defaultMessage": "Create account"
   },
@@ -143,6 +140,12 @@
   "auth.verifyEmailPage.verifyingStatus": {
     "defaultMessage": "Verifying your email…"
   },
+  "common.actions.cancel": {
+    "defaultMessage": "Cancel"
+  },
+  "common.actions.close": {
+    "defaultMessage": "Close"
+  },
   "common.actions.login": {
     "defaultMessage": "Log in"
   },
@@ -176,8 +179,20 @@
   "common.errors.passwordsMismatch": {
     "defaultMessage": "Passwords do not match"
   },
+  "common.fields.avatar": {
+    "defaultMessage": "Avatar"
+  },
+  "common.fields.description": {
+    "defaultMessage": "Description"
+  },
   "common.fields.email": {
     "defaultMessage": "Email"
+  },
+  "common.fields.location": {
+    "defaultMessage": "Location"
+  },
+  "common.fields.name": {
+    "defaultMessage": "Name"
   },
   "common.fields.password": {
     "defaultMessage": "Password"
@@ -284,6 +299,240 @@
   "common.status.sending": {
     "defaultMessage": "Sending…"
   },
+  "communities.browsePage.allCommunitiesHeading": {
+    "defaultMessage": "All Communities"
+  },
+  "communities.browsePage.newButton": {
+    "defaultMessage": "New Community"
+  },
+  "communities.browsePage.resultCount": {
+    "defaultMessage": "{count, plural, one {# community found} other {# communities found}}"
+  },
+  "communities.browsePage.searchPlaceholder": {
+    "defaultMessage": "Search communities..."
+  },
+  "communities.browsePage.searchResultsHeading": {
+    "defaultMessage": "Search Results"
+  },
+  "communities.browsePage.title": {
+    "defaultMessage": "Communities"
+  },
+  "communities.browsePage.yourCommunitiesHeading": {
+    "defaultMessage": "Your Communities"
+  },
+  "communities.createPage.descriptionPlaceholder": {
+    "defaultMessage": "What is this community about?"
+  },
+  "communities.createPage.namePlaceholder": {
+    "defaultMessage": "e.g. Little Rock Mutual Aid"
+  },
+  "communities.createPage.submitButton": {
+    "defaultMessage": "Create Community"
+  },
+  "communities.createPage.title": {
+    "defaultMessage": "Create a Community"
+  },
+  "communities.detailPage.deleteConfirm": {
+    "defaultMessage": "Delete this community? This cannot be undone."
+  },
+  "communities.detailPage.deleteFailedToast": {
+    "defaultMessage": "Failed to delete community"
+  },
+  "communities.detailPage.deleteSuccessToast": {
+    "defaultMessage": "Community deleted"
+  },
+  "communities.detailPage.joinRequestFailedFallback": {
+    "defaultMessage": "Failed to send request"
+  },
+  "communities.detailPage.joinRequestSentToast": {
+    "defaultMessage": "Join request sent"
+  },
+  "communities.detailPage.leaveConfirm": {
+    "defaultMessage": "Leave this community?"
+  },
+  "communities.detailPage.leaveSuccessToast": {
+    "defaultMessage": "Left community"
+  },
+  "communities.detailPage.notFound": {
+    "defaultMessage": "Community not found."
+  },
+  "communities.detailPage.postsHeading": {
+    "defaultMessage": "Community Posts"
+  },
+  "communities.detailPage.requestPendingLabel": {
+    "defaultMessage": "Request Pending"
+  },
+  "communities.detailPage.requestToJoinButton": {
+    "defaultMessage": "Request to Join"
+  },
+  "communities.detailPage.withdrawButton": {
+    "defaultMessage": "Withdraw"
+  },
+  "communities.detailPage.withdrawFailedFallback": {
+    "defaultMessage": "Failed to withdraw request"
+  },
+  "communities.detailPage.withdrawSuccessToast": {
+    "defaultMessage": "Request withdrawn"
+  },
+  "communities.managePage.approveButton": {
+    "defaultMessage": "Approve"
+  },
+  "communities.managePage.approveFailedFallback": {
+    "defaultMessage": "Failed to approve"
+  },
+  "communities.managePage.detailsHeading": {
+    "defaultMessage": "Community Details"
+  },
+  "communities.managePage.joinRequestsHeading": {
+    "defaultMessage": "Join Requests"
+  },
+  "communities.managePage.rejectButton": {
+    "defaultMessage": "Reject"
+  },
+  "communities.managePage.rejectFailedFallback": {
+    "defaultMessage": "Failed to reject"
+  },
+  "communities.managePage.removeMemberConfirm": {
+    "defaultMessage": "Remove {name}?"
+  },
+  "communities.managePage.requestApprovedToast": {
+    "defaultMessage": "Request approved"
+  },
+  "communities.managePage.requestRejectedToast": {
+    "defaultMessage": "Request rejected"
+  },
+  "communities.managePage.unknownUserFallback": {
+    "defaultMessage": "Unknown user"
+  },
+  "communities.managePage.updateSuccessToast": {
+    "defaultMessage": "Community updated"
+  },
+  "groups.create.addAvatarButton": {
+    "defaultMessage": "Add avatar"
+  },
+  "groups.create.avatarPreviewAlt": {
+    "defaultMessage": "Avatar preview"
+  },
+  "groups.create.avatarUploadFailedToast": {
+    "defaultMessage": "Avatar upload failed — you can try again from the manage page"
+  },
+  "groups.create.failureToast": {
+    "defaultMessage": "Failed to create {kind, select, organization {organization} community {community} other {group}}"
+  },
+  "groups.create.locationPlaceholder": {
+    "defaultMessage": "e.g. Little Rock, AR"
+  },
+  "groups.create.removeAvatarAria": {
+    "defaultMessage": "Remove avatar"
+  },
+  "groups.create.submittingButton": {
+    "defaultMessage": "Creating..."
+  },
+  "groups.create.successAllInvitesFailedToast": {
+    "defaultMessage": "{kind, select, organization {Organization} community {Community} other {Group}} created · invites failed to send"
+  },
+  "groups.create.successToast": {
+    "defaultMessage": "{kind, select, organization {Organization} community {Community} other {Group}} created"
+  },
+  "groups.create.successWithInvitesSentToast": {
+    "defaultMessage": "{kind, select, organization {Organization} community {Community} other {Group}} created · {count, plural, one {# invite} other {# invites}} sent"
+  },
+  "groups.create.successWithPartialFailuresToast": {
+    "defaultMessage": "{kind, select, organization {Organization} community {Community} other {Group}} created · {ok} invited, {failed} failed"
+  },
+  "groups.detailPage.deleteButton": {
+    "defaultMessage": "Delete"
+  },
+  "groups.detailPage.leaveButton": {
+    "defaultMessage": "Leave"
+  },
+  "groups.detailPage.leaveFailedFallback": {
+    "defaultMessage": "Failed to leave"
+  },
+  "groups.detailPage.manageButton": {
+    "defaultMessage": "Manage"
+  },
+  "groups.managePage.backToLink": {
+    "defaultMessage": "Back to {name}"
+  },
+  "groups.managePage.inviteMembersHeading": {
+    "defaultMessage": "Invite Members"
+  },
+  "groups.managePage.inviteRevokedToast": {
+    "defaultMessage": "Invite revoked"
+  },
+  "groups.managePage.memberRemovedToast": {
+    "defaultMessage": "Member removed"
+  },
+  "groups.managePage.membersHeading": {
+    "defaultMessage": "Members"
+  },
+  "groups.managePage.pendingInviteFallback": {
+    "defaultMessage": "Pending invite"
+  },
+  "groups.managePage.pendingInvitesHeading": {
+    "defaultMessage": "Pending invites"
+  },
+  "groups.managePage.removeMemberAria": {
+    "defaultMessage": "Remove {name}"
+  },
+  "groups.managePage.removeMemberFailedFallback": {
+    "defaultMessage": "Failed to remove member"
+  },
+  "groups.managePage.revokeButton": {
+    "defaultMessage": "Revoke"
+  },
+  "groups.managePage.roleSelectAria": {
+    "defaultMessage": "Role for {name}"
+  },
+  "groups.managePage.roleUpdatedToast": {
+    "defaultMessage": "Role updated"
+  },
+  "groups.managePage.saveChangesButton": {
+    "defaultMessage": "Save changes"
+  },
+  "groups.managePage.updateFailedToast": {
+    "defaultMessage": "Failed to update"
+  },
+  "groups.managePage.updateRoleFailedFallback": {
+    "defaultMessage": "Failed to update role"
+  },
+  "groups.managePage.youMarker": {
+    "defaultMessage": "(you)"
+  },
+  "groups.roles.admin": {
+    "defaultMessage": "Admin"
+  },
+  "groups.roles.member": {
+    "defaultMessage": "Member"
+  },
+  "groups.transferOwnership.dialogBody": {
+    "defaultMessage": "Pick a member to become the new owner of <strong>{groupName}</strong>. You'll be demoted to <strong>Admin</strong>. This can't be undone from the {kind, select, community {community} organization {organization} other {group}} page — the new owner will have to hand it back."
+  },
+  "groups.transferOwnership.emptyState": {
+    "defaultMessage": "There are no other members to transfer to. Invite someone first, or delete the {kind, select, community {community} organization {organization} other {group}} from the danger zone."
+  },
+  "groups.transferOwnership.failureToast": {
+    "defaultMessage": "Failed to transfer ownership"
+  },
+  "groups.transferOwnership.makeOwnerButton": {
+    "defaultMessage": "Make {name} owner"
+  },
+  "groups.transferOwnership.sectionBody": {
+    "defaultMessage": "Hand this {kind, select, community {community} organization {organization} other {group}} over to another member. You'll be demoted to Admin and the new owner will take over."
+  },
+  "groups.transferOwnership.selectNewOwnerLegend": {
+    "defaultMessage": "Select new owner"
+  },
+  "groups.transferOwnership.successToast": {
+    "defaultMessage": "Ownership transferred"
+  },
+  "groups.transferOwnership.title": {
+    "defaultMessage": "Transfer ownership"
+  },
+  "groups.transferOwnership.transferringButton": {
+    "defaultMessage": "Transferring…"
+  },
   "layout.footer.brand": {
     "defaultMessage": "MayDay Mutual Aid Hub"
   },
@@ -358,6 +607,354 @@
   },
   "layout.skipToMainContent": {
     "defaultMessage": "Skip to main content"
+  },
+  "orgs.browsePage.newButton": {
+    "defaultMessage": "New Organization"
+  },
+  "orgs.browsePage.resultCount": {
+    "defaultMessage": "{count, plural, one {# organization found} other {# organizations found}}"
+  },
+  "orgs.browsePage.searchPlaceholder": {
+    "defaultMessage": "Search organizations..."
+  },
+  "orgs.browsePage.title": {
+    "defaultMessage": "Organizations"
+  },
+  "orgs.createPage.descriptionPlaceholder": {
+    "defaultMessage": "What does your organization do?"
+  },
+  "orgs.createPage.namePlaceholder": {
+    "defaultMessage": "e.g. Riverside Mutual Aid"
+  },
+  "orgs.createPage.submitButton": {
+    "defaultMessage": "Create Organization"
+  },
+  "orgs.createPage.title": {
+    "defaultMessage": "Create an Organization"
+  },
+  "orgs.detailPage.deleteConfirm": {
+    "defaultMessage": "Delete this organization? This cannot be undone."
+  },
+  "orgs.detailPage.deleteFailedToast": {
+    "defaultMessage": "Failed to delete organization"
+  },
+  "orgs.detailPage.deleteSuccessToast": {
+    "defaultMessage": "Organization deleted"
+  },
+  "orgs.detailPage.fulfilledCount": {
+    "defaultMessage": "{count, plural, one {# request} other {# requests}} fulfilled"
+  },
+  "orgs.detailPage.leaveConfirm": {
+    "defaultMessage": "Leave this organization?"
+  },
+  "orgs.detailPage.leaveSuccessToast": {
+    "defaultMessage": "Left organization"
+  },
+  "orgs.detailPage.notFound": {
+    "defaultMessage": "Organization not found."
+  },
+  "orgs.detailPage.postsHeading": {
+    "defaultMessage": "Posts"
+  },
+  "orgs.managePage.detailsHeading": {
+    "defaultMessage": "Organization Details"
+  },
+  "orgs.managePage.removeMemberConfirm": {
+    "defaultMessage": "Remove {name} from the organization?"
+  },
+  "orgs.managePage.updateSuccessToast": {
+    "defaultMessage": "Organization updated"
+  },
+  "posts.actions.contact": {
+    "defaultMessage": "Contact"
+  },
+  "posts.actions.delete": {
+    "defaultMessage": "Delete"
+  },
+  "posts.actions.markAsFulfilled": {
+    "defaultMessage": "Mark as Fulfilled"
+  },
+  "posts.actions.reopen": {
+    "defaultMessage": "Reopen"
+  },
+  "posts.actions.reportPost": {
+    "defaultMessage": "Report post"
+  },
+  "posts.browsePage.resultCount": {
+    "defaultMessage": "{count, plural, one {# post found} other {# posts found}}"
+  },
+  "posts.browsePage.searchPlaceholder": {
+    "defaultMessage": "Search requests and offers..."
+  },
+  "posts.browsePage.title": {
+    "defaultMessage": "Browse Posts"
+  },
+  "posts.createPage.failureToast": {
+    "defaultMessage": "Failed to create post"
+  },
+  "posts.createPage.successToast": {
+    "defaultMessage": "Post created!"
+  },
+  "posts.createPage.title": {
+    "defaultMessage": "Create a Post"
+  },
+  "posts.detailPage.contactFailedToast": {
+    "defaultMessage": "Failed to start conversation"
+  },
+  "posts.detailPage.deleteSuccessToast": {
+    "defaultMessage": "Post deleted"
+  },
+  "posts.detailPage.fulfilledByHeading": {
+    "defaultMessage": "Fulfilled by"
+  },
+  "posts.detailPage.matchingOffers": {
+    "defaultMessage": "Matching Offers"
+  },
+  "posts.detailPage.matchingRequests": {
+    "defaultMessage": "Matching Requests"
+  },
+  "posts.detailPage.messageDraftPrefix": {
+    "defaultMessage": "Re: {title}"
+  },
+  "posts.detailPage.notFound": {
+    "defaultMessage": "Post not found"
+  },
+  "posts.detailPage.organizationByLine": {
+    "defaultMessage": "· by {name}"
+  },
+  "posts.detailPage.reopenFailedToast": {
+    "defaultMessage": "Failed to reopen post"
+  },
+  "posts.detailPage.reopenSuccessToast": {
+    "defaultMessage": "Post reopened"
+  },
+  "posts.detailPage.reportDetailsLabel": {
+    "defaultMessage": "Additional details"
+  },
+  "posts.detailPage.reportDetailsPlaceholder": {
+    "defaultMessage": "What's wrong with this post? Any context that will help the admin team is welcome."
+  },
+  "posts.detailPage.reportDialogBody": {
+    "defaultMessage": "The admin team will review this post for inappropriate content. You can't undo a report, but you can file a new one later if needed."
+  },
+  "posts.detailPage.reportDialogTitle": {
+    "defaultMessage": "Report this post?"
+  },
+  "posts.detailPage.reportFailedToast": {
+    "defaultMessage": "Failed to submit report"
+  },
+  "posts.detailPage.reportSubmittingButton": {
+    "defaultMessage": "Submitting…"
+  },
+  "posts.detailPage.reportSuccessToast": {
+    "defaultMessage": "Report submitted"
+  },
+  "posts.filters.allCategories": {
+    "defaultMessage": "All Categories"
+  },
+  "posts.filters.allCommunities": {
+    "defaultMessage": "All Communities"
+  },
+  "posts.filters.allTypes": {
+    "defaultMessage": "All Types"
+  },
+  "posts.filters.allUrgency": {
+    "defaultMessage": "All Urgency"
+  },
+  "posts.filters.categoryAria": {
+    "defaultMessage": "Filter by category"
+  },
+  "posts.filters.communityAria": {
+    "defaultMessage": "Filter by community"
+  },
+  "posts.filters.offers": {
+    "defaultMessage": "Offers"
+  },
+  "posts.filters.requests": {
+    "defaultMessage": "Requests"
+  },
+  "posts.filters.sortAria": {
+    "defaultMessage": "Sort posts"
+  },
+  "posts.filters.sortRecent": {
+    "defaultMessage": "Most Recent"
+  },
+  "posts.filters.sortUrgency": {
+    "defaultMessage": "Most Urgent"
+  },
+  "posts.filters.typeAria": {
+    "defaultMessage": "Filter by type"
+  },
+  "posts.filters.urgencyAria": {
+    "defaultMessage": "Filter by urgency"
+  },
+  "posts.form.addImagesButton": {
+    "defaultMessage": "Add images"
+  },
+  "posts.form.categoryLabel": {
+    "defaultMessage": "Category"
+  },
+  "posts.form.clearLocationAria": {
+    "defaultMessage": "Clear location"
+  },
+  "posts.form.descriptionPlaceholder": {
+    "defaultMessage": "Provide details about your request or offer..."
+  },
+  "posts.form.endsLabel": {
+    "defaultMessage": "Ends"
+  },
+  "posts.form.imagePreviewAlt": {
+    "defaultMessage": "Upload preview {n}"
+  },
+  "posts.form.imagesHelperText": {
+    "defaultMessage": "(optional, maximum of 5 images, 5mb per image)"
+  },
+  "posts.form.imagesLabel": {
+    "defaultMessage": "Images"
+  },
+  "posts.form.locationPlaceholder": {
+    "defaultMessage": "Search for an address or place..."
+  },
+  "posts.form.locationSuggestionsAria": {
+    "defaultMessage": "Location suggestions"
+  },
+  "posts.form.offerRadioLabel": {
+    "defaultMessage": "I can help (Offer)"
+  },
+  "posts.form.postAsLabel": {
+    "defaultMessage": "Post as"
+  },
+  "posts.form.postAsYourselfDefault": {
+    "defaultMessage": "Yourself"
+  },
+  "posts.form.recurrenceDays": {
+    "defaultMessage": "day(s)"
+  },
+  "posts.form.recurrenceFrequencyAria": {
+    "defaultMessage": "Recurrence frequency"
+  },
+  "posts.form.recurrenceIntervalAria": {
+    "defaultMessage": "Recurrence interval"
+  },
+  "posts.form.recurrenceMonths": {
+    "defaultMessage": "month(s)"
+  },
+  "posts.form.recurrenceNone": {
+    "defaultMessage": "Does not repeat"
+  },
+  "posts.form.recurrenceWeeks": {
+    "defaultMessage": "week(s)"
+  },
+  "posts.form.removeImageAria": {
+    "defaultMessage": "Remove image {n}"
+  },
+  "posts.form.repeatEvery": {
+    "defaultMessage": "every"
+  },
+  "posts.form.repeatsLegend": {
+    "defaultMessage": "Repeats"
+  },
+  "posts.form.requestRadioLabel": {
+    "defaultMessage": "I need help (Request)"
+  },
+  "posts.form.selectCategoryPlaceholder": {
+    "defaultMessage": "Select a category"
+  },
+  "posts.form.startsLabel": {
+    "defaultMessage": "Starts"
+  },
+  "posts.form.submitButton": {
+    "defaultMessage": "Create Post"
+  },
+  "posts.form.submittingButton": {
+    "defaultMessage": "Creating..."
+  },
+  "posts.form.titleLabel": {
+    "defaultMessage": "Title"
+  },
+  "posts.form.titlePlaceholder": {
+    "defaultMessage": "Brief description of what you need or can offer"
+  },
+  "posts.form.typeLegend": {
+    "defaultMessage": "Type"
+  },
+  "posts.form.urgencyLabel": {
+    "defaultMessage": "Urgency"
+  },
+  "posts.form.visibilityCommunity": {
+    "defaultMessage": "{name} members only"
+  },
+  "posts.form.visibilityLabel": {
+    "defaultMessage": "Visibility"
+  },
+  "posts.form.visibilityPublic": {
+    "defaultMessage": "Public (visible to everyone)"
+  },
+  "posts.fulfillModal.addAnother": {
+    "defaultMessage": "Add another"
+  },
+  "posts.fulfillModal.failureToast": {
+    "defaultMessage": "Failed to mark post as fulfilled"
+  },
+  "posts.fulfillModal.instructions": {
+    "defaultMessage": "Who helped fulfill this request? You can add multiple people or organizations."
+  },
+  "posts.fulfillModal.orgsHeading": {
+    "defaultMessage": "Organizations"
+  },
+  "posts.fulfillModal.removeFulfillerAria": {
+    "defaultMessage": "Remove fulfiller {n}"
+  },
+  "posts.fulfillModal.searchPlaceholder": {
+    "defaultMessage": "Type a name to search..."
+  },
+  "posts.fulfillModal.searchingStatus": {
+    "defaultMessage": "Searching..."
+  },
+  "posts.fulfillModal.successToast": {
+    "defaultMessage": "Post marked as fulfilled"
+  },
+  "posts.fulfillModal.usersHeading": {
+    "defaultMessage": "Users"
+  },
+  "posts.imageCarousel.imageAlt": {
+    "defaultMessage": "Attachment {n} of {total} (opens in new tab)"
+  },
+  "posts.imageCarousel.nextAria": {
+    "defaultMessage": "Next image"
+  },
+  "posts.imageCarousel.previousAria": {
+    "defaultMessage": "Previous image"
+  },
+  "posts.postList.emptyState": {
+    "defaultMessage": "No posts found. Try adjusting your filters."
+  },
+  "posts.recurrence": {
+    "defaultMessage": "{count, plural, one {every {unit, select, DAY {day} WEEK {week} MONTH {month} other {month}}} other {every # {unit, select, DAY {days} WEEK {weeks} MONTH {months} other {months}}}}"
+  },
+  "posts.schedule.endsAt": {
+    "defaultMessage": "Ends {date}"
+  },
+  "posts.schedule.startsAt": {
+    "defaultMessage": "Starts {date}"
+  },
+  "posts.statuses.closed": {
+    "defaultMessage": "Closed"
+  },
+  "posts.statuses.fulfilled": {
+    "defaultMessage": "Fulfilled"
+  },
+  "posts.statuses.open": {
+    "defaultMessage": "Open"
+  },
+  "posts.typeAriaPrefix": {
+    "defaultMessage": "Post type:"
+  },
+  "posts.types.offer": {
+    "defaultMessage": "Offer"
+  },
+  "posts.types.request": {
+    "defaultMessage": "Request"
   },
   "urgency.critical": {
     "defaultMessage": "Critical"

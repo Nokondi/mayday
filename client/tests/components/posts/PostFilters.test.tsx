@@ -1,8 +1,9 @@
-import { render, screen, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CATEGORIES } from '@mayday/shared';
 import { PostFilters } from '../../../src/components/posts/PostFilters.js';
+import { renderWithIntl as render } from '../../helpers/renderWithIntl.js';
 
 type Handler = ReturnType<typeof vi.fn<(v: string) => void>>;
 type Handlers = {

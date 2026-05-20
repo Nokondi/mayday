@@ -11,6 +11,7 @@ import {
   Clock,
   X,
 } from "lucide-react";
+import { FormattedMessage, useIntl } from "react-intl";
 import {
   getCommunity,
   getCommunityInvites,
@@ -29,6 +30,7 @@ import { useAuth } from "../context/AuthContext.js";
 import { getPosts } from "../api/posts.js";
 
 export function CommunityDetailPage() {
+  const intl = useIntl();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -59,8 +61,16 @@ export function CommunityDetailPage() {
 
   const leaveMutation = useToastMutation({
     mutationFn: () => removeCommunityMember(id!, user!.id),
-    successMessage: "Left community",
-    errorMessage: (e: any) => e?.response?.data?.message || "Failed to leave",
+    successMessage: intl.formatMessage({
+      id: "communities.detailPage.leaveSuccessToast",
+      defaultMessage: "Left community",
+    }),
+    errorMessage: (e: any) =>
+      e?.response?.data?.message ||
+      intl.formatMessage({
+        id: "groups.detailPage.leaveFailedFallback",
+        defaultMessage: "Failed to leave",
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["communities"] });
       queryClient.invalidateQueries({ queryKey: ["my-communities"] });
@@ -70,8 +80,14 @@ export function CommunityDetailPage() {
 
   const deleteMutation = useToastMutation({
     mutationFn: () => deleteCommunity(id!),
-    successMessage: "Community deleted",
-    errorMessage: "Failed to delete community",
+    successMessage: intl.formatMessage({
+      id: "communities.detailPage.deleteSuccessToast",
+      defaultMessage: "Community deleted",
+    }),
+    errorMessage: intl.formatMessage({
+      id: "communities.detailPage.deleteFailedToast",
+      defaultMessage: "Failed to delete community",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["communities"] });
       queryClient.invalidateQueries({ queryKey: ["my-communities"] });
@@ -81,9 +97,16 @@ export function CommunityDetailPage() {
 
   const joinRequestMutation = useToastMutation({
     mutationFn: () => requestToJoinCommunity(id!),
-    successMessage: "Join request sent",
+    successMessage: intl.formatMessage({
+      id: "communities.detailPage.joinRequestSentToast",
+      defaultMessage: "Join request sent",
+    }),
     errorMessage: (e: any) =>
-      e?.response?.data?.message || "Failed to send request",
+      e?.response?.data?.message ||
+      intl.formatMessage({
+        id: "communities.detailPage.joinRequestFailedFallback",
+        defaultMessage: "Failed to send request",
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community", id] });
     },
@@ -91,9 +114,16 @@ export function CommunityDetailPage() {
 
   const withdrawMutation = useToastMutation({
     mutationFn: () => withdrawJoinRequest(id!),
-    successMessage: "Request withdrawn",
+    successMessage: intl.formatMessage({
+      id: "communities.detailPage.withdrawSuccessToast",
+      defaultMessage: "Request withdrawn",
+    }),
     errorMessage: (e: any) =>
-      e?.response?.data?.message || "Failed to withdraw request",
+      e?.response?.data?.message ||
+      intl.formatMessage({
+        id: "communities.detailPage.withdrawFailedFallback",
+        defaultMessage: "Failed to withdraw request",
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community", id] });
     },
@@ -102,7 +132,12 @@ export function CommunityDetailPage() {
   if (isLoading) return <LoadingSpinner className="py-12" />;
   if (!community)
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8">Community not found.</div>
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <FormattedMessage
+          id="communities.detailPage.notFound"
+          defaultMessage="Community not found."
+        />
+      </div>
     );
 
   const isOwner = community.myRole === "OWNER";
@@ -134,8 +169,11 @@ export function CommunityDetailPage() {
         <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
           <span className="flex items-center gap-1">
             <Users className="w-4 h-4" aria-hidden="true" />
-            {community.memberCount} member
-            {community.memberCount !== 1 ? "s" : ""}
+            <FormattedMessage
+              id="common.entityCard.memberCount"
+              defaultMessage="{count, plural, one {# member} other {# members}}"
+              values={{ count: community.memberCount }}
+            />
           </span>
           {community.location && (
             <span className="flex items-center gap-1">
@@ -145,7 +183,11 @@ export function CommunityDetailPage() {
           )}
           {community.myRole && (
             <span className="text-mayday-600 font-medium">
-              You: {community.myRole.toLowerCase()}
+              <FormattedMessage
+                id="common.entityCard.viewerRole"
+                defaultMessage="You: {role}"
+                values={{ role: community.myRole.toLowerCase() }}
+              />
             </span>
           )}
         </div>
@@ -159,30 +201,55 @@ export function CommunityDetailPage() {
               className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
             >
               <Settings className="w-4 h-4" />
-              Manage
+              <FormattedMessage
+                id="groups.detailPage.manageButton"
+                defaultMessage="Manage"
+              />
             </Link>
           )}
           {isMember && !isOwner && (
             <button
               onClick={() => {
-                if (confirm("Leave this community?")) leaveMutation.mutate();
+                if (
+                  confirm(
+                    intl.formatMessage({
+                      id: "communities.detailPage.leaveConfirm",
+                      defaultMessage: "Leave this community?",
+                    }),
+                  )
+                )
+                  leaveMutation.mutate();
               }}
               className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
             >
               <LogOut className="w-4 h-4" />
-              Leave
+              <FormattedMessage
+                id="groups.detailPage.leaveButton"
+                defaultMessage="Leave"
+              />
             </button>
           )}
           {isOwner && (
             <button
               onClick={() => {
-                if (confirm("Delete this community? This cannot be undone."))
+                if (
+                  confirm(
+                    intl.formatMessage({
+                      id: "communities.detailPage.deleteConfirm",
+                      defaultMessage:
+                        "Delete this community? This cannot be undone.",
+                    }),
+                  )
+                )
                   deleteMutation.mutate();
               }}
               className="flex items-center gap-1 px-3 py-2 border border-red-300 rounded-lg text-sm text-red-700 hover:bg-red-50"
             >
               <Trash2 className="w-4 h-4" />
-              Delete
+              <FormattedMessage
+                id="groups.detailPage.deleteButton"
+                defaultMessage="Delete"
+              />
             </button>
           )}
           {!isMember && !hasPendingRequest && (
@@ -192,14 +259,20 @@ export function CommunityDetailPage() {
               className="flex items-center gap-1 px-3 py-2 bg-mayday-700 text-white rounded-lg text-sm hover:bg-mayday-800 disabled:opacity-50"
             >
               <UserPlus className="w-4 h-4" />
-              Request to Join
+              <FormattedMessage
+                id="communities.detailPage.requestToJoinButton"
+                defaultMessage="Request to Join"
+              />
             </button>
           )}
           {!isMember && hasPendingRequest && (
             <>
               <span className="flex items-center gap-1 px-3 py-2 border border-yellow-300 bg-yellow-50 rounded-lg text-sm text-yellow-800">
                 <Clock className="w-4 h-4" />
-                Request Pending
+                <FormattedMessage
+                  id="communities.detailPage.requestPendingLabel"
+                  defaultMessage="Request Pending"
+                />
               </span>
               <button
                 onClick={() => withdrawMutation.mutate()}
@@ -207,7 +280,10 @@ export function CommunityDetailPage() {
                 className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
                 <X className="w-4 h-4" />
-                Withdraw
+                <FormattedMessage
+                  id="communities.detailPage.withdrawButton"
+                  defaultMessage="Withdraw"
+                />
               </button>
             </>
           )}
@@ -240,7 +316,10 @@ export function CommunityDetailPage() {
       {isMember && postsData && postsData.data.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Community Posts
+            <FormattedMessage
+              id="communities.detailPage.postsHeading"
+              defaultMessage="Community Posts"
+            />
           </h2>
           <PostList posts={postsData.data} />
         </div>

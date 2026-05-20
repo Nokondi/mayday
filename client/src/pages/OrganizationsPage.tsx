@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { listOrganizations } from "../api/organizations.js";
 import { SearchBar } from "../components/common/SearchBar.js";
 import { Pagination } from "../components/common/Pagination.js";
@@ -10,6 +11,7 @@ import { EntityCard } from "../components/common/EntityCard.js";
 import { useDebounce } from "../hooks/useDebounce.js";
 
 export function OrganizationsPage() {
+  const intl = useIntl();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 300);
@@ -23,13 +25,21 @@ export function OrganizationsPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Organizations</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          <FormattedMessage
+            id="orgs.browsePage.title"
+            defaultMessage="Organizations"
+          />
+        </h1>
         <Link
           to="/organizations/new"
           className="flex items-center gap-1 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800"
         >
           <Plus className="w-4 h-4" />
-          New Organization
+          <FormattedMessage
+            id="orgs.browsePage.newButton"
+            defaultMessage="New Organization"
+          />
         </Link>
       </div>
 
@@ -40,7 +50,10 @@ export function OrganizationsPage() {
             setSearch(v);
             setPage(1);
           }}
-          placeholder="Search organizations..."
+          placeholder={intl.formatMessage({
+            id: "orgs.browsePage.searchPlaceholder",
+            defaultMessage: "Search organizations...",
+          })}
         />
       </div>
 
@@ -49,7 +62,11 @@ export function OrganizationsPage() {
       ) : data ? (
         <>
           <p className="text-sm text-gray-500 mb-4">
-            {data.total} organization{data.total !== 1 ? "s" : ""} found
+            <FormattedMessage
+              id="orgs.browsePage.resultCount"
+              defaultMessage="{count, plural, one {# organization found} other {# organizations found}}"
+              values={{ count: data.total }}
+            />
           </p>
           <div className="space-y-3">
             {data.data.map((org) => (
