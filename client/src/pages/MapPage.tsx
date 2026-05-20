@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { FormattedMessage } from "react-intl";
 import { getPosts } from "../api/posts.js";
 import { listMyCommunities } from "../api/communities.js";
 import { MapView } from "../components/map/MapView.js";
@@ -77,7 +78,11 @@ export function MapPage() {
         />
         {data && (
           <p className="text-xs text-gray-500 mt-2">
-            {data.total} posts in view
+            <FormattedMessage
+              id="map.page.postsInViewCount"
+              defaultMessage="{count, plural, one {# post in view} other {# posts in view}}"
+              values={{ count: data.total }}
+            />
           </p>
         )}
       </div>

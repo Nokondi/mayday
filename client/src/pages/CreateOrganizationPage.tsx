@@ -194,7 +194,9 @@ export function CreateOrganizationPage() {
               <FormattedMessage
                 id="common.fields.avatar"
                 defaultMessage="Avatar"
-              />{" "}
+              />
+              {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between label and (optional) suffix */}
+              {" "}
               <span className="text-gray-500 font-normal">
                 <FormattedMessage
                   id="common.formField.optionalSuffix"

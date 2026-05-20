@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Heart, Users, MapPin, HandHeart } from "lucide-react";
+import { FormattedMessage } from "react-intl";
 import { WaveDivider } from "../components/common/WaveDivider.js";
 import { useAuth } from "../context/AuthContext.js";
 
@@ -18,20 +19,26 @@ export function AboutPage() {
             id="about-hero-heading"
             className="text-4xl sm:text-5xl font-bold mb-4"
           >
-            Welcome to MayDay
+            <FormattedMessage
+              id="about.hero.heading"
+              defaultMessage="Welcome to MayDay"
+            />
           </h1>
           <blockquote className="text-mayday-100">
             <p className="text-xl">
-              “Mutual aid projects let us practice meeting our own and each
-              other’s needs, based in shared commitments to dignity, care, and
-              justice.”
+              <FormattedMessage
+                id="about.hero.quoteText"
+                defaultMessage="“Mutual aid projects let us practice meeting our own and each other’s needs, based in shared commitments to dignity, care, and justice.”"
+              />
             </p>
             <p className="text-md mt-2">
-              ― Dean Spade,{" "}
-              <cite>
-                Mutual Aid: Building Solidarity During This Crisis (And the
-                Next)
-              </cite>
+              <FormattedMessage
+                id="about.hero.quoteAttribution"
+                defaultMessage="― Dean Spade, <cite>Mutual Aid: Building Solidarity During This Crisis (And the Next)</cite>"
+                values={{
+                  cite: (chunks) => <cite>{chunks}</cite>,
+                }}
+              />
             </p>
           </blockquote>
         </div>
@@ -42,18 +49,16 @@ export function AboutPage() {
             id="about-why-heading"
             className="text-2xl font-bold text-gray-900 mb-4"
           >
-            Why MayDay?
+            <FormattedMessage
+              id="about.why.heading"
+              defaultMessage="Why MayDay?"
+            />
           </h2>
           <p className="text-gray-600 text-lg leading-relaxed mb-4">
-            MayDay is both a call for help and a celebration of community. Ships
-            in distress use the call, "mayday," to signal that they need
-            immediate assistance. May Day is also an ancient spring festival ― a
-            celebration of life and renewal ― and it is the date of
-            International Workers' Day, a day of solidarity and mutual aid. We
-            chose the name MayDay to reflect our mission of connecting people in
-            need with those who can help, while also honoring the spirit of
-            community and solidarity that has been practiced and celebrated for
-            centuries.
+            <FormattedMessage
+              id="about.why.body"
+              defaultMessage={`MayDay is both a call for help and a celebration of community. Ships in distress use the call, "mayday," to signal that they need immediate assistance. May Day is also an ancient spring festival ― a celebration of life and renewal ― and it is the date of International Workers' Day, a day of solidarity and mutual aid. We chose the name MayDay to reflect our mission of connecting people in need with those who can help, while also honoring the spirit of community and solidarity that has been practiced and celebrated for centuries.`}
+            />
           </p>
         </div>
       </section>
@@ -68,7 +73,10 @@ export function AboutPage() {
             id="about-how-heading"
             className="text-2xl font-bold text-gray-900 mb-8 text-center"
           >
-            How It Works
+            <FormattedMessage
+              id="about.how.heading"
+              defaultMessage="How It Works"
+            />
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="flex gap-4">
@@ -76,10 +84,17 @@ export function AboutPage() {
                 <Heart className="w-6 h-6 text-mayday-600" aria-hidden="true" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-1">Post a Request</h3>
+                <h3 className="font-semibold text-lg mb-1">
+                  <FormattedMessage
+                    id="about.how.postRequestHeading"
+                    defaultMessage="Post a Request"
+                  />
+                </h3>
                 <p className="text-gray-600">
-                  Share what you need with the community. Requests can range
-                  from everyday essentials to emotional support.
+                  <FormattedMessage
+                    id="about.how.postRequestBody"
+                    defaultMessage="Share what you need with the community. Requests can range from everyday essentials to emotional support."
+                  />
                 </p>
               </div>
             </div>
@@ -91,10 +106,17 @@ export function AboutPage() {
                 />
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-1">Offer Resources</h3>
+                <h3 className="font-semibold text-lg mb-1">
+                  <FormattedMessage
+                    id="about.how.offerResourcesHeading"
+                    defaultMessage="Offer Resources"
+                  />
+                </h3>
                 <p className="text-gray-600">
-                  Let your neighbors know what you can provide — skills, time,
-                  supplies, or just a listening ear.
+                  <FormattedMessage
+                    id="about.how.offerResourcesBody"
+                    defaultMessage="Let your neighbors know what you can provide — skills, time, supplies, or just a listening ear."
+                  />
                 </p>
               </div>
             </div>
@@ -103,10 +125,17 @@ export function AboutPage() {
                 <MapPin className="w-6 h-6 text-blue-600" aria-hidden="true" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-1">Find Nearby Help</h3>
+                <h3 className="font-semibold text-lg mb-1">
+                  <FormattedMessage
+                    id="about.how.findHelpHeading"
+                    defaultMessage="Find Nearby Help"
+                  />
+                </h3>
                 <p className="text-gray-600">
-                  Use the map to discover requests and offers near you, making
-                  it easy to connect locally.
+                  <FormattedMessage
+                    id="about.how.findHelpBody"
+                    defaultMessage="Use the map to discover requests and offers near you, making it easy to connect locally."
+                  />
                 </p>
               </div>
             </div>
@@ -115,10 +144,17 @@ export function AboutPage() {
                 <Users className="w-6 h-6 text-purple-600" aria-hidden="true" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-1">Join Communities</h3>
+                <h3 className="font-semibold text-lg mb-1">
+                  <FormattedMessage
+                    id="about.how.joinCommunitiesHeading"
+                    defaultMessage="Join Communities"
+                  />
+                </h3>
                 <p className="text-gray-600">
-                  Organize with your neighbors through communities and
-                  organizations to build lasting support networks.
+                  <FormattedMessage
+                    id="about.how.joinCommunitiesBody"
+                    defaultMessage="Organize with your neighbors through communities and organizations to build lasting support networks."
+                  />
                 </p>
               </div>
             </div>
@@ -134,23 +170,35 @@ export function AboutPage() {
               id="about-cta-heading"
               className="text-2xl font-bold text-gray-900 mb-4"
             >
-              Ready to get involved?
+              <FormattedMessage
+                id="about.cta.heading"
+                defaultMessage="Ready to get involved?"
+              />
             </h2>
             <p className="text-gray-600 text-lg mb-8">
-              Join MayDay today and start making a difference in your community.
+              <FormattedMessage
+                id="about.cta.body"
+                defaultMessage="Join MayDay today and start making a difference in your community."
+              />
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link
                 to="/register"
                 className="bg-mayday-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-mayday-700"
               >
-                Sign up
+                <FormattedMessage
+                  id="layout.header.nav.signup"
+                  defaultMessage="Sign up"
+                />
               </Link>
               <Link
                 to="/login"
                 className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50"
               >
-                Log in
+                <FormattedMessage
+                  id="common.actions.login"
+                  defaultMessage="Log in"
+                />
               </Link>
             </div>
           </div>

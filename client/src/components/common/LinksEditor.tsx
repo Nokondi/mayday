@@ -84,6 +84,8 @@ export function LinksEditor({ value, onChange, idPrefix = "link" }: LinksEditorP
                   })}
                   type="url"
                   inputMode="url"
+                  // URL example — not a translatable string.
+                  // eslint-disable-next-line formatjs/no-literal-string-in-jsx
                   placeholder="https://example.org"
                   value={row.url}
                   onChange={(e) => update(i, { url: e.target.value })}

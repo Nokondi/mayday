@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ProtectedRoute } from '../../../src/components/auth/ProtectedRoute.js';
 import { useAuth } from '../../../src/context/AuthContext.js';
+import { renderWithIntl } from '../../helpers/renderWithIntl.js';
 
 vi.mock('../../../src/context/AuthContext.js', () => ({
   useAuth: vi.fn(),
@@ -20,7 +21,7 @@ function mockAuth(state: { user: unknown; isLoading: boolean }) {
 }
 
 function renderProtected() {
-  return render(
+  return renderWithIntl(
     <MemoryRouter initialEntries={['/protected']}>
       <Routes>
         <Route path="/login" element={<div>LOGIN PAGE</div>} />
@@ -94,7 +95,7 @@ describe('ProtectedRoute', () => {
       return <div>LOGIN PAGE from={from}</div>;
     }
 
-    render(
+    renderWithIntl(
       <MemoryRouter initialEntries={['/protected']}>
         <Routes>
           <Route path="/login" element={<LoginProbe />} />

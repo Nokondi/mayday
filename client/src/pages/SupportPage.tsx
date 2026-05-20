@@ -10,343 +10,505 @@ import {
   Flag,
   MessageSquare,
 } from "lucide-react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { BugReportForm } from "../components/support/BugReportForm.js";
 
+// Decorative chevron in collapsible summaries — purely typographic, not translated.
+const CHEVRON_GLYPH = "›";
+
 interface Topic {
+  id: string;
   question: string;
   answer: React.ReactNode;
 }
 
-const generalTopics: Topic[] = [
-  {
-    question: "What is MayDay?",
-    answer: (
-      <p>
-        MayDay is a different kind of social network, where the objective isn't
-        just communication, but making real-world connections between people who
-        need help and people who can provide it. It's a tool to help communities
-        coordinate and keep track of{" "}
-        <span className="font-medium">mutual aid</span> efforts, and to connect
-        people to the resources they need to survive and thrive.
-      </p>
-    ),
-  },
-  {
-    question: "What is mutual aid?",
-    answer: (
-      <p>
-        Mutual aid is a voluntary relationship in which people in community
-        exchange resources and services for mutual benefit. It differs from
-        charity in that, while charity is a one-way transaction that reinforces
-        existing assumptions about power and privilege, mutual aid is based on
-        the assumption that everyone has needs that they can not meet on their
-        own, and that everyone has something to offer. Mutual aid is not
-        transactional, but relational. While the last person you helped may not
-        be the one who helps you, you are building a network of care and support
-        that benefits everyone involved. Mutual aid is not based on love or pity
-        or any other emotional response, but on the understanding that we are
-        all interdependent and that our survival and flourishing depends on
-        taking care of each other. It is a practice of freedom that prefigures
-        the world we want to live in, and a strategy for getting there.
-      </p>
-    ),
-  },
-  {
-    question: "What do you do with my data?",
-    answer: (
-      <p>
-        MayDay is designed to collect as little data as possible and to keep
-        what we do collect as secure as possible. We use industry-standard
-        encryption to protect your data, and we never sell or share it with
-        third parties. If you ever want to delete your account, you can do so
-        from your profile page, and all of your data will be permanently deleted
-        from our servers.
-      </p>
-    ),
-  },
-  {
-    question: "Is there anything I can do to help?",
-    answer: (
-      <p>
-        MayDay is a passion project built by one guy in his spare time, and
-        there are a lot of ways you can help out if you're interested! I've made
-        all of the code open source, so if you're a developer or designer, you
-        can check out the repository at{" "}
-        <Link
-          to="https://github.com/Nokondi/mayday"
-          className="text-mayday-600 hover:underline"
-        >
-          github.com/Nokondi/mayday
-        </Link>{" "}
-        and submit a pull request. Hosting the app also costs money, and
-        maintenance requires ongoing support, so if you are able to provide
-        financial assistance, you can donate through the{" "}
-        <Link
-          to="https://www.patreon.com/c/MayDayCreative"
-          className="text-mayday-600 hover:underline"
-        >
-          MayDay Patreon
-        </Link>
-        . Donation tiers start at $1, and every contribution helps keep MayDay
-        running. You can follow along with updates about project development,
-        and there will be opportunities for supporters to help decide on future
-        features and updates. If you're not a developer and don't have money to
-        contribute, you can still help by sharing MayDay with your friends and
-        family, giving feedback on how to make it better, or even just posting
-        your needs and offers to help build the community. The more people use
-        it, the more useful it becomes!
-      </p>
-    ),
-  },
-  {
-    question:
-      "Where can I learn more about mutual aid and the philosophy behind MayDay?",
-    answer: (
-      <p>
-        There are a lot of great texts that cover mutual aid and other aspects
-        of anarchist philosophy. A few good places to start include:
-        <ul className="list-disc list-inside mt-2 space-y-1">
-          <li>
-            <Link
-              to="https://www.thriftbooks.com/w/mutual-aid--building-solidarity-during-this-crisis-and-the-next-one/26690066/item/42249298/"
-              className="text-mayday-600 hover:underline"
-            >
-              <i>
-                Mutual Aid: Building Solidarity During This Crisis (and the
-                Next)
-              </i>
-              , by Dean Spade
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="https://theanarchistlibrary.org/library/petr-kropotkin-mutual-aid-a-factor-of-evolution"
-              className="text-mayday-600 hover:underline"
-            >
-              <i>Mutual Aid: A Factor of Evolution</i>, by Peter Kropotkin
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="https://theanarchistlibrary.org/library/david-graeber-are-you-an-anarchist-the-answer-may-surprise-you"
-              className="text-mayday-600 hover:underline"
-            >
-              <i>Are You An Anarchist? The Answer May Surprise You</i>, by David
-              Graeber
-            </Link>
-          </li>
-        </ul>
-        For even more resources, visit{" "}
-        <Link
-          to="https://theanarchistlibrary.org/"
-          className="text-mayday-600 hover:underline"
-        >
-          The Anarchist Library
-        </Link>
-      </p>
-    ),
-  },
-];
+const strong = (chunks: React.ReactNode) => (
+  <span className="font-medium">{chunks}</span>
+);
 
-const techTopics: Topic[] = [
-  {
-    question: "How do Requests and Offers work?",
-    answer: (
-      <>
-        <p>
-          Anything you post is either a{" "}
-          <span className="font-medium">Request</span> (you need help) or an{" "}
-          <span className="font-medium">Offer</span> (you have something to
-          give). Both are browsable on the{" "}
-          <Link to="/posts" className="text-mayday-600 hover:underline">
-            Browse
-          </Link>{" "}
-          page, visible on the{" "}
-          <Link to="/map" className="text-mayday-600 hover:underline">
-            Map
-          </Link>
-          , and — if they have a start time — listed on the{" "}
-          <Link to="/calendar" className="text-mayday-600 hover:underline">
-            Calendar
-          </Link>
-          .
-        </p>
-      </>
-    ),
-  },
-  {
-    question: "How do I create a post?",
-    answer: (
-      <p>
-        Click <span className="font-medium">New Post</span> in the header. Pick
-        Request or Offer, give it a title and description, choose a category and
-        urgency, and optionally attach photos, a location, and a start/end time.
-        You can also scope a post to a community you belong to so it is only
-        visible to those members, and if you are a member of an organization,
-        you can choose to post on behalf of the organization.
-      </p>
-    ),
-  },
-  {
-    question: "How do I mark a post as fulfilled?",
-    answer: (
-      <p>
-        Open your post, click{" "}
-        <CheckCircle
-          className="w-5 h-5 inline-block text-green-500"
-          aria-hidden="true"
-        />{" "}
-        <span className="font-medium">Mark as Fulfilled</span>, and add the
-        people or organizations that helped. This closes the post, and (in a
-        feature coming soon) gives points to helpers and tracks their impact
-        over time.
-      </p>
-    ),
-  },
-  {
-    question: "What are Communities and Organizations, and how do they differ?",
-    answer: (
-      <>
-        <p>
-          <span className="font-medium">Communities</span> are open groups
-          people can either be invited to or request to join (e.g. a
-          neighborhood). When you post a request or offer, you can choose to
-          make it visible only to people within any of the communities you
-          belong to. <span className="font-medium">Organizations</span> are
-          invite-only groups that represent a real-world entity (e.g. a food
-          bank). Owners and admins can invite members, approve join requests,
-          and post on behalf of the group.
-        </p>
-      </>
-    ),
-  },
-  {
-    question: "How do I message someone?",
-    answer: (
-      <p>
-        From any user profile or post, click{" "}
-        <MessageSquare
-          className="w-5 h-5 inline-block text-mayday-600"
-          aria-hidden="true"
-        />{" "}
-        <span className="font-medium">Message</span>. All conversations live in
-        the{" "}
-        <Link to="/messages" className="text-mayday-600 hover:underline">
-          Messages
-        </Link>{" "}
-        tab; you'll see a badge in the header whenever you have a new message or
-        someone replies to you.
-      </p>
-    ),
-  },
-  {
-    question: "Someone is acting abusively — what do I do?",
-    answer: (
-      <p>
-        Every post and user profile has a small red flag{" "}
-        <Flag
-          className="w-5 h-5 inline-block text-red-500"
-          aria-hidden="true"
-        />{" "}
-        at the top right corner. If you come across a request or offer that is
-        inappropriate, or if a user is behaving inappropriately, click on the
-        flag and include any details you want to share. Reports go to the admin
-        team for review. If someone is in immediate danger, please contact local
-        emergency services first.
-      </p>
-    ),
-  },
-  {
-    question: "I forgot my password or never confirmed my email — what now?",
-    answer: (
-      <p>
-        If you forgot your password, use{" "}
-        <Link to="/forgot-password" className="text-mayday-600 hover:underline">
-          Forgot your password?
-        </Link>{" "}
-        on the login page to get a reset link by email. If you never received
-        your confirmation email, log in and click{" "}
-        <span className="font-medium">Resend confirmation email</span>.
-      </p>
-    ),
-  },
-  {
-    question: "How do I manage email and push notifications?",
-    answer: (
-      <p>
-        You can manage your email and push notification preferences by clicking
-        the <Settings className="w-5 h-5 inline-block" aria-hidden="true" />{" "}
-        <span className="font-medium">Settings</span> button in the top right of
-        your profile.
-      </p>
-    ),
-  },
-  {
-    question: "How do I download MayDay on my phone or computer?",
-    answer: (
-      <>
-        <p>
-          MayDay is a progressive web app (PWA), which means you can add it to
-          your home screen and use it like a native app without needing to go to
-          an app store. To add MayDay to your home screen, follow these
-          instructions:
-        </p>
-        <p className="font-medium">On Android:</p>
-        <ol className="list-decimal list-inside mt-2 space-y-1">
-          <li>Open the site in your mobile browser.</li>
-          <li>
-            Tap the{" "}
-            <EllipsisVertical
-              className="w-5 h-5 inline-block"
-              aria-hidden="true"
-            />{" "}
-            menu button at the top right corner.
-          </li>
-          <li>Select "Add to Home Screen" from the menu.</li>
-          <li>Follow the prompts to add MayDay to your home screen.</li>
-        </ol>
-        <p className="font-medium">On iOS:</p>
-        <ol className="list-decimal list-inside mt-2 space-y-1">
-          <li>Open the site in your mobile browser.</li>
-          <li>
-            Tap the{" "}
-            <Share className="w-5 h-5 inline-block" aria-hidden="true" /> share{" "}
-            button at the bottom of the screen.
-          </li>
-          <li>Select "Add to Home Screen" from the menu.</li>
-          <li>Follow the prompts to add MayDay to your home screen.</li>
-        </ol>
-        <p className="font-medium">On Windows:</p>
-        <ol className="list-decimal list-inside mt-2 space-y-1">
-          <li>Open the site in Chrome.</li>
-          <li>
-            Click the{" "}
-            <EllipsisVertical
-              className="w-5 h-5 inline-block"
-              aria-hidden="true"
-            />{" "}
-            menu button at the top right corner.
-          </li>
-          <li>Select "Cast, save, and share" from the menu.</li>
-          <li>Select "Install MayDay Mutual Aid Hub" from the submenu.</li>
-          <li>Follow the prompts to add MayDay to your home screen.</li>
-        </ol>
-      </>
-    ),
-  },
-];
+const externalLink =
+  (href: string) =>
+  (chunks: React.ReactNode) => (
+    <Link to={href} className="text-mayday-600 hover:underline">
+      {chunks}
+    </Link>
+  );
+
+const internalLink =
+  (to: string) =>
+  (chunks: React.ReactNode) => (
+    <Link to={to} className="text-mayday-600 hover:underline">
+      {chunks}
+    </Link>
+  );
+
+const italicChunks = (chunks: React.ReactNode) => <i>{chunks}</i>;
 
 export function SupportPage() {
+  const intl = useIntl();
+
+  const generalTopics: Topic[] = [
+    {
+      id: "whatIsMayDay",
+      question: intl.formatMessage({
+        id: "support.topics.general.whatIsMayDay.question",
+        defaultMessage: "What is MayDay?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.general.whatIsMayDay.answer"
+            defaultMessage="MayDay is a different kind of social network, where the objective isn't just communication, but making real-world connections between people who need help and people who can provide it. It's a tool to help communities coordinate and keep track of <strong>mutual aid</strong> efforts, and to connect people to the resources they need to survive and thrive."
+            values={{ strong }}
+          />
+        </p>
+      ),
+    },
+    {
+      id: "whatIsMutualAid",
+      question: intl.formatMessage({
+        id: "support.topics.general.whatIsMutualAid.question",
+        defaultMessage: "What is mutual aid?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.general.whatIsMutualAid.answer"
+            defaultMessage="Mutual aid is a voluntary relationship in which people in community exchange resources and services for mutual benefit. It differs from charity in that, while charity is a one-way transaction that reinforces existing assumptions about power and privilege, mutual aid is based on the assumption that everyone has needs that they can not meet on their own, and that everyone has something to offer. Mutual aid is not transactional, but relational. While the last person you helped may not be the one who helps you, you are building a network of care and support that benefits everyone involved. Mutual aid is not based on love or pity or any other emotional response, but on the understanding that we are all interdependent and that our survival and flourishing depends on taking care of each other. It is a practice of freedom that prefigures the world we want to live in, and a strategy for getting there."
+          />
+        </p>
+      ),
+    },
+    {
+      id: "dataHandling",
+      question: intl.formatMessage({
+        id: "support.topics.general.dataHandling.question",
+        defaultMessage: "What do you do with my data?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.general.dataHandling.answer"
+            defaultMessage="MayDay is designed to collect as little data as possible and to keep what we do collect as secure as possible. We use industry-standard encryption to protect your data, and we never sell or share it with third parties. If you ever want to delete your account, you can do so from your profile page, and all of your data will be permanently deleted from our servers."
+          />
+        </p>
+      ),
+    },
+    {
+      id: "howToHelp",
+      question: intl.formatMessage({
+        id: "support.topics.general.howToHelp.question",
+        defaultMessage: "Is there anything I can do to help?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.general.howToHelp.answer"
+            defaultMessage="MayDay is a passion project built by one guy in his spare time, and there are a lot of ways you can help out if you're interested! I've made all of the code open source, so if you're a developer or designer, you can check out the repository at <gh>github.com/Nokondi/mayday</gh> and submit a pull request. Hosting the app also costs money, and maintenance requires ongoing support, so if you are able to provide financial assistance, you can donate through the <patreon>MayDay Patreon</patreon>. Donation tiers start at $1, and every contribution helps keep MayDay running. You can follow along with updates about project development, and there will be opportunities for supporters to help decide on future features and updates. If you're not a developer and don't have money to contribute, you can still help by sharing MayDay with your friends and family, giving feedback on how to make it better, or even just posting your needs and offers to help build the community. The more people use it, the more useful it becomes!"
+            values={{
+              gh: externalLink("https://github.com/Nokondi/mayday"),
+              patreon: externalLink("https://www.patreon.com/c/MayDayCreative"),
+            }}
+          />
+        </p>
+      ),
+    },
+    {
+      id: "learnMore",
+      question: intl.formatMessage({
+        id: "support.topics.general.learnMore.question",
+        defaultMessage:
+          "Where can I learn more about mutual aid and the philosophy behind MayDay?",
+      }),
+      answer: (
+        <>
+          <p>
+            <FormattedMessage
+              id="support.topics.general.learnMore.intro"
+              defaultMessage="There are a lot of great texts that cover mutual aid and other aspects of anarchist philosophy. A few good places to start include:"
+            />
+          </p>
+          <ul className="list-disc list-inside mt-2 space-y-1">
+            <li>
+              <Link
+                to="https://www.thriftbooks.com/w/mutual-aid--building-solidarity-during-this-crisis-and-the-next-one/26690066/item/42249298/"
+                className="text-mayday-600 hover:underline"
+              >
+                <FormattedMessage
+                  id="support.topics.general.learnMore.bookSpade"
+                  defaultMessage="<i>Mutual Aid: Building Solidarity During This Crisis (and the Next)</i>, by Dean Spade"
+                  values={{ i: italicChunks }}
+                />
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="https://theanarchistlibrary.org/library/petr-kropotkin-mutual-aid-a-factor-of-evolution"
+                className="text-mayday-600 hover:underline"
+              >
+                <FormattedMessage
+                  id="support.topics.general.learnMore.bookKropotkin"
+                  defaultMessage="<i>Mutual Aid: A Factor of Evolution</i>, by Peter Kropotkin"
+                  values={{ i: italicChunks }}
+                />
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="https://theanarchistlibrary.org/library/david-graeber-are-you-an-anarchist-the-answer-may-surprise-you"
+                className="text-mayday-600 hover:underline"
+              >
+                <FormattedMessage
+                  id="support.topics.general.learnMore.bookGraeber"
+                  defaultMessage="<i>Are You An Anarchist? The Answer May Surprise You</i>, by David Graeber"
+                  values={{ i: italicChunks }}
+                />
+              </Link>
+            </li>
+          </ul>
+          <p>
+            <FormattedMessage
+              id="support.topics.general.learnMore.outro"
+              defaultMessage="For even more resources, visit <lib>The Anarchist Library</lib>"
+              values={{
+                lib: externalLink("https://theanarchistlibrary.org/"),
+              }}
+            />
+          </p>
+        </>
+      ),
+    },
+  ];
+
+  const techTopics: Topic[] = [
+    {
+      id: "requestsAndOffers",
+      question: intl.formatMessage({
+        id: "support.topics.tech.requestsAndOffers.question",
+        defaultMessage: "How do Requests and Offers work?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.tech.requestsAndOffers.answer"
+            defaultMessage="Anything you post is either a <strong>Request</strong> (you need help) or an <strong>Offer</strong> (you have something to give). Both are browsable on the <browse>Browse</browse> page, visible on the <map>Map</map>, and — if they have a start time — listed on the <calendar>Calendar</calendar>."
+            values={{
+              strong,
+              browse: internalLink("/posts"),
+              map: internalLink("/map"),
+              calendar: internalLink("/calendar"),
+            }}
+          />
+        </p>
+      ),
+    },
+    {
+      id: "createPost",
+      question: intl.formatMessage({
+        id: "support.topics.tech.createPost.question",
+        defaultMessage: "How do I create a post?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.tech.createPost.answer"
+            defaultMessage="Click <strong>New Post</strong> in the header. Pick Request or Offer, give it a title and description, choose a category and urgency, and optionally attach photos, a location, and a start/end time. You can also scope a post to a community you belong to so it is only visible to those members, and if you are a member of an organization, you can choose to post on behalf of the organization."
+            values={{ strong }}
+          />
+        </p>
+      ),
+    },
+    {
+      id: "markFulfilled",
+      question: intl.formatMessage({
+        id: "support.topics.tech.markFulfilled.question",
+        defaultMessage: "How do I mark a post as fulfilled?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.tech.markFulfilled.answer"
+            defaultMessage="Open your post, click <icon></icon> <strong>Mark as Fulfilled</strong>, and add the people or organizations that helped. This closes the post, and (in a feature coming soon) gives points to helpers and tracks their impact over time."
+            values={{
+              strong,
+              icon: () => (
+                <CheckCircle
+                  className="w-5 h-5 inline-block text-green-500"
+                  aria-hidden="true"
+                />
+              ),
+            }}
+          />
+        </p>
+      ),
+    },
+    {
+      id: "communitiesVsOrganizations",
+      question: intl.formatMessage({
+        id: "support.topics.tech.communitiesVsOrganizations.question",
+        defaultMessage:
+          "What are Communities and Organizations, and how do they differ?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.tech.communitiesVsOrganizations.answer"
+            defaultMessage="<strong>Communities</strong> are open groups people can either be invited to or request to join (e.g. a neighborhood). When you post a request or offer, you can choose to make it visible only to people within any of the communities you belong to. <strong>Organizations</strong> are invite-only groups that represent a real-world entity (e.g. a food bank). Owners and admins can invite members, approve join requests, and post on behalf of the group."
+            values={{ strong }}
+          />
+        </p>
+      ),
+    },
+    {
+      id: "messageSomeone",
+      question: intl.formatMessage({
+        id: "support.topics.tech.messageSomeone.question",
+        defaultMessage: "How do I message someone?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.tech.messageSomeone.answer"
+            defaultMessage="From any user profile or post, click <icon></icon> <strong>Message</strong>. All conversations live in the <messages>Messages</messages> tab; you'll see a badge in the header whenever you have a new message or someone replies to you."
+            values={{
+              strong,
+              messages: internalLink("/messages"),
+              icon: () => (
+                <MessageSquare
+                  className="w-5 h-5 inline-block text-mayday-600"
+                  aria-hidden="true"
+                />
+              ),
+            }}
+          />
+        </p>
+      ),
+    },
+    {
+      id: "reportAbuse",
+      question: intl.formatMessage({
+        id: "support.topics.tech.reportAbuse.question",
+        defaultMessage: "Someone is acting abusively — what do I do?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.tech.reportAbuse.answer"
+            defaultMessage="Every post and user profile has a small red flag <icon></icon> at the top right corner. If you come across a request or offer that is inappropriate, or if a user is behaving inappropriately, click on the flag and include any details you want to share. Reports go to the admin team for review. If someone is in immediate danger, please contact local emergency services first."
+            values={{
+              icon: () => (
+                <Flag
+                  className="w-5 h-5 inline-block text-red-500"
+                  aria-hidden="true"
+                />
+              ),
+            }}
+          />
+        </p>
+      ),
+    },
+    {
+      id: "forgotPassword",
+      question: intl.formatMessage({
+        id: "support.topics.tech.forgotPassword.question",
+        defaultMessage:
+          "I forgot my password or never confirmed my email — what now?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.tech.forgotPassword.answer"
+            defaultMessage="If you forgot your password, use <forgot>Forgot your password?</forgot> on the login page to get a reset link by email. If you never received your confirmation email, log in and click <strong>Resend confirmation email</strong>."
+            values={{
+              strong,
+              forgot: internalLink("/forgot-password"),
+            }}
+          />
+        </p>
+      ),
+    },
+    {
+      id: "manageNotifications",
+      question: intl.formatMessage({
+        id: "support.topics.tech.manageNotifications.question",
+        defaultMessage: "How do I manage email and push notifications?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.tech.manageNotifications.answer"
+            defaultMessage="You can manage your email and push notification preferences by clicking the <icon></icon> <strong>Settings</strong> button in the top right of your profile."
+            values={{
+              strong,
+              icon: () => (
+                <Settings className="w-5 h-5 inline-block" aria-hidden="true" />
+              ),
+            }}
+          />
+        </p>
+      ),
+    },
+    {
+      id: "downloadMayday",
+      question: intl.formatMessage({
+        id: "support.topics.tech.downloadMayday.question",
+        defaultMessage: "How do I download MayDay on my phone or computer?",
+      }),
+      answer: (
+        <>
+          <p>
+            <FormattedMessage
+              id="support.topics.tech.downloadMayday.intro"
+              defaultMessage="MayDay is a progressive web app (PWA), which means you can add it to your home screen and use it like a native app without needing to go to an app store. To add MayDay to your home screen, follow these instructions:"
+            />
+          </p>
+          <p className="font-medium">
+            <FormattedMessage
+              id="support.topics.tech.downloadMayday.androidHeading"
+              defaultMessage="On Android:"
+            />
+          </p>
+          <ol className="list-decimal list-inside mt-2 space-y-1">
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.androidStep1"
+                defaultMessage="Open the site in your mobile browser."
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.androidStep2"
+                defaultMessage="Tap the <icon></icon> menu button at the top right corner."
+                values={{
+                  icon: () => (
+                    <EllipsisVertical
+                      className="w-5 h-5 inline-block"
+                      aria-hidden="true"
+                    />
+                  ),
+                }}
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.androidStep3"
+                defaultMessage={`Select "Add to Home Screen" from the menu.`}
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.androidStep4"
+                defaultMessage="Follow the prompts to add MayDay to your home screen."
+              />
+            </li>
+          </ol>
+          <p className="font-medium">
+            <FormattedMessage
+              id="support.topics.tech.downloadMayday.iosHeading"
+              defaultMessage="On iOS:"
+            />
+          </p>
+          <ol className="list-decimal list-inside mt-2 space-y-1">
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.iosStep1"
+                defaultMessage="Open the site in your mobile browser."
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.iosStep2"
+                defaultMessage="Tap the <icon></icon> share button at the bottom of the screen."
+                values={{
+                  icon: () => (
+                    <Share
+                      className="w-5 h-5 inline-block"
+                      aria-hidden="true"
+                    />
+                  ),
+                }}
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.iosStep3"
+                defaultMessage={`Select "Add to Home Screen" from the menu.`}
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.iosStep4"
+                defaultMessage="Follow the prompts to add MayDay to your home screen."
+              />
+            </li>
+          </ol>
+          <p className="font-medium">
+            <FormattedMessage
+              id="support.topics.tech.downloadMayday.windowsHeading"
+              defaultMessage="On Windows:"
+            />
+          </p>
+          <ol className="list-decimal list-inside mt-2 space-y-1">
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.windowsStep1"
+                defaultMessage="Open the site in Chrome."
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.windowsStep2"
+                defaultMessage="Click the <icon></icon> menu button at the top right corner."
+                values={{
+                  icon: () => (
+                    <EllipsisVertical
+                      className="w-5 h-5 inline-block"
+                      aria-hidden="true"
+                    />
+                  ),
+                }}
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.windowsStep3"
+                defaultMessage={`Select "Cast, save, and share" from the menu.`}
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.windowsStep4"
+                defaultMessage={`Select "Install MayDay Mutual Aid Hub" from the submenu.`}
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id="support.topics.tech.downloadMayday.windowsStep5"
+                defaultMessage="Follow the prompts to add MayDay to your home screen."
+              />
+            </li>
+          </ol>
+        </>
+      ),
+    },
+  ];
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-10">
       <header className="flex items-start gap-3">
         <LifeBuoy className="w-7 h-7 text-mayday-600 mt-1" aria-hidden="true" />
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Need Help with MayDay?
+            <FormattedMessage
+              id="support.page.heading"
+              defaultMessage="Need Help with MayDay?"
+            />
           </h1>
           <p className="text-gray-600 mt-1">
-            Find quick answers below, or report a bug and we'll take a look.
+            <FormattedMessage
+              id="support.page.subtitle"
+              defaultMessage="Find quick answers below, or report a bug and we'll take a look."
+            />
           </p>
         </div>
       </header>
@@ -358,19 +520,22 @@ export function SupportPage() {
             id="how-to-use-heading"
             className="text-xl font-semibold text-gray-900"
           >
-            How to use the site
+            <FormattedMessage
+              id="support.page.howToUseHeading"
+              defaultMessage="How to use the site"
+            />
           </h2>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
           {techTopics.map((topic) => (
-            <details key={topic.question} className="group">
+            <details key={topic.id} className="group">
               <summary className="flex justify-between items-center cursor-pointer list-none px-4 py-3 font-medium text-gray-800 hover:bg-gray-50">
                 <span>{topic.question}</span>
                 <span
                   className="text-gray-500 group-open:rotate-90 transition-transform"
                   aria-hidden="true"
                 >
-                  ›
+                  {CHEVRON_GLYPH}
                 </span>
               </summary>
               <div className="px-4 pb-4 text-gray-700 space-y-2">
@@ -387,19 +552,22 @@ export function SupportPage() {
             id="general-questions-heading"
             className="text-xl font-semibold text-gray-900"
           >
-            General questions about MayDay
+            <FormattedMessage
+              id="support.page.generalQuestionsHeading"
+              defaultMessage="General questions about MayDay"
+            />
           </h2>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
           {generalTopics.map((topic) => (
-            <details key={topic.question} className="group">
+            <details key={topic.id} className="group">
               <summary className="flex justify-between items-center cursor-pointer list-none px-4 py-3 font-medium text-gray-800 hover:bg-gray-50">
                 <span>{topic.question}</span>
                 <span
                   className="text-gray-500 group-open:rotate-90 transition-transform"
                   aria-hidden="true"
                 >
-                  ›
+                  {CHEVRON_GLYPH}
                 </span>
               </summary>
               <div className="px-4 pb-4 text-gray-700 space-y-2">
@@ -417,11 +585,17 @@ export function SupportPage() {
             id="bug-report-heading"
             className="text-xl font-semibold text-gray-900"
           >
-            Report a bug
+            <FormattedMessage
+              id="support.page.bugReportHeading"
+              defaultMessage="Report a bug"
+            />
           </h2>
         </div>
         <p className="text-gray-600 mb-4">
-          Found something broken? Tell us what happened and we'll look into it.
+          <FormattedMessage
+            id="support.page.bugReportIntro"
+            defaultMessage="Found something broken? Tell us what happened and we'll look into it."
+          />
         </p>
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <BugReportForm />

@@ -1,4 +1,110 @@
 {
+  "about.cta.body": [
+    {
+      "type": 0,
+      "value": "Join MayDay today and start making a difference in your community."
+    }
+  ],
+  "about.cta.heading": [
+    {
+      "type": 0,
+      "value": "Ready to get involved?"
+    }
+  ],
+  "about.hero.heading": [
+    {
+      "type": 0,
+      "value": "Welcome to MayDay"
+    }
+  ],
+  "about.hero.quoteAttribution": [
+    {
+      "type": 0,
+      "value": "― Dean Spade, "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Mutual Aid: Building Solidarity During This Crisis (And the Next)"
+        }
+      ],
+      "type": 8,
+      "value": "cite"
+    }
+  ],
+  "about.hero.quoteText": [
+    {
+      "type": 0,
+      "value": "“Mutual aid projects let us practice meeting our own and each other’s needs, based in shared commitments to dignity, care, and justice.”"
+    }
+  ],
+  "about.how.findHelpBody": [
+    {
+      "type": 0,
+      "value": "Use the map to discover requests and offers near you, making it easy to connect locally."
+    }
+  ],
+  "about.how.findHelpHeading": [
+    {
+      "type": 0,
+      "value": "Find Nearby Help"
+    }
+  ],
+  "about.how.heading": [
+    {
+      "type": 0,
+      "value": "How It Works"
+    }
+  ],
+  "about.how.joinCommunitiesBody": [
+    {
+      "type": 0,
+      "value": "Organize with your neighbors through communities and organizations to build lasting support networks."
+    }
+  ],
+  "about.how.joinCommunitiesHeading": [
+    {
+      "type": 0,
+      "value": "Join Communities"
+    }
+  ],
+  "about.how.offerResourcesBody": [
+    {
+      "type": 0,
+      "value": "Let your neighbors know what you can provide — skills, time, supplies, or just a listening ear."
+    }
+  ],
+  "about.how.offerResourcesHeading": [
+    {
+      "type": 0,
+      "value": "Offer Resources"
+    }
+  ],
+  "about.how.postRequestBody": [
+    {
+      "type": 0,
+      "value": "Share what you need with the community. Requests can range from everyday essentials to emotional support."
+    }
+  ],
+  "about.how.postRequestHeading": [
+    {
+      "type": 0,
+      "value": "Post a Request"
+    }
+  ],
+  "about.why.body": [
+    {
+      "type": 0,
+      "value": "MayDay is both a call for help and a celebration of community. Ships in distress use the call, \"mayday,\" to signal that they need immediate assistance. May Day is also an ancient spring festival ― a celebration of life and renewal ― and it is the date of International Workers' Day, a day of solidarity and mutual aid. We chose the name MayDay to reflect our mission of connecting people in need with those who can help, while also honoring the spirit of community and solidarity that has been practiced and celebrated for centuries."
+    }
+  ],
+  "about.why.heading": [
+    {
+      "type": 0,
+      "value": "Why MayDay?"
+    }
+  ],
   "admin.announcements.activeBadge": [
     {
       "type": 0,
@@ -907,6 +1013,114 @@
     {
       "type": 0,
       "value": "Verifying your email…"
+    }
+  ],
+  "calendar.closeDialogAriaLabel": [
+    {
+      "type": 0,
+      "value": "Close"
+    }
+  ],
+  "calendar.moreEventsButton": [
+    {
+      "type": 0,
+      "value": "+"
+    },
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " more"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " more"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    }
+  ],
+  "calendar.nextMonthAriaLabel": [
+    {
+      "type": 0,
+      "value": "Next month"
+    }
+  ],
+  "calendar.previousMonthAriaLabel": [
+    {
+      "type": 0,
+      "value": "Previous month"
+    }
+  ],
+  "calendar.searchPlaceholder": [
+    {
+      "type": 0,
+      "value": "Search events..."
+    }
+  ],
+  "calendar.todayButton": [
+    {
+      "type": 0,
+      "value": "Today"
+    }
+  ],
+  "calendar.weekday.fri": [
+    {
+      "type": 0,
+      "value": "Fri"
+    }
+  ],
+  "calendar.weekday.mon": [
+    {
+      "type": 0,
+      "value": "Mon"
+    }
+  ],
+  "calendar.weekday.sat": [
+    {
+      "type": 0,
+      "value": "Sat"
+    }
+  ],
+  "calendar.weekday.sun": [
+    {
+      "type": 0,
+      "value": "Sun"
+    }
+  ],
+  "calendar.weekday.thu": [
+    {
+      "type": 0,
+      "value": "Thu"
+    }
+  ],
+  "calendar.weekday.tue": [
+    {
+      "type": 0,
+      "value": "Tue"
+    }
+  ],
+  "calendar.weekday.wed": [
+    {
+      "type": 0,
+      "value": "Wed"
     }
   ],
   "common.actions.cancel": [
@@ -2303,6 +2517,100 @@
       "value": "Transferring…"
     }
   ],
+  "home.heroHeading": [
+    {
+      "type": 0,
+      "value": "MayDay Mutual Aid Hub"
+    }
+  ],
+  "home.recentPostsHeading": [
+    {
+      "type": 0,
+      "value": "Recent Posts"
+    }
+  ],
+  "home.viewAllLink": [
+    {
+      "type": 0,
+      "value": "View all"
+    }
+  ],
+  "invites.acceptButton": [
+    {
+      "type": 0,
+      "value": "Accept"
+    }
+  ],
+  "invites.acceptFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to accept invite"
+    }
+  ],
+  "invites.communityBadge": [
+    {
+      "type": 0,
+      "value": "Community"
+    }
+  ],
+  "invites.declineButton": [
+    {
+      "type": 0,
+      "value": "Decline"
+    }
+  ],
+  "invites.declineFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to decline invite"
+    }
+  ],
+  "invites.declinedToast": [
+    {
+      "type": 0,
+      "value": "Invite declined"
+    }
+  ],
+  "invites.emptyState": [
+    {
+      "type": 0,
+      "value": "You don't have any pending invites."
+    }
+  ],
+  "invites.invitedByLine": [
+    {
+      "type": 0,
+      "value": "Invited by "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    }
+  ],
+  "invites.joinedCommunityToast": [
+    {
+      "type": 0,
+      "value": "Joined community"
+    }
+  ],
+  "invites.joinedOrganizationToast": [
+    {
+      "type": 0,
+      "value": "Joined organization"
+    }
+  ],
+  "invites.organizationBadge": [
+    {
+      "type": 0,
+      "value": "Organization"
+    }
+  ],
+  "invites.pageHeading": [
+    {
+      "type": 0,
+      "value": "Invites"
+    }
+  ],
   "layout.footer.brand": [
     {
       "type": 0,
@@ -2529,6 +2837,44 @@
       "value": "Skip to main content"
     }
   ],
+  "map.page.postsInViewCount": [
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " post in view"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " posts in view"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    }
+  ],
+  "map.view.containerAriaLabel": [
+    {
+      "type": 0,
+      "value": "Map of mutual aid posts"
+    }
+  ],
   "messages.input.ariaLabel": [
     {
       "type": 0,
@@ -2646,6 +2992,18 @@
     {
       "type": 0,
       "value": "You"
+    }
+  ],
+  "notFound.goHomeButton": [
+    {
+      "type": 0,
+      "value": "Go home"
+    }
+  ],
+  "notFound.heading": [
+    {
+      "type": 0,
+      "value": "Page not found"
     }
   ],
   "orgs.browsePage.newButton": [
@@ -3775,6 +4133,782 @@
     {
       "type": 0,
       "value": "Report submitted"
+    }
+  ],
+  "support.bugReportForm.descriptionLabel": [
+    {
+      "type": 0,
+      "value": "Description"
+    }
+  ],
+  "support.bugReportForm.descriptionPlaceholder": [
+    {
+      "type": 0,
+      "value": "What did you expect to happen? What actually happened? Steps to reproduce?"
+    }
+  ],
+  "support.bugReportForm.failedToast": [
+    {
+      "type": 0,
+      "value": "Failed to submit bug report"
+    }
+  ],
+  "support.bugReportForm.formAriaLabel": [
+    {
+      "type": 0,
+      "value": "Report a bug"
+    }
+  ],
+  "support.bugReportForm.submitButton": [
+    {
+      "type": 0,
+      "value": "Submit Bug Report"
+    }
+  ],
+  "support.bugReportForm.submittingButton": [
+    {
+      "type": 0,
+      "value": "Submitting..."
+    }
+  ],
+  "support.bugReportForm.successToast": [
+    {
+      "type": 0,
+      "value": "Bug report submitted — thank you!"
+    }
+  ],
+  "support.bugReportForm.titleLabel": [
+    {
+      "type": 0,
+      "value": "Title"
+    }
+  ],
+  "support.bugReportForm.titlePlaceholder": [
+    {
+      "type": 0,
+      "value": "Short summary of the problem"
+    }
+  ],
+  "support.page.bugReportHeading": [
+    {
+      "type": 0,
+      "value": "Report a bug"
+    }
+  ],
+  "support.page.bugReportIntro": [
+    {
+      "type": 0,
+      "value": "Found something broken? Tell us what happened and we'll look into it."
+    }
+  ],
+  "support.page.generalQuestionsHeading": [
+    {
+      "type": 0,
+      "value": "General questions about MayDay"
+    }
+  ],
+  "support.page.heading": [
+    {
+      "type": 0,
+      "value": "Need Help with MayDay?"
+    }
+  ],
+  "support.page.howToUseHeading": [
+    {
+      "type": 0,
+      "value": "How to use the site"
+    }
+  ],
+  "support.page.subtitle": [
+    {
+      "type": 0,
+      "value": "Find quick answers below, or report a bug and we'll take a look."
+    }
+  ],
+  "support.reportUserForm.detailsLabel": [
+    {
+      "type": 0,
+      "value": "Details"
+    }
+  ],
+  "support.reportUserForm.detailsPlaceholder": [
+    {
+      "type": 0,
+      "value": "What happened? Include context, approximate dates, or links to specific posts if relevant."
+    }
+  ],
+  "support.reportUserForm.emailLabel": [
+    {
+      "type": 0,
+      "value": "User's email"
+    }
+  ],
+  "support.reportUserForm.emailPlaceholder": [
+    {
+      "type": 0,
+      "value": "person@example.com"
+    }
+  ],
+  "support.reportUserForm.formAriaLabel": [
+    {
+      "type": 0,
+      "value": "Report a user"
+    }
+  ],
+  "support.reportUserForm.reasonLabel": [
+    {
+      "type": 0,
+      "value": "Reason"
+    }
+  ],
+  "support.reportUserForm.reasonPlaceholder": [
+    {
+      "type": 0,
+      "value": "Short summary (e.g. 'Harassing messages')"
+    }
+  ],
+  "support.reportUserForm.submitButton": [
+    {
+      "type": 0,
+      "value": "Submit Report"
+    }
+  ],
+  "support.reportUserForm.successToast": [
+    {
+      "type": 0,
+      "value": "Report submitted — the admin team will review it."
+    }
+  ],
+  "support.topics.general.dataHandling.answer": [
+    {
+      "type": 0,
+      "value": "MayDay is designed to collect as little data as possible and to keep what we do collect as secure as possible. We use industry-standard encryption to protect your data, and we never sell or share it with third parties. If you ever want to delete your account, you can do so from your profile page, and all of your data will be permanently deleted from our servers."
+    }
+  ],
+  "support.topics.general.dataHandling.question": [
+    {
+      "type": 0,
+      "value": "What do you do with my data?"
+    }
+  ],
+  "support.topics.general.howToHelp.answer": [
+    {
+      "type": 0,
+      "value": "MayDay is a passion project built by one guy in his spare time, and there are a lot of ways you can help out if you're interested! I've made all of the code open source, so if you're a developer or designer, you can check out the repository at "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "github.com/Nokondi/mayday"
+        }
+      ],
+      "type": 8,
+      "value": "gh"
+    },
+    {
+      "type": 0,
+      "value": " and submit a pull request. Hosting the app also costs money, and maintenance requires ongoing support, so if you are able to provide financial assistance, you can donate through the "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "MayDay Patreon"
+        }
+      ],
+      "type": 8,
+      "value": "patreon"
+    },
+    {
+      "type": 0,
+      "value": ". Donation tiers start at $1, and every contribution helps keep MayDay running. You can follow along with updates about project development, and there will be opportunities for supporters to help decide on future features and updates. If you're not a developer and don't have money to contribute, you can still help by sharing MayDay with your friends and family, giving feedback on how to make it better, or even just posting your needs and offers to help build the community. The more people use it, the more useful it becomes!"
+    }
+  ],
+  "support.topics.general.howToHelp.question": [
+    {
+      "type": 0,
+      "value": "Is there anything I can do to help?"
+    }
+  ],
+  "support.topics.general.learnMore.bookGraeber": [
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Are You An Anarchist? The Answer May Surprise You"
+        }
+      ],
+      "type": 8,
+      "value": "i"
+    },
+    {
+      "type": 0,
+      "value": ", by David Graeber"
+    }
+  ],
+  "support.topics.general.learnMore.bookKropotkin": [
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Mutual Aid: A Factor of Evolution"
+        }
+      ],
+      "type": 8,
+      "value": "i"
+    },
+    {
+      "type": 0,
+      "value": ", by Peter Kropotkin"
+    }
+  ],
+  "support.topics.general.learnMore.bookSpade": [
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Mutual Aid: Building Solidarity During This Crisis (and the Next)"
+        }
+      ],
+      "type": 8,
+      "value": "i"
+    },
+    {
+      "type": 0,
+      "value": ", by Dean Spade"
+    }
+  ],
+  "support.topics.general.learnMore.intro": [
+    {
+      "type": 0,
+      "value": "There are a lot of great texts that cover mutual aid and other aspects of anarchist philosophy. A few good places to start include:"
+    }
+  ],
+  "support.topics.general.learnMore.outro": [
+    {
+      "type": 0,
+      "value": "For even more resources, visit "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "The Anarchist Library"
+        }
+      ],
+      "type": 8,
+      "value": "lib"
+    }
+  ],
+  "support.topics.general.learnMore.question": [
+    {
+      "type": 0,
+      "value": "Where can I learn more about mutual aid and the philosophy behind MayDay?"
+    }
+  ],
+  "support.topics.general.whatIsMayDay.answer": [
+    {
+      "type": 0,
+      "value": "MayDay is a different kind of social network, where the objective isn't just communication, but making real-world connections between people who need help and people who can provide it. It's a tool to help communities coordinate and keep track of "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "mutual aid"
+        }
+      ],
+      "type": 8,
+      "value": "strong"
+    },
+    {
+      "type": 0,
+      "value": " efforts, and to connect people to the resources they need to survive and thrive."
+    }
+  ],
+  "support.topics.general.whatIsMayDay.question": [
+    {
+      "type": 0,
+      "value": "What is MayDay?"
+    }
+  ],
+  "support.topics.general.whatIsMutualAid.answer": [
+    {
+      "type": 0,
+      "value": "Mutual aid is a voluntary relationship in which people in community exchange resources and services for mutual benefit. It differs from charity in that, while charity is a one-way transaction that reinforces existing assumptions about power and privilege, mutual aid is based on the assumption that everyone has needs that they can not meet on their own, and that everyone has something to offer. Mutual aid is not transactional, but relational. While the last person you helped may not be the one who helps you, you are building a network of care and support that benefits everyone involved. Mutual aid is not based on love or pity or any other emotional response, but on the understanding that we are all interdependent and that our survival and flourishing depends on taking care of each other. It is a practice of freedom that prefigures the world we want to live in, and a strategy for getting there."
+    }
+  ],
+  "support.topics.general.whatIsMutualAid.question": [
+    {
+      "type": 0,
+      "value": "What is mutual aid?"
+    }
+  ],
+  "support.topics.tech.communitiesVsOrganizations.answer": [
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Communities"
+        }
+      ],
+      "type": 8,
+      "value": "strong"
+    },
+    {
+      "type": 0,
+      "value": " are open groups people can either be invited to or request to join (e.g. a neighborhood). When you post a request or offer, you can choose to make it visible only to people within any of the communities you belong to. "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Organizations"
+        }
+      ],
+      "type": 8,
+      "value": "strong"
+    },
+    {
+      "type": 0,
+      "value": " are invite-only groups that represent a real-world entity (e.g. a food bank). Owners and admins can invite members, approve join requests, and post on behalf of the group."
+    }
+  ],
+  "support.topics.tech.communitiesVsOrganizations.question": [
+    {
+      "type": 0,
+      "value": "What are Communities and Organizations, and how do they differ?"
+    }
+  ],
+  "support.topics.tech.createPost.answer": [
+    {
+      "type": 0,
+      "value": "Click "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "New Post"
+        }
+      ],
+      "type": 8,
+      "value": "strong"
+    },
+    {
+      "type": 0,
+      "value": " in the header. Pick Request or Offer, give it a title and description, choose a category and urgency, and optionally attach photos, a location, and a start/end time. You can also scope a post to a community you belong to so it is only visible to those members, and if you are a member of an organization, you can choose to post on behalf of the organization."
+    }
+  ],
+  "support.topics.tech.createPost.question": [
+    {
+      "type": 0,
+      "value": "How do I create a post?"
+    }
+  ],
+  "support.topics.tech.downloadMayday.androidHeading": [
+    {
+      "type": 0,
+      "value": "On Android:"
+    }
+  ],
+  "support.topics.tech.downloadMayday.androidStep1": [
+    {
+      "type": 0,
+      "value": "Open the site in your mobile browser."
+    }
+  ],
+  "support.topics.tech.downloadMayday.androidStep2": [
+    {
+      "type": 0,
+      "value": "Tap the "
+    },
+    {
+      "children": [
+      ],
+      "type": 8,
+      "value": "icon"
+    },
+    {
+      "type": 0,
+      "value": " menu button at the top right corner."
+    }
+  ],
+  "support.topics.tech.downloadMayday.androidStep3": [
+    {
+      "type": 0,
+      "value": "Select \"Add to Home Screen\" from the menu."
+    }
+  ],
+  "support.topics.tech.downloadMayday.androidStep4": [
+    {
+      "type": 0,
+      "value": "Follow the prompts to add MayDay to your home screen."
+    }
+  ],
+  "support.topics.tech.downloadMayday.intro": [
+    {
+      "type": 0,
+      "value": "MayDay is a progressive web app (PWA), which means you can add it to your home screen and use it like a native app without needing to go to an app store. To add MayDay to your home screen, follow these instructions:"
+    }
+  ],
+  "support.topics.tech.downloadMayday.iosHeading": [
+    {
+      "type": 0,
+      "value": "On iOS:"
+    }
+  ],
+  "support.topics.tech.downloadMayday.iosStep1": [
+    {
+      "type": 0,
+      "value": "Open the site in your mobile browser."
+    }
+  ],
+  "support.topics.tech.downloadMayday.iosStep2": [
+    {
+      "type": 0,
+      "value": "Tap the "
+    },
+    {
+      "children": [
+      ],
+      "type": 8,
+      "value": "icon"
+    },
+    {
+      "type": 0,
+      "value": " share button at the bottom of the screen."
+    }
+  ],
+  "support.topics.tech.downloadMayday.iosStep3": [
+    {
+      "type": 0,
+      "value": "Select \"Add to Home Screen\" from the menu."
+    }
+  ],
+  "support.topics.tech.downloadMayday.iosStep4": [
+    {
+      "type": 0,
+      "value": "Follow the prompts to add MayDay to your home screen."
+    }
+  ],
+  "support.topics.tech.downloadMayday.question": [
+    {
+      "type": 0,
+      "value": "How do I download MayDay on my phone or computer?"
+    }
+  ],
+  "support.topics.tech.downloadMayday.windowsHeading": [
+    {
+      "type": 0,
+      "value": "On Windows:"
+    }
+  ],
+  "support.topics.tech.downloadMayday.windowsStep1": [
+    {
+      "type": 0,
+      "value": "Open the site in Chrome."
+    }
+  ],
+  "support.topics.tech.downloadMayday.windowsStep2": [
+    {
+      "type": 0,
+      "value": "Click the "
+    },
+    {
+      "children": [
+      ],
+      "type": 8,
+      "value": "icon"
+    },
+    {
+      "type": 0,
+      "value": " menu button at the top right corner."
+    }
+  ],
+  "support.topics.tech.downloadMayday.windowsStep3": [
+    {
+      "type": 0,
+      "value": "Select \"Cast, save, and share\" from the menu."
+    }
+  ],
+  "support.topics.tech.downloadMayday.windowsStep4": [
+    {
+      "type": 0,
+      "value": "Select \"Install MayDay Mutual Aid Hub\" from the submenu."
+    }
+  ],
+  "support.topics.tech.downloadMayday.windowsStep5": [
+    {
+      "type": 0,
+      "value": "Follow the prompts to add MayDay to your home screen."
+    }
+  ],
+  "support.topics.tech.forgotPassword.answer": [
+    {
+      "type": 0,
+      "value": "If you forgot your password, use "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Forgot your password?"
+        }
+      ],
+      "type": 8,
+      "value": "forgot"
+    },
+    {
+      "type": 0,
+      "value": " on the login page to get a reset link by email. If you never received your confirmation email, log in and click "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Resend confirmation email"
+        }
+      ],
+      "type": 8,
+      "value": "strong"
+    },
+    {
+      "type": 0,
+      "value": "."
+    }
+  ],
+  "support.topics.tech.forgotPassword.question": [
+    {
+      "type": 0,
+      "value": "I forgot my password or never confirmed my email — what now?"
+    }
+  ],
+  "support.topics.tech.manageNotifications.answer": [
+    {
+      "type": 0,
+      "value": "You can manage your email and push notification preferences by clicking the "
+    },
+    {
+      "children": [
+      ],
+      "type": 8,
+      "value": "icon"
+    },
+    {
+      "type": 0,
+      "value": " "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Settings"
+        }
+      ],
+      "type": 8,
+      "value": "strong"
+    },
+    {
+      "type": 0,
+      "value": " button in the top right of your profile."
+    }
+  ],
+  "support.topics.tech.manageNotifications.question": [
+    {
+      "type": 0,
+      "value": "How do I manage email and push notifications?"
+    }
+  ],
+  "support.topics.tech.markFulfilled.answer": [
+    {
+      "type": 0,
+      "value": "Open your post, click "
+    },
+    {
+      "children": [
+      ],
+      "type": 8,
+      "value": "icon"
+    },
+    {
+      "type": 0,
+      "value": " "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Mark as Fulfilled"
+        }
+      ],
+      "type": 8,
+      "value": "strong"
+    },
+    {
+      "type": 0,
+      "value": ", and add the people or organizations that helped. This closes the post, and (in a feature coming soon) gives points to helpers and tracks their impact over time."
+    }
+  ],
+  "support.topics.tech.markFulfilled.question": [
+    {
+      "type": 0,
+      "value": "How do I mark a post as fulfilled?"
+    }
+  ],
+  "support.topics.tech.messageSomeone.answer": [
+    {
+      "type": 0,
+      "value": "From any user profile or post, click "
+    },
+    {
+      "children": [
+      ],
+      "type": 8,
+      "value": "icon"
+    },
+    {
+      "type": 0,
+      "value": " "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Message"
+        }
+      ],
+      "type": 8,
+      "value": "strong"
+    },
+    {
+      "type": 0,
+      "value": ". All conversations live in the "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Messages"
+        }
+      ],
+      "type": 8,
+      "value": "messages"
+    },
+    {
+      "type": 0,
+      "value": " tab; you'll see a badge in the header whenever you have a new message or someone replies to you."
+    }
+  ],
+  "support.topics.tech.messageSomeone.question": [
+    {
+      "type": 0,
+      "value": "How do I message someone?"
+    }
+  ],
+  "support.topics.tech.reportAbuse.answer": [
+    {
+      "type": 0,
+      "value": "Every post and user profile has a small red flag "
+    },
+    {
+      "children": [
+      ],
+      "type": 8,
+      "value": "icon"
+    },
+    {
+      "type": 0,
+      "value": " at the top right corner. If you come across a request or offer that is inappropriate, or if a user is behaving inappropriately, click on the flag and include any details you want to share. Reports go to the admin team for review. If someone is in immediate danger, please contact local emergency services first."
+    }
+  ],
+  "support.topics.tech.reportAbuse.question": [
+    {
+      "type": 0,
+      "value": "Someone is acting abusively — what do I do?"
+    }
+  ],
+  "support.topics.tech.requestsAndOffers.answer": [
+    {
+      "type": 0,
+      "value": "Anything you post is either a "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Request"
+        }
+      ],
+      "type": 8,
+      "value": "strong"
+    },
+    {
+      "type": 0,
+      "value": " (you need help) or an "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Offer"
+        }
+      ],
+      "type": 8,
+      "value": "strong"
+    },
+    {
+      "type": 0,
+      "value": " (you have something to give). Both are browsable on the "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Browse"
+        }
+      ],
+      "type": 8,
+      "value": "browse"
+    },
+    {
+      "type": 0,
+      "value": " page, visible on the "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Map"
+        }
+      ],
+      "type": 8,
+      "value": "map"
+    },
+    {
+      "type": 0,
+      "value": ", and — if they have a start time — listed on the "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Calendar"
+        }
+      ],
+      "type": 8,
+      "value": "calendar"
+    },
+    {
+      "type": 0,
+      "value": "."
+    }
+  ],
+  "support.topics.tech.requestsAndOffers.question": [
+    {
+      "type": 0,
+      "value": "How do Requests and Offers work?"
     }
   ],
   "urgency.critical": [

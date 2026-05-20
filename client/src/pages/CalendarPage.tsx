@@ -14,6 +14,7 @@ import {
   startOfWeek,
   subMonths,
 } from "date-fns";
+import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 import { getPosts } from "../api/posts.js";
 import { listMyCommunities } from "../api/communities.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
@@ -22,10 +23,21 @@ import { SearchBar } from "../components/common/SearchBar.js";
 import { useDebounce } from "../hooks/useDebounce.js";
 import { expandOccurrences, type Occurrence } from "../utils/recurrence.js";
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
+const weekdayMessages = defineMessages({
+  sun: { id: "calendar.weekday.sun", defaultMessage: "Sun" },
+  mon: { id: "calendar.weekday.mon", defaultMessage: "Mon" },
+  tue: { id: "calendar.weekday.tue", defaultMessage: "Tue" },
+  wed: { id: "calendar.weekday.wed", defaultMessage: "Wed" },
+  thu: { id: "calendar.weekday.thu", defaultMessage: "Thu" },
+  fri: { id: "calendar.weekday.fri", defaultMessage: "Fri" },
+  sat: { id: "calendar.weekday.sat", defaultMessage: "Sat" },
+});
+
 const MAX_EVENTS_PER_CELL = 3;
 
 export function CalendarPage() {
+  const intl = useIntl();
   const [cursor, setCursor] = useState(() => new Date());
   const [type, setType] = useState("");
   const [category, setCategory] = useState("");
@@ -114,7 +126,10 @@ export function CalendarPage() {
           <button
             type="button"
             onClick={() => setCursor(subMonths(cursor, 1))}
-            aria-label="Previous month"
+            aria-label={intl.formatMessage({
+              id: "calendar.previousMonthAriaLabel",
+              defaultMessage: "Previous month",
+            })}
             className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50"
           >
             <ChevronLeft className="w-4 h-4" aria-hidden="true" />
@@ -124,12 +139,18 @@ export function CalendarPage() {
             onClick={() => setCursor(new Date())}
             className="px-3 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-50"
           >
-            Today
+            <FormattedMessage
+              id="calendar.todayButton"
+              defaultMessage="Today"
+            />
           </button>
           <button
             type="button"
             onClick={() => setCursor(addMonths(cursor, 1))}
-            aria-label="Next month"
+            aria-label={intl.formatMessage({
+              id: "calendar.nextMonthAriaLabel",
+              defaultMessage: "Next month",
+            })}
             className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50"
           >
             <ChevronRight className="w-4 h-4" aria-hidden="true" />
@@ -141,7 +162,10 @@ export function CalendarPage() {
         <SearchBar
           value={search}
           onChange={setSearch}
-          placeholder="Search events..."
+          placeholder={intl.formatMessage({
+            id: "calendar.searchPlaceholder",
+            defaultMessage: "Search events...",
+          })}
         />
         <PostFilters
           type={type}
@@ -186,7 +210,10 @@ export function CalendarPage() {
                 <button
                   type="button"
                   onClick={() => setOpenDayKey(null)}
-                  aria-label="Close"
+                  aria-label={intl.formatMessage({
+                    id: "calendar.closeDialogAriaLabel",
+                    defaultMessage: "Close",
+                  })}
                   className="text-gray-500 hover:text-gray-700"
                 >
                   <X className="w-5 h-5" aria-hidden="true" />
@@ -223,12 +250,12 @@ export function CalendarPage() {
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
-            {WEEKDAYS.map((d) => (
+            {WEEKDAY_KEYS.map((d) => (
               <div
                 key={d}
                 className="px-2 py-2 text-xs font-semibold text-gray-500 text-center"
               >
-                {d}
+                {intl.formatMessage(weekdayMessages[d])}
               </div>
             ))}
           </div>
@@ -265,7 +292,9 @@ export function CalendarPage() {
                         >
                           <span className="font-medium">
                             {format(occ.start, "h:mma").toLowerCase()}
-                          </span>{" "}
+                          </span>
+                          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between time and title */}
+                          {" "}
                           {occ.post.title}
                         </Link>
                       );
@@ -276,7 +305,11 @@ export function CalendarPage() {
                         onClick={() => setOpenDayKey(key)}
                         className="text-[11px] text-mayday-700 hover:text-mayday-800 hover:underline px-1.5 text-left"
                       >
-                        +{overflow} more
+                        <FormattedMessage
+                          id="calendar.moreEventsButton"
+                          defaultMessage="+{count, plural, one {# more} other {# more}}"
+                          values={{ count: overflow }}
+                        />
                       </button>
                     )}
                   </div>

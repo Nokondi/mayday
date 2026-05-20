@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useToastMutation } from "../hooks/useToastMutation.js";
 import { Check, X, Mail, Building2, Users } from "lucide-react";
 import {
@@ -15,7 +16,67 @@ import {
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 
 export function InvitesPage() {
+  const intl = useIntl();
   const queryClient = useQueryClient();
+
+  const declineFailedMessage = intl.formatMessage({
+    id: "invites.declineFailedToast",
+    defaultMessage: "Failed to decline invite",
+  });
+  const acceptFailedMessage = intl.formatMessage({
+    id: "invites.acceptFailedToast",
+    defaultMessage: "Failed to accept invite",
+  });
+  const inviteDeclinedMessage = intl.formatMessage({
+    id: "invites.declinedToast",
+    defaultMessage: "Invite declined",
+  });
+
+  const acceptOrgMutation = useToastMutation({
+    mutationFn: acceptInvite,
+    successMessage: intl.formatMessage({
+      id: "invites.joinedOrganizationToast",
+      defaultMessage: "Joined organization",
+    }),
+    errorMessage: acceptFailedMessage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-invites"] });
+      queryClient.invalidateQueries({ queryKey: ["my-organizations"] });
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+    },
+  });
+
+  const declineOrgMutation = useToastMutation({
+    mutationFn: declineInvite,
+    successMessage: inviteDeclinedMessage,
+    errorMessage: declineFailedMessage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-invites"] });
+    },
+  });
+
+  const acceptCommunityMutation = useToastMutation({
+    mutationFn: acceptCommunityInvite,
+    successMessage: intl.formatMessage({
+      id: "invites.joinedCommunityToast",
+      defaultMessage: "Joined community",
+    }),
+    errorMessage: acceptFailedMessage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-community-invites"] });
+      queryClient.invalidateQueries({ queryKey: ["my-communities"] });
+      queryClient.invalidateQueries({ queryKey: ["communities"] });
+    },
+  });
+
+  const declineCommunityMutation = useToastMutation({
+    mutationFn: declineCommunityInvite,
+    successMessage: inviteDeclinedMessage,
+    errorMessage: declineFailedMessage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-community-invites"] });
+    },
+  });
 
   const { data: orgInvites, isLoading: orgLoading } = useQuery({
     queryKey: ["my-invites"],
@@ -27,60 +88,27 @@ export function InvitesPage() {
     queryFn: getMyCommunityInvites,
   });
 
-  const acceptOrgMutation = useToastMutation({
-    mutationFn: acceptInvite,
-    successMessage: "Joined organization",
-    errorMessage: "Failed to accept invite",
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-invites"] });
-      queryClient.invalidateQueries({ queryKey: ["my-organizations"] });
-      queryClient.invalidateQueries({ queryKey: ["organizations"] });
-    },
-  });
-
-  const declineOrgMutation = useToastMutation({
-    mutationFn: declineInvite,
-    successMessage: "Invite declined",
-    errorMessage: "Failed to decline invite",
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-invites"] });
-    },
-  });
-
-  const acceptCommunityMutation = useToastMutation({
-    mutationFn: acceptCommunityInvite,
-    successMessage: "Joined community",
-    errorMessage: "Failed to accept invite",
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-community-invites"] });
-      queryClient.invalidateQueries({ queryKey: ["my-communities"] });
-      queryClient.invalidateQueries({ queryKey: ["communities"] });
-    },
-  });
-
-  const declineCommunityMutation = useToastMutation({
-    mutationFn: declineCommunityInvite,
-    successMessage: "Invite declined",
-    errorMessage: "Failed to decline invite",
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-community-invites"] });
-    },
-  });
-
   const isLoading = orgLoading || communityLoading;
   const totalInvites =
     (orgInvites?.length ?? 0) + (communityInvites?.length ?? 0);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Invites</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        <FormattedMessage id="invites.pageHeading" defaultMessage="Invites" />
+      </h1>
 
       {isLoading ? (
         <LoadingSpinner className="py-12" />
       ) : totalInvites === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-500">
           <Mail className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-          <p>You don't have any pending invites.</p>
+          <p>
+            <FormattedMessage
+              id="invites.emptyState"
+              defaultMessage="You don't have any pending invites."
+            />
+          </p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -101,11 +129,18 @@ export function InvitesPage() {
                     </Link>
                   )}
                   <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                    Organization
+                    <FormattedMessage
+                      id="invites.organizationBadge"
+                      defaultMessage="Organization"
+                    />
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 mt-0.5 ml-6">
-                  Invited by {inv.invitedBy.name}
+                  <FormattedMessage
+                    id="invites.invitedByLine"
+                    defaultMessage="Invited by {name}"
+                    values={{ name: inv.invitedBy.name }}
+                  />
                 </p>
               </div>
               <div className="flex gap-2 flex-shrink-0">
@@ -115,7 +150,10 @@ export function InvitesPage() {
                   className="flex items-center gap-1 bg-mayday-700 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-mayday-800 disabled:opacity-50"
                 >
                   <Check className="w-4 h-4" />
-                  Accept
+                  <FormattedMessage
+                    id="invites.acceptButton"
+                    defaultMessage="Accept"
+                  />
                 </button>
                 <button
                   onClick={() => declineOrgMutation.mutate(inv.id)}
@@ -123,7 +161,10 @@ export function InvitesPage() {
                   className="flex items-center gap-1 border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
                 >
                   <X className="w-4 h-4" />
-                  Decline
+                  <FormattedMessage
+                    id="invites.declineButton"
+                    defaultMessage="Decline"
+                  />
                 </button>
               </div>
             </li>
@@ -145,11 +186,18 @@ export function InvitesPage() {
                     </Link>
                   )}
                   <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
-                    Community
+                    <FormattedMessage
+                      id="invites.communityBadge"
+                      defaultMessage="Community"
+                    />
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 mt-0.5 ml-6">
-                  Invited by {inv.invitedBy.name}
+                  <FormattedMessage
+                    id="invites.invitedByLine"
+                    defaultMessage="Invited by {name}"
+                    values={{ name: inv.invitedBy.name }}
+                  />
                 </p>
               </div>
               <div className="flex gap-2 flex-shrink-0">
@@ -159,7 +207,10 @@ export function InvitesPage() {
                   className="flex items-center gap-1 bg-mayday-700 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-mayday-800 disabled:opacity-50"
                 >
                   <Check className="w-4 h-4" />
-                  Accept
+                  <FormattedMessage
+                    id="invites.acceptButton"
+                    defaultMessage="Accept"
+                  />
                 </button>
                 <button
                   onClick={() => declineCommunityMutation.mutate(inv.id)}
@@ -167,7 +218,10 @@ export function InvitesPage() {
                   className="flex items-center gap-1 border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
                 >
                   <X className="w-4 h-4" />
-                  Decline
+                  <FormattedMessage
+                    id="invites.declineButton"
+                    defaultMessage="Decline"
+                  />
                 </button>
               </div>
             </li>
