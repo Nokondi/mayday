@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { useIntl } from "react-intl";
 import type { Message } from "@mayday/shared";
 
 interface MessageThreadProps {
@@ -36,6 +37,7 @@ function renderWithLinks(content: string, isMine: boolean) {
 }
 
 export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
+  const intl = useIntl();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,17 +49,34 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
       role="log"
       className="flex-1 overflow-y-auto p-4 space-y-3"
       aria-live="polite"
-      aria-label="Message history"
+      aria-label={intl.formatMessage({
+        id: "messages.thread.ariaLabel",
+        defaultMessage: "Message history",
+      })}
     >
       {messages.map((msg) => {
         const isMine = msg.senderId === currentUserId;
         const sentAt = new Date(msg.createdAt);
         const relativeTime = formatDistanceToNow(sentAt, { addSuffix: true });
-        const senderLabel = isMine ? "You" : "Other participant";
+        const senderLabel = isMine
+          ? intl.formatMessage({
+              id: "messages.thread.senderYou",
+              defaultMessage: "You",
+            })
+          : intl.formatMessage({
+              id: "messages.thread.senderOther",
+              defaultMessage: "Other participant",
+            });
         return (
           <article
             key={msg.id}
-            aria-label={`${senderLabel} said ${msg.content}, ${relativeTime}`}
+            aria-label={intl.formatMessage(
+              {
+                id: "messages.thread.messageAriaLabel",
+                defaultMessage: "{sender} said {content}, {time}",
+              },
+              { sender: senderLabel, content: msg.content, time: relativeTime },
+            )}
             className={`flex ${isMine ? "justify-end" : "justify-start"}`}
           >
             <div

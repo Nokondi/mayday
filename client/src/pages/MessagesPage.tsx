@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare } from 'lucide-react';
+import { FormattedMessage } from 'react-intl';
 import { getConversations, getConversationMessages, sendMessage } from '../api/messages.js';
 import { useAuth } from '../context/AuthContext.js';
 import { useWebSocket } from '../context/WebSocketContext.js';
@@ -64,7 +65,12 @@ export function MessagesPage() {
       {/* Conversation list */}
       <div className="w-80 border-r border-gray-200 bg-white overflow-y-auto">
         <div className="p-4 border-b border-gray-200">
-          <h2 className="font-semibold text-gray-900">Messages</h2>
+          <h2 className="font-semibold text-gray-900">
+            <FormattedMessage
+              id="messages.page.title"
+              defaultMessage="Messages"
+            />
+          </h2>
         </div>
         <ConversationList
           conversations={conversations || []}
@@ -88,7 +94,12 @@ export function MessagesPage() {
           <div className="flex-1 flex items-center justify-center text-gray-500">
             <div className="text-center">
               <MessageSquare className="w-12 h-12 mx-auto mb-3" />
-              <p>Select a conversation to start messaging</p>
+              <p>
+                <FormattedMessage
+                  id="messages.page.emptyState"
+                  defaultMessage="Select a conversation to start messaging"
+                />
+              </p>
             </div>
           </div>
         )}

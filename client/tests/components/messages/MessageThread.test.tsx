@@ -1,7 +1,8 @@
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Message } from "@mayday/shared";
 import { MessageThread } from "../../../src/components/messages/MessageThread.js";
+import { renderWithIntl as render } from "../../helpers/renderWithIntl.js";
 
 // jsdom does not implement scrollIntoView; the component calls it in an effect.
 beforeEach(() => {
