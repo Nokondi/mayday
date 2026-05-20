@@ -1,4 +1,514 @@
 {
+  "admin.announcements.activeBadge": [
+    {
+      "type": 0,
+      "value": "Active"
+    }
+  ],
+  "admin.announcements.clearButton": [
+    {
+      "type": 0,
+      "value": "Clear"
+    }
+  ],
+  "admin.announcements.clearFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to clear announcement"
+    }
+  ],
+  "admin.announcements.clearedToast": [
+    {
+      "type": 0,
+      "value": "Announcement cleared"
+    }
+  ],
+  "admin.announcements.composeHelp": [
+    {
+      "type": 0,
+      "value": "Posting replaces the current active announcement. Users who dismissed a previous announcement will see this new one."
+    }
+  ],
+  "admin.announcements.composeLabel": [
+    {
+      "type": 0,
+      "value": "Post a new announcement"
+    }
+  ],
+  "admin.announcements.composePlaceholder": [
+    {
+      "type": 0,
+      "value": "A short message to display at the top of the app for all users."
+    }
+  ],
+  "admin.announcements.deleteAriaLabel": [
+    {
+      "type": 0,
+      "value": "Delete announcement"
+    }
+  ],
+  "admin.announcements.deleteFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to delete announcement"
+    }
+  ],
+  "admin.announcements.deletedToast": [
+    {
+      "type": 0,
+      "value": "Announcement deleted"
+    }
+  ],
+  "admin.announcements.empty": [
+    {
+      "type": 0,
+      "value": "No announcements yet"
+    }
+  ],
+  "admin.announcements.inactiveBadge": [
+    {
+      "type": 0,
+      "value": "Inactive"
+    }
+  ],
+  "admin.announcements.postButton": [
+    {
+      "type": 0,
+      "value": "Post"
+    }
+  ],
+  "admin.announcements.postFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to post announcement"
+    }
+  ],
+  "admin.announcements.postedToast": [
+    {
+      "type": 0,
+      "value": "Announcement posted"
+    }
+  ],
+  "admin.announcements.postingButton": [
+    {
+      "type": 0,
+      "value": "Posting..."
+    }
+  ],
+  "admin.announcements.recentHeading": [
+    {
+      "type": 0,
+      "value": "Recent announcements"
+    }
+  ],
+  "admin.bugStatuses.closed": [
+    {
+      "type": 0,
+      "value": "CLOSED"
+    }
+  ],
+  "admin.bugStatuses.inProgress": [
+    {
+      "type": 0,
+      "value": "IN PROGRESS"
+    }
+  ],
+  "admin.bugStatuses.open": [
+    {
+      "type": 0,
+      "value": "OPEN"
+    }
+  ],
+  "admin.bugStatuses.resolved": [
+    {
+      "type": 0,
+      "value": "RESOLVED"
+    }
+  ],
+  "admin.bugs.empty": [
+    {
+      "type": 0,
+      "value": "No bug reports"
+    }
+  ],
+  "admin.bugs.filterAll": [
+    {
+      "type": 0,
+      "value": "All"
+    }
+  ],
+  "admin.bugs.filterLabel": [
+    {
+      "type": 0,
+      "value": "Filter:"
+    }
+  ],
+  "admin.bugs.from": [
+    {
+      "type": 0,
+      "value": "From: "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    },
+    {
+      "type": 0,
+      "value": " ("
+    },
+    {
+      "type": 1,
+      "value": "email"
+    },
+    {
+      "type": 0,
+      "value": ")"
+    }
+  ],
+  "admin.bugs.statusSelectAria": [
+    {
+      "type": 0,
+      "value": "Status"
+    }
+  ],
+  "admin.bugs.submitted": [
+    {
+      "type": 0,
+      "value": "Submitted: "
+    },
+    {
+      "type": 1,
+      "value": "date"
+    }
+  ],
+  "admin.bugs.updateFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to update bug report"
+    }
+  ],
+  "admin.bugs.updatedToast": [
+    {
+      "type": 0,
+      "value": "Bug report updated"
+    }
+  ],
+  "admin.pageTitle": [
+    {
+      "type": 0,
+      "value": "Admin Panel"
+    }
+  ],
+  "admin.reports.against": [
+    {
+      "type": 0,
+      "value": "Against: "
+    },
+    {
+      "children": [
+        {
+          "type": 1,
+          "value": "name"
+        }
+      ],
+      "type": 8,
+      "value": "link"
+    }
+  ],
+  "admin.reports.banAriaLabel": [
+    {
+      "type": 0,
+      "value": "Ban "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    }
+  ],
+  "admin.reports.dismissAriaLabel": [
+    {
+      "type": 0,
+      "value": "Dismiss report"
+    }
+  ],
+  "admin.reports.empty": [
+    {
+      "type": 0,
+      "value": "No pending reports"
+    }
+  ],
+  "admin.reports.post": [
+    {
+      "type": 0,
+      "value": "Post: "
+    },
+    {
+      "children": [
+        {
+          "type": 1,
+          "value": "title"
+        }
+      ],
+      "type": 8,
+      "value": "link"
+    }
+  ],
+  "admin.reports.reportedBy": [
+    {
+      "type": 0,
+      "value": "Reported by: "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    },
+    {
+      "type": 0,
+      "value": " ("
+    },
+    {
+      "type": 1,
+      "value": "email"
+    },
+    {
+      "type": 0,
+      "value": ")"
+    }
+  ],
+  "admin.reports.resolveAriaLabel": [
+    {
+      "type": 0,
+      "value": "Resolve report"
+    }
+  ],
+  "admin.reports.updatedToast": [
+    {
+      "type": 0,
+      "value": "Report updated"
+    }
+  ],
+  "admin.tablistAriaLabel": [
+    {
+      "type": 0,
+      "value": "Admin sections"
+    }
+  ],
+  "admin.tabs.announcements": [
+    {
+      "type": 0,
+      "value": "Announcements"
+    }
+  ],
+  "admin.tabs.bugs": [
+    {
+      "type": 0,
+      "value": "Bug Reports"
+    }
+  ],
+  "admin.tabs.reports": [
+    {
+      "type": 0,
+      "value": "User Reports"
+    }
+  ],
+  "admin.tabs.users": [
+    {
+      "type": 0,
+      "value": "Users"
+    }
+  ],
+  "admin.users.adminBadge": [
+    {
+      "type": 0,
+      "value": "Admin"
+    }
+  ],
+  "admin.users.banButton": [
+    {
+      "type": 0,
+      "value": "Ban"
+    }
+  ],
+  "admin.users.bannedBadge": [
+    {
+      "type": 0,
+      "value": "Banned"
+    }
+  ],
+  "admin.users.bannedToast": [
+    {
+      "type": 0,
+      "value": "User banned"
+    }
+  ],
+  "admin.users.empty": [
+    {
+      "type": 0,
+      "value": "No users found"
+    }
+  ],
+  "admin.users.joined": [
+    {
+      "type": 0,
+      "value": "Joined "
+    },
+    {
+      "type": 1,
+      "value": "date"
+    }
+  ],
+  "admin.users.loading": [
+    {
+      "type": 0,
+      "value": "Loading..."
+    }
+  ],
+  "admin.users.nextPageButton": [
+    {
+      "type": 0,
+      "value": "Next"
+    }
+  ],
+  "admin.users.pageOfWithCount": [
+    {
+      "type": 0,
+      "value": "Page "
+    },
+    {
+      "type": 1,
+      "value": "page"
+    },
+    {
+      "type": 0,
+      "value": " of "
+    },
+    {
+      "type": 1,
+      "value": "totalPages"
+    },
+    {
+      "type": 0,
+      "value": " ("
+    },
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " user"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " users"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "total"
+    },
+    {
+      "type": 0,
+      "value": ")"
+    }
+  ],
+  "admin.users.previousPageButton": [
+    {
+      "type": 0,
+      "value": "Previous"
+    }
+  ],
+  "admin.users.roleFilterAdmin": [
+    {
+      "type": 0,
+      "value": "Admin"
+    }
+  ],
+  "admin.users.roleFilterAll": [
+    {
+      "type": 0,
+      "value": "All roles"
+    }
+  ],
+  "admin.users.roleFilterUser": [
+    {
+      "type": 0,
+      "value": "User"
+    }
+  ],
+  "admin.users.roleSelectSrLabel": [
+    {
+      "type": 0,
+      "value": "Role"
+    }
+  ],
+  "admin.users.searchPlaceholder": [
+    {
+      "type": 0,
+      "value": "Search by name or email"
+    }
+  ],
+  "admin.users.searchSrLabel": [
+    {
+      "type": 0,
+      "value": "Search users"
+    }
+  ],
+  "admin.users.statusFilterActive": [
+    {
+      "type": 0,
+      "value": "Active"
+    }
+  ],
+  "admin.users.statusFilterAll": [
+    {
+      "type": 0,
+      "value": "All users"
+    }
+  ],
+  "admin.users.statusFilterBanned": [
+    {
+      "type": 0,
+      "value": "Banned"
+    }
+  ],
+  "admin.users.statusSelectSrLabel": [
+    {
+      "type": 0,
+      "value": "Status"
+    }
+  ],
+  "admin.users.unbanButton": [
+    {
+      "type": 0,
+      "value": "Unban"
+    }
+  ],
+  "admin.users.unbannedToast": [
+    {
+      "type": 0,
+      "value": "User unbanned"
+    }
+  ],
+  "admin.users.updateFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to update user"
+    }
+  ],
   "auth.backToLogin": [
     {
       "type": 0,
@@ -459,6 +969,80 @@
       "value": "Uploading avatar"
     }
   ],
+  "common.devicesSection.addedDate": [
+    {
+      "type": 0,
+      "value": "Added "
+    },
+    {
+      "type": 1,
+      "value": "date"
+    }
+  ],
+  "common.devicesSection.description": [
+    {
+      "type": 0,
+      "value": "Each browser you sign in from registers a device key used for end-to-end encryption. Compare fingerprints with the people you message to verify their identity."
+    }
+  ],
+  "common.devicesSection.heading": [
+    {
+      "type": 0,
+      "value": "Encryption devices"
+    }
+  ],
+  "common.devicesSection.loadFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to load devices"
+    }
+  ],
+  "common.devicesSection.noActiveDevicesEmpty": [
+    {
+      "type": 0,
+      "value": "No active devices"
+    }
+  ],
+  "common.devicesSection.revokeAriaFallbackLabel": [
+    {
+      "type": 0,
+      "value": "device"
+    }
+  ],
+  "common.devicesSection.revokeAriaLabel": [
+    {
+      "type": 0,
+      "value": "Revoke "
+    },
+    {
+      "type": 1,
+      "value": "label"
+    }
+  ],
+  "common.devicesSection.revokeFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to revoke device"
+    }
+  ],
+  "common.devicesSection.revokeSuccessToast": [
+    {
+      "type": 0,
+      "value": "Device revoked"
+    }
+  ],
+  "common.devicesSection.thisDeviceBadge": [
+    {
+      "type": 0,
+      "value": "This device"
+    }
+  ],
+  "common.devicesSection.unnamedDevice": [
+    {
+      "type": 0,
+      "value": "Unnamed device"
+    }
+  ],
   "common.entityCard.memberCount": [
     {
       "offset": 0,
@@ -661,6 +1245,32 @@
       "value": "Loading..."
     }
   ],
+  "common.membersSection.headingWithCount": [
+    {
+      "type": 0,
+      "value": "Members ("
+    },
+    {
+      "type": 1,
+      "value": "count"
+    },
+    {
+      "type": 0,
+      "value": ")"
+    }
+  ],
+  "common.membersSection.inviteMembersHeading": [
+    {
+      "type": 0,
+      "value": "Invite members"
+    }
+  ],
+  "common.membersSection.revokeFailedFallback": [
+    {
+      "type": 0,
+      "value": "Failed to revoke invite"
+    }
+  ],
   "common.pagination.navAriaLabel": [
     {
       "type": 0,
@@ -779,6 +1389,60 @@
     {
       "type": 0,
       "value": "Search..."
+    }
+  ],
+  "common.settingsModal.closeAriaLabel": [
+    {
+      "type": 0,
+      "value": "Close settings"
+    }
+  ],
+  "common.settingsModal.doneButton": [
+    {
+      "type": 0,
+      "value": "Done"
+    }
+  ],
+  "common.settingsModal.emailNotificationsHeading": [
+    {
+      "type": 0,
+      "value": "Email notifications"
+    }
+  ],
+  "common.settingsModal.emailToggleDescription": [
+    {
+      "type": 0,
+      "value": "New messages from other users, and join requests for communities you administer."
+    }
+  ],
+  "common.settingsModal.emailToggleLabel": [
+    {
+      "type": 0,
+      "value": "Email me about activity"
+    }
+  ],
+  "common.settingsModal.loadFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to load settings"
+    }
+  ],
+  "common.settingsModal.savedToast": [
+    {
+      "type": 0,
+      "value": "Settings saved"
+    }
+  ],
+  "common.settingsModal.title": [
+    {
+      "type": 0,
+      "value": "Settings"
+    }
+  ],
+  "common.settingsModal.updateFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to update settings"
     }
   ],
   "common.status.sending": [
@@ -2322,12 +2986,6 @@
       "value": "Post reopened"
     }
   ],
-  "posts.detailPage.reportDetailsLabel": [
-    {
-      "type": 0,
-      "value": "Additional details"
-    }
-  ],
   "posts.detailPage.reportDetailsPlaceholder": [
     {
       "type": 0,
@@ -2344,24 +3002,6 @@
     {
       "type": 0,
       "value": "Report this post?"
-    }
-  ],
-  "posts.detailPage.reportFailedToast": [
-    {
-      "type": 0,
-      "value": "Failed to submit report"
-    }
-  ],
-  "posts.detailPage.reportSubmittingButton": [
-    {
-      "type": 0,
-      "value": "Submitting…"
-    }
-  ],
-  "posts.detailPage.reportSuccessToast": [
-    {
-      "type": 0,
-      "value": "Report submitted"
     }
   ],
   "posts.filters.allCategories": [
@@ -2919,6 +3559,222 @@
     {
       "type": 0,
       "value": "Request"
+    }
+  ],
+  "profile.bioLabel": [
+    {
+      "type": 0,
+      "value": "Bio"
+    }
+  ],
+  "profile.deleteAccount.areYouSure": [
+    {
+      "type": 0,
+      "value": "This cannot be undone. Are you sure?"
+    }
+  ],
+  "profile.deleteAccount.chooseHeirsLabel": [
+    {
+      "type": 0,
+      "value": "Choose who inherits each group you own:"
+    }
+  ],
+  "profile.deleteAccount.confirmButton": [
+    {
+      "type": 0,
+      "value": "Yes, delete my account"
+    }
+  ],
+  "profile.deleteAccount.dangerZoneHeading": [
+    {
+      "type": 0,
+      "value": "Danger zone"
+    }
+  ],
+  "profile.deleteAccount.deletingButton": [
+    {
+      "type": 0,
+      "value": "Deleting…"
+    }
+  ],
+  "profile.deleteAccount.failedFallback": [
+    {
+      "type": 0,
+      "value": "Failed to delete account"
+    }
+  ],
+  "profile.deleteAccount.heirOptionLabel": [
+    {
+      "type": 1,
+      "value": "name"
+    },
+    {
+      "type": 0,
+      "value": " ("
+    },
+    {
+      "type": 1,
+      "value": "role"
+    },
+    {
+      "type": 0,
+      "value": ")"
+    }
+  ],
+  "profile.deleteAccount.intro": [
+    {
+      "type": 0,
+      "value": "Deleting your account removes your profile, posts, messages, and reports. Communities and organizations you own are transferred to the member you choose below, or deleted if you're the only member."
+    }
+  ],
+  "profile.deleteAccount.loadingGroups": [
+    {
+      "type": 0,
+      "value": "Loading owned groups…"
+    }
+  ],
+  "profile.deleteAccount.noOtherMembers": [
+    {
+      "type": 0,
+      "value": "no other members — will be deleted"
+    }
+  ],
+  "profile.deleteAccount.openButton": [
+    {
+      "type": 0,
+      "value": "Delete my account"
+    }
+  ],
+  "profile.deleteAccount.successToast": [
+    {
+      "type": 0,
+      "value": "Your account has been deleted."
+    }
+  ],
+  "profile.editButton": [
+    {
+      "type": 0,
+      "value": "Edit"
+    }
+  ],
+  "profile.joinedRelative": [
+    {
+      "type": 0,
+      "value": "Joined "
+    },
+    {
+      "type": 1,
+      "value": "time"
+    }
+  ],
+  "profile.messageButton": [
+    {
+      "type": 0,
+      "value": "Message"
+    }
+  ],
+  "profile.messageButtonStarting": [
+    {
+      "type": 0,
+      "value": "Starting…"
+    }
+  ],
+  "profile.messageFailedToast": [
+    {
+      "type": 0,
+      "value": "Could not start a conversation"
+    }
+  ],
+  "profile.notFound": [
+    {
+      "type": 0,
+      "value": "User not found"
+    }
+  ],
+  "profile.reportDialog.body": [
+    {
+      "type": 0,
+      "value": "The admin team will review "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    },
+    {
+      "type": 0,
+      "value": "'s profile for inappropriate conduct. You can't undo a report, but you can file a new one later if needed."
+    }
+  ],
+  "profile.reportDialog.detailsPlaceholder": [
+    {
+      "type": 0,
+      "value": "What happened? Any context that will help the admin team is welcome."
+    }
+  ],
+  "profile.reportDialog.title": [
+    {
+      "type": 0,
+      "value": "Report this user?"
+    }
+  ],
+  "profile.reportUserAction": [
+    {
+      "type": 0,
+      "value": "Report user"
+    }
+  ],
+  "profile.saveButton": [
+    {
+      "type": 0,
+      "value": "Save"
+    }
+  ],
+  "profile.skillsLabel": [
+    {
+      "type": 0,
+      "value": "Skills (comma-separated)"
+    }
+  ],
+  "profile.skillsListAriaLabel": [
+    {
+      "type": 0,
+      "value": "Skills"
+    }
+  ],
+  "profile.updateFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to update profile"
+    }
+  ],
+  "profile.updateSuccessToast": [
+    {
+      "type": 0,
+      "value": "Profile updated"
+    }
+  ],
+  "report.detailsLabel": [
+    {
+      "type": 0,
+      "value": "Additional details"
+    }
+  ],
+  "report.failedToast": [
+    {
+      "type": 0,
+      "value": "Failed to submit report"
+    }
+  ],
+  "report.submittingButton": [
+    {
+      "type": 0,
+      "value": "Submitting…"
+    }
+  ],
+  "report.successToast": [
+    {
+      "type": 0,
+      "value": "Report submitted"
     }
   ],
   "urgency.critical": [

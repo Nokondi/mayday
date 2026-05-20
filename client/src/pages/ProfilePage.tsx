@@ -16,6 +16,7 @@ import {
   Settings,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { FormattedMessage, useIntl } from "react-intl";
 import type { DeleteAccountRequest, ProfileLink } from "@mayday/shared";
 import {
   getUser,
@@ -36,6 +37,7 @@ import { LinksEditor, cleanLinks } from "../components/common/LinksEditor.js";
 import { LinksList } from "../components/common/LinksList.js";
 
 export function ProfilePage() {
+  const intl = useIntl();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user: authUser, refreshUser, logout } = useAuth();
@@ -82,7 +84,10 @@ export function ProfilePage() {
 
   const messageMutation = useToastMutation({
     mutationFn: () => startConversation({ participantId: id! }),
-    errorMessage: "Could not start a conversation",
+    errorMessage: intl.formatMessage({
+      id: "profile.messageFailedToast",
+      defaultMessage: "Could not start a conversation",
+    }),
     onSuccess: (conversation) => {
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
       navigate(`/messages?conversation=${conversation.id}`);
@@ -96,8 +101,14 @@ export function ProfilePage() {
         reportedUserId: id!,
         details: reportDetails.trim() || undefined,
       }),
-    successMessage: "Report submitted",
-    errorMessage: "Failed to submit report",
+    successMessage: intl.formatMessage({
+      id: "report.successToast",
+      defaultMessage: "Report submitted",
+    }),
+    errorMessage: intl.formatMessage({
+      id: "report.failedToast",
+      defaultMessage: "Failed to submit report",
+    }),
     onSuccess: () => setShowReportConfirm(false),
     onError: () => setShowReportConfirm(false),
   });
@@ -150,9 +161,16 @@ export function ProfilePage() {
 
   const deleteMutation = useToastMutation({
     mutationFn: () => deleteProfile(id!, deleteRequestBody),
-    successMessage: "Your account has been deleted.",
+    successMessage: intl.formatMessage({
+      id: "profile.deleteAccount.successToast",
+      defaultMessage: "Your account has been deleted.",
+    }),
     errorMessage: (e: any) =>
-      e?.response?.data?.message || "Failed to delete account",
+      e?.response?.data?.message ||
+      intl.formatMessage({
+        id: "profile.deleteAccount.failedFallback",
+        defaultMessage: "Failed to delete account",
+      }),
     onSuccess: async () => {
       queryClient.clear();
       // Clear client-side session state; the server has already cleared the refresh cookie.
@@ -175,8 +193,14 @@ export function ProfilePage() {
 
   const updateMutation = useToastMutation({
     mutationFn: (data: any) => updateProfile(id!, data),
-    successMessage: "Profile updated",
-    errorMessage: "Failed to update profile",
+    successMessage: intl.formatMessage({
+      id: "profile.updateSuccessToast",
+      defaultMessage: "Profile updated",
+    }),
+    errorMessage: intl.formatMessage({
+      id: "profile.updateFailedToast",
+      defaultMessage: "Failed to update profile",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user", id] });
       setEditing(false);
@@ -211,7 +235,12 @@ export function ProfilePage() {
   if (isLoading) return <LoadingSpinner className="py-20" />;
   if (!profile)
     return (
-      <div className="text-center py-20 text-gray-500">User not found</div>
+      <div className="text-center py-20 text-gray-500">
+        <FormattedMessage
+          id="profile.notFound"
+          defaultMessage="User not found"
+        />
+      </div>
     );
 
   return (
@@ -221,8 +250,14 @@ export function ProfilePage() {
           <button
             type="button"
             onClick={() => setShowReportConfirm(true)}
-            aria-label="Report user"
-            title="Report user"
+            aria-label={intl.formatMessage({
+              id: "profile.reportUserAction",
+              defaultMessage: "Report user",
+            })}
+            title={intl.formatMessage({
+              id: "profile.reportUserAction",
+              defaultMessage: "Report user",
+            })}
             className="absolute top-3 right-3 p-1.5 text-red-600 hover:bg-red-50 rounded"
           >
             <Flag className="w-4 h-4" aria-hidden="true" />
@@ -288,17 +323,24 @@ export function ProfilePage() {
                 )}
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  Joined{" "}
-                  {formatDistanceToNow(new Date(profile.createdAt), {
-                    addSuffix: true,
-                  })}
+                  <FormattedMessage
+                    id="profile.joinedRelative"
+                    defaultMessage="Joined {time}"
+                    values={{
+                      time: formatDistanceToNow(new Date(profile.createdAt), {
+                        addSuffix: true,
+                      }),
+                    }}
+                  />
                 </span>
                 {!!profile.fulfilledCount && (
                   <span className="flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" />
-                    {profile.fulfilledCount}{" "}
-                    {profile.fulfilledCount === 1 ? "request" : "requests"}{" "}
-                    fulfilled
+                    <FormattedMessage
+                      id="orgs.detailPage.fulfilledCount"
+                      defaultMessage="{count, plural, one {# request} other {# requests}} fulfilled"
+                      values={{ count: profile.fulfilledCount }}
+                    />
                   </span>
                 )}
               </div>
@@ -311,14 +353,26 @@ export function ProfilePage() {
                 className="flex items-center gap-0 sm:gap-1 text-gray-600 hover:text-gray-700"
               >
                 <Edit2 className="w-4 h-4 sm:mr-0" />
-                <span className="hidden sm:inline"> Edit</span>
+                <span className="hidden sm:inline">
+                  {" "}
+                  <FormattedMessage
+                    id="profile.editButton"
+                    defaultMessage="Edit"
+                  />
+                </span>
               </button>
               <button
                 onClick={() => setShowSettings(true)}
                 className="flex items-center gap-0 sm:gap-1 text-gray-600 hover:text-gray-700"
               >
                 <Settings className="w-4 h-4 sm:mr-0" />
-                <span className="hidden sm:inline"> Settings</span>
+                <span className="hidden sm:inline">
+                  {" "}
+                  <FormattedMessage
+                    id="common.settingsModal.title"
+                    defaultMessage="Settings"
+                  />
+                </span>
               </button>
             </div>
           )}
@@ -331,7 +385,10 @@ export function ProfilePage() {
                 htmlFor="profile-bio"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Bio
+                <FormattedMessage
+                  id="profile.bioLabel"
+                  defaultMessage="Bio"
+                />
               </label>
               <textarea
                 id="profile-bio"
@@ -348,7 +405,10 @@ export function ProfilePage() {
                 htmlFor="profile-skills"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Skills (comma-separated)
+                <FormattedMessage
+                  id="profile.skillsLabel"
+                  defaultMessage="Skills (comma-separated)"
+                />
               </label>
               <input
                 id="profile-skills"
@@ -369,13 +429,21 @@ export function ProfilePage() {
                 onClick={() => setEditing(false)}
                 className="flex items-center gap-1 text-gray-600 hover:text-gray-700"
               >
-                <X className="w-4 h-4" /> Cancel
+                <X className="w-4 h-4" />{" "}
+                <FormattedMessage
+                  id="common.actions.cancel"
+                  defaultMessage="Cancel"
+                />
               </button>
               <button
                 onClick={handleSave}
                 className="flex items-center gap-1 text-green-600 hover:text-green-700"
               >
-                <Save className="w-4 h-4" /> Save
+                <Save className="w-4 h-4" />{" "}
+                <FormattedMessage
+                  id="profile.saveButton"
+                  defaultMessage="Save"
+                />
               </button>
             </div>
           </div>
@@ -383,7 +451,13 @@ export function ProfilePage() {
           <>
             {profile.bio && <p className="mt-4 text-gray-700">{profile.bio}</p>}
             {profile.skills.length > 0 && (
-              <ul aria-label="Skills" className="mt-4 flex flex-wrap gap-2">
+              <ul
+                aria-label={intl.formatMessage({
+                  id: "profile.skillsListAriaLabel",
+                  defaultMessage: "Skills",
+                })}
+                className="mt-4 flex flex-wrap gap-2"
+              >
                 {profile.skills.map((skill) => (
                   <li
                     key={skill}
@@ -408,36 +482,63 @@ export function ProfilePage() {
               className="flex items-center gap-1 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800 disabled:opacity-50"
             >
               <MessageSquare className="w-4 h-4" aria-hidden="true" />
-              {messageMutation.isPending ? "Starting…" : "Message"}
+              {messageMutation.isPending ? (
+                <FormattedMessage
+                  id="profile.messageButtonStarting"
+                  defaultMessage="Starting…"
+                />
+              ) : (
+                <FormattedMessage
+                  id="profile.messageButton"
+                  defaultMessage="Message"
+                />
+              )}
             </button>
           </div>
         )}
       </div>
 
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Posts</h2>
+      <h2 className="text-xl font-bold text-gray-900 mb-4">
+        <FormattedMessage
+          id="orgs.detailPage.postsHeading"
+          defaultMessage="Posts"
+        />
+      </h2>
       {postsData ? <PostList posts={postsData.data} /> : <LoadingSpinner />}
 
       {isOwnProfile && (
         <div className="mt-12 border border-red-200 bg-red-50 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-red-800 mb-2">
-            Danger zone
+            <FormattedMessage
+              id="profile.deleteAccount.dangerZoneHeading"
+              defaultMessage="Danger zone"
+            />
           </h2>
           <p className="text-sm text-red-700 mb-4">
-            Deleting your account removes your profile, posts, messages, and
-            reports. Communities and organizations you own are transferred to
-            the member you choose below, or deleted if you're the only member.
+            <FormattedMessage
+              id="profile.deleteAccount.intro"
+              defaultMessage="Deleting your account removes your profile, posts, messages, and reports. Communities and organizations you own are transferred to the member you choose below, or deleted if you're the only member."
+            />
           </p>
           {confirmingDelete ? (
             <div className="space-y-4">
               {ownedGroupsLoading && (
-                <p className="text-sm text-red-800">Loading owned groups…</p>
+                <p className="text-sm text-red-800">
+                  <FormattedMessage
+                    id="profile.deleteAccount.loadingGroups"
+                    defaultMessage="Loading owned groups…"
+                  />
+                </p>
               )}
               {ownedGroups &&
                 (ownedGroups.communities.length > 0 ||
                   ownedGroups.organizations.length > 0) && (
                   <div className="bg-white border border-red-200 rounded-lg p-4 space-y-4">
                     <p className="text-sm font-medium text-gray-900">
-                      Choose who inherits each group you own:
+                      <FormattedMessage
+                        id="profile.deleteAccount.chooseHeirsLabel"
+                        defaultMessage="Choose who inherits each group you own:"
+                      />
                     </p>
                     {[
                       {
@@ -465,7 +566,10 @@ export function ProfilePage() {
                                 {g.name}
                               </span>
                               <span className="text-xs text-gray-500 italic">
-                                no other members — will be deleted
+                                <FormattedMessage
+                                  id="profile.deleteAccount.noOtherMembers"
+                                  defaultMessage="no other members — will be deleted"
+                                />
                               </span>
                             </div>
                           );
@@ -495,7 +599,16 @@ export function ProfilePage() {
                             >
                               {g.candidates.map((c) => (
                                 <option key={c.userId} value={c.userId}>
-                                  {c.name} ({c.role.toLowerCase()})
+                                  {intl.formatMessage(
+                                    {
+                                      id: "profile.deleteAccount.heirOptionLabel",
+                                      defaultMessage: "{name} ({role})",
+                                    },
+                                    {
+                                      name: c.name,
+                                      role: c.role.toLowerCase(),
+                                    },
+                                  )}
                                 </option>
                               ))}
                             </select>
@@ -506,7 +619,10 @@ export function ProfilePage() {
                   </div>
                 )}
               <p className="text-sm font-medium text-red-800">
-                This cannot be undone. Are you sure?
+                <FormattedMessage
+                  id="profile.deleteAccount.areYouSure"
+                  defaultMessage="This cannot be undone. Are you sure?"
+                />
               </p>
               <div className="flex gap-2">
                 <button
@@ -515,16 +631,27 @@ export function ProfilePage() {
                   className="flex items-center gap-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
                 >
                   <Trash2 className="w-4 h-4" aria-hidden="true" />
-                  {deleteMutation.isPending
-                    ? "Deleting…"
-                    : "Yes, delete my account"}
+                  {deleteMutation.isPending ? (
+                    <FormattedMessage
+                      id="profile.deleteAccount.deletingButton"
+                      defaultMessage="Deleting…"
+                    />
+                  ) : (
+                    <FormattedMessage
+                      id="profile.deleteAccount.confirmButton"
+                      defaultMessage="Yes, delete my account"
+                    />
+                  )}
                 </button>
                 <button
                   onClick={() => setConfirmingDelete(false)}
                   disabled={deleteMutation.isPending}
                   className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                 >
-                  Cancel
+                  <FormattedMessage
+                    id="common.actions.cancel"
+                    defaultMessage="Cancel"
+                  />
                 </button>
               </div>
             </div>
@@ -534,7 +661,10 @@ export function ProfilePage() {
               className="flex items-center gap-1 border border-red-300 bg-white text-red-700 px-4 py-2 rounded-lg hover:bg-red-100"
             >
               <Trash2 className="w-4 h-4" aria-hidden="true" />
-              Delete my account
+              <FormattedMessage
+                id="profile.deleteAccount.openButton"
+                defaultMessage="Delete my account"
+              />
             </button>
           )}
         </div>
@@ -556,20 +686,33 @@ export function ProfilePage() {
             className="text-lg font-semibold text-gray-900 flex items-center gap-2"
           >
             <Flag className="w-5 h-5 text-red-600" aria-hidden="true" />
-            Report this user?
+            <FormattedMessage
+              id="profile.reportDialog.title"
+              defaultMessage="Report this user?"
+            />
           </h2>
           <p className="mt-3 text-sm text-gray-700">
-            The admin team will review {profile.name}'s profile for
-            inappropriate conduct. You can't undo a report, but you can file a
-            new one later if needed.
+            <FormattedMessage
+              id="profile.reportDialog.body"
+              defaultMessage="The admin team will review {name}'s profile for inappropriate conduct. You can't undo a report, but you can file a new one later if needed."
+              values={{ name: profile.name }}
+            />
           </p>
           <div className="mt-4">
             <label
               htmlFor="report-user-details"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Additional details{" "}
-              <span className="text-gray-500 font-normal">(optional)</span>
+              <FormattedMessage
+                id="report.detailsLabel"
+                defaultMessage="Additional details"
+              />{" "}
+              <span className="text-gray-500 font-normal">
+                <FormattedMessage
+                  id="common.formField.optionalSuffix"
+                  defaultMessage="(optional)"
+                />
+              </span>
             </label>
             <textarea
               id="report-user-details"
@@ -577,7 +720,11 @@ export function ProfilePage() {
               onChange={(e) => setReportDetails(e.target.value)}
               rows={4}
               maxLength={2000}
-              placeholder="What happened? Any context that will help the admin team is welcome."
+              placeholder={intl.formatMessage({
+                id: "profile.reportDialog.detailsPlaceholder",
+                defaultMessage:
+                  "What happened? Any context that will help the admin team is welcome.",
+              })}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
             />
           </div>
@@ -588,7 +735,10 @@ export function ProfilePage() {
               disabled={reportMutation.isPending}
               className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
             >
-              Cancel
+              <FormattedMessage
+                id="common.actions.cancel"
+                defaultMessage="Cancel"
+              />
             </button>
             <button
               type="button"
@@ -597,7 +747,17 @@ export function ProfilePage() {
               className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
             >
               <Flag className="w-4 h-4" aria-hidden="true" />
-              {reportMutation.isPending ? "Submitting…" : "Report user"}
+              {reportMutation.isPending ? (
+                <FormattedMessage
+                  id="report.submittingButton"
+                  defaultMessage="Submitting…"
+                />
+              ) : (
+                <FormattedMessage
+                  id="profile.reportUserAction"
+                  defaultMessage="Report user"
+                />
+              )}
             </button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { IntlProvider } from 'react-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('sonner', () => ({
@@ -46,11 +47,13 @@ function makeReport(overrides: Record<string, unknown> = {}) {
 function renderAdmin() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <QueryClientProvider client={client}>
-      <MemoryRouter>
-        <AdminPage />
-      </MemoryRouter>
-    </QueryClientProvider>,
+    <IntlProvider locale="en" defaultLocale="en">
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <AdminPage />
+        </MemoryRouter>
+      </QueryClientProvider>
+    </IntlProvider>,
   );
 }
 

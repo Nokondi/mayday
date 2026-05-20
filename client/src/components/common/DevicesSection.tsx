@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Loader2, Smartphone, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { FormattedMessage, useIntl } from 'react-intl';
 import type { Device } from '@mayday/shared';
 import { getMyDevices, revokeDevice } from '../../api/devices.js';
 import { fingerprintFromBase64 } from '../../crypto/fingerprint.js';
@@ -16,6 +17,7 @@ function formatRelative(iso: string): string {
 }
 
 export function DevicesSection() {
+  const intl = useIntl();
   const { serverId: currentDeviceId } = useDevice();
   const [devices, setDevices] = useState<DeviceWithFingerprint[] | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -28,7 +30,12 @@ export function DevicesSection() {
       );
       setDevices(enriched);
     } catch {
-      toast.error('Failed to load devices');
+      toast.error(
+        intl.formatMessage({
+          id: 'common.devicesSection.loadFailedToast',
+          defaultMessage: 'Failed to load devices',
+        }),
+      );
     }
   };
 
@@ -38,10 +45,20 @@ export function DevicesSection() {
     setBusyId(id);
     try {
       await revokeDevice(id);
-      toast.success('Device revoked');
+      toast.success(
+        intl.formatMessage({
+          id: 'common.devicesSection.revokeSuccessToast',
+          defaultMessage: 'Device revoked',
+        }),
+      );
       await reload();
     } catch {
-      toast.error('Failed to revoke device');
+      toast.error(
+        intl.formatMessage({
+          id: 'common.devicesSection.revokeFailedToast',
+          defaultMessage: 'Failed to revoke device',
+        }),
+      );
     } finally {
       setBusyId(null);
     }
@@ -59,14 +76,27 @@ export function DevicesSection() {
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-gray-700 mb-2">Encryption devices</h3>
+      <h3 className="text-sm font-semibold text-gray-700 mb-2">
+        <FormattedMessage
+          id="common.devicesSection.heading"
+          defaultMessage="Encryption devices"
+        />
+      </h3>
       <p className="text-xs text-gray-500 mb-3">
-        Each browser you sign in from registers a device key used for end-to-end encryption.
-        Compare fingerprints with the people you message to verify their identity.
+        <FormattedMessage
+          id="common.devicesSection.description"
+          defaultMessage="Each browser you sign in from registers a device key used for end-to-end encryption. Compare fingerprints with the people you message to verify their identity."
+        />
       </p>
       <ul className="space-y-2">
         {active.map((d) => {
           const isCurrent = d.id === currentDeviceId;
+          const labelOrFallback =
+            d.label ||
+            intl.formatMessage({
+              id: 'common.devicesSection.unnamedDevice',
+              defaultMessage: 'Unnamed device',
+            });
           return (
             <li
               key={d.id}
@@ -76,23 +106,45 @@ export function DevicesSection() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-gray-900 truncate">
-                    {d.label || 'Unnamed device'}
+                    {labelOrFallback}
                   </span>
                   {isCurrent && (
                     <span className="text-xs bg-mayday-100 text-mayday-700 px-1.5 py-0.5 rounded">
-                      This device
+                      <FormattedMessage
+                        id="common.devicesSection.thisDeviceBadge"
+                        defaultMessage="This device"
+                      />
                     </span>
                   )}
                 </div>
                 <div className="text-xs text-gray-500 mt-0.5 font-mono">{d.fingerprint}</div>
-                <div className="text-xs text-gray-400 mt-0.5">Added {formatRelative(d.createdAt)}</div>
+                <div className="text-xs text-gray-400 mt-0.5">
+                  <FormattedMessage
+                    id="common.devicesSection.addedDate"
+                    defaultMessage="Added {date}"
+                    values={{ date: formatRelative(d.createdAt) }}
+                  />
+                </div>
               </div>
               {!isCurrent && (
                 <button
                   type="button"
                   onClick={() => handleRevoke(d.id)}
                   disabled={busyId === d.id}
-                  aria-label={`Revoke ${d.label || 'device'}`}
+                  aria-label={intl.formatMessage(
+                    {
+                      id: 'common.devicesSection.revokeAriaLabel',
+                      defaultMessage: 'Revoke {label}',
+                    },
+                    {
+                      label:
+                        d.label ||
+                        intl.formatMessage({
+                          id: 'common.devicesSection.revokeAriaFallbackLabel',
+                          defaultMessage: 'device',
+                        }),
+                    },
+                  )}
                   className="text-gray-400 hover:text-red-600 disabled:opacity-50"
                 >
                   {busyId === d.id
@@ -104,7 +156,12 @@ export function DevicesSection() {
           );
         })}
         {active.length === 0 && (
-          <li className="text-sm text-gray-500 italic">No active devices</li>
+          <li className="text-sm text-gray-500 italic">
+            <FormattedMessage
+              id="common.devicesSection.noActiveDevicesEmpty"
+              defaultMessage="No active devices"
+            />
+          </li>
         )}
       </ul>
     </div>

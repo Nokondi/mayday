@@ -1,7 +1,8 @@
-﻿import { useId, useState } from "react";
+import { useId, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { toast } from "sonner";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useBatchInvite } from "../../hooks/useBatchInvite.js";
 import { InviteEmailsField } from "./InviteEmailsField.js";
 
@@ -39,6 +40,7 @@ export function MembersSection({
   defaultOpen = false,
   invite,
 }: Props) {
+  const intl = useIntl();
   const [open, setOpen] = useState(defaultOpen);
   const listId = useId();
   const batch = useBatchInvite({
@@ -50,9 +52,20 @@ export function MembersSection({
     if (!invite?.revoke) return;
     try {
       await invite.revoke(inviteId);
-      toast.success("Invite revoked");
+      toast.success(
+        intl.formatMessage({
+          id: "groups.managePage.inviteRevokedToast",
+          defaultMessage: "Invite revoked",
+        }),
+      );
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || "Failed to revoke invite");
+      toast.error(
+        e?.response?.data?.message ||
+          intl.formatMessage({
+            id: "common.membersSection.revokeFailedFallback",
+            defaultMessage: "Failed to revoke invite",
+          }),
+      );
     }
     invite.onSettled?.();
   };
@@ -67,7 +80,11 @@ export function MembersSection({
         className="w-full flex items-center justify-between text-left"
       >
         <h2 className="text-lg font-semibold text-gray-900">
-          Members ({members.length})
+          <FormattedMessage
+            id="common.membersSection.headingWithCount"
+            defaultMessage="Members ({count})"
+            values={{ count: members.length }}
+          />
         </h2>
         <ChevronDown
           className={`w-5 h-5 text-gray-500 transition-transform ${open ? "" : "-rotate-90"}`}
@@ -79,7 +96,10 @@ export function MembersSection({
           {invite && (
             <div className="mt-4 pb-6 border-b border-gray-200">
               <h3 className="text-sm font-medium text-gray-700 mb-2">
-                Invite members
+                <FormattedMessage
+                  id="common.membersSection.inviteMembersHeading"
+                  defaultMessage="Invite members"
+                />
               </h3>
               <InviteEmailsField
                 emails={batch.emails}
@@ -91,7 +111,10 @@ export function MembersSection({
               {invite.pending && invite.pending.length > 0 && invite.revoke && (
                 <div className="mt-6">
                   <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    Pending invites
+                    <FormattedMessage
+                      id="groups.managePage.pendingInvitesHeading"
+                      defaultMessage="Pending invites"
+                    />
                   </h3>
                   <ul className="divide-y divide-gray-100">
                     {invite.pending.map((inv) => (
@@ -100,13 +123,20 @@ export function MembersSection({
                         className="py-2 flex items-center justify-between"
                       >
                         <span className="text-sm text-gray-900">
-                          {inv.invitedUser?.name ?? "Pending invite"}
+                          {inv.invitedUser?.name ??
+                            intl.formatMessage({
+                              id: "groups.managePage.pendingInviteFallback",
+                              defaultMessage: "Pending invite",
+                            })}
                         </span>
                         <button
                           onClick={() => handleRevoke(inv.id)}
                           className="text-sm text-red-600 hover:text-red-700"
                         >
-                          Revoke
+                          <FormattedMessage
+                            id="groups.managePage.revokeButton"
+                            defaultMessage="Revoke"
+                          />
                         </button>
                       </li>
                     ))}
