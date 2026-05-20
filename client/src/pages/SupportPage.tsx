@@ -1,5 +1,15 @@
 import { Link } from "react-router-dom";
-import { Bug, BookOpen, LifeBuoy, Settings } from "lucide-react";
+import {
+  Bug,
+  BookOpen,
+  CheckCircle,
+  LifeBuoy,
+  Settings,
+  EllipsisVertical,
+  Share,
+  Flag,
+  MessageSquare,
+} from "lucide-react";
 import { BugReportForm } from "../components/support/BugReportForm.js";
 
 interface Topic {
@@ -182,6 +192,10 @@ const techTopics: Topic[] = [
     answer: (
       <p>
         Open your post, click{" "}
+        <CheckCircle
+          className="w-5 h-5 inline-block text-green-500"
+          aria-hidden="true"
+        />{" "}
         <span className="font-medium">Mark as Fulfilled</span>, and add the
         people or organizations that helped. This closes the post, and (in a
         feature coming soon) gives points to helpers and tracks their impact
@@ -211,6 +225,10 @@ const techTopics: Topic[] = [
     answer: (
       <p>
         From any user profile or post, click{" "}
+        <MessageSquare
+          className="w-5 h-5 inline-block text-mayday-600"
+          aria-hidden="true"
+        />{" "}
         <span className="font-medium">Message</span>. All conversations live in
         the{" "}
         <Link to="/messages" className="text-mayday-600 hover:underline">
@@ -225,12 +243,16 @@ const techTopics: Topic[] = [
     question: "Someone is acting abusively — what do I do?",
     answer: (
       <p>
-        Every post and user profile has a small red flag at the top right
-        corner. If you come across a request or offer that is inappropriate, or
-        if a user is behaving inappropriately, click on the flag and include any
-        details you want to share. Reports go to the admin team for review. If
-        someone is in immediate danger, please contact local emergency services
-        first.
+        Every post and user profile has a small red flag{" "}
+        <Flag
+          className="w-5 h-5 inline-block text-red-500"
+          aria-hidden="true"
+        />{" "}
+        at the top right corner. If you come across a request or offer that is
+        inappropriate, or if a user is behaving inappropriately, click on the
+        flag and include any details you want to share. Reports go to the admin
+        team for review. If someone is in immediate danger, please contact local
+        emergency services first.
       </p>
     ),
   },
@@ -249,13 +271,67 @@ const techTopics: Topic[] = [
     ),
   },
   {
-    question: "Is there a way to disable email notifications?",
+    question: "How do I manage email and push notifications?",
     answer: (
       <p>
-        You can manage your email notification preferences by clicking the{" "}
-        <span className="font-medium">Settings</span> button in the top right of
-        your profile.
+        You can manage your email and push notification preferences by clicking
+        the <span className="font-medium">Settings</span>{" "}
+        <Settings className="w-5 h-5 inline-block" aria-hidden="true" /> button
+        in the top right of your profile.
       </p>
+    ),
+  },
+  {
+    question: "How do I download MayDay on my phone or computer?",
+    answer: (
+      <>
+        <p>
+          MayDay is a progressive web app (PWA), which means you can add it to
+          your home screen and use it like a native app without needing to go to
+          an app store. To add MayDay to your home screen, follow these
+          instructions:
+        </p>
+        <p className="font-medium">On Android:</p>
+        <ol className="list-decimal list-inside mt-2 space-y-1">
+          <li>Open the site in your mobile browser.</li>
+          <li>
+            Tap the menu{" "}
+            <EllipsisVertical
+              className="w-5 h-5 inline-block"
+              aria-hidden="true"
+            />{" "}
+            button at the top right corner.
+          </li>
+          <li>Select "Add to Home Screen" from the menu.</li>
+          <li>Follow the prompts to add MayDay to your home screen.</li>
+        </ol>
+        <p className="font-medium">On iOS:</p>
+        <ol className="list-decimal list-inside mt-2 space-y-1">
+          <li>Open the site in your mobile browser.</li>
+          <li>
+            Tap the share{" "}
+            <Share className="w-5 h-5 inline-block" aria-hidden="true" /> button
+            at the bottom of the screen.
+          </li>
+          <li>Select "Add to Home Screen" from the menu.</li>
+          <li>Follow the prompts to add MayDay to your home screen.</li>
+        </ol>
+        <p className="font-medium">On Windows:</p>
+        <ol className="list-decimal list-inside mt-2 space-y-1">
+          <li>Open the site in Chrome.</li>
+          <li>
+            Click the menu{" "}
+            <EllipsisVertical
+              className="w-5 h-5 inline-block"
+              aria-hidden="true"
+            />{" "}
+            button at the top right corner.
+          </li>
+          <li>Select "Cast, save, and share" from the menu.</li>
+          <li>Select "Install MayDay Mutual Aid Hub" from the submenu.</li>
+          <li>Follow the prompts to add MayDay to your home screen.</li>
+        </ol>
+      </>
     ),
   },
 ];
