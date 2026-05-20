@@ -232,11 +232,11 @@ export function PostDetailPage() {
         details: reportDetails.trim() || undefined,
       }),
     successMessage: intl.formatMessage({
-      id: "posts.detailPage.reportSuccessToast",
+      id: "report.successToast",
       defaultMessage: "Report submitted",
     }),
     errorMessage: intl.formatMessage({
-      id: "posts.detailPage.reportFailedToast",
+      id: "report.failedToast",
       defaultMessage: "Failed to submit report",
     }),
     onSuccess: () => setShowReportConfirm(false),
@@ -601,7 +601,7 @@ export function PostDetailPage() {
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               <FormattedMessage
-                id="posts.detailPage.reportDetailsLabel"
+                id="report.detailsLabel"
                 defaultMessage="Additional details"
               />{" "}
               <span className="text-gray-500 font-normal">
@@ -646,7 +646,7 @@ export function PostDetailPage() {
               <Flag className="w-4 h-4" aria-hidden="true" />
               {reportMutation.isPending ? (
                 <FormattedMessage
-                  id="posts.detailPage.reportSubmittingButton"
+                  id="report.submittingButton"
                   defaultMessage="Submitting…"
                 />
               ) : (

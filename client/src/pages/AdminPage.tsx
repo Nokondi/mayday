@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 import { api } from "../api/client.js";
 import {
   getBugReports,
@@ -52,10 +53,21 @@ const BUG_STATUSES: BugReport["status"][] = [
   "CLOSED",
 ];
 
+const bugStatusLabels = defineMessages({
+  OPEN: { id: "admin.bugStatuses.open", defaultMessage: "OPEN" },
+  IN_PROGRESS: {
+    id: "admin.bugStatuses.inProgress",
+    defaultMessage: "IN PROGRESS",
+  },
+  RESOLVED: { id: "admin.bugStatuses.resolved", defaultMessage: "RESOLVED" },
+  CLOSED: { id: "admin.bugStatuses.closed", defaultMessage: "CLOSED" },
+});
+
 const ADMIN_TABS = ["reports", "bugs", "users", "announcements"] as const;
 type AdminTab = (typeof ADMIN_TABS)[number];
 
 export function AdminPage() {
+  const intl = useIntl();
   const [tab, setTab] = useState<AdminTab>("reports");
 
   const handleTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -148,7 +160,10 @@ export function AdminPage() {
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       await api.put(`/admin/reports/${id}`, { status });
     },
-    successMessage: "Report updated",
+    successMessage: intl.formatMessage({
+      id: "admin.reports.updatedToast",
+      defaultMessage: "Report updated",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "reports"] });
     },
@@ -157,8 +172,14 @@ export function AdminPage() {
   const changeBugStatus = useToastMutation({
     mutationFn: ({ id, status }: { id: string; status: BugReport["status"] }) =>
       updateBugReportStatus(id, status),
-    successMessage: "Bug report updated",
-    errorMessage: "Failed to update bug report",
+    successMessage: intl.formatMessage({
+      id: "admin.bugs.updatedToast",
+      defaultMessage: "Bug report updated",
+    }),
+    errorMessage: intl.formatMessage({
+      id: "admin.bugs.updateFailedToast",
+      defaultMessage: "Failed to update bug report",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "bug-reports"] });
     },
@@ -167,10 +188,23 @@ export function AdminPage() {
   const banUser = useToastMutation({
     mutationFn: ({ id, banned }: { id: string; banned: boolean }) =>
       setUserBanned(id, banned),
-    errorMessage: "Failed to update user",
+    errorMessage: intl.formatMessage({
+      id: "admin.users.updateFailedToast",
+      defaultMessage: "Failed to update user",
+    }),
     onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
-      toast.success(vars.banned ? "User banned" : "User unbanned");
+      toast.success(
+        vars.banned
+          ? intl.formatMessage({
+              id: "admin.users.bannedToast",
+              defaultMessage: "User banned",
+            })
+          : intl.formatMessage({
+              id: "admin.users.unbannedToast",
+              defaultMessage: "User unbanned",
+            }),
+      );
     },
   });
 
@@ -182,8 +216,14 @@ export function AdminPage() {
 
   const postAnnouncement = useToastMutation({
     mutationFn: (message: string) => createAnnouncement({ message }),
-    successMessage: "Announcement posted",
-    errorMessage: "Failed to post announcement",
+    successMessage: intl.formatMessage({
+      id: "admin.announcements.postedToast",
+      defaultMessage: "Announcement posted",
+    }),
+    errorMessage: intl.formatMessage({
+      id: "admin.announcements.postFailedToast",
+      defaultMessage: "Failed to post announcement",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "announcements"] });
       queryClient.invalidateQueries({ queryKey: ["announcement", "active"] });
@@ -193,8 +233,14 @@ export function AdminPage() {
 
   const deactivateAnnouncement = useToastMutation({
     mutationFn: (id: string) => updateAnnouncement(id, { active: false }),
-    successMessage: "Announcement cleared",
-    errorMessage: "Failed to clear announcement",
+    successMessage: intl.formatMessage({
+      id: "admin.announcements.clearedToast",
+      defaultMessage: "Announcement cleared",
+    }),
+    errorMessage: intl.formatMessage({
+      id: "admin.announcements.clearFailedToast",
+      defaultMessage: "Failed to clear announcement",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "announcements"] });
       queryClient.invalidateQueries({ queryKey: ["announcement", "active"] });
@@ -203,8 +249,14 @@ export function AdminPage() {
 
   const removeAnnouncement = useToastMutation({
     mutationFn: (id: string) => deleteAnnouncement(id),
-    successMessage: "Announcement deleted",
-    errorMessage: "Failed to delete announcement",
+    successMessage: intl.formatMessage({
+      id: "admin.announcements.deletedToast",
+      defaultMessage: "Announcement deleted",
+    }),
+    errorMessage: intl.formatMessage({
+      id: "admin.announcements.deleteFailedToast",
+      defaultMessage: "Failed to delete announcement",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "announcements"] });
       queryClient.invalidateQueries({ queryKey: ["announcement", "active"] });
@@ -215,13 +267,21 @@ export function AdminPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
         <Shield className="w-6 h-6 text-mayday-600" aria-hidden="true" />
-        <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          <FormattedMessage
+            id="admin.pageTitle"
+            defaultMessage="Admin Panel"
+          />
+        </h1>
       </div>
 
       {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus -- per WAI-ARIA APG, the tablist itself is not focusable; the active tab inside is */}
       <div
         role="tablist"
-        aria-label="Admin sections"
+        aria-label={intl.formatMessage({
+          id: "admin.tablistAriaLabel",
+          defaultMessage: "Admin sections",
+        })}
         onKeyDown={handleTabKeyDown}
         className="flex gap-4 mb-6"
       >
@@ -239,7 +299,12 @@ export function AdminPage() {
           }`}
         >
           <Flag className="w-4 h-4" aria-hidden="true" />{" "}
-          <span className="text:no-wrap hidden sm:inline">User Reports</span>
+          <span className="text:no-wrap hidden sm:inline">
+            <FormattedMessage
+              id="admin.tabs.reports"
+              defaultMessage="User Reports"
+            />
+          </span>
         </button>
         <button
           role="tab"
@@ -255,7 +320,12 @@ export function AdminPage() {
           }`}
         >
           <Bug className="w-4 h-4" aria-hidden="true" />{" "}
-          <span className="text:no-wrap hidden sm:inline">Bug Reports</span>
+          <span className="text:no-wrap hidden sm:inline">
+            <FormattedMessage
+              id="admin.tabs.bugs"
+              defaultMessage="Bug Reports"
+            />
+          </span>
         </button>
         <button
           role="tab"
@@ -271,7 +341,9 @@ export function AdminPage() {
           }`}
         >
           <Users className="w-4 h-4" aria-hidden="true" />{" "}
-          <span className="text:no-wrap hidden sm:inline">Users</span>
+          <span className="text:no-wrap hidden sm:inline">
+            <FormattedMessage id="admin.tabs.users" defaultMessage="Users" />
+          </span>
         </button>
         <button
           role="tab"
@@ -287,7 +359,12 @@ export function AdminPage() {
           }`}
         >
           <Megaphone className="w-4 h-4" aria-hidden="true" />{" "}
-          <span className="text:no-wrap hidden sm:inline">Announcements</span>
+          <span className="text:no-wrap hidden sm:inline">
+            <FormattedMessage
+              id="admin.tabs.announcements"
+              defaultMessage="Announcements"
+            />
+          </span>
         </button>
       </div>
 
@@ -299,7 +376,12 @@ export function AdminPage() {
           className="space-y-3"
         >
           {reports?.data.length === 0 && (
-            <p className="text-center py-8 text-gray-500">No pending reports</p>
+            <p className="text-center py-8 text-gray-500">
+              <FormattedMessage
+                id="admin.reports.empty"
+                defaultMessage="No pending reports"
+              />
+            </p>
           )}
           {reports?.data.map((report) => (
             <div
@@ -316,29 +398,51 @@ export function AdminPage() {
                   )}
                   <div className="text-xs text-gray-500 mt-2 space-y-1">
                     <p>
-                      Reported by: {report.reporter.name} (
-                      {report.reporter.email})
+                      <FormattedMessage
+                        id="admin.reports.reportedBy"
+                        defaultMessage="Reported by: {name} ({email})"
+                        values={{
+                          name: report.reporter.name,
+                          email: report.reporter.email,
+                        }}
+                      />
                     </p>
                     {report.reportedUser && (
                       <p>
-                        Against:{" "}
-                        <Link
-                          to={`/profile/${report.reportedUser.id}`}
-                          className="text-mayday-600 hover:underline"
-                        >
-                          {report.reportedUser.name}
-                        </Link>
+                        <FormattedMessage
+                          id="admin.reports.against"
+                          defaultMessage="Against: <link>{name}</link>"
+                          values={{
+                            name: report.reportedUser.name,
+                            link: (chunks) => (
+                              <Link
+                                to={`/profile/${report.reportedUser!.id}`}
+                                className="text-mayday-600 hover:underline"
+                              >
+                                {chunks}
+                              </Link>
+                            ),
+                          }}
+                        />
                       </p>
                     )}
                     {report.post && (
                       <p>
-                        Post:{" "}
-                        <Link
-                          to={`/posts/${report.post.id}`}
-                          className="text-mayday-600 hover:underline"
-                        >
-                          {report.post.title}
-                        </Link>
+                        <FormattedMessage
+                          id="admin.reports.post"
+                          defaultMessage="Post: <link>{title}</link>"
+                          values={{
+                            title: report.post.title,
+                            link: (chunks) => (
+                              <Link
+                                to={`/posts/${report.post!.id}`}
+                                className="text-mayday-600 hover:underline"
+                              >
+                                {chunks}
+                              </Link>
+                            ),
+                          }}
+                        />
                       </p>
                     )}
                   </div>
@@ -352,7 +456,10 @@ export function AdminPage() {
                       })
                     }
                     className="p-2 text-green-600 hover:bg-green-50 rounded"
-                    aria-label="Resolve report"
+                    aria-label={intl.formatMessage({
+                      id: "admin.reports.resolveAriaLabel",
+                      defaultMessage: "Resolve report",
+                    })}
                   >
                     <Check className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -364,7 +471,10 @@ export function AdminPage() {
                       })
                     }
                     className="p-2 text-gray-600 hover:bg-gray-50 rounded"
-                    aria-label="Dismiss report"
+                    aria-label={intl.formatMessage({
+                      id: "admin.reports.dismissAriaLabel",
+                      defaultMessage: "Dismiss report",
+                    })}
                   >
                     <X className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -377,7 +487,13 @@ export function AdminPage() {
                         })
                       }
                       className="p-2 text-red-600 hover:bg-red-50 rounded"
-                      aria-label={`Ban ${report.reportedUser.name}`}
+                      aria-label={intl.formatMessage(
+                        {
+                          id: "admin.reports.banAriaLabel",
+                          defaultMessage: "Ban {name}",
+                        },
+                        { name: report.reportedUser.name },
+                      )}
                     >
                       <Ban className="w-4 h-4" aria-hidden="true" />
                     </button>
@@ -400,7 +516,10 @@ export function AdminPage() {
               htmlFor="bug-status-filter"
               className="text-sm text-gray-700"
             >
-              Filter:
+              <FormattedMessage
+                id="admin.bugs.filterLabel"
+                defaultMessage="Filter:"
+              />
             </label>
             <select
               id="bug-status-filter"
@@ -412,17 +531,27 @@ export function AdminPage() {
               }
               className="border border-gray-300 rounded px-2 py-1 text-sm"
             >
-              <option value="ALL">All</option>
+              <option value="ALL">
+                {intl.formatMessage({
+                  id: "admin.bugs.filterAll",
+                  defaultMessage: "All",
+                })}
+              </option>
               {BUG_STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {s.replace("_", " ")}
+                  {intl.formatMessage(bugStatusLabels[s])}
                 </option>
               ))}
             </select>
           </div>
           <div className="space-y-3">
             {bugReports?.data.length === 0 && (
-              <p className="text-center py-8 text-gray-500">No bug reports</p>
+              <p className="text-center py-8 text-gray-500">
+                <FormattedMessage
+                  id="admin.bugs.empty"
+                  defaultMessage="No bug reports"
+                />
+              </p>
             )}
             {bugReports?.data.map((bug) => (
               <div
@@ -437,16 +566,32 @@ export function AdminPage() {
                     </p>
                     <div className="text-xs text-gray-500 mt-2">
                       <p>
-                        From: {bug.reporter.name} ({bug.reporter.email})
+                        <FormattedMessage
+                          id="admin.bugs.from"
+                          defaultMessage="From: {name} ({email})"
+                          values={{
+                            name: bug.reporter.name,
+                            email: bug.reporter.email,
+                          }}
+                        />
                       </p>
                       <p>
-                        Submitted: {new Date(bug.createdAt).toLocaleString()}
+                        <FormattedMessage
+                          id="admin.bugs.submitted"
+                          defaultMessage="Submitted: {date}"
+                          values={{
+                            date: new Date(bug.createdAt).toLocaleString(),
+                          }}
+                        />
                       </p>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <label className="sr-only" htmlFor={`bug-status-${bug.id}`}>
-                      Status
+                      <FormattedMessage
+                        id="admin.bugs.statusSelectAria"
+                        defaultMessage="Status"
+                      />
                     </label>
                     <select
                       id={`bug-status-${bug.id}`}
@@ -461,7 +606,7 @@ export function AdminPage() {
                     >
                       {BUG_STATUSES.map((s) => (
                         <option key={s} value={s}>
-                          {s.replace("_", " ")}
+                          {intl.formatMessage(bugStatusLabels[s])}
                         </option>
                       ))}
                     </select>
@@ -486,19 +631,28 @@ export function AdminPage() {
                 aria-hidden="true"
               />
               <label htmlFor="user-search" className="sr-only">
-                Search users
+                <FormattedMessage
+                  id="admin.users.searchSrLabel"
+                  defaultMessage="Search users"
+                />
               </label>
               <input
                 id="user-search"
                 type="search"
                 value={userQuery}
                 onChange={(e) => setUserQuery(e.target.value)}
-                placeholder="Search by name or email"
+                placeholder={intl.formatMessage({
+                  id: "admin.users.searchPlaceholder",
+                  defaultMessage: "Search by name or email",
+                })}
                 className="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
               />
             </div>
             <label className="sr-only" htmlFor="user-role-filter">
-              Role
+              <FormattedMessage
+                id="admin.users.roleSelectSrLabel"
+                defaultMessage="Role"
+              />
             </label>
             <select
               id="user-role-filter"
@@ -508,12 +662,30 @@ export function AdminPage() {
               }
               className="border border-gray-300 rounded-lg px-2 py-2 text-sm"
             >
-              <option value="ALL">All roles</option>
-              <option value="USER">User</option>
-              <option value="ADMIN">Admin</option>
+              <option value="ALL">
+                {intl.formatMessage({
+                  id: "admin.users.roleFilterAll",
+                  defaultMessage: "All roles",
+                })}
+              </option>
+              <option value="USER">
+                {intl.formatMessage({
+                  id: "admin.users.roleFilterUser",
+                  defaultMessage: "User",
+                })}
+              </option>
+              <option value="ADMIN">
+                {intl.formatMessage({
+                  id: "admin.users.roleFilterAdmin",
+                  defaultMessage: "Admin",
+                })}
+              </option>
             </select>
             <label className="sr-only" htmlFor="user-banned-filter">
-              Status
+              <FormattedMessage
+                id="admin.users.statusSelectSrLabel"
+                defaultMessage="Status"
+              />
             </label>
             <select
               id="user-banned-filter"
@@ -525,18 +697,43 @@ export function AdminPage() {
               }
               className="border border-gray-300 rounded-lg px-2 py-2 text-sm"
             >
-              <option value="ALL">All users</option>
-              <option value="ACTIVE">Active</option>
-              <option value="BANNED">Banned</option>
+              <option value="ALL">
+                {intl.formatMessage({
+                  id: "admin.users.statusFilterAll",
+                  defaultMessage: "All users",
+                })}
+              </option>
+              <option value="ACTIVE">
+                {intl.formatMessage({
+                  id: "admin.users.statusFilterActive",
+                  defaultMessage: "Active",
+                })}
+              </option>
+              <option value="BANNED">
+                {intl.formatMessage({
+                  id: "admin.users.statusFilterBanned",
+                  defaultMessage: "Banned",
+                })}
+              </option>
             </select>
           </div>
 
           <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
             {isFetchingUsers && !users && (
-              <p className="text-center py-8 text-gray-500">Loading...</p>
+              <p className="text-center py-8 text-gray-500">
+                <FormattedMessage
+                  id="admin.users.loading"
+                  defaultMessage="Loading..."
+                />
+              </p>
             )}
             {users?.data.length === 0 && (
-              <p className="text-center py-8 text-gray-500">No users found</p>
+              <p className="text-center py-8 text-gray-500">
+                <FormattedMessage
+                  id="admin.users.empty"
+                  defaultMessage="No users found"
+                />
+              </p>
             )}
             {users?.data.map((u: AdminUserRow) => (
               <div
@@ -565,18 +762,30 @@ export function AdminPage() {
                       </Link>
                       {u.role === "ADMIN" && (
                         <span className="text-xs bg-mayday-100 text-mayday-700 px-1.5 py-0.5 rounded">
-                          Admin
+                          <FormattedMessage
+                            id="admin.users.adminBadge"
+                            defaultMessage="Admin"
+                          />
                         </span>
                       )}
                       {u.isBanned && (
                         <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">
-                          Banned
+                          <FormattedMessage
+                            id="admin.users.bannedBadge"
+                            defaultMessage="Banned"
+                          />
                         </span>
                       )}
                     </div>
                     <p className="text-sm text-gray-500 truncate">{u.email}</p>
                     <p className="text-xs text-gray-500">
-                      Joined {new Date(u.createdAt).toLocaleDateString()}
+                      <FormattedMessage
+                        id="admin.users.joined"
+                        defaultMessage="Joined {date}"
+                        values={{
+                          date: new Date(u.createdAt).toLocaleDateString(),
+                        }}
+                      />
                     </p>
                   </div>
                 </div>
@@ -591,7 +800,17 @@ export function AdminPage() {
                       : "border-red-300 text-red-700 hover:bg-red-50"
                   }`}
                 >
-                  {u.isBanned ? "Unban" : "Ban"}
+                  {u.isBanned ? (
+                    <FormattedMessage
+                      id="admin.users.unbanButton"
+                      defaultMessage="Unban"
+                    />
+                  ) : (
+                    <FormattedMessage
+                      id="admin.users.banButton"
+                      defaultMessage="Ban"
+                    />
+                  )}
                 </button>
               </div>
             ))}
@@ -600,7 +819,15 @@ export function AdminPage() {
           {users && users.totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 text-sm">
               <p className="text-gray-500">
-                Page {users.page} of {users.totalPages} ({users.total} users)
+                <FormattedMessage
+                  id="admin.users.pageOfWithCount"
+                  defaultMessage="Page {page} of {totalPages} ({total, plural, one {# user} other {# users}})"
+                  values={{
+                    page: users.page,
+                    totalPages: users.totalPages,
+                    total: users.total,
+                  }}
+                />
               </p>
               <div className="flex gap-2">
                 <button
@@ -608,14 +835,20 @@ export function AdminPage() {
                   disabled={userPage <= 1}
                   className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
                 >
-                  Previous
+                  <FormattedMessage
+                    id="admin.users.previousPageButton"
+                    defaultMessage="Previous"
+                  />
                 </button>
                 <button
                   onClick={() => setUserPage((p) => p + 1)}
                   disabled={userPage >= users.totalPages}
                   className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
                 >
-                  Next
+                  <FormattedMessage
+                    id="admin.users.nextPageButton"
+                    defaultMessage="Next"
+                  />
                 </button>
               </div>
             </div>
@@ -643,21 +876,30 @@ export function AdminPage() {
               htmlFor="announcement-message"
               className="block text-sm font-medium text-gray-700"
             >
-              Post a new announcement
+              <FormattedMessage
+                id="admin.announcements.composeLabel"
+                defaultMessage="Post a new announcement"
+              />
             </label>
             <textarea
               id="announcement-message"
               value={announcementDraft}
               onChange={(e) => setAnnouncementDraft(e.target.value)}
-              placeholder="A short message to display at the top of the app for all users."
+              placeholder={intl.formatMessage({
+                id: "admin.announcements.composePlaceholder",
+                defaultMessage:
+                  "A short message to display at the top of the app for all users.",
+              })}
               rows={3}
               maxLength={500}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
             />
             <div className="flex items-center justify-between">
               <p className="text-xs text-gray-500">
-                Posting replaces the current active announcement. Users who
-                dismissed a previous announcement will see this new one.
+                <FormattedMessage
+                  id="admin.announcements.composeHelp"
+                  defaultMessage="Posting replaces the current active announcement. Users who dismissed a previous announcement will see this new one."
+                />
               </p>
               <button
                 type="submit"
@@ -666,18 +908,34 @@ export function AdminPage() {
                 }
                 className="bg-mayday-700 text-white text-sm px-4 py-2 rounded-lg hover:bg-mayday-800 disabled:opacity-50"
               >
-                {postAnnouncement.isPending ? "Posting..." : "Post"}
+                {postAnnouncement.isPending ? (
+                  <FormattedMessage
+                    id="admin.announcements.postingButton"
+                    defaultMessage="Posting..."
+                  />
+                ) : (
+                  <FormattedMessage
+                    id="admin.announcements.postButton"
+                    defaultMessage="Post"
+                  />
+                )}
               </button>
             </div>
           </form>
 
           <div>
             <h2 className="text-sm font-semibold text-gray-700 mb-2">
-              Recent announcements
+              <FormattedMessage
+                id="admin.announcements.recentHeading"
+                defaultMessage="Recent announcements"
+              />
             </h2>
             {announcements?.length === 0 && (
               <p className="text-center py-8 text-gray-500">
-                No announcements yet
+                <FormattedMessage
+                  id="admin.announcements.empty"
+                  defaultMessage="No announcements yet"
+                />
               </p>
             )}
             <div className="space-y-2">
@@ -692,11 +950,17 @@ export function AdminPage() {
                     <div className="flex items-center gap-2 mb-1">
                       {a.active ? (
                         <span className="text-xs bg-mayday-100 text-mayday-700 px-1.5 py-0.5 rounded">
-                          Active
+                          <FormattedMessage
+                            id="admin.announcements.activeBadge"
+                            defaultMessage="Active"
+                          />
                         </span>
                       ) : (
                         <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                          Inactive
+                          <FormattedMessage
+                            id="admin.announcements.inactiveBadge"
+                            defaultMessage="Inactive"
+                          />
                         </span>
                       )}
                       <span className="text-xs text-gray-500">
@@ -714,14 +978,20 @@ export function AdminPage() {
                         disabled={deactivateAnnouncement.isPending}
                         className="text-sm px-3 py-1.5 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                       >
-                        Clear
+                        <FormattedMessage
+                          id="admin.announcements.clearButton"
+                          defaultMessage="Clear"
+                        />
                       </button>
                     )}
                     <button
                       onClick={() => removeAnnouncement.mutate(a.id)}
                       disabled={removeAnnouncement.isPending}
                       className="p-2 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
-                      aria-label="Delete announcement"
+                      aria-label={intl.formatMessage({
+                        id: "admin.announcements.deleteAriaLabel",
+                        defaultMessage: "Delete announcement",
+                      })}
                     >
                       <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>

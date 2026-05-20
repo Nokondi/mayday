@@ -1,4 +1,202 @@
 {
+  "admin.announcements.activeBadge": {
+    "defaultMessage": "Active"
+  },
+  "admin.announcements.clearButton": {
+    "defaultMessage": "Clear"
+  },
+  "admin.announcements.clearFailedToast": {
+    "defaultMessage": "Failed to clear announcement"
+  },
+  "admin.announcements.clearedToast": {
+    "defaultMessage": "Announcement cleared"
+  },
+  "admin.announcements.composeHelp": {
+    "defaultMessage": "Posting replaces the current active announcement. Users who dismissed a previous announcement will see this new one."
+  },
+  "admin.announcements.composeLabel": {
+    "defaultMessage": "Post a new announcement"
+  },
+  "admin.announcements.composePlaceholder": {
+    "defaultMessage": "A short message to display at the top of the app for all users."
+  },
+  "admin.announcements.deleteAriaLabel": {
+    "defaultMessage": "Delete announcement"
+  },
+  "admin.announcements.deleteFailedToast": {
+    "defaultMessage": "Failed to delete announcement"
+  },
+  "admin.announcements.deletedToast": {
+    "defaultMessage": "Announcement deleted"
+  },
+  "admin.announcements.empty": {
+    "defaultMessage": "No announcements yet"
+  },
+  "admin.announcements.inactiveBadge": {
+    "defaultMessage": "Inactive"
+  },
+  "admin.announcements.postButton": {
+    "defaultMessage": "Post"
+  },
+  "admin.announcements.postFailedToast": {
+    "defaultMessage": "Failed to post announcement"
+  },
+  "admin.announcements.postedToast": {
+    "defaultMessage": "Announcement posted"
+  },
+  "admin.announcements.postingButton": {
+    "defaultMessage": "Posting..."
+  },
+  "admin.announcements.recentHeading": {
+    "defaultMessage": "Recent announcements"
+  },
+  "admin.bugStatuses.closed": {
+    "defaultMessage": "CLOSED"
+  },
+  "admin.bugStatuses.inProgress": {
+    "defaultMessage": "IN PROGRESS"
+  },
+  "admin.bugStatuses.open": {
+    "defaultMessage": "OPEN"
+  },
+  "admin.bugStatuses.resolved": {
+    "defaultMessage": "RESOLVED"
+  },
+  "admin.bugs.empty": {
+    "defaultMessage": "No bug reports"
+  },
+  "admin.bugs.filterAll": {
+    "defaultMessage": "All"
+  },
+  "admin.bugs.filterLabel": {
+    "defaultMessage": "Filter:"
+  },
+  "admin.bugs.from": {
+    "defaultMessage": "From: {name} ({email})"
+  },
+  "admin.bugs.statusSelectAria": {
+    "defaultMessage": "Status"
+  },
+  "admin.bugs.submitted": {
+    "defaultMessage": "Submitted: {date}"
+  },
+  "admin.bugs.updateFailedToast": {
+    "defaultMessage": "Failed to update bug report"
+  },
+  "admin.bugs.updatedToast": {
+    "defaultMessage": "Bug report updated"
+  },
+  "admin.pageTitle": {
+    "defaultMessage": "Admin Panel"
+  },
+  "admin.reports.against": {
+    "defaultMessage": "Against: <link>{name}</link>"
+  },
+  "admin.reports.banAriaLabel": {
+    "defaultMessage": "Ban {name}"
+  },
+  "admin.reports.dismissAriaLabel": {
+    "defaultMessage": "Dismiss report"
+  },
+  "admin.reports.empty": {
+    "defaultMessage": "No pending reports"
+  },
+  "admin.reports.post": {
+    "defaultMessage": "Post: <link>{title}</link>"
+  },
+  "admin.reports.reportedBy": {
+    "defaultMessage": "Reported by: {name} ({email})"
+  },
+  "admin.reports.resolveAriaLabel": {
+    "defaultMessage": "Resolve report"
+  },
+  "admin.reports.updatedToast": {
+    "defaultMessage": "Report updated"
+  },
+  "admin.tablistAriaLabel": {
+    "defaultMessage": "Admin sections"
+  },
+  "admin.tabs.announcements": {
+    "defaultMessage": "Announcements"
+  },
+  "admin.tabs.bugs": {
+    "defaultMessage": "Bug Reports"
+  },
+  "admin.tabs.reports": {
+    "defaultMessage": "User Reports"
+  },
+  "admin.tabs.users": {
+    "defaultMessage": "Users"
+  },
+  "admin.users.adminBadge": {
+    "defaultMessage": "Admin"
+  },
+  "admin.users.banButton": {
+    "defaultMessage": "Ban"
+  },
+  "admin.users.bannedBadge": {
+    "defaultMessage": "Banned"
+  },
+  "admin.users.bannedToast": {
+    "defaultMessage": "User banned"
+  },
+  "admin.users.empty": {
+    "defaultMessage": "No users found"
+  },
+  "admin.users.joined": {
+    "defaultMessage": "Joined {date}"
+  },
+  "admin.users.loading": {
+    "defaultMessage": "Loading..."
+  },
+  "admin.users.nextPageButton": {
+    "defaultMessage": "Next"
+  },
+  "admin.users.pageOfWithCount": {
+    "defaultMessage": "Page {page} of {totalPages} ({total, plural, one {# user} other {# users}})"
+  },
+  "admin.users.previousPageButton": {
+    "defaultMessage": "Previous"
+  },
+  "admin.users.roleFilterAdmin": {
+    "defaultMessage": "Admin"
+  },
+  "admin.users.roleFilterAll": {
+    "defaultMessage": "All roles"
+  },
+  "admin.users.roleFilterUser": {
+    "defaultMessage": "User"
+  },
+  "admin.users.roleSelectSrLabel": {
+    "defaultMessage": "Role"
+  },
+  "admin.users.searchPlaceholder": {
+    "defaultMessage": "Search by name or email"
+  },
+  "admin.users.searchSrLabel": {
+    "defaultMessage": "Search users"
+  },
+  "admin.users.statusFilterActive": {
+    "defaultMessage": "Active"
+  },
+  "admin.users.statusFilterAll": {
+    "defaultMessage": "All users"
+  },
+  "admin.users.statusFilterBanned": {
+    "defaultMessage": "Banned"
+  },
+  "admin.users.statusSelectSrLabel": {
+    "defaultMessage": "Status"
+  },
+  "admin.users.unbanButton": {
+    "defaultMessage": "Unban"
+  },
+  "admin.users.unbannedToast": {
+    "defaultMessage": "User unbanned"
+  },
+  "admin.users.updateFailedToast": {
+    "defaultMessage": "Failed to update user"
+  },
   "auth.backToLogin": {
     "defaultMessage": "Back to log in"
   },
@@ -170,6 +368,39 @@
   "common.avatarUploader.uploadingAriaLabel": {
     "defaultMessage": "Uploading avatar"
   },
+  "common.devicesSection.addedDate": {
+    "defaultMessage": "Added {date}"
+  },
+  "common.devicesSection.description": {
+    "defaultMessage": "Each browser you sign in from registers a device key used for end-to-end encryption. Compare fingerprints with the people you message to verify their identity."
+  },
+  "common.devicesSection.heading": {
+    "defaultMessage": "Encryption devices"
+  },
+  "common.devicesSection.loadFailedToast": {
+    "defaultMessage": "Failed to load devices"
+  },
+  "common.devicesSection.noActiveDevicesEmpty": {
+    "defaultMessage": "No active devices"
+  },
+  "common.devicesSection.revokeAriaFallbackLabel": {
+    "defaultMessage": "device"
+  },
+  "common.devicesSection.revokeAriaLabel": {
+    "defaultMessage": "Revoke {label}"
+  },
+  "common.devicesSection.revokeFailedToast": {
+    "defaultMessage": "Failed to revoke device"
+  },
+  "common.devicesSection.revokeSuccessToast": {
+    "defaultMessage": "Device revoked"
+  },
+  "common.devicesSection.thisDeviceBadge": {
+    "defaultMessage": "This device"
+  },
+  "common.devicesSection.unnamedDevice": {
+    "defaultMessage": "Unnamed device"
+  },
   "common.entityCard.memberCount": {
     "defaultMessage": "{count, plural, one {# member} other {# members}}"
   },
@@ -242,6 +473,15 @@
   "common.loadingSpinner.srLabel": {
     "defaultMessage": "Loading..."
   },
+  "common.membersSection.headingWithCount": {
+    "defaultMessage": "Members ({count})"
+  },
+  "common.membersSection.inviteMembersHeading": {
+    "defaultMessage": "Invite members"
+  },
+  "common.membersSection.revokeFailedFallback": {
+    "defaultMessage": "Failed to revoke invite"
+  },
   "common.pagination.navAriaLabel": {
     "defaultMessage": "Pagination"
   },
@@ -295,6 +535,33 @@
   },
   "common.searchBar.defaultPlaceholder": {
     "defaultMessage": "Search..."
+  },
+  "common.settingsModal.closeAriaLabel": {
+    "defaultMessage": "Close settings"
+  },
+  "common.settingsModal.doneButton": {
+    "defaultMessage": "Done"
+  },
+  "common.settingsModal.emailNotificationsHeading": {
+    "defaultMessage": "Email notifications"
+  },
+  "common.settingsModal.emailToggleDescription": {
+    "defaultMessage": "New messages from other users, and join requests for communities you administer."
+  },
+  "common.settingsModal.emailToggleLabel": {
+    "defaultMessage": "Email me about activity"
+  },
+  "common.settingsModal.loadFailedToast": {
+    "defaultMessage": "Failed to load settings"
+  },
+  "common.settingsModal.savedToast": {
+    "defaultMessage": "Settings saved"
+  },
+  "common.settingsModal.title": {
+    "defaultMessage": "Settings"
+  },
+  "common.settingsModal.updateFailedToast": {
+    "defaultMessage": "Failed to update settings"
   },
   "common.status.sending": {
     "defaultMessage": "Sending…"
@@ -764,9 +1031,6 @@
   "posts.detailPage.reopenSuccessToast": {
     "defaultMessage": "Post reopened"
   },
-  "posts.detailPage.reportDetailsLabel": {
-    "defaultMessage": "Additional details"
-  },
   "posts.detailPage.reportDetailsPlaceholder": {
     "defaultMessage": "What's wrong with this post? Any context that will help the admin team is welcome."
   },
@@ -775,15 +1039,6 @@
   },
   "posts.detailPage.reportDialogTitle": {
     "defaultMessage": "Report this post?"
-  },
-  "posts.detailPage.reportFailedToast": {
-    "defaultMessage": "Failed to submit report"
-  },
-  "posts.detailPage.reportSubmittingButton": {
-    "defaultMessage": "Submitting…"
-  },
-  "posts.detailPage.reportSuccessToast": {
-    "defaultMessage": "Report submitted"
   },
   "posts.filters.allCategories": {
     "defaultMessage": "All Categories"
@@ -991,6 +1246,102 @@
   },
   "posts.types.request": {
     "defaultMessage": "Request"
+  },
+  "profile.bioLabel": {
+    "defaultMessage": "Bio"
+  },
+  "profile.deleteAccount.areYouSure": {
+    "defaultMessage": "This cannot be undone. Are you sure?"
+  },
+  "profile.deleteAccount.chooseHeirsLabel": {
+    "defaultMessage": "Choose who inherits each group you own:"
+  },
+  "profile.deleteAccount.confirmButton": {
+    "defaultMessage": "Yes, delete my account"
+  },
+  "profile.deleteAccount.dangerZoneHeading": {
+    "defaultMessage": "Danger zone"
+  },
+  "profile.deleteAccount.deletingButton": {
+    "defaultMessage": "Deleting…"
+  },
+  "profile.deleteAccount.failedFallback": {
+    "defaultMessage": "Failed to delete account"
+  },
+  "profile.deleteAccount.heirOptionLabel": {
+    "defaultMessage": "{name} ({role})"
+  },
+  "profile.deleteAccount.intro": {
+    "defaultMessage": "Deleting your account removes your profile, posts, messages, and reports. Communities and organizations you own are transferred to the member you choose below, or deleted if you're the only member."
+  },
+  "profile.deleteAccount.loadingGroups": {
+    "defaultMessage": "Loading owned groups…"
+  },
+  "profile.deleteAccount.noOtherMembers": {
+    "defaultMessage": "no other members — will be deleted"
+  },
+  "profile.deleteAccount.openButton": {
+    "defaultMessage": "Delete my account"
+  },
+  "profile.deleteAccount.successToast": {
+    "defaultMessage": "Your account has been deleted."
+  },
+  "profile.editButton": {
+    "defaultMessage": "Edit"
+  },
+  "profile.joinedRelative": {
+    "defaultMessage": "Joined {time}"
+  },
+  "profile.messageButton": {
+    "defaultMessage": "Message"
+  },
+  "profile.messageButtonStarting": {
+    "defaultMessage": "Starting…"
+  },
+  "profile.messageFailedToast": {
+    "defaultMessage": "Could not start a conversation"
+  },
+  "profile.notFound": {
+    "defaultMessage": "User not found"
+  },
+  "profile.reportDialog.body": {
+    "defaultMessage": "The admin team will review {name}'s profile for inappropriate conduct. You can't undo a report, but you can file a new one later if needed."
+  },
+  "profile.reportDialog.detailsPlaceholder": {
+    "defaultMessage": "What happened? Any context that will help the admin team is welcome."
+  },
+  "profile.reportDialog.title": {
+    "defaultMessage": "Report this user?"
+  },
+  "profile.reportUserAction": {
+    "defaultMessage": "Report user"
+  },
+  "profile.saveButton": {
+    "defaultMessage": "Save"
+  },
+  "profile.skillsLabel": {
+    "defaultMessage": "Skills (comma-separated)"
+  },
+  "profile.skillsListAriaLabel": {
+    "defaultMessage": "Skills"
+  },
+  "profile.updateFailedToast": {
+    "defaultMessage": "Failed to update profile"
+  },
+  "profile.updateSuccessToast": {
+    "defaultMessage": "Profile updated"
+  },
+  "report.detailsLabel": {
+    "defaultMessage": "Additional details"
+  },
+  "report.failedToast": {
+    "defaultMessage": "Failed to submit report"
+  },
+  "report.submittingButton": {
+    "defaultMessage": "Submitting…"
+  },
+  "report.successToast": {
+    "defaultMessage": "Report submitted"
   },
   "urgency.critical": {
     "defaultMessage": "Critical"
