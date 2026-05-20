@@ -275,9 +275,9 @@ const techTopics: Topic[] = [
     answer: (
       <p>
         You can manage your email and push notification preferences by clicking
-        the <span className="font-medium">Settings</span>{" "}
-        <Settings className="w-5 h-5 inline-block" aria-hidden="true" /> button
-        in the top right of your profile.
+        the <Settings className="w-5 h-5 inline-block" aria-hidden="true" />{" "}
+        <span className="font-medium">Settings</span> button in the top right of
+        your profile.
       </p>
     ),
   },
@@ -295,12 +295,12 @@ const techTopics: Topic[] = [
         <ol className="list-decimal list-inside mt-2 space-y-1">
           <li>Open the site in your mobile browser.</li>
           <li>
-            Tap the menu{" "}
+            Tap the{" "}
             <EllipsisVertical
               className="w-5 h-5 inline-block"
               aria-hidden="true"
             />{" "}
-            button at the top right corner.
+            menu button at the top right corner.
           </li>
           <li>Select "Add to Home Screen" from the menu.</li>
           <li>Follow the prompts to add MayDay to your home screen.</li>
@@ -309,9 +309,9 @@ const techTopics: Topic[] = [
         <ol className="list-decimal list-inside mt-2 space-y-1">
           <li>Open the site in your mobile browser.</li>
           <li>
-            Tap the share{" "}
-            <Share className="w-5 h-5 inline-block" aria-hidden="true" /> button
-            at the bottom of the screen.
+            Tap the{" "}
+            <Share className="w-5 h-5 inline-block" aria-hidden="true" /> share{" "}
+            button at the bottom of the screen.
           </li>
           <li>Select "Add to Home Screen" from the menu.</li>
           <li>Follow the prompts to add MayDay to your home screen.</li>
@@ -320,12 +320,12 @@ const techTopics: Topic[] = [
         <ol className="list-decimal list-inside mt-2 space-y-1">
           <li>Open the site in Chrome.</li>
           <li>
-            Click the menu{" "}
+            Click the{" "}
             <EllipsisVertical
               className="w-5 h-5 inline-block"
               aria-hidden="true"
             />{" "}
-            button at the top right corner.
+            menu button at the top right corner.
           </li>
           <li>Select "Cast, save, and share" from the menu.</li>
           <li>Select "Install MayDay Mutual Aid Hub" from the submenu.</li>
