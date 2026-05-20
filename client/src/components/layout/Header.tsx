@@ -17,6 +17,9 @@ import { getMyInvites } from "../../api/organizations.js";
 import { getMyCommunityInvites } from "../../api/communities.js";
 import MayDayLogo from "../../assets/mayday-logo.svg?react";
 
+// Product brand name — kept out of i18n so it renders identically in all locales.
+const BRAND_NAME = "MayDay";
+
 export function Header() {
   const intl = useIntl();
   const { user, logout } = useAuth();
@@ -55,7 +58,7 @@ export function Header() {
               className="w-16 h-16 text-mayday-700"
               aria-hidden="true"
             />
-            MayDay
+            {BRAND_NAME}
           </Link>
 
           <nav

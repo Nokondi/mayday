@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useIntl } from "react-intl";
 import {
   createBugReportSchema,
   type CreateBugReportRequest,
@@ -9,6 +10,7 @@ import { useToastMutation } from "../../hooks/useToastMutation.js";
 import { FormField } from "../common/FormField.js";
 
 export function BugReportForm() {
+  const intl = useIntl();
   const {
     register,
     handleSubmit,
@@ -20,8 +22,14 @@ export function BugReportForm() {
 
   const mutation = useToastMutation({
     mutationFn: submitBugReport,
-    successMessage: "Bug report submitted — thank you!",
-    errorMessage: "Failed to submit bug report",
+    successMessage: intl.formatMessage({
+      id: "support.bugReportForm.successToast",
+      defaultMessage: "Bug report submitted — thank you!",
+    }),
+    errorMessage: intl.formatMessage({
+      id: "support.bugReportForm.failedToast",
+      defaultMessage: "Failed to submit bug report",
+    }),
     onSuccess: () => reset(),
   });
 
@@ -29,23 +37,38 @@ export function BugReportForm() {
     <form
       onSubmit={handleSubmit((data) => mutation.mutate(data))}
       className="space-y-6"
-      aria-label="Report a bug"
+      aria-label={intl.formatMessage({
+        id: "support.bugReportForm.formAriaLabel",
+        defaultMessage: "Report a bug",
+      })}
     >
       <FormField
         id="bug-title"
-        label="Title"
+        label={intl.formatMessage({
+          id: "support.bugReportForm.titleLabel",
+          defaultMessage: "Title",
+        })}
         error={errors.title?.message}
-        placeholder="Short summary of the problem"
+        placeholder={intl.formatMessage({
+          id: "support.bugReportForm.titlePlaceholder",
+          defaultMessage: "Short summary of the problem",
+        })}
         {...register("title")}
       />
 
       <FormField
         multiline
         id="bug-description"
-        label="Description"
+        label={intl.formatMessage({
+          id: "support.bugReportForm.descriptionLabel",
+          defaultMessage: "Description",
+        })}
         error={errors.description?.message}
         rows={8}
-        placeholder="What did you expect to happen? What actually happened? Steps to reproduce?"
+        placeholder={intl.formatMessage({
+          id: "support.bugReportForm.descriptionPlaceholder",
+          defaultMessage: "What did you expect to happen? What actually happened? Steps to reproduce?",
+        })}
         {...register("description")}
       />
 
@@ -54,7 +77,15 @@ export function BugReportForm() {
         disabled={mutation.isPending}
         className="w-full bg-mayday-700 text-white font-bold py-3 rounded-lg font-medium hover:bg-mayday-800 disabled:opacity-50"
       >
-        {mutation.isPending ? "Submitting..." : "Submit Bug Report"}
+        {mutation.isPending
+          ? intl.formatMessage({
+              id: "support.bugReportForm.submittingButton",
+              defaultMessage: "Submitting...",
+            })
+          : intl.formatMessage({
+              id: "support.bugReportForm.submitButton",
+              defaultMessage: "Submit Bug Report",
+            })}
       </button>
     </form>
   );

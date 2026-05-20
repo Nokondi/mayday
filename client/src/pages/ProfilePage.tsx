@@ -354,6 +354,7 @@ export function ProfilePage() {
               >
                 <Edit2 className="w-4 h-4 sm:mr-0" />
                 <span className="hidden sm:inline">
+                  {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace before label */}
                   {" "}
                   <FormattedMessage
                     id="profile.editButton"
@@ -367,6 +368,7 @@ export function ProfilePage() {
               >
                 <Settings className="w-4 h-4 sm:mr-0" />
                 <span className="hidden sm:inline">
+                  {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace before label */}
                   {" "}
                   <FormattedMessage
                     id="common.settingsModal.title"
@@ -429,6 +431,7 @@ export function ProfilePage() {
                 onClick={() => setEditing(false)}
                 className="flex items-center gap-1 text-gray-600 hover:text-gray-700"
               >
+                {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}
                 <X className="w-4 h-4" />{" "}
                 <FormattedMessage
                   id="common.actions.cancel"
@@ -439,6 +442,7 @@ export function ProfilePage() {
                 onClick={handleSave}
                 className="flex items-center gap-1 text-green-600 hover:text-green-700"
               >
+                {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}
                 <Save className="w-4 h-4" />{" "}
                 <FormattedMessage
                   id="profile.saveButton"
@@ -706,7 +710,9 @@ export function ProfilePage() {
               <FormattedMessage
                 id="report.detailsLabel"
                 defaultMessage="Additional details"
-              />{" "}
+              />
+              {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between label and (optional) suffix */}
+              {" "}
               <span className="text-gray-500 font-normal">
                 <FormattedMessage
                   id="common.formField.optionalSuffix"

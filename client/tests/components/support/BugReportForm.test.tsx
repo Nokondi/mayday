@@ -1,10 +1,11 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BugReportForm } from '../../../src/components/support/BugReportForm.js';
 import { submitBugReport } from '../../../src/api/bugReports.js';
+import { renderWithIntl } from '../../helpers/renderWithIntl.js';
 
 vi.mock('../../../src/api/bugReports.js', () => ({
   submitBugReport: vi.fn(),
@@ -22,7 +23,7 @@ const mockedToast = vi.mocked(toast);
 
 function renderForm() {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
-  return render(
+  return renderWithIntl(
     <QueryClientProvider client={client}>
       <BugReportForm />
     </QueryClientProvider>,

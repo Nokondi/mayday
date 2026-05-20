@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
+import { useIntl } from 'react-intl';
 import type { PostWithAuthor } from '@mayday/shared';
 import { PostCard } from '../posts/PostCard.js';
 import 'leaflet/dist/leaflet.css';
@@ -70,11 +71,15 @@ function MapEventHandler({ onBoundsChange }: { onBoundsChange?: MapViewProps['on
 }
 
 export function MapView({ posts, center = [34.7465, -92.2896], zoom = 12, onBoundsChange, className = 'h-[600px]' }: MapViewProps) {
+  const intl = useIntl();
   return (
     <MapContainer
       center={center}
       zoom={zoom}
-      aria-label="Map of mutual aid posts"
+      aria-label={intl.formatMessage({
+        id: 'map.view.containerAriaLabel',
+        defaultMessage: 'Map of mutual aid posts',
+      })}
       className={`w-full rounded-lg ${className}`}
     >
       <TileLayer

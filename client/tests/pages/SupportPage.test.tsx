@@ -1,8 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
 import { SupportPage } from "../../src/pages/SupportPage.js";
+import { renderWithIntl } from "../helpers/renderWithIntl.js";
 
 // The form is exercised in its own test; stub it here so this test stays
 // focused on the page's structural wiring (heading, sections, form slot).
@@ -12,7 +13,7 @@ vi.mock("../../src/components/support/BugReportForm.js", () => ({
 
 function renderPage() {
   const client = new QueryClient();
-  return render(
+  return renderWithIntl(
     <QueryClientProvider client={client}>
       <MemoryRouter>
         <SupportPage />

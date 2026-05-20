@@ -47,6 +47,7 @@
     "autoprefixer": "^10.4.20",
     "babel-plugin-formatjs": "^10.5.0",
     "eslint": "^9.39.4",
+    "eslint-plugin-formatjs": "^6.4.10",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "globals": "^17.5.0",
     "jsdom": "^29.0.2",

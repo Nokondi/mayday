@@ -349,7 +349,9 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           <FormattedMessage
             id="posts.form.imagesLabel"
             defaultMessage="Images"
-          />{" "}
+          />
+          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between label and (optional) suffix */}
+          {" "}
           <span className="text-gray-500 font-normal">
             <FormattedMessage
               id="posts.form.imagesHelperText"
@@ -528,7 +530,9 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           <FormattedMessage
             id="posts.form.repeatsLegend"
             defaultMessage="Repeats"
-          />{" "}
+          />
+          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between label and (optional) suffix */}
+          {" "}
           <span className="text-gray-500 font-normal">
             <FormattedMessage
               id="common.formField.optionalSuffix"
@@ -609,7 +613,9 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           <FormattedMessage
             id="common.fields.location"
             defaultMessage="Location"
-          />{" "}
+          />
+          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between label and (optional) suffix */}
+          {" "}
           <span className="text-gray-500 font-normal">
             <FormattedMessage
               id="common.formField.optionalSuffix"

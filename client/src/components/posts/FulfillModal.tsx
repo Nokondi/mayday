@@ -202,6 +202,7 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
                   <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                     {searching && (
                       <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500">
+                        {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}
                         <Loader2 className="w-4 h-4 animate-spin" />{' '}
                         <FormattedMessage
                           id="posts.fulfillModal.searchingStatus"
@@ -290,6 +291,7 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
           onClick={addFulfiller}
           className="flex items-center gap-1 text-sm text-mayday-600 hover:text-mayday-700 mb-6"
         >
+          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}
           <Plus className="w-4 h-4" />{' '}
           <FormattedMessage
             id="posts.fulfillModal.addAnother"

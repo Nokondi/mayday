@@ -298,6 +298,7 @@ export function AdminPage() {
               : "bg-gray-100 text-gray-700"
           }`}
         >
+          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}
           <Flag className="w-4 h-4" aria-hidden="true" />{" "}
           <span className="text:no-wrap hidden sm:inline">
             <FormattedMessage
@@ -319,6 +320,7 @@ export function AdminPage() {
               : "bg-gray-100 text-gray-700"
           }`}
         >
+          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}
           <Bug className="w-4 h-4" aria-hidden="true" />{" "}
           <span className="text:no-wrap hidden sm:inline">
             <FormattedMessage
@@ -340,6 +342,7 @@ export function AdminPage() {
               : "bg-gray-100 text-gray-700"
           }`}
         >
+          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}
           <Users className="w-4 h-4" aria-hidden="true" />{" "}
           <span className="text:no-wrap hidden sm:inline">
             <FormattedMessage id="admin.tabs.users" defaultMessage="Users" />
@@ -358,6 +361,7 @@ export function AdminPage() {
               : "bg-gray-100 text-gray-700"
           }`}
         >
+          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}
           <Megaphone className="w-4 h-4" aria-hidden="true" />{" "}
           <span className="text:no-wrap hidden sm:inline">
             <FormattedMessage
