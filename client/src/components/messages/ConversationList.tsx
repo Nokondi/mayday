@@ -1,4 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
+import { FormattedMessage, useIntl } from "react-intl";
 import type { Conversation } from "@mayday/shared";
 
 interface ConversationListProps {
@@ -12,21 +13,39 @@ export function ConversationList({
   activeId,
   onSelect,
 }: ConversationListProps) {
+  const intl = useIntl();
+
   if (conversations.length === 0) {
     return (
       <div className="p-4 text-center text-gray-500 text-sm">
-        No conversations yet. Contact someone from a post to start chatting.
+        <FormattedMessage
+          id="messages.list.emptyState"
+          defaultMessage="No conversations yet. Contact someone from a post to start chatting."
+        />
       </div>
     );
   }
 
   return (
-    <ul aria-label="Conversations" className="divide-y divide-gray-200">
+    <ul
+      aria-label={intl.formatMessage({
+        id: "messages.list.ariaLabel",
+        defaultMessage: "Conversations",
+      })}
+      className="divide-y divide-gray-200"
+    >
       {conversations.map((conv) => (
         <li key={conv.id}>
           <button
             onClick={() => onSelect(conv.id)}
-            aria-label={`Conversation with ${conv.otherParticipant.name}${conv.unreadCount > 0 ? `, ${conv.unreadCount} unread` : ""}`}
+            aria-label={intl.formatMessage(
+              {
+                id: "messages.list.conversationAriaLabel",
+                defaultMessage:
+                  "Conversation with {name}{unread, plural, =0 {} other {, # unread}}",
+              },
+              { name: conv.otherParticipant.name, unread: conv.unreadCount },
+            )}
             aria-current={activeId === conv.id || undefined}
             className={`w-full text-left p-4 hover:bg-gray-50 transition-colors ${
               activeId === conv.id ? "bg-mayday-50" : ""

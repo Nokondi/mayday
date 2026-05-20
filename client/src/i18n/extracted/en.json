@@ -608,6 +608,42 @@
   "layout.skipToMainContent": {
     "defaultMessage": "Skip to main content"
   },
+  "messages.input.ariaLabel": {
+    "defaultMessage": "Type a message"
+  },
+  "messages.input.placeholder": {
+    "defaultMessage": "Type a message..."
+  },
+  "messages.input.sendButtonAriaLabel": {
+    "defaultMessage": "Send message"
+  },
+  "messages.list.ariaLabel": {
+    "defaultMessage": "Conversations"
+  },
+  "messages.list.conversationAriaLabel": {
+    "defaultMessage": "Conversation with {name}{unread, plural, =0 {} other {, # unread}}"
+  },
+  "messages.list.emptyState": {
+    "defaultMessage": "No conversations yet. Contact someone from a post to start chatting."
+  },
+  "messages.page.emptyState": {
+    "defaultMessage": "Select a conversation to start messaging"
+  },
+  "messages.page.title": {
+    "defaultMessage": "Messages"
+  },
+  "messages.thread.ariaLabel": {
+    "defaultMessage": "Message history"
+  },
+  "messages.thread.messageAriaLabel": {
+    "defaultMessage": "{sender} said {content}, {time}"
+  },
+  "messages.thread.senderOther": {
+    "defaultMessage": "Other participant"
+  },
+  "messages.thread.senderYou": {
+    "defaultMessage": "You"
+  },
   "orgs.browsePage.newButton": {
     "defaultMessage": "New Organization"
   },

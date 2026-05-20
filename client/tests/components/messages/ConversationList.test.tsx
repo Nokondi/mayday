@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Conversation, Message, UserPublicProfile } from '@mayday/shared';
 import { ConversationList } from '../../../src/components/messages/ConversationList.js';
+import { renderWithIntl as render } from '../../helpers/renderWithIntl.js';
 
 function makeParticipant(overrides: Partial<UserPublicProfile> = {}): UserPublicProfile {
   return {

@@ -1,7 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MessageInput } from '../../../src/components/messages/MessageInput.js';
+import { renderWithIntl as render } from '../../helpers/renderWithIntl.js';
 
 function renderInput(overrides: Partial<Parameters<typeof MessageInput>[0]> = {}) {
   const onSend = vi.fn().mockResolvedValue(undefined);
