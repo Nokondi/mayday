@@ -123,6 +123,96 @@ describe('sendPasswordResetEmail', () => {
   });
 });
 
+describe('sendBugReportAdminEmail', () => {
+  it('no-ops when SMTP credentials are not configured', async () => {
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { sendBugReportAdminEmail } = await import('../../src/services/mail.service.js');
+    await sendBugReportAdminEmail('admin@example.com', 'Alice', 'Crash on load');
+
+    expect(sendMailMock).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/SMTP not configured/));
+    warn.mockRestore();
+  });
+
+  it('sends an admin email with the reporter, title, and a link to /admin', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendBugReportAdminEmail } = await import('../../src/services/mail.service.js');
+    await sendBugReportAdminEmail('admin@example.com', 'Alice', 'Crash on load');
+
+    expect(sendMailMock).toHaveBeenCalledTimes(1);
+    const mail = sendMailMock.mock.calls[0][0] as {
+      to: string; subject: string; text: string; html: string;
+    };
+    expect(mail.to).toBe('admin@example.com');
+    expect(mail.subject).toBe('New bug report from Alice: Crash on load');
+    expect(mail.text).toContain('Alice');
+    expect(mail.text).toContain('Crash on load');
+    expect(mail.text).toContain('https://mayday.test/admin');
+    expect(mail.html).toContain('https://mayday.test/admin');
+  });
+
+  it('escapes HTML in the reporter name and title to prevent injection in the html body', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendBugReportAdminEmail } = await import('../../src/services/mail.service.js');
+    await sendBugReportAdminEmail(
+      'admin@example.com',
+      '<img src=x onerror=alert(1)>',
+      '<script>alert("x")</script>',
+    );
+
+    const mail = sendMailMock.mock.calls[0][0] as { html: string };
+    expect(mail.html).not.toContain('<img src=x');
+    expect(mail.html).not.toContain('<script>');
+    expect(mail.html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(mail.html).toContain('&lt;script&gt;');
+  });
+});
+
+describe('sendUserReportAdminEmail', () => {
+  it('no-ops when SMTP credentials are not configured', async () => {
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { sendUserReportAdminEmail } = await import('../../src/services/mail.service.js');
+    await sendUserReportAdminEmail('admin@example.com', 'Alice', 'Harassment', 'user');
+
+    expect(sendMailMock).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/SMTP not configured/));
+    warn.mockRestore();
+  });
+
+  it('labels user-target reports as "user report" in the subject', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendUserReportAdminEmail } = await import('../../src/services/mail.service.js');
+    await sendUserReportAdminEmail('admin@example.com', 'Alice', 'Harassment', 'user');
+
+    const mail = sendMailMock.mock.calls[0][0] as { subject: string; text: string; html: string };
+    expect(mail.subject).toBe('New user report from Alice: Harassment');
+    expect(mail.html).toContain('https://mayday.test/admin');
+  });
+
+  it('labels content-target reports as "content report" in the subject', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendUserReportAdminEmail } = await import('../../src/services/mail.service.js');
+    await sendUserReportAdminEmail('admin@example.com', 'Alice', 'Spam', 'content');
+
+    const mail = sendMailMock.mock.calls[0][0] as { subject: string };
+    expect(mail.subject).toBe('New content report from Alice: Spam');
+  });
+});
+
 describe('sendRegistrationCollisionEmail', () => {
   it('no-ops when SMTP credentials are not configured', async () => {
     delete process.env.SMTP_USER;
