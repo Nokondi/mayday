@@ -7,6 +7,8 @@ import {
   sendCommunityInviteEmail,
   sendOrganizationInviteEmail,
   sendAnnouncementEmail,
+  sendBugReportAdminEmail,
+  sendUserReportAdminEmail,
 } from './mail.service.js';
 import { sendPushToUser, type PushSendOptions } from './push.service.js';
 
@@ -81,6 +83,22 @@ function buildPushPayload(event: NotificationEvent): PushPayload {
         url: '/',
         tag: 'announcement',
       };
+    case 'BUG_REPORT_SUBMITTED':
+      return {
+        title: `New bug report from ${event.reporterName}`,
+        body: event.title,
+        url: '/admin',
+        tag: `br:${event.reportId}`,
+      };
+    case 'USER_REPORT_SUBMITTED': {
+      const kindLabel = event.targetKind === 'user' ? 'user report' : 'content report';
+      return {
+        title: `New ${kindLabel} from ${event.reporterName}`,
+        body: event.reason,
+        url: '/admin',
+        tag: `ur:${event.reportId}`,
+      };
+    }
   }
 }
 
@@ -130,6 +148,15 @@ function sendEmailFor(
       );
     case 'ANNOUNCEMENT':
       return sendAnnouncementEmail(user.email, user.name, event.message);
+    case 'BUG_REPORT_SUBMITTED':
+      return sendBugReportAdminEmail(user.email, event.reporterName, event.title);
+    case 'USER_REPORT_SUBMITTED':
+      return sendUserReportAdminEmail(
+        user.email,
+        event.reporterName,
+        event.reason,
+        event.targetKind,
+      );
   }
 }
 
@@ -193,5 +220,25 @@ export async function notifyMany(
   for (let i = 0; i < users.length; i += NOTIFY_CONCURRENCY) {
     const batch = users.slice(i, i + NOTIFY_CONCURRENCY);
     await Promise.allSettled(batch.map((u) => dispatch(u, event)));
+  }
+}
+
+// Fan out a notification to every site admin. Swallows errors so notification
+// failures never break the originating mutation (e.g. a bug-report submission).
+export async function notifyAdmins(
+  event: NotificationEvent,
+  options: { excludeUserId?: string } = {},
+): Promise<void> {
+  try {
+    const admins = await prisma.user.findMany({
+      where: {
+        role: 'ADMIN',
+        ...(options.excludeUserId ? { id: { not: options.excludeUserId } } : {}),
+      },
+      select: { id: true },
+    });
+    await notifyMany(admins.map((a) => a.id), event);
+  } catch (err) {
+    console.error(`[notify:admins] ${event.type} failed:`, err);
   }
 }

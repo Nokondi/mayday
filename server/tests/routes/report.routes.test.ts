@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../../src/config/database.js', () => ({
   prisma: {
     report: { create: vi.fn() },
-    user: { findUnique: vi.fn() },
+    user: { findUnique: vi.fn(), findMany: vi.fn() },
   },
 }));
 
@@ -34,13 +34,19 @@ const authHeader = (banned = false) =>
 beforeEach(() => {
   vi.clearAllMocks();
   mockedUser.findUnique.mockResolvedValue({ id: USER_ID, isBanned: false } as never);
+  mockedUser.findMany.mockResolvedValue([] as never);
 });
 
 afterEach(() => vi.restoreAllMocks());
 
 describe('POST /api/reports', () => {
   it('creates a report attributing the current user as reporter', async () => {
-    mockedReport.create.mockResolvedValueOnce({ id: 'r1' } as never);
+    mockedReport.create.mockResolvedValueOnce({
+      id: 'r1',
+      reason: 'Spam',
+      reportedUserId: REPORTED_ID,
+      reporter: { name: 'Alice' },
+    } as never);
 
     const res = await request(makeApp())
       .post('/api/reports')
@@ -48,8 +54,30 @@ describe('POST /api/reports', () => {
       .send({ reason: 'Spam', reportedUserId: REPORTED_ID });
 
     expect(res.status).toBe(201);
-    expect(mockedReport.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ reporterId: USER_ID, reason: 'Spam', reportedUserId: REPORTED_ID }),
+    expect(mockedReport.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ reporterId: USER_ID, reason: 'Spam', reportedUserId: REPORTED_ID }),
+        include: { reporter: { select: { name: true } } },
+      }),
+    );
+  });
+
+  it('notifies admins (excluding the reporter) of a new report', async () => {
+    mockedReport.create.mockResolvedValueOnce({
+      id: 'r1',
+      reason: 'Spam',
+      reportedUserId: REPORTED_ID,
+      reporter: { name: 'Alice' },
+    } as never);
+
+    await request(makeApp())
+      .post('/api/reports')
+      .set('Authorization', authHeader())
+      .send({ reason: 'Spam', reportedUserId: REPORTED_ID });
+
+    expect(mockedUser.findMany).toHaveBeenCalledWith({
+      where: { role: 'ADMIN', id: { not: USER_ID } },
+      select: { id: true },
     });
   });
 
@@ -82,7 +110,11 @@ describe('POST /api/reports/user', () => {
     mockedUser.findUnique
       .mockResolvedValueOnce({ id: USER_ID, isBanned: false } as never) // rejectBanned
       .mockResolvedValueOnce({ id: REPORTED_ID } as never); // target lookup by email
-    mockedReport.create.mockResolvedValueOnce({ id: 'r1' } as never);
+    mockedReport.create.mockResolvedValueOnce({
+      id: 'r1',
+      reason: 'Harassment',
+      reporter: { name: 'Alice' },
+    } as never);
 
     const res = await request(makeApp())
       .post('/api/reports/user')
@@ -97,6 +129,28 @@ describe('POST /api/reports/user', () => {
         reportedUserId: REPORTED_ID,
         reporterId: USER_ID,
       },
+      include: { reporter: { select: { name: true } } },
+    });
+  });
+
+  it('notifies admins (excluding the reporter) after a user is reported', async () => {
+    mockedUser.findUnique
+      .mockResolvedValueOnce({ id: USER_ID, isBanned: false } as never)
+      .mockResolvedValueOnce({ id: REPORTED_ID } as never);
+    mockedReport.create.mockResolvedValueOnce({
+      id: 'r1',
+      reason: 'Harassment',
+      reporter: { name: 'Alice' },
+    } as never);
+
+    await request(makeApp())
+      .post('/api/reports/user')
+      .set('Authorization', authHeader())
+      .send({ email: 'target@example.com', reason: 'Harassment' });
+
+    expect(mockedUser.findMany).toHaveBeenCalledWith({
+      where: { role: 'ADMIN', id: { not: USER_ID } },
+      select: { id: true },
     });
   });
 

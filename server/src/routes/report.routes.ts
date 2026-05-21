@@ -5,6 +5,7 @@ import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.
 import { prisma } from '../config/database.js';
 import { AppError } from '../middleware/error.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { notifyAdmins } from '../services/notification.service.js';
 
 export const reportRoutes = Router();
 
@@ -17,7 +18,20 @@ reportRoutes.post('/', validate(createReportSchema), asyncHandler(async (req: Au
       ...req.body,
       reporterId: req.user!.id,
     },
+    include: { reporter: { select: { name: true } } },
   });
+
+  await notifyAdmins(
+    {
+      type: 'USER_REPORT_SUBMITTED',
+      reportId: report.id,
+      reporterName: report.reporter.name,
+      reason: report.reason,
+      targetKind: report.reportedUserId ? 'user' : 'content',
+    },
+    { excludeUserId: req.user!.id },
+  );
+
   res.status(201).json(report);
 }));
 
@@ -36,6 +50,19 @@ reportRoutes.post('/user', validate(reportUserSchema), asyncHandler(async (req: 
       reportedUserId: target.id,
       reporterId: req.user!.id,
     },
+    include: { reporter: { select: { name: true } } },
   });
+
+  await notifyAdmins(
+    {
+      type: 'USER_REPORT_SUBMITTED',
+      reportId: report.id,
+      reporterName: report.reporter.name,
+      reason: report.reason,
+      targetKind: 'user',
+    },
+    { excludeUserId: req.user!.id },
+  );
+
   res.status(201).json(report);
 }));

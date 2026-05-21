@@ -12,6 +12,7 @@ vi.mock('../../src/config/database.js', () => ({
     },
     user: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
     },
   },
 }));
@@ -48,6 +49,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   // rejectBanned looks up the user; return a non-banned user by default
   mockedUser.findUnique.mockResolvedValue({ isBanned: false } as never);
+  // notifyAdmins queries admins by role; default to none so the fan-out is a no-op
+  mockedUser.findMany.mockResolvedValue([] as never);
 });
 
 describe('POST /api/bug-reports', () => {
@@ -68,6 +71,7 @@ describe('POST /api/bug-reports', () => {
       reporterId: USER_ID,
       createdAt: new Date(),
       updatedAt: new Date(),
+      reporter: { name: 'Alice' },
     } as never);
 
     const app = makeApp();
@@ -84,6 +88,31 @@ describe('POST /api/bug-reports', () => {
         description: 'Clicking does nothing',
         reporterId: USER_ID,
       },
+      include: { reporter: { select: { name: true } } },
+    });
+  });
+
+  it('queries site admins (excluding the reporter) after a bug report is created', async () => {
+    mockedBug.create.mockResolvedValue({
+      id: 'b1',
+      title: 'Broken button',
+      description: 'x',
+      status: 'OPEN',
+      reporterId: USER_ID,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      reporter: { name: 'Alice' },
+    } as never);
+
+    const app = makeApp();
+    await request(app)
+      .post('/api/bug-reports')
+      .set('Authorization', authHeader())
+      .send({ title: 'Broken button', description: 'Clicking does nothing' });
+
+    expect(mockedUser.findMany).toHaveBeenCalledWith({
+      where: { role: 'ADMIN', id: { not: USER_ID } },
+      select: { id: true },
     });
   });
 
