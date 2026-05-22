@@ -698,6 +698,10 @@ describe("GET /api/auth/me", () => {
     // Ensure the returned shape does not include password fields or ban flag.
     expect(res.body).not.toHaveProperty("passwordHash");
     expect(res.body).not.toHaveProperty("isBanned");
+    // E2EE flag must be present so the client can decide whether to attempt
+    // encrypted sends. Type matters — a missing field would leave the client
+    // unable to distinguish "off" from "server hasn't shipped Phase 2".
+    expect(typeof res.body.e2eeEnabled).toBe("boolean");
   });
 
   it("returns 401 when no Authorization header is sent", async () => {

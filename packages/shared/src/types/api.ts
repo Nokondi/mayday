@@ -183,17 +183,66 @@ export const registerDeviceSchema = z.object({
 export type RegisterDeviceRequest = z.infer<typeof registerDeviceSchema>;
 
 // Messages
-export const sendMessageSchema = z.object({
-  content: z.string().min(1, 'Message cannot be empty').max(5000),
+// E2EE envelope used as the alternative payload shape when sending an
+// encrypted message. ciphertext/nonce are base64 sodium outputs; the
+// senderDeviceId identifies which of the sender's devices produced this.
+// protocolVersion lets us migrate to Level B (Double Ratchet) later without
+// breaking clients that only know protocolVersion=1.
+const base64Bytes = z.string().regex(/^[A-Za-z0-9+/]+=*$/, 'Must be base64');
+export const encryptedEnvelopeSchema = z.object({
+  protocolVersion: z.literal(1),
+  ciphertext: base64Bytes.min(1).max(8192),
+  nonce: base64Bytes.min(32).max(36),
+  senderDeviceId: z.string().uuid(),
+  keyEpoch: z.number().int().min(1).max(1_000_000),
 });
+export type EncryptedEnvelope = z.infer<typeof encryptedEnvelopeSchema>;
 
-export const startConversationSchema = z.object({
-  participantId: z.string().uuid(),
-  message: z.string().min(1).max(5000).optional(),
-});
+// A send/start payload is either a plaintext content string OR an envelope.
+// The server stores whichever shape arrives; clients fall back to plaintext
+// when they can't encrypt (peer has no device yet, E2EE flag is off, etc.).
+const messageBodySchema = z.union([
+  z.object({ content: z.string().min(1, 'Message cannot be empty').max(5000) }),
+  z.object({ envelope: encryptedEnvelopeSchema }),
+]);
+
+export const sendMessageSchema = messageBodySchema;
+
+// startConversation accepts either `{ message }` (plaintext, pre-Phase-2
+// shape preserved for backwards compatibility with existing clients) or
+// `{ envelope }` (Phase 2 encrypted send). Both are optional — you can
+// also start an empty conversation with no first message.
+//
+// Branch order matters: the `message` branch makes `message` optional, so
+// it matches almost any body containing `participantId`. Putting the
+// `envelope` branch first ensures encrypted bodies don't get silently
+// classified as the plaintext shape and have their envelope field stripped.
+export const startConversationSchema = z.intersection(
+  z.object({ participantId: z.string().uuid() }),
+  z.union([
+    z.object({ envelope: encryptedEnvelopeSchema }),
+    z.object({ message: z.string().min(1).max(5000).optional() }),
+  ]),
+);
 
 export type SendMessageRequest = z.infer<typeof sendMessageSchema>;
 export type StartConversationRequest = z.infer<typeof startConversationSchema>;
+
+// Conversation key wraps — clients upload a CK sealed to each recipient
+// device's X25519 public key. The server validates that each deviceId
+// belongs to a participant of the conversation but cannot read the wrap.
+export const uploadKeyWrapsSchema = z.object({
+  wraps: z
+    .array(z.object({
+      deviceId: z.string().uuid(),
+      wrappedKey: base64Bytes.min(1).max(256),
+      keyEpoch: z.number().int().min(1).max(1_000_000),
+    }))
+    .min(1)
+    .max(50),
+});
+
+export type UploadKeyWrapsRequest = z.infer<typeof uploadKeyWrapsSchema>;
 
 // Reports
 export const createReportSchema = z.object({

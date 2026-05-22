@@ -22,6 +22,11 @@ function makeMessage(overrides: Partial<Message> = {}): Message {
   return {
     id: 'm1',
     content: 'hello',
+    ciphertext: null,
+    nonce: null,
+    senderDeviceId: null,
+    keyEpoch: null,
+    protocolVersion: null,
     senderId: 'u2',
     receiverId: 'u1',
     conversationId: 'c1',
