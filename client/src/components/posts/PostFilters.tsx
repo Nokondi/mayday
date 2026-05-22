@@ -91,7 +91,7 @@ export function PostFilters({
             defaultMessage: "Filter by community",
           })}
           onChange={(e) => onCommunityChange(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white w-40 truncate"
         >
           <option value="">
             {intl.formatMessage({
@@ -126,7 +126,10 @@ export function PostFilters({
           {intl.formatMessage({ id: "urgency.low", defaultMessage: "Low" })}
         </option>
         <option value="MEDIUM">
-          {intl.formatMessage({ id: "urgency.medium", defaultMessage: "Medium" })}
+          {intl.formatMessage({
+            id: "urgency.medium",
+            defaultMessage: "Medium",
+          })}
         </option>
         <option value="HIGH">
           {intl.formatMessage({ id: "urgency.high", defaultMessage: "High" })}
