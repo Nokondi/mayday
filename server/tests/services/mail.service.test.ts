@@ -213,6 +213,101 @@ describe('sendUserReportAdminEmail', () => {
   });
 });
 
+describe('sendNewMessageEmail', () => {
+  it('renders a preview blockquote when given a plaintext preview string', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendNewMessageEmail } = await import('../../src/services/mail.service.js');
+    await sendNewMessageEmail('to@example.com', 'Bob', 'Hello there');
+
+    const mail = sendMailMock.mock.calls[0][0] as {
+      subject: string; text: string; html: string;
+    };
+    expect(mail.subject).toBe('New message from Bob on Mayday');
+    expect(mail.text).toContain('Hello there');
+    expect(mail.html).toContain('<blockquote');
+    expect(mail.html).toContain('Hello there');
+  });
+
+  it('truncates preview past 280 chars with an ellipsis', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const long = 'x'.repeat(400);
+    const { sendNewMessageEmail } = await import('../../src/services/mail.service.js');
+    await sendNewMessageEmail('to@example.com', 'Bob', long);
+
+    const mail = sendMailMock.mock.calls[0][0] as { html: string };
+    expect(mail.html).toContain('x'.repeat(280) + '…');
+    expect(mail.html).not.toContain('x'.repeat(400));
+  });
+
+  it('escapes HTML in sender name to prevent injection', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendNewMessageEmail } = await import('../../src/services/mail.service.js');
+    await sendNewMessageEmail(
+      'to@example.com',
+      '<img src=x onerror=alert(1)>',
+      'plain',
+    );
+
+    const mail = sendMailMock.mock.calls[0][0] as { html: string };
+    expect(mail.html).not.toContain('<img src=x');
+    expect(mail.html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+  });
+
+  it('renders the no-blockquote variant when preview is null (E2EE encrypted message)', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendNewMessageEmail } = await import('../../src/services/mail.service.js');
+    await sendNewMessageEmail('to@example.com', 'Bob', null);
+
+    const mail = sendMailMock.mock.calls[0][0] as {
+      subject: string; text: string; html: string;
+    };
+    expect(mail.subject).toBe('New message from Bob on Mayday');
+    // No blockquote and no preview text in either body — the only signal
+    // is "someone sent you a message; click to read".
+    expect(mail.html).not.toContain('<blockquote');
+    expect(mail.text).toContain('Open your inbox');
+    expect(mail.html).toContain('https://mayday.test/messages');
+    // Should still HTML-escape the sender name even on the encrypted path.
+  });
+
+  it('encrypted path: still HTML-escapes the sender name', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendNewMessageEmail } = await import('../../src/services/mail.service.js');
+    await sendNewMessageEmail(
+      'to@example.com',
+      '<script>alert(1)</script>',
+      null,
+    );
+
+    const mail = sendMailMock.mock.calls[0][0] as { html: string };
+    expect(mail.html).not.toContain('<script>');
+    expect(mail.html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+  });
+
+  it('no-ops when SMTP is not configured', async () => {
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { sendNewMessageEmail } = await import('../../src/services/mail.service.js');
+    await sendNewMessageEmail('to@example.com', 'Bob', 'Hello');
+
+    expect(sendMailMock).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/SMTP not configured/));
+    warn.mockRestore();
+  });
+});
+
 describe('sendRegistrationCollisionEmail', () => {
   it('no-ops when SMTP credentials are not configured', async () => {
     delete process.env.SMTP_USER;

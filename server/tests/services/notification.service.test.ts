@@ -186,6 +186,26 @@ describe('notify — per-event email arguments', () => {
     );
   });
 
+  it('NEW_MESSAGE — encrypted: sendNewMessageEmail is called with null preview (no content)', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      ...NEW_MESSAGE_EVENT,
+      content: 'should-never-be-emailed',
+      isEncrypted: true,
+    });
+    // Critical: the preview argument is `null`, not the content string.
+    // mail.service renders the no-blockquote variant on null.
+    expect(sendNewMessageEmail).toHaveBeenCalledWith(
+      'alice@example.com',
+      'Bob',
+      null,
+    );
+    const calls = sendNewMessageEmail.mock.calls as unknown as [string, string, string | null][];
+    for (const args of calls) {
+      expect(args[2]).not.toBe('should-never-be-emailed');
+    }
+  });
+
   it('COMMUNITY_JOIN_REQUEST → sendCommunityJoinRequestEmail with all fields', async () => {
     const { notify } = await import('../../src/services/notification.service.js');
     await notify('user-1', {
@@ -322,6 +342,24 @@ describe('notify — per-event push payloads', () => {
     const p = payloadOf();
     expect(p.body.length).toBe(201);
     expect(p.body.endsWith('…')).toBe(true);
+  });
+
+  it('NEW_MESSAGE — encrypted: body is empty, title and tag still set, content is NOT in the payload', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      ...NEW_MESSAGE_EVENT,
+      content: 'should-never-appear-in-push',
+      isEncrypted: true,
+    });
+    const p = payloadOf();
+    expect(p.title).toBe('New message from Bob');
+    expect(p.body).toBe('');
+    expect(p.tag).toBe('msg:conv-1');
+    // Defense in depth: even though content is the field name, no portion of
+    // it should be serialized into the body. A regression where we accidentally
+    // truncated rather than suppressed would still leak the first 200 chars.
+    const serialized = JSON.stringify(p);
+    expect(serialized).not.toContain('should-never-appear-in-push');
   });
 
   it('COMMUNITY_JOIN_REQUEST — url goes to /manage and body falls back when no message', async () => {
