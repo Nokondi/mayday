@@ -45,19 +45,23 @@ export function MessagesPage() {
     enabled: !!activeConversation,
   });
 
-  // Conversation key resolution. The hook fetches wraps from the server and
-  // unwraps with the local device key. We also keep a session-local override
-  // (`localCk`) for the freshly-established case: when we generate a CK to
-  // send our first encrypted message, the hook hasn't been told about it yet,
-  // so we hold it in component state until the next mount of the page.
-  const resolvedCk = useConversationKey(activeConversation || null);
-  const [localCk, setLocalCk] = useState<Uint8Array | null>(null);
-  // Reset the session-local CK whenever we change conversations, so we never
-  // accidentally apply a CK from one conversation to another.
+  // Conversation key resolution. The hook fetches wraps and unwraps with the
+  // local device key, picking the highest-epoch wrap. We also keep a session-
+  // local fallback (`localCk`) for the freshly-established case: when we
+  // generate a CK to send our first encrypted message, the hook hasn't been
+  // told about it yet, so we hold it in component state until the next mount.
+  //
+  // Priority order matters: the *hook* value takes precedence over local.
+  // Post-rotation (Phase 5), the hook resolves to the new-epoch CK while
+  // `localCk` may still hold the old one — using the hook's value ensures
+  // the next send encrypts under the rotated CK so the revoked device can't
+  // decrypt it even with its still-cached old CK.
+  const resolved = useConversationKey(activeConversation || null);
+  const [localCk, setLocalCk] = useState<{ ck: Uint8Array; keyEpoch: number } | null>(null);
   useEffect(() => { setLocalCk(null); }, [activeConversation]);
-  const conversationKey = localCk ?? resolvedCk;
+  const conversationKey = resolved ?? localCk;
 
-  const decryptedMessages = useDecryptedMessages(messages, conversationKey);
+  const decryptedMessages = useDecryptedMessages(messages, conversationKey?.ck ?? null);
 
   const activeConv = useMemo(() => {
     return conversations?.find((c) => c.id === activeConversation) ?? null;
@@ -105,12 +109,18 @@ export function MessagesPage() {
     if (!e2eeEnabled || !device || !deviceServerId) {
       msg = await sendMessage(activeConversation, content);
     } else if (conversationKey) {
-      const envelope = await encryptToEnvelope(content, conversationKey, deviceServerId, 1);
+      const envelope = await encryptToEnvelope(
+        content,
+        conversationKey.ck,
+        deviceServerId,
+        conversationKey.keyEpoch,
+      );
       msg = await sendEncryptedMessage(activeConversation, envelope);
     } else if (peerUserId) {
       const fresh = await establishConversationKey(activeConversation, peerUserId, deviceServerId);
       if (fresh) {
-        setLocalCk(fresh);
+        // Establish creates the very first epoch — epoch 1.
+        setLocalCk({ ck: fresh, keyEpoch: 1 });
         const envelope = await encryptToEnvelope(content, fresh, deviceServerId, 1);
         msg = await sendEncryptedMessage(activeConversation, envelope);
       } else {

@@ -1,4 +1,4 @@
-import type { PeerDevice } from '@mayday/shared';
+import type { PeerDevice, UploadKeyWrapsRequest } from '@mayday/shared';
 import type { DeviceKeys } from './device.js';
 import { getConversations } from '../api/messages.js';
 import { getKeyWraps, uploadKeyWraps } from '../api/keyWraps.js';
@@ -7,12 +7,16 @@ import { unwrapConversationKey, wrapConversationKey, fromBase64, toBase64 } from
 // Runs when a DEVICE_ADDED event arrives. The same algorithm covers both
 // own-handoff (newDevice.userId === me) and peer-rescue (newDevice.userId
 // === a peer of one of my conversations): for every conversation where the
-// new device's owner is a participant, see if I hold a wrap I can unwrap,
-// and if so, wrap the recovered CK for the new device and upload it.
+// new device's owner is a participant, see which epochs I hold wraps for,
+// unwrap each one, re-wrap for the new device at the same epoch, and upload.
 //
-// Idempotent on the server side: re-running this for the same (conv, device)
-// pair just overwrites the wrap (different ciphertext bytes since sealed-box
-// uses an ephemeral keypair, but they all decrypt to the same CK).
+// Phase 5 covers ALL epochs we have access to (not just the latest) so the
+// new device can decrypt the full conversation history after rotations,
+// not just messages encrypted under the current CK.
+//
+// Idempotent on the server side: re-running this for the same (conv, device,
+// epoch) tuple just overwrites the wrap (different ciphertext bytes since
+// sealed-box uses an ephemeral keypair, but all decrypt to the same CK).
 export interface RescueParams {
   currentUserId: string;
   ownDevice: DeviceKeys;
@@ -38,37 +42,40 @@ export async function rescueConversationKeysForDevice(params: RescueParams): Pro
     return c.otherParticipant.id === newDevice.userId;
   });
 
-  // Decode the new device's public key once.
   const newDevicePubKey = await fromBase64(newDevice.encryptionPublicKey);
 
-  // Process conversations in parallel — they're independent. If any one
-  // fails (network blip, conversation already migrated, etc.) we let the
-  // others continue and swallow the per-conversation error.
   await Promise.allSettled(targetConversations.map(async (conv) => {
     const wraps = await getKeyWraps(conv.id);
-    const ourWrap = wraps.find((w) => w.deviceId === ownDeviceServerId);
-    if (!ourWrap) return; // We don't have access to this conversation's CK.
+    const ourWraps = wraps.filter((w) => w.deviceId === ownDeviceServerId);
+    if (ourWraps.length === 0) return; // No access to this conversation's CK.
 
-    // Skip if the new device already has a wrap at the same epoch — saves a
-    // round trip and avoids overwriting a wrap that another own device may
-    // have already uploaded.
-    if (wraps.some((w) => w.deviceId === newDevice.id && w.keyEpoch === ourWrap.keyEpoch)) {
-      return;
+    // For each epoch we hold a wrap at, produce a wrap for the new device —
+    // unless one already exists at that epoch (race-safe). Without this loop,
+    // post-rotation conversations would leave the rescued device able to
+    // decrypt only the latest epoch and showing "Could not decrypt" for the
+    // history.
+    const alreadyWrappedEpochs = new Set(
+      wraps.filter((w) => w.deviceId === newDevice.id).map((w) => w.keyEpoch),
+    );
+    const wrapsToUpload: UploadKeyWrapsRequest['wraps'] = [];
+    for (const ours of ourWraps) {
+      if (alreadyWrappedEpochs.has(ours.keyEpoch)) continue;
+      const wrappedBytes = await fromBase64(ours.wrappedKey);
+      const ck = await unwrapConversationKey(
+        wrappedBytes,
+        ownDevice.encryption.publicKey,
+        ownDevice.encryption.privateKey,
+      );
+      if (!ck) continue;
+      const wrappedForNewDevice = await wrapConversationKey(ck, newDevicePubKey);
+      wrapsToUpload.push({
+        deviceId: newDevice.id,
+        wrappedKey: await toBase64(wrappedForNewDevice),
+        keyEpoch: ours.keyEpoch,
+      });
     }
 
-    const wrappedBytes = await fromBase64(ourWrap.wrappedKey);
-    const ck = await unwrapConversationKey(
-      wrappedBytes,
-      ownDevice.encryption.publicKey,
-      ownDevice.encryption.privateKey,
-    );
-    if (!ck) return; // Our own wrap is unreadable — shouldn't happen, but skip.
-
-    const wrappedForNewDevice = await wrapConversationKey(ck, newDevicePubKey);
-    await uploadKeyWraps(conv.id, [{
-      deviceId: newDevice.id,
-      wrappedKey: await toBase64(wrappedForNewDevice),
-      keyEpoch: ourWrap.keyEpoch,
-    }]);
+    if (wrapsToUpload.length === 0) return;
+    await uploadKeyWraps(conv.id, wrapsToUpload);
   }));
 }

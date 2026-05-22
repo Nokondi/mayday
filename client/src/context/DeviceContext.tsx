@@ -11,6 +11,10 @@ interface DeviceContextType {
   // device in the list.
   serverId: string | null;
   error: Error | null;
+  // True when registration failed because the user is at their per-account
+  // active-device cap (server returns 409). DevicesSection surfaces this so
+  // the user knows to revoke an existing device to free a slot.
+  capReached: boolean;
 }
 
 const DeviceContext = createContext<DeviceContextType | null>(null);
@@ -28,11 +32,13 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
   const [device, setDevice] = useState<DeviceKeys | null>(null);
   const [serverId, setServerId] = useState<string | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const [capReached, setCapReached] = useState(false);
 
   useEffect(() => {
     if (!user) {
       setDevice(null);
       setServerId(null);
+      setCapReached(false);
       return;
     }
 
@@ -55,15 +61,17 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
         setServerId(keys.serverId);
       } catch (err) {
         if (cancelled) return;
-        // If the device was deleted/revoked server-side, the next POST might
-        // succeed but reads from /me would no longer include it. We don't
-        // attempt auto-recovery here — Phase 5 will own the revoke UX. For
-        // now, surface the error and leave the local record alone so the
-        // user can re-try via Settings.
-        // We *do* wipe if it's a 401 — that means the auth handshake
-        // rotated under us; force a fresh device on next login.
-        if (axios.isAxiosError(err) && err.response?.status === 401) {
-          await wipeDevice().catch(() => {});
+        // 401 = auth rotated under us; wipe local keys and let the user
+        // re-enroll on next login.
+        // 409 = device cap reached; flag it so the settings UI prompts the
+        // user to revoke an existing device. The local keypair stays — when
+        // a slot opens up, the same keys can register without regenerating.
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status === 401) {
+            await wipeDevice().catch(() => {});
+          } else if (err.response?.status === 409) {
+            setCapReached(true);
+          }
         }
         setError(err instanceof Error ? err : new Error(String(err)));
       }
@@ -73,7 +81,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   return (
-    <DeviceContext.Provider value={{ device, serverId, error }}>
+    <DeviceContext.Provider value={{ device, serverId, error, capReached }}>
       {children}
     </DeviceContext.Provider>
   );
