@@ -1,10 +1,11 @@
 import { Fragment, useEffect, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { useIntl } from "react-intl";
-import type { Message } from "@mayday/shared";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Unlock } from "lucide-react";
+import type { RenderableMessage } from "../../crypto/render.js";
 
 interface MessageThreadProps {
-  messages: Message[];
+  messages: RenderableMessage[];
   currentUserId: string;
 }
 
@@ -88,9 +89,35 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
             >
               <p className="text-sm whitespace-pre-wrap break-words">{renderWithLinks(msg.content, isMine)}</p>
               <p
-                className={`text-xs mt-1 ${isMine ? "text-mayday-200" : "text-gray-500"}`}
+                className={`text-xs mt-1 flex items-center gap-1 ${isMine ? "text-mayday-200" : "text-gray-500"}`}
               >
                 <time dateTime={sentAt.toISOString()}>{relativeTime}</time>
+                {msg.encryptionStatus === "legacy" && (
+                  // Pre-E2EE plaintext message. The badge signals that this
+                  // particular message wasn't end-to-end encrypted, so a user
+                  // verifying their conversation's confidentiality knows where
+                  // the encrypted boundary starts.
+                  <span
+                    aria-label={intl.formatMessage({
+                      id: "messages.thread.legacyBadge",
+                      defaultMessage: "Not end-to-end encrypted",
+                    })}
+                    title={intl.formatMessage({
+                      id: "messages.thread.legacyBadgeTitle",
+                      defaultMessage: "Sent before end-to-end encryption was enabled",
+                    })}
+                    className="inline-flex items-center gap-0.5"
+                  >
+                    &middot;
+                    <Unlock className="w-3 h-3" aria-hidden="true" />
+                    <span className="sr-only">
+                      <FormattedMessage
+                        id="messages.thread.legacyBadge"
+                        defaultMessage="Not end-to-end encrypted"
+                      />
+                    </span>
+                  </span>
+                )}
               </p>
             </div>
           </article>

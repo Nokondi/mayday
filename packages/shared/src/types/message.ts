@@ -1,13 +1,33 @@
 import type { UserPublicProfile } from './user.js';
 import type { PeerDevice } from './device.js';
 
+// On-the-wire message. `content` is set for legacy (pre-E2EE) plaintext
+// messages; encrypted messages leave it null and populate the envelope
+// fields (ciphertext, nonce, senderDeviceId, keyEpoch, protocolVersion).
+// All Bytes columns are base64-encoded on the wire.
 export interface Message {
   id: string;
-  content: string;
+  content: string | null;
+  ciphertext: string | null;
+  nonce: string | null;
+  senderDeviceId: string | null;
+  keyEpoch: number | null;
+  protocolVersion: number | null;
   senderId: string;
   receiverId: string;
   conversationId: string;
   readAt: string | null;
+  createdAt: string;
+}
+
+// What a recipient device fetches to decrypt a conversation. Includes the
+// caller's own device wraps (received from server filtered to their devices).
+export interface ConversationKeyWrap {
+  id: string;
+  conversationId: string;
+  deviceId: string;
+  wrappedKey: string; // base64 of crypto_box_seal output
+  keyEpoch: number;
   createdAt: string;
 }
 

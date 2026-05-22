@@ -15,6 +15,7 @@ import {
   getConversationMessages,
   getConversations,
   sendMessage,
+  sendEncryptedMessage,
   startConversation,
 } from '../../src/api/messages.js';
 
@@ -91,6 +92,31 @@ describe('messages api', () => {
         { content: 'hi' },
       );
       expect(result).toEqual({ id: 'm1', content: 'hi' });
+    });
+  });
+
+  describe('sendEncryptedMessage', () => {
+    it('POSTs an envelope payload — content stays out of the request body', async () => {
+      mockedApi.post.mockResolvedValueOnce({ data: { id: 'm1', content: null } });
+      const envelope = {
+        protocolVersion: 1 as const,
+        ciphertext: 'Y3Q=',
+        nonce: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        senderDeviceId: '00000000-0000-4000-a000-000000000001',
+        keyEpoch: 1,
+      };
+
+      await sendEncryptedMessage('cv1', envelope);
+
+      // Critical assertion: there is no `content` field in the request body
+      // for encrypted sends. A regression here would mean plaintext leaks
+      // alongside ciphertext.
+      expect(mockedApi.post).toHaveBeenCalledWith(
+        '/messages/conversations/cv1/messages',
+        { envelope },
+      );
+      const body = mockedApi.post.mock.calls[0]?.[1] as { content?: unknown };
+      expect(body).not.toHaveProperty('content');
     });
   });
 });

@@ -22,6 +22,7 @@ import {
 } from '../utils/jwt.js';
 import { AppError } from '../middleware/error.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { env } from '../config/env.js';
 import {
   sendVerificationEmail,
   sendPasswordResetEmail,
@@ -299,5 +300,8 @@ authRoutes.get('/me', requireAuth, asyncHandler(async (req: AuthRequest, res) =>
     },
   });
   if (!user) throw new AppError(404, 'User not found');
-  res.json(user);
+  // Surface the E2EE flag so the client can decide whether to attempt
+  // encrypted sends. When false, the client falls back to plaintext (the
+  // pre-Phase-2 behavior).
+  res.json({ ...user, e2eeEnabled: env.E2EE_ENABLED });
 }));

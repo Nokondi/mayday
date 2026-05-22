@@ -66,7 +66,18 @@ export function ConversationList({
             </div>
             {conv.lastMessage && (
               <p className="text-sm text-gray-500 truncate mt-1">
-                {conv.lastMessage.content}
+                {conv.lastMessage.content !== null ? (
+                  conv.lastMessage.content
+                ) : (
+                  // For encrypted last messages the server can't supply a
+                  // preview — show a generic placeholder rather than fetching
+                  // and decrypting every conversation's last message just to
+                  // render the sidebar.
+                  <FormattedMessage
+                    id="messages.list.encryptedPreview"
+                    defaultMessage="\u{1F512} Encrypted message"
+                  />
+                )}
               </p>
             )}
             {conv.lastMessage && (

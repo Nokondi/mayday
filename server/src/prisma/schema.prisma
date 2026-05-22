@@ -188,13 +188,25 @@ model Conversation {
   participantA User      @relation("participantA", fields: [participantAId], references: [id])
   participantB User      @relation("participantB", fields: [participantBId], references: [id])
   messages     Message[]
+  keyWraps     ConversationKeyWrap[]
 
   @@unique([participantAId, participantBId])
 }
 
 model Message {
   id             String    @id @default(uuid())
-  content        String
+  // Plaintext body — only set for legacy (pre-E2EE) messages. New messages
+  // sent under E2EE leave this NULL and populate the ciphertext fields below.
+  content        String?
+  // E2EE envelope. ciphertext + nonce decrypt under the conversation key for
+  // (conversationId, keyEpoch). senderDeviceId identifies which device of the
+  // sender produced the envelope. protocolVersion lets clients migrate to a
+  // future Double Ratchet (Level B) scheme without forced re-registration.
+  ciphertext      Bytes?
+  nonce           Bytes?
+  senderDeviceId  String?
+  keyEpoch        Int?
+  protocolVersion Int?
   senderId       String
   receiverId     String
   conversationId String
@@ -208,6 +220,26 @@ model Message {
   @@index([conversationId])
   @@index([senderId])
   @@index([receiverId])
+}
+
+// One row per (conversation, recipient device) pair. wrappedKey is the
+// conversation key sealed to the device's X25519 public key. Multiple
+// epochs let us rotate the CK without breaking access to older messages —
+// each Message references the keyEpoch that decrypts it.
+model ConversationKeyWrap {
+  id             String   @id @default(uuid())
+  conversationId String
+  deviceId       String
+  wrappedKey     Bytes
+  keyEpoch       Int      @default(1)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  device       Device       @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, deviceId, keyEpoch])
+  @@index([deviceId])
+  @@index([conversationId])
 }
 
 model Report {
@@ -453,6 +485,7 @@ model Device {
   revokedAt           DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  keyWraps ConversationKeyWrap[]
 
   @@index([userId])
   @@index([userId, revokedAt])

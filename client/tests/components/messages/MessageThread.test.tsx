@@ -1,6 +1,6 @@
 import { screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Message } from "@mayday/shared";
+import type { RenderableMessage } from "../../../src/crypto/render.js";
 import { MessageThread } from "../../../src/components/messages/MessageThread.js";
 import { renderWithIntl as render } from "../../helpers/renderWithIntl.js";
 
@@ -9,7 +9,7 @@ beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
 });
 
-function makeMessage(overrides: Partial<Message> = {}): Message {
+function makeMessage(overrides: Partial<RenderableMessage> = {}): RenderableMessage {
   return {
     id: "m1",
     content: "hi",
@@ -18,6 +18,7 @@ function makeMessage(overrides: Partial<Message> = {}): Message {
     conversationId: "c1",
     readAt: null,
     createdAt: "2020-01-01T00:00:00Z",
+    encryptionStatus: "encrypted",
     ...overrides,
   };
 }
@@ -111,5 +112,23 @@ describe("MessageThread", () => {
     );
     expect(paragraphs).toHaveLength(2);
     expect(paragraphs[1].textContent).toMatch(/ago$/);
+  });
+
+  it('shows the "Not end-to-end encrypted" badge on legacy plaintext messages', () => {
+    const messages = [
+      makeMessage({ id: "m1", content: "old plain", encryptionStatus: "legacy" }),
+    ];
+    render(<MessageThread messages={messages} currentUserId="u1" />);
+    // The badge is offered to assistive tech via aria-label/sr-only — querying
+    // by accessible name ensures we don't lose this if the icon changes.
+    expect(screen.getAllByLabelText("Not end-to-end encrypted").length).toBeGreaterThan(0);
+  });
+
+  it('does NOT show the legacy badge on encrypted messages', () => {
+    const messages = [
+      makeMessage({ id: "m1", content: "secret", encryptionStatus: "encrypted" }),
+    ];
+    render(<MessageThread messages={messages} currentUserId="u1" />);
+    expect(screen.queryByLabelText("Not end-to-end encrypted")).toBeNull();
   });
 });
