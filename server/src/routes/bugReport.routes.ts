@@ -4,6 +4,7 @@ import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.middleware.js';
 import { prisma } from '../config/database.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { notifyAdmins } from '../services/notification.service.js';
 
 export const bugReportRoutes = Router();
 
@@ -17,6 +18,18 @@ bugReportRoutes.post('/', validate(createBugReportSchema), asyncHandler(async (r
       description: req.body.description,
       reporterId: req.user!.id,
     },
+    include: { reporter: { select: { name: true } } },
   });
+
+  await notifyAdmins(
+    {
+      type: 'BUG_REPORT_SUBMITTED',
+      reportId: bugReport.id,
+      reporterName: bugReport.reporter.name,
+      title: bugReport.title,
+    },
+    { excludeUserId: req.user!.id },
+  );
+
   res.status(201).json(bugReport);
 }));

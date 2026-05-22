@@ -9,6 +9,8 @@ const sendCommunityJoinRequestApprovedEmail = vi.fn().mockResolvedValue(undefine
 const sendCommunityInviteEmail = vi.fn().mockResolvedValue(undefined);
 const sendOrganizationInviteEmail = vi.fn().mockResolvedValue(undefined);
 const sendAnnouncementEmail = vi.fn().mockResolvedValue(undefined);
+const sendBugReportAdminEmail = vi.fn().mockResolvedValue(undefined);
+const sendUserReportAdminEmail = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('../../src/services/mail.service.js', () => ({
   sendNewMessageEmail,
@@ -17,6 +19,8 @@ vi.mock('../../src/services/mail.service.js', () => ({
   sendCommunityInviteEmail,
   sendOrganizationInviteEmail,
   sendAnnouncementEmail,
+  sendBugReportAdminEmail,
+  sendUserReportAdminEmail,
 }));
 
 const sendPushToUser = vi.fn().mockResolvedValue(undefined);
@@ -253,6 +257,38 @@ describe('notify — per-event email arguments', () => {
       'Hello world',
     );
   });
+
+  it('BUG_REPORT_SUBMITTED → sendBugReportAdminEmail with reporter and title', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'BUG_REPORT_SUBMITTED',
+      reportId: 'b1',
+      reporterName: 'Carol',
+      title: 'Crash on load',
+    });
+    expect(sendBugReportAdminEmail).toHaveBeenCalledWith(
+      'alice@example.com',
+      'Carol',
+      'Crash on load',
+    );
+  });
+
+  it('USER_REPORT_SUBMITTED → sendUserReportAdminEmail with the targetKind passed through', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'USER_REPORT_SUBMITTED',
+      reportId: 'r1',
+      reporterName: 'Carol',
+      reason: 'Spam',
+      targetKind: 'content',
+    });
+    expect(sendUserReportAdminEmail).toHaveBeenCalledWith(
+      'alice@example.com',
+      'Carol',
+      'Spam',
+      'content',
+    );
+  });
 });
 
 describe('notify — per-event push payloads', () => {
@@ -349,6 +385,127 @@ describe('notify — per-event push payloads', () => {
     expect(p.body).toBe('Heads up');
     expect(p.url).toBe('/');
     expect(p.tag).toBe('announcement');
+  });
+
+  it('BUG_REPORT_SUBMITTED — links to /admin and tags by report id', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'BUG_REPORT_SUBMITTED',
+      reportId: 'b1',
+      reporterName: 'Carol',
+      title: 'Crash on load',
+    });
+    const p = payloadOf();
+    expect(p.title).toBe('New bug report from Carol');
+    expect(p.body).toBe('Crash on load');
+    expect(p.url).toBe('/admin');
+    expect(p.tag).toBe('br:b1');
+  });
+
+  it('USER_REPORT_SUBMITTED — kind label varies by targetKind, url=/admin', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'USER_REPORT_SUBMITTED',
+      reportId: 'r1',
+      reporterName: 'Carol',
+      reason: 'Harassment',
+      targetKind: 'user',
+    });
+    const userPayload = payloadOf();
+    expect(userPayload.title).toBe('New user report from Carol');
+    expect(userPayload.body).toBe('Harassment');
+    expect(userPayload.url).toBe('/admin');
+    expect(userPayload.tag).toBe('ur:r1');
+
+    sendPushToUser.mockClear();
+    await notify('user-1', {
+      type: 'USER_REPORT_SUBMITTED',
+      reportId: 'r2',
+      reporterName: 'Carol',
+      reason: 'Spam',
+      targetKind: 'content',
+    });
+    const contentPayload = payloadOf();
+    expect(contentPayload.title).toBe('New content report from Carol');
+  });
+});
+
+describe('notifyAdmins', () => {
+  it('queries users with role=ADMIN and excludes the given user', async () => {
+    findManyMock.mockResolvedValue([]);
+    const { notifyAdmins } = await import('../../src/services/notification.service.js');
+    await notifyAdmins(
+      {
+        type: 'BUG_REPORT_SUBMITTED',
+        reportId: 'b1',
+        reporterName: 'Carol',
+        title: 'x',
+      },
+      { excludeUserId: 'admin-self' },
+    );
+
+    expect(findManyMock).toHaveBeenCalledWith({
+      where: { role: 'ADMIN', id: { not: 'admin-self' } },
+      select: { id: true },
+    });
+  });
+
+  it('omits the id filter when no excludeUserId is supplied', async () => {
+    findManyMock.mockResolvedValue([]);
+    const { notifyAdmins } = await import('../../src/services/notification.service.js');
+    await notifyAdmins({
+      type: 'BUG_REPORT_SUBMITTED',
+      reportId: 'b1',
+      reporterName: 'Carol',
+      title: 'x',
+    });
+
+    expect(findManyMock).toHaveBeenCalledWith({
+      where: { role: 'ADMIN' },
+      select: { id: true },
+    });
+  });
+
+  it('fans out the event to every admin returned by the query', async () => {
+    // First call is the role=ADMIN query; second is the recipient load inside notifyMany.
+    findManyMock
+      .mockResolvedValueOnce([{ id: 'admin-1' }, { id: 'admin-2' }])
+      .mockResolvedValueOnce([
+        makeUser({ id: 'admin-1', email: 'a1@x.com' }),
+        makeUser({ id: 'admin-2', email: 'a2@x.com' }),
+      ]);
+
+    const { notifyAdmins } = await import('../../src/services/notification.service.js');
+    await notifyAdmins({
+      type: 'BUG_REPORT_SUBMITTED',
+      reportId: 'b1',
+      reporterName: 'Carol',
+      title: 'Crash on load',
+    });
+
+    expect(sendBugReportAdminEmail).toHaveBeenCalledTimes(2);
+    expect(sendPushToUser).toHaveBeenCalledTimes(2);
+  });
+
+  it('swallows database errors so the caller is not broken', async () => {
+    findManyMock.mockRejectedValueOnce(new Error('db down'));
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { notifyAdmins } = await import('../../src/services/notification.service.js');
+    await expect(
+      notifyAdmins({
+        type: 'BUG_REPORT_SUBMITTED',
+        reportId: 'b1',
+        reporterName: 'Carol',
+        title: 'x',
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(errSpy).toHaveBeenCalledWith(
+      expect.stringMatching(/\[notify:admins\] BUG_REPORT_SUBMITTED failed/),
+      expect.any(Error),
+    );
+    errSpy.mockRestore();
   });
 });
 

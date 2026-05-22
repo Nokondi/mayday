@@ -364,6 +364,74 @@ export async function sendAnnouncementEmail(
   });
 }
 
+export async function sendBugReportAdminEmail(
+  to: string,
+  reporterName: string,
+  title: string,
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(
+      `[mail] SMTP not configured; skipping bug-report admin email to ${to}`,
+    );
+    return;
+  }
+
+  const adminUrl = `${env.CLIENT_URL}/admin`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escape = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escapedReporter = escape(reporterName);
+  const escapedTitle = escape(title);
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `New bug report from ${reporterName}: ${title}`,
+    text: `${reporterName} submitted a new bug report on Mayday:\n\n"${title}"\n\nReview it in the admin console: ${adminUrl}`,
+    html: `
+      <p><strong>${escapedReporter}</strong> submitted a new bug report on Mayday:</p>
+      <blockquote style="border-left:3px solid #ccc;padding-left:12px;color:#444;">${escapedTitle}</blockquote>
+      <p><a href="${adminUrl}">Review it in the admin console</a></p>
+    `,
+  });
+}
+
+export async function sendUserReportAdminEmail(
+  to: string,
+  reporterName: string,
+  reason: string,
+  targetKind: 'user' | 'content',
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(
+      `[mail] SMTP not configured; skipping ${targetKind}-report admin email to ${to}`,
+    );
+    return;
+  }
+
+  const adminUrl = `${env.CLIENT_URL}/admin`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escape = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escapedReporter = escape(reporterName);
+  const escapedReason = escape(reason);
+  const subjectKind = targetKind === 'user' ? 'user report' : 'content report';
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `New ${subjectKind} from ${reporterName}: ${reason}`,
+    text: `${reporterName} submitted a new ${subjectKind} on Mayday:\n\n"${reason}"\n\nReview it in the admin console: ${adminUrl}`,
+    html: `
+      <p><strong>${escapedReporter}</strong> submitted a new ${subjectKind} on Mayday:</p>
+      <blockquote style="border-left:3px solid #ccc;padding-left:12px;color:#444;">${escapedReason}</blockquote>
+      <p><a href="${adminUrl}">Review it in the admin console</a></p>
+    `,
+  });
+}
+
 export async function sendPasswordResetEmail(
   to: string,
   token: string,

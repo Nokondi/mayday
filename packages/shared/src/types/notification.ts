@@ -35,6 +35,19 @@ export type NotificationEvent =
   | {
       type: 'ANNOUNCEMENT';
       message: string;
+    }
+  | {
+      type: 'BUG_REPORT_SUBMITTED';
+      reportId: string;
+      reporterName: string;
+      title: string;
+    }
+  | {
+      type: 'USER_REPORT_SUBMITTED';
+      reportId: string;
+      reporterName: string;
+      reason: string;
+      targetKind: 'user' | 'content';
     };
 
 // Wire format for the payload sent to a browser PushSubscription. The service
