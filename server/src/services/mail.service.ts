@@ -87,7 +87,10 @@ Sign in: ${loginUrl}`,
 export async function sendNewMessageEmail(
   to: string,
   senderName: string,
-  messagePreview: string,
+  // E2EE: pass null when the message is encrypted. The email then renders
+  // without the blockquote — sender name and a link to the inbox only.
+  // Plaintext (legacy / E2EE-off) calls continue to pass the preview string.
+  messagePreview: string | null,
 ): Promise<void> {
   const t = getTransporter();
   if (!t) {
@@ -99,15 +102,30 @@ export async function sendNewMessageEmail(
 
   const inboxUrl = `${env.CLIENT_URL}/messages`;
   const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escapedSender = senderName
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  if (messagePreview === null) {
+    await t.sendMail({
+      from,
+      to,
+      subject: `New message from ${senderName} on Mayday`,
+      text: `${senderName} sent you a message on Mayday.\n\nOpen your inbox to read and reply: ${inboxUrl}`,
+      html: `
+        <p><strong>${escapedSender}</strong> sent you a message on Mayday.</p>
+        <p><a href="${inboxUrl}">Open your inbox</a> to read and reply.</p>
+      `,
+    });
+    return;
+  }
+
   const safePreview =
     messagePreview.length > 280
       ? messagePreview.slice(0, 280) + "…"
       : messagePreview;
   const escapedPreview = safePreview
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-  const escapedSender = senderName
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");

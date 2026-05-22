@@ -81,11 +81,12 @@ function toWireMessage(msg: {
   };
 }
 
-// For the notification fan-out: when content is encrypted, we can't include
-// it in the email/push body. Phase 4 will wire the SW to decrypt locally;
-// for now we send a generic "New message" preview when ciphertext is set.
+// For the notification fan-out: Phase 4 passes `isEncrypted: true` instead
+// of any preview text for encrypted messages, which causes the notification
+// service to suppress the push body and email blockquote entirely. The
+// content field is empty in that case.
 function notificationContent(msg: { content: string | null }): string {
-  return msg.content ?? 'New message';
+  return msg.content ?? '';
 }
 
 async function notifyReceiver(params: {
@@ -94,6 +95,7 @@ async function notifyReceiver(params: {
   senderId: string;
   conversationId: string;
   content: string;
+  isEncrypted: boolean;
 }): Promise<void> {
   try {
     // Only notify if the receiver has no other unread messages in this conversation —
@@ -120,6 +122,7 @@ async function notifyReceiver(params: {
       senderId: params.senderId,
       conversationId: params.conversationId,
       content: params.content,
+      isEncrypted: params.isEncrypted,
     });
   } catch (err) {
     console.error('[notify] failed to deliver new-message notification', err);
@@ -407,6 +410,7 @@ messageRoutes.post('/conversations', validate(startConversationSchema), asyncHan
       senderId: userId,
       conversationId: conversation.id,
       content: notificationContent(msg),
+      isEncrypted: msg.ciphertext !== null,
     });
   }
 
@@ -451,6 +455,7 @@ messageRoutes.post('/conversations/:id/messages', validate(sendMessageSchema), a
     senderId: userId,
     conversationId: conv.id,
     content: notificationContent(message),
+    isEncrypted: message.ciphertext !== null,
   });
 
   res.status(201).json(wire);

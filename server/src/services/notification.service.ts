@@ -37,6 +37,19 @@ const NOTIFY_CONCURRENCY = 5;
 function buildPushPayload(event: NotificationEvent): PushPayload {
   switch (event.type) {
     case 'NEW_MESSAGE': {
+      // E2EE: when the message was sent encrypted, never put any preview
+      // text in the push body — the push provider sees the payload, and we
+      // promised it wouldn't be able to read message content. The sender
+      // name is fine (metadata) and the title alone is enough context for
+      // the user to tap through.
+      if (event.isEncrypted) {
+        return {
+          title: `New message from ${event.senderName}`,
+          body: '',
+          url: '/messages',
+          tag: `msg:${event.conversationId}`,
+        };
+      }
       const preview =
         event.content.length > 200
           ? event.content.slice(0, 200) + '…'
@@ -119,7 +132,13 @@ function sendEmailFor(
 ): Promise<void> {
   switch (event.type) {
     case 'NEW_MESSAGE':
-      return sendNewMessageEmail(user.email, event.senderName, event.content);
+      // Pass null preview for encrypted sends so the email renders without
+      // the blockquote. Same privacy goal as the push body suppression above.
+      return sendNewMessageEmail(
+        user.email,
+        event.senderName,
+        event.isEncrypted ? null : event.content,
+      );
     case 'COMMUNITY_JOIN_REQUEST':
       return sendCommunityJoinRequestEmail(
         user.email,

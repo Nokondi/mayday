@@ -7,6 +7,11 @@ export type NotificationEvent =
       senderId: string;
       conversationId: string;
       content: string;
+      // E2EE: when true, the notification channels must not include any
+      // message preview text. The push notification body is suppressed and
+      // the email omits the blockquote — sender name is still visible
+      // since it's already metadata the server stores in plaintext.
+      isEncrypted?: boolean;
     }
   | {
       type: 'COMMUNITY_JOIN_REQUEST';
