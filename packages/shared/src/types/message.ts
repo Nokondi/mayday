@@ -47,7 +47,8 @@ export type WSMessageType =
   | 'TYPING'
   | 'READ'
   | 'DEVICE_ADDED'
-  | 'DEVICE_REVOKED';
+  | 'DEVICE_REVOKED'
+  | 'KEY_WRAPS_UPDATED';
 
 export interface WSNewMessage {
   type: 'NEW_MESSAGE';
@@ -77,9 +78,19 @@ export interface WSDeviceRevoked {
   payload: { userId: string; deviceId: string };
 }
 
+// New wraps were uploaded for a conversation. Each recipient device gets
+// this event so it knows to re-resolve its conversation key — covers the
+// race where a fresh device's own-handoff wrap arrives moments after the
+// device first asked for its wraps.
+export interface WSKeyWrapsUpdated {
+  type: 'KEY_WRAPS_UPDATED';
+  payload: { conversationId: string; deviceIds: string[] };
+}
+
 export type WSMessage =
   | WSNewMessage
   | WSTyping
   | WSRead
   | WSDeviceAdded
-  | WSDeviceRevoked;
+  | WSDeviceRevoked
+  | WSKeyWrapsUpdated;

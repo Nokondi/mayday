@@ -108,4 +108,37 @@ describe('establishConversationKey', () => {
     const deviceIds = wraps.map((w) => w.deviceId);
     expect(deviceIds).not.toContain('00000000-0000-4000-a000-000000000011');
   });
+
+  it('wraps for every active own device, not just the current one (Phase 3)', async () => {
+    const peer = await makeDevicePublicKeys(PEER_DEVICE_ID, PEER_USER_ID);
+    const own1 = await makeDevicePublicKeys(OWN_DEVICE_ID, 'me');
+    const own2 = await makeDevicePublicKeys('00000000-0000-4000-a000-000000000012', 'me');
+
+    mockedGetUserDevices.mockResolvedValueOnce([peer.publicKeys]);
+    mockedGetMyDevices.mockResolvedValueOnce([
+      { ...own1.publicKeys, label: null, lastSeenAt: null, revokedAt: null },
+      { ...own2.publicKeys, label: null, lastSeenAt: null, revokedAt: null },
+    ]);
+    mockedUpload.mockResolvedValueOnce(undefined);
+
+    // We call as if the current device is own1; own2 must still get wrapped
+    // so that browser can decrypt the conversation on first load.
+    await establishConversationKey(CONV_ID, PEER_USER_ID, OWN_DEVICE_ID);
+
+    const [, wraps] = mockedUpload.mock.calls[0]!;
+    const deviceIds = wraps.map((w) => w.deviceId).sort();
+    expect(deviceIds).toEqual(
+      [PEER_DEVICE_ID, OWN_DEVICE_ID, '00000000-0000-4000-a000-000000000012'].sort(),
+    );
+
+    // And own2 (the *not current* device) must actually be able to unwrap.
+    const own2Wrap = wraps.find((w) => w.deviceId === '00000000-0000-4000-a000-000000000012')!;
+    const wrappedBytes = await fromBase64(own2Wrap.wrappedKey);
+    const recovered = await unwrapConversationKey(
+      wrappedBytes,
+      own2.publicEncryption,
+      own2.privateEncryption,
+    );
+    expect(recovered).not.toBeNull();
+  });
 });

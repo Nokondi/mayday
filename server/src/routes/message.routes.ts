@@ -276,6 +276,24 @@ messageRoutes.post(
       })),
     );
 
+    // Notify each affected user that their device(s) just received fresh
+    // wraps. This lets a brand-new device's useConversationKey re-resolve
+    // immediately after an older device performed own-handoff, without
+    // having to poll the wraps endpoint.
+    const wrapsByUser = new Map<string, string[]>();
+    for (const w of body.wraps) {
+      const owner = deviceMap.get(w.deviceId)!.userId;
+      const list = wrapsByUser.get(owner) ?? [];
+      list.push(w.deviceId);
+      wrapsByUser.set(owner, list);
+    }
+    for (const [recipientUserId, deviceIds] of wrapsByUser) {
+      sendToUser(recipientUserId, {
+        type: 'KEY_WRAPS_UPDATED',
+        payload: { conversationId, deviceIds },
+      });
+    }
+
     res.status(204).end();
   }),
 );
