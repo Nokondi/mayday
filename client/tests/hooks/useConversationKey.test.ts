@@ -1,11 +1,23 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { WSMessage } from '@mayday/shared';
 
 vi.mock('../../src/context/DeviceContext.js', () => ({
   useDevice: vi.fn(),
 }));
 vi.mock('../../src/api/keyWraps.js', () => ({
   getKeyWraps: vi.fn(),
+}));
+
+// The hook now listens for KEY_WRAPS_UPDATED. We expose a captured set of
+// registered handlers so tests can fire WS events directly.
+const wsHandlers = new Set<(msg: WSMessage) => void>();
+vi.mock('../../src/context/WebSocketContext.js', () => ({
+  useWebSocket: () => ({
+    isConnected: true,
+    addHandler: (h: (msg: WSMessage) => void) => { wsHandlers.add(h); },
+    removeHandler: (h: (msg: WSMessage) => void) => { wsHandlers.delete(h); },
+  }),
 }));
 
 import { useDevice } from '../../src/context/DeviceContext.js';
@@ -30,7 +42,12 @@ beforeAll(async () => {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  wsHandlers.clear();
 });
+
+function fireWS(msg: WSMessage) {
+  for (const h of wsHandlers) h(msg);
+}
 
 async function makeMockDevice() {
   const s = await getSodium();
@@ -89,6 +106,81 @@ describe('useConversationKey', () => {
 
     // The CK we recover must be byte-identical to the one we sealed.
     expect(Array.from(result.current!)).toEqual(Array.from(ck));
+  });
+
+  it('refetches and resolves the CK when KEY_WRAPS_UPDATED arrives for our device', async () => {
+    const ctx = await makeMockDevice();
+    mockedUseDevice.mockReturnValue(ctx);
+
+    // First call: no wrap for us yet. Hook stays null.
+    mockedGetKeyWraps.mockResolvedValueOnce([]);
+
+    const { result } = renderHook(() => useConversationKey(CONV_ID));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(result.current).toBeNull();
+
+    // Now simulate an own-handoff from a sister device: a fresh wrap has
+    // been uploaded. The server fans out KEY_WRAPS_UPDATED.
+    const ck = await generateConversationKey();
+    const wrapped = await wrapConversationKey(ck, ctx.device.encryption.publicKey);
+    mockedGetKeyWraps.mockResolvedValueOnce([
+      {
+        id: 'kw1',
+        conversationId: CONV_ID,
+        deviceId: SERVER_DEVICE_ID,
+        wrappedKey: await toBase64(wrapped),
+        keyEpoch: 1,
+        createdAt: '2026-05-22T00:00:00Z',
+      },
+    ]);
+
+    fireWS({
+      type: 'KEY_WRAPS_UPDATED',
+      payload: { conversationId: CONV_ID, deviceIds: [SERVER_DEVICE_ID] },
+    });
+
+    await waitFor(() => expect(result.current).not.toBeNull());
+    expect(Array.from(result.current!)).toEqual(Array.from(ck));
+  });
+
+  it('ignores KEY_WRAPS_UPDATED events that do not mention our device', async () => {
+    const ctx = await makeMockDevice();
+    mockedUseDevice.mockReturnValue(ctx);
+    mockedGetKeyWraps.mockResolvedValueOnce([]);
+
+    renderHook(() => useConversationKey(CONV_ID));
+    await new Promise((r) => setTimeout(r, 20));
+
+    // Initial fetch consumed the one mocked response. If the event triggers
+    // a refetch, we'd see a second getKeyWraps call (and the mock would
+    // return undefined, but the call count would tick up).
+    mockedGetKeyWraps.mockClear();
+
+    fireWS({
+      type: 'KEY_WRAPS_UPDATED',
+      payload: { conversationId: CONV_ID, deviceIds: ['some-other-device'] },
+    });
+
+    await new Promise((r) => setTimeout(r, 20));
+    expect(mockedGetKeyWraps).not.toHaveBeenCalled();
+  });
+
+  it('ignores KEY_WRAPS_UPDATED for a different conversation', async () => {
+    const ctx = await makeMockDevice();
+    mockedUseDevice.mockReturnValue(ctx);
+    mockedGetKeyWraps.mockResolvedValueOnce([]);
+
+    renderHook(() => useConversationKey(CONV_ID));
+    await new Promise((r) => setTimeout(r, 20));
+    mockedGetKeyWraps.mockClear();
+
+    fireWS({
+      type: 'KEY_WRAPS_UPDATED',
+      payload: { conversationId: 'some-other-conv', deviceIds: [SERVER_DEVICE_ID] },
+    });
+
+    await new Promise((r) => setTimeout(r, 20));
+    expect(mockedGetKeyWraps).not.toHaveBeenCalled();
   });
 
   it('ignores wraps addressed to a different device', async () => {

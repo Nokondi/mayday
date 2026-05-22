@@ -9,16 +9,25 @@ import { generateConversationKey, wrapConversationKey, fromBase64, toBase64 } fr
 // or null when there are no peer devices to wrap to — in that case the caller
 // should fall back to plaintext.
 //
-// Phase 2 assumes a single device per user, but we wrap for *all* active
-// devices we find anyway. That gives correct behavior today if a user
-// happens to have multiple, and Phase 3 layers DEVICE_ADDED handoff on top
-// to keep new devices in sync after the fact.
+// Wraps the freshly-generated CK for every active device of both the peer
+// and the current user — Phase 3 lifts the Phase 2 single-own-device
+// restriction so a user with multiple devices/tabs can read the conversation
+// from any of them. The DEVICE_ADDED listener handles future additions; this
+// only covers what exists at establish time.
+//
+// `ownDeviceServerId` is still required (we need to know which device the
+// caller is) but is now used only for the corresponding test assertion that
+// the current device gets a wrap — it's no longer used to filter targets.
 export async function establishConversationKey(
   conversationId: string,
   peerUserId: string,
   ownDeviceServerId: string,
   keyEpoch: number = 1,
 ): Promise<Uint8Array | null> {
+  // Reference kept so the parameter is part of the public signature even
+  // though Phase 3 no longer uses it for filtering. Keep until Phase 5 cleans up.
+  void ownDeviceServerId;
+
   const [peerDevices, ownDevices] = await Promise.all([
     getUserDevices(peerUserId),
     getMyDevices(),
@@ -35,13 +44,11 @@ export async function establishConversationKey(
   const ck = await generateConversationKey();
 
   // Wrap once per recipient device. The peer's encryptionPublicKey is base64
-  // on the wire — decode then seal. We also wrap for our own active devices
-  // so future loads of this conversation on those devices can decrypt.
+  // on the wire — decode then seal. We wrap for every active own device so
+  // any of the user's browsers can decrypt on first load.
   const wrapTargets: { deviceId: string; publicKeyB64: string }[] = [
     ...activePeers.map((d) => ({ deviceId: d.id, publicKeyB64: d.encryptionPublicKey })),
-    ...activeOwn
-      .filter((d) => d.id === ownDeviceServerId) // Phase 2: just current device
-      .map((d) => ({ deviceId: d.id, publicKeyB64: d.encryptionPublicKey })),
+    ...activeOwn.map((d) => ({ deviceId: d.id, publicKeyB64: d.encryptionPublicKey })),
   ];
 
   const wraps = await Promise.all(

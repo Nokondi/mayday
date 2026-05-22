@@ -466,6 +466,31 @@ describe('POST /api/messages/conversations/:id/key-wraps', () => {
     expect(firstCall.create.wrappedKey).toBeInstanceOf(Uint8Array);
   });
 
+  it('emits KEY_WRAPS_UPDATED to each affected user with only their own deviceIds', async () => {
+    mockedConv.findUnique.mockResolvedValueOnce(dbConv() as never);
+    mockedDevice.findMany.mockResolvedValueOnce([
+      { id: DEVICE_ID, userId: USER_ID, revokedAt: null },
+      { id: OTHER_DEVICE_ID, userId: OTHER_ID, revokedAt: null },
+    ] as never);
+    mockedWrap.upsert.mockResolvedValue({ id: 'kw1' } as never);
+
+    await request(makeApp())
+      .post(`/api/messages/conversations/${CONV_ID}/key-wraps`)
+      .set('Authorization', authHeader())
+      .send({ wraps: VALID_WRAPS });
+
+    // One event per recipient user — never one user receiving another's
+    // deviceIds, which would be a metadata leak about peer device topology.
+    expect(mockedSend).toHaveBeenCalledWith(USER_ID, {
+      type: 'KEY_WRAPS_UPDATED',
+      payload: { conversationId: CONV_ID, deviceIds: [DEVICE_ID] },
+    });
+    expect(mockedSend).toHaveBeenCalledWith(OTHER_ID, {
+      type: 'KEY_WRAPS_UPDATED',
+      payload: { conversationId: CONV_ID, deviceIds: [OTHER_DEVICE_ID] },
+    });
+  });
+
   it('rejects a wrap whose deviceId belongs to a non-participant — prevents IDOR', async () => {
     mockedConv.findUnique.mockResolvedValueOnce(dbConv() as never);
     mockedDevice.findMany.mockResolvedValueOnce([

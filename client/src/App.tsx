@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { WebSocketProvider } from "./context/WebSocketContext.js";
 import { Layout } from "./components/layout/Layout.js";
+import { RescueListener } from "./components/e2ee/RescueListener.js";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute.js";
 import { HomePage } from "./pages/HomePage.js";
 import { PostsPage } from "./pages/PostsPage.js";
@@ -35,6 +36,7 @@ export function App() {
 
   return (
     <WebSocketProvider>
+      <RescueListener />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={user ? <HomePage /> : <AboutPage />} />

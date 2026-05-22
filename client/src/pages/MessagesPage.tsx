@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Lock } from 'lucide-react';
 import { FormattedMessage } from 'react-intl';
 import {
   getConversations,
@@ -59,9 +59,21 @@ export function MessagesPage() {
 
   const decryptedMessages = useDecryptedMessages(messages, conversationKey);
 
-  const peerUserId = useMemo(() => {
-    return conversations?.find((c) => c.id === activeConversation)?.otherParticipant.id ?? null;
+  const activeConv = useMemo(() => {
+    return conversations?.find((c) => c.id === activeConversation) ?? null;
   }, [conversations, activeConversation]);
+  const peerUserId = activeConv?.otherParticipant.id ?? null;
+  const peerName = activeConv?.otherParticipant.name ?? '';
+
+  // Render the "waiting for sync" banner when this device has no CK yet but
+  // the conversation contains encrypted messages. This happens on a freshly
+  // enrolled device before own-handoff (from a sister device) or peer-rescue
+  // (from the peer's device) lands.
+  const hasEncryptedMessages = useMemo(
+    () => !!messages?.some((m) => m.ciphertext !== null),
+    [messages],
+  );
+  const showWaitingBanner = e2eeEnabled && !conversationKey && hasEncryptedMessages;
 
   const handleNewMessage = useCallback((wsMsg: WSMessage) => {
     if (wsMsg.type === 'NEW_MESSAGE') {
@@ -139,6 +151,21 @@ export function MessagesPage() {
       <div className="flex-1 flex flex-col bg-white">
         {activeConversation ? (
           <>
+            {showWaitingBanner && (
+              <div
+                role="status"
+                className="bg-mayday-50 border-b border-mayday-200 text-mayday-800 text-sm px-4 py-2 flex items-center gap-2"
+              >
+                <Lock className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span>
+                  <FormattedMessage
+                    id="messages.page.waitingForSync"
+                    defaultMessage="Older messages will appear once another of your devices or {peer} comes online to share the key."
+                    values={{ peer: peerName }}
+                  />
+                </span>
+              </div>
+            )}
             {msgLoading ? (
               <LoadingSpinner className="flex-1" />
             ) : (
