@@ -9,6 +9,7 @@ vi.mock('../../src/config/database.js', () => ({
       findMany: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
+      count: vi.fn(),
     },
     conversation: {
       findMany: vi.fn(),
@@ -87,6 +88,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockedUser.findUnique.mockResolvedValue({ isBanned: false } as never);
   mockedConversation.findMany.mockResolvedValue([]);
+  // Default: user is under the device cap. Tests that exercise the cap
+  // override this with mockResolvedValueOnce(>=20).
+  mockedDevice.count.mockResolvedValue(0 as never);
 });
 
 describe('POST /api/devices', () => {
@@ -150,6 +154,38 @@ describe('POST /api/devices', () => {
       .send(VALID_BODY);
     expect(res.status).toBe(403);
     expect(mockedDevice.create).not.toHaveBeenCalled();
+  });
+
+  it('returns 409 when the user is already at the active-device cap', async () => {
+    // 20 is the cap. Anything >= cap should reject.
+    mockedDevice.count.mockResolvedValueOnce(20 as never);
+
+    const res = await request(makeApp())
+      .post('/api/devices')
+      .set('Authorization', authHeader())
+      .send(VALID_BODY);
+
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/Device limit reached/);
+    expect(mockedDevice.create).not.toHaveBeenCalled();
+    // The count query is scoped to the caller and excludes revoked rows so
+    // a user who has cleaned up old devices can re-register up to the cap.
+    expect(mockedDevice.count).toHaveBeenCalledWith({
+      where: { userId: USER_ID, revokedAt: null },
+    });
+  });
+
+  it('allows registration when active count is below the cap', async () => {
+    mockedDevice.count.mockResolvedValueOnce(19 as never);
+    mockedDevice.create.mockResolvedValue(mockDeviceRow() as never);
+
+    const res = await request(makeApp())
+      .post('/api/devices')
+      .set('Authorization', authHeader())
+      .send(VALID_BODY);
+
+    expect(res.status).toBe(201);
+    expect(mockedDevice.create).toHaveBeenCalled();
   });
 });
 

@@ -14,6 +14,12 @@ const ED25519_PUBLIC_KEY_BYTES = 32;
 const X25519_PUBLIC_KEY_BYTES = 32;
 const ED25519_SIG_BYTES = 64;
 
+// Per-user active-device cap. Stops an authenticated user from slowly
+// bloating the Device table via repeated POST /devices (rate-limited by the
+// global apiLimiter, but no per-user cap there). Pick ~20 to comfortably
+// cover phones + laptops + browser-per-context without arbitrary friction.
+const MAX_ACTIVE_DEVICES_PER_USER = 20;
+
 function decodeKey(b64: string, expected: number, field: string): Uint8Array<ArrayBuffer> {
   let buf: Buffer;
   try {
@@ -107,6 +113,19 @@ deviceRoutes.post(
   asyncHandler(async (req: AuthRequest, res) => {
     const userId = req.user!.id;
     const body = req.body as import('@mayday/shared').RegisterDeviceRequest;
+
+    // Block registration past the cap so the client knows to prompt the user
+    // to revoke an existing device. Counted on active (non-revoked) rows so
+    // a user who has revoked old devices can register up to the cap fresh.
+    const activeCount = await prisma.device.count({
+      where: { userId, revokedAt: null },
+    });
+    if (activeCount >= MAX_ACTIVE_DEVICES_PER_USER) {
+      throw new AppError(
+        409,
+        `Device limit reached (${MAX_ACTIVE_DEVICES_PER_USER}). Revoke an existing device to add a new one.`,
+      );
+    }
 
     const signingPublicKey = decodeKey(body.signingPublicKey, ED25519_PUBLIC_KEY_BYTES, 'signingPublicKey');
     const encryptionPublicKey = decodeKey(body.encryptionPublicKey, X25519_PUBLIC_KEY_BYTES, 'encryptionPublicKey');

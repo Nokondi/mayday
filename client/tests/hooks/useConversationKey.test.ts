@@ -63,6 +63,7 @@ async function makeMockDevice() {
     },
     serverId: SERVER_DEVICE_ID,
     error: null,
+    capReached: false,
   };
 }
 
@@ -105,7 +106,49 @@ describe('useConversationKey', () => {
     await waitFor(() => expect(result.current).not.toBeNull());
 
     // The CK we recover must be byte-identical to the one we sealed.
-    expect(Array.from(result.current!)).toEqual(Array.from(ck));
+    expect(Array.from(result.current!.ck)).toEqual(Array.from(ck));
+    expect(result.current!.keyEpoch).toBe(1);
+  });
+
+  it('picks the highest-epoch wrap when multiple exist for this device (post-rotation)', async () => {
+    const ctx = await makeMockDevice();
+    mockedUseDevice.mockReturnValue(ctx);
+
+    const oldCk = await generateConversationKey();
+    const newCk = await generateConversationKey();
+    const oldWrapped = await wrapConversationKey(oldCk, ctx.device.encryption.publicKey);
+    const newWrapped = await wrapConversationKey(newCk, ctx.device.encryption.publicKey);
+
+    // Server returns wraps in arbitrary order. The hook must always pick
+    // the highest epoch regardless of order so post-rotation sends use the
+    // new CK rather than the old one (which the revoked device may still
+    // have cached locally).
+    mockedGetKeyWraps.mockResolvedValueOnce([
+      {
+        id: 'kw-new',
+        conversationId: CONV_ID,
+        deviceId: SERVER_DEVICE_ID,
+        wrappedKey: await toBase64(newWrapped),
+        keyEpoch: 2,
+        createdAt: '2026-05-22T01:00:00Z',
+      },
+      {
+        id: 'kw-old',
+        conversationId: CONV_ID,
+        deviceId: SERVER_DEVICE_ID,
+        wrappedKey: await toBase64(oldWrapped),
+        keyEpoch: 1,
+        createdAt: '2026-05-22T00:00:00Z',
+      },
+    ]);
+
+    const { result } = renderHook(() => useConversationKey(CONV_ID));
+    await waitFor(() => expect(result.current).not.toBeNull());
+
+    expect(result.current!.keyEpoch).toBe(2);
+    expect(Array.from(result.current!.ck)).toEqual(Array.from(newCk));
+    // Critical: must NOT have picked the old CK.
+    expect(Array.from(result.current!.ck)).not.toEqual(Array.from(oldCk));
   });
 
   it('refetches and resolves the CK when KEY_WRAPS_UPDATED arrives for our device', async () => {
@@ -140,7 +183,7 @@ describe('useConversationKey', () => {
     });
 
     await waitFor(() => expect(result.current).not.toBeNull());
-    expect(Array.from(result.current!)).toEqual(Array.from(ck));
+    expect(Array.from(result.current!.ck)).toEqual(Array.from(ck));
   });
 
   it('ignores KEY_WRAPS_UPDATED events that do not mention our device', async () => {

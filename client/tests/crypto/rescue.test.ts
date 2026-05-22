@@ -244,6 +244,115 @@ describe('rescueConversationKeysForDevice', () => {
     expect(mockedUpload).not.toHaveBeenCalled();
   });
 
+  it('Phase 5: wraps for EVERY epoch the rescuer holds, so the new device can decrypt history', async () => {
+    // Conversation has been rotated — the rescuer (us) holds wraps at both
+    // epoch 1 and epoch 2. The new device must receive BOTH so it can decrypt
+    // historical messages from before the rotation.
+    const ownDevice = await makeDeviceKeys();
+    const newPeer = await makePeerDevice(NEW_DEVICE, PEER);
+
+    const ckEpoch1 = await generateConversationKey();
+    const ckEpoch2 = await generateConversationKey();
+    const wrappedE1 = await wrapConversationKey(ckEpoch1, ownDevice.encryption.publicKey);
+    const wrappedE2 = await wrapConversationKey(ckEpoch2, ownDevice.encryption.publicKey);
+
+    mockedGetConvs.mockResolvedValueOnce([makeConv(PEER)]);
+    mockedGetKeyWraps.mockResolvedValueOnce([
+      {
+        id: 'kw1',
+        conversationId: CONV_ID,
+        deviceId: MY_DEVICE,
+        wrappedKey: await toBase64(wrappedE1),
+        keyEpoch: 1,
+        createdAt: '2026-05-22T00:00:00Z',
+      },
+      {
+        id: 'kw2',
+        conversationId: CONV_ID,
+        deviceId: MY_DEVICE,
+        wrappedKey: await toBase64(wrappedE2),
+        keyEpoch: 2,
+        createdAt: '2026-05-22T01:00:00Z',
+      },
+    ]);
+    mockedUpload.mockResolvedValue(undefined);
+
+    await rescueConversationKeysForDevice({
+      currentUserId: ME,
+      ownDevice,
+      ownDeviceServerId: MY_DEVICE,
+      newDevice: newPeer.peerDevice,
+    });
+
+    expect(mockedUpload).toHaveBeenCalledTimes(1);
+    const [, wraps] = mockedUpload.mock.calls[0]!;
+    expect(wraps).toHaveLength(2);
+    const epochs = wraps.map((w) => w.keyEpoch).sort();
+    expect(epochs).toEqual([1, 2]);
+
+    // Each uploaded wrap must decrypt to the right CK for its epoch.
+    const e1Wrap = wraps.find((w) => w.keyEpoch === 1)!;
+    const e2Wrap = wraps.find((w) => w.keyEpoch === 2)!;
+    const recoveredE1 = await unwrapConversationKey(
+      await fromBase64(e1Wrap.wrappedKey),
+      newPeer.publicEncryption,
+      newPeer.privateEncryption,
+    );
+    const recoveredE2 = await unwrapConversationKey(
+      await fromBase64(e2Wrap.wrappedKey),
+      newPeer.publicEncryption,
+      newPeer.privateEncryption,
+    );
+    expect(Array.from(recoveredE1!)).toEqual(Array.from(ckEpoch1));
+    expect(Array.from(recoveredE2!)).toEqual(Array.from(ckEpoch2));
+  });
+
+  it('Phase 5: skips per-epoch when the new device already has a wrap at that specific epoch', async () => {
+    // The new device already has a wrap at epoch 1 (perhaps from another own
+    // device that rescued it first). Our rescue must skip epoch 1 but still
+    // upload epoch 2 since that wrap is missing.
+    const ownDevice = await makeDeviceKeys();
+    const newPeer = await makePeerDevice(NEW_DEVICE, PEER);
+
+    const ckE1 = await generateConversationKey();
+    const ckE2 = await generateConversationKey();
+    const wrappedE1Me = await wrapConversationKey(ckE1, ownDevice.encryption.publicKey);
+    const wrappedE1New = await wrapConversationKey(ckE1, newPeer.publicEncryption);
+    const wrappedE2Me = await wrapConversationKey(ckE2, ownDevice.encryption.publicKey);
+
+    mockedGetConvs.mockResolvedValueOnce([makeConv(PEER)]);
+    mockedGetKeyWraps.mockResolvedValueOnce([
+      // Our wraps at both epochs
+      {
+        id: 'kw-me-1', conversationId: CONV_ID, deviceId: MY_DEVICE,
+        wrappedKey: await toBase64(wrappedE1Me), keyEpoch: 1, createdAt: '',
+      },
+      {
+        id: 'kw-me-2', conversationId: CONV_ID, deviceId: MY_DEVICE,
+        wrappedKey: await toBase64(wrappedE2Me), keyEpoch: 2, createdAt: '',
+      },
+      // New device ALREADY has a wrap at epoch 1 (rescued by someone else)
+      {
+        id: 'kw-new-1', conversationId: CONV_ID, deviceId: NEW_DEVICE,
+        wrappedKey: await toBase64(wrappedE1New), keyEpoch: 1, createdAt: '',
+      },
+    ]);
+    mockedUpload.mockResolvedValue(undefined);
+
+    await rescueConversationKeysForDevice({
+      currentUserId: ME,
+      ownDevice,
+      ownDeviceServerId: MY_DEVICE,
+      newDevice: newPeer.peerDevice,
+    });
+
+    expect(mockedUpload).toHaveBeenCalledTimes(1);
+    const [, wraps] = mockedUpload.mock.calls[0]!;
+    // Only epoch 2 should be uploaded — epoch 1 was already covered.
+    expect(wraps).toHaveLength(1);
+    expect(wraps[0].keyEpoch).toBe(2);
+  });
+
   it('peer-rescue filters out conversations where the new device\'s owner is NOT a participant', async () => {
     const ownDevice = await makeDeviceKeys();
     const newPeer = await makePeerDevice(NEW_DEVICE, PEER);
