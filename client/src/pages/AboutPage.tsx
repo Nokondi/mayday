@@ -36,7 +36,7 @@ export function AboutPage() {
                 id="about.hero.quoteAttribution"
                 defaultMessage="― Dean Spade, <cite>Mutual Aid: Building Solidarity During This Crisis (And the Next)</cite>"
                 values={{
-                  cite: (chunks) => <cite>{chunks}</cite>,
+                  cite: (chunks) => <cite key="cite">{chunks}</cite>,
                 }}
               />
             </p>

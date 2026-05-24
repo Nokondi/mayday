@@ -69,12 +69,18 @@ export function createApp() {
   // All other state-changing endpoints authenticate via Authorization: Bearer.
   app.use(cookieParser());
 
+  // Rate limiting is bypassed outside production. React StrictMode + HMR makes
+  // it trivial to exhaust a 20/15min budget during dev, and the production
+  // thresholds are what we actually care about validating.
+  const limiterDisabled = env.NODE_ENV !== "production";
+
   // Rate limiting for auth endpoints (brute-force protection)
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 20, // 20 attempts per window
     standardHeaders: true,
     legacyHeaders: false,
+    skip: () => limiterDisabled,
     message: { message: "Too many requests, please try again later" },
   });
 
@@ -84,6 +90,7 @@ export function createApp() {
     max: 300,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: () => limiterDisabled,
     message: { message: "Too many requests, please try again later" },
   });
 

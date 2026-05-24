@@ -1,13 +1,8 @@
 import { screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { RenderableMessage } from "../../../src/crypto/render.js";
 import { MessageThread } from "../../../src/components/messages/MessageThread.js";
 import { renderWithIntl as render } from "../../helpers/renderWithIntl.js";
-
-// jsdom does not implement scrollIntoView; the component calls it in an effect.
-beforeEach(() => {
-  Element.prototype.scrollIntoView = vi.fn();
-});
 
 function makeMessage(overrides: Partial<RenderableMessage> = {}): RenderableMessage {
   return {
@@ -77,19 +72,28 @@ describe("MessageThread", () => {
     expect(row).toHaveClass("justify-start");
   });
 
-  it("scrolls the bottom anchor into view when messages change", () => {
-    const spy = vi.spyOn(Element.prototype, "scrollIntoView");
-    const { rerender } = render(
+  it("scrolls its own container to the bottom when messages change", () => {
+    // The component sets scrollTop = scrollHeight on the container directly
+    // rather than calling scrollIntoView, because scrollIntoView propagates
+    // through every ancestor scroll container — including the window — and
+    // would push the mobile drawer header off the page.
+    render(
       <MessageThread
         messages={[makeMessage({ id: "m1" })]}
         currentUserId="u1"
       />,
     );
-    // Initial mount triggers the effect.
-    expect(spy).toHaveBeenCalled();
-    spy.mockClear();
-
-    rerender(
+    const container = screen.getByLabelText("Message history") as HTMLElement;
+    // jsdom reports scrollHeight as 0 (no layout), but the effect still copies
+    // it to scrollTop. Stub scrollHeight to a non-zero value to verify the
+    // assignment actually happens.
+    Object.defineProperty(container, "scrollHeight", {
+      configurable: true,
+      value: 999,
+    });
+    container.scrollTop = 0;
+    // Re-render with a new messages array to retrigger the effect.
+    render(
       <MessageThread
         messages={[
           makeMessage({ id: "m1" }),
@@ -98,7 +102,9 @@ describe("MessageThread", () => {
         currentUserId="u1"
       />,
     );
-    expect(spy).toHaveBeenCalled();
+    const containers = screen.getAllByLabelText("Message history") as HTMLElement[];
+    const latest = containers[containers.length - 1];
+    expect(latest.scrollTop).toBe(latest.scrollHeight);
   });
 
   it("renders a relative-time line for each message", () => {

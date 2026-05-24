@@ -1193,6 +1193,12 @@
       "value": "date"
     }
   ],
+  "common.devicesSection.capReachedBanner": [
+    {
+      "type": 0,
+      "value": "You've reached the device limit. Revoke an existing device below, then sign in again here to register this one."
+    }
+  ],
   "common.devicesSection.description": [
     {
       "type": 0,
@@ -1243,6 +1249,54 @@
     {
       "type": 0,
       "value": "Device revoked"
+    }
+  ],
+  "common.devicesSection.signOutOthersButton": [
+    {
+      "type": 0,
+      "value": "Sign out all other devices"
+    }
+  ],
+  "common.devicesSection.signOutOthersFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to sign out other devices"
+    }
+  ],
+  "common.devicesSection.signOutOthersSuccessToast": [
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " device"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " devices"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    },
+    {
+      "type": 0,
+      "value": " signed out"
     }
   ],
   "common.devicesSection.thisDeviceBadge": [
@@ -2942,6 +2996,18 @@
       "value": "No conversations yet. Contact someone from a post to start chatting."
     }
   ],
+  "messages.list.encryptedPreview": [
+    {
+      "type": 0,
+      "value": "🔒 Encrypted message"
+    }
+  ],
+  "messages.page.backToConversations": [
+    {
+      "type": 0,
+      "value": "Back to conversations"
+    }
+  ],
   "messages.page.emptyState": [
     {
       "type": 0,
@@ -2954,10 +3020,36 @@
       "value": "Messages"
     }
   ],
+  "messages.page.waitingForSync": [
+    {
+      "type": 0,
+      "value": "Older messages will appear once another of your devices or "
+    },
+    {
+      "type": 1,
+      "value": "peer"
+    },
+    {
+      "type": 0,
+      "value": " comes online to share the key."
+    }
+  ],
   "messages.thread.ariaLabel": [
     {
       "type": 0,
       "value": "Message history"
+    }
+  ],
+  "messages.thread.legacyBadge": [
+    {
+      "type": 0,
+      "value": "Not end-to-end encrypted"
+    }
+  ],
+  "messages.thread.legacyBadgeTitle": [
+    {
+      "type": 0,
+      "value": "Sent before end-to-end encryption was enabled"
     }
   ],
   "messages.thread.messageAriaLabel": [
