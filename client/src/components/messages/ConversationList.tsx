@@ -73,9 +73,14 @@ export function ConversationList({
                   // preview — show a generic placeholder rather than fetching
                   // and decrypting every conversation's last message just to
                   // render the sidebar.
+                  //
+                  // Use the literal emoji rather than a `\u{1F512}` escape:
+                  // JSX attribute values are HTML-style strings, not JS
+                  // expressions, so the escape is passed verbatim and
+                  // FormatJS parses `{1F512}` as an ICU placeholder.
                   <FormattedMessage
                     id="messages.list.encryptedPreview"
-                    defaultMessage="\u{1F512} Encrypted message"
+                    defaultMessage="🔒 Encrypted message"
                   />
                 )}
               </p>
