@@ -19,11 +19,12 @@ export function Footer() {
             values={{
               heart: () => (
                 <Heart
+                  key="heart"
                   className="w-4 h-4 text-mayday-600 fill-mayday-600"
                   aria-hidden="true"
                 />
               ),
-              love: (chunks) => <span className="sr-only">{chunks}</span>,
+              love: (chunks) => <span key="love" className="sr-only">{chunks}</span>,
             }}
           />
         </p>
