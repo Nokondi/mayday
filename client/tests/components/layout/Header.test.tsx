@@ -77,6 +77,10 @@ function queryMobileNav() {
   return screen.queryByRole('navigation', { name: /mobile navigation/i });
 }
 
+function queryQuickNav() {
+  return screen.queryByRole('navigation', { name: /quick navigation/i });
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   // Default: queries resolve to empty arrays so they don't throw on access.
@@ -110,6 +114,11 @@ describe('Header — logged-out state', () => {
     expect(within(nav).queryByRole('link', { name: /new post/i })).not.toBeInTheDocument();
     expect(within(nav).queryByRole('link', { name: /^messages$/i })).not.toBeInTheDocument();
     expect(within(nav).queryByRole('button', { name: /log out/i })).not.toBeInTheDocument();
+  });
+
+  it('does not render the mobile quick-nav icons when signed out', () => {
+    renderHeader();
+    expect(queryQuickNav()).not.toBeInTheDocument();
   });
 
   it('does not fetch invites when no user is signed in', async () => {
@@ -315,5 +324,55 @@ describe('Header — mobile menu toggle', () => {
     const mobileNav = queryMobileNav() as HTMLElement;
     const invites = await within(mobileNav).findByRole('link', { name: /invites \(2\)/i });
     expect(invites).toHaveAttribute('href', '/invites');
+  });
+
+  it('does not include Map, Calendar, New Post, or Messages in the mobile dropdown', async () => {
+    setAuth({ user: { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null } });
+    const user = userEvent.setup();
+    renderHeader();
+
+    await user.click(screen.getByRole('button', { name: /toggle menu/i }));
+
+    const mobileNav = queryMobileNav() as HTMLElement;
+    expect(within(mobileNav).queryByRole('link', { name: /^map$/i })).not.toBeInTheDocument();
+    expect(within(mobileNav).queryByRole('link', { name: /^calendar$/i })).not.toBeInTheDocument();
+    expect(within(mobileNav).queryByRole('link', { name: /new post/i })).not.toBeInTheDocument();
+    expect(within(mobileNav).queryByRole('link', { name: /^messages$/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('Header — mobile quick-nav icons', () => {
+  const user = { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null };
+
+  it('renders Map, Calendar, New Post, and Messages icon links when signed in', () => {
+    setAuth({ user });
+    renderHeader();
+    const quickNav = queryQuickNav();
+    expect(quickNav).not.toBeNull();
+    const nav = quickNav as HTMLElement;
+    expect(within(nav).getByRole('link', { name: /^map$/i })).toHaveAttribute('href', '/map');
+    expect(within(nav).getByRole('link', { name: /^calendar$/i })).toHaveAttribute('href', '/calendar');
+    expect(within(nav).getByRole('link', { name: /new post/i })).toHaveAttribute('href', '/posts/new');
+    expect(within(nav).getByRole('link', { name: /^messages$/i })).toHaveAttribute('href', '/messages');
+  });
+
+  it.each([
+    ['/map', /^map$/i],
+    ['/calendar', /^calendar$/i],
+    ['/posts/new', /new post/i],
+    ['/messages', /^messages$/i],
+  ] as const)('marks %s as the current page when active', (path, name) => {
+    setAuth({ user });
+    renderHeader({ initialPath: path });
+    const nav = queryQuickNav() as HTMLElement;
+    const link = within(nav).getByRole('link', { name });
+    expect(link).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('does not mark any quick-nav link as current when on an unrelated route', () => {
+    setAuth({ user });
+    renderHeader({ initialPath: '/posts' });
+    const nav = queryQuickNav() as HTMLElement;
+    expect(within(nav).queryByRole('link', { current: 'page' })).not.toBeInTheDocument();
   });
 });

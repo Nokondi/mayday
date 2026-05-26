@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
   X,
@@ -8,6 +8,8 @@ import {
   User,
   Plus,
   Mail,
+  MapPinned,
+  Calendar,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -24,7 +26,10 @@ export function Header() {
   const intl = useIntl();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const isActive = (path: string) => pathname === path;
 
   const { data: orgInvites } = useQuery({
     queryKey: ["my-invites"],
@@ -52,13 +57,14 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           <Link
             to="/"
+            aria-label={BRAND_NAME}
             className="flex items-center gap-2 text-mayday-700 font-bold text-2xl"
           >
             <MayDayLogo
               className="w-16 h-16 text-mayday-700"
               aria-hidden="true"
             />
-            {BRAND_NAME}
+            <span className="hidden md:inline">{BRAND_NAME}</span>
           </Link>
 
           <nav
@@ -238,21 +244,93 @@ export function Header() {
             )}
           </nav>
 
-          <button
-            className="md:hidden"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-expanded={menuOpen}
-            aria-label={intl.formatMessage({
-              id: "layout.header.toggleMenuAriaLabel",
-              defaultMessage: "Toggle menu",
-            })}
-          >
-            {menuOpen ? (
-              <X className="w-6 h-6" aria-hidden="true" />
-            ) : (
-              <Menu className="w-6 h-6" aria-hidden="true" />
+          <div className="md:hidden flex items-center gap-4">
+            {user && (
+              <nav
+                aria-label={intl.formatMessage({
+                  id: "layout.header.mobileQuickNavAriaLabel",
+                  defaultMessage: "Quick navigation",
+                })}
+                className="flex items-center gap-4"
+              >
+                <Link
+                  to="/map"
+                  aria-label={intl.formatMessage({
+                    id: "layout.header.nav.map",
+                    defaultMessage: "Map",
+                  })}
+                  aria-current={isActive("/map") ? "page" : undefined}
+                  className={
+                    isActive("/map")
+                      ? "text-mayday-700"
+                      : "text-gray-600 hover:text-gray-900"
+                  }
+                >
+                  <MapPinned className="w-6 h-6" aria-hidden="true" />
+                </Link>
+                <Link
+                  to="/calendar"
+                  aria-label={intl.formatMessage({
+                    id: "layout.header.nav.calendar",
+                    defaultMessage: "Calendar",
+                  })}
+                  aria-current={isActive("/calendar") ? "page" : undefined}
+                  className={
+                    isActive("/calendar")
+                      ? "text-mayday-700"
+                      : "text-gray-600 hover:text-gray-900"
+                  }
+                >
+                  <Calendar className="w-6 h-6" aria-hidden="true" />
+                </Link>
+                <Link
+                  to="/posts/new"
+                  aria-label={intl.formatMessage({
+                    id: "layout.header.nav.newPost",
+                    defaultMessage: "New Post",
+                  })}
+                  aria-current={isActive("/posts/new") ? "page" : undefined}
+                  className={
+                    isActive("/posts/new")
+                      ? "text-mayday-700"
+                      : "text-gray-600 hover:text-gray-900"
+                  }
+                >
+                  <Plus className="w-6 h-6" aria-hidden="true" />
+                </Link>
+                <Link
+                  to="/messages"
+                  aria-label={intl.formatMessage({
+                    id: "layout.header.nav.messages",
+                    defaultMessage: "Messages",
+                  })}
+                  aria-current={isActive("/messages") ? "page" : undefined}
+                  className={
+                    isActive("/messages")
+                      ? "text-mayday-700"
+                      : "text-gray-600 hover:text-gray-900"
+                  }
+                >
+                  <MessageSquare className="w-6 h-6" aria-hidden="true" />
+                </Link>
+              </nav>
             )}
-          </button>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-expanded={menuOpen}
+              aria-label={intl.formatMessage({
+                id: "layout.header.toggleMenuAriaLabel",
+                defaultMessage: "Toggle menu",
+              })}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              {menuOpen ? (
+                <X className="w-6 h-6" aria-hidden="true" />
+              ) : (
+                <Menu className="w-6 h-6" aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </div>
 
         {menuOpen && (
@@ -273,26 +351,6 @@ export function Header() {
                   <FormattedMessage
                     id="layout.header.nav.browse"
                     defaultMessage="Browse"
-                  />
-                </Link>
-                <Link
-                  to="/map"
-                  className="block px-3 py-2 rounded hover:bg-gray-100"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <FormattedMessage
-                    id="layout.header.nav.map"
-                    defaultMessage="Map"
-                  />
-                </Link>
-                <Link
-                  to="/calendar"
-                  className="block px-3 py-2 rounded hover:bg-gray-100"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <FormattedMessage
-                    id="layout.header.nav.calendar"
-                    defaultMessage="Calendar"
                   />
                 </Link>
                 <Link
@@ -333,26 +391,6 @@ export function Header() {
                   <FormattedMessage
                     id="layout.header.nav.support"
                     defaultMessage="Support"
-                  />
-                </Link>
-                <Link
-                  to="/posts/new"
-                  className="block px-3 py-2 rounded hover:bg-gray-100"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <FormattedMessage
-                    id="layout.header.nav.newPost"
-                    defaultMessage="New Post"
-                  />
-                </Link>
-                <Link
-                  to="/messages"
-                  className="block px-3 py-2 rounded hover:bg-gray-100"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <FormattedMessage
-                    id="layout.header.nav.messages"
-                    defaultMessage="Messages"
                   />
                 </Link>
                 <Link
