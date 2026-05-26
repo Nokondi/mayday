@@ -7,10 +7,18 @@ vi.mock('../../src/api/keyWraps.js', () => ({
   getKeyWraps: vi.fn(),
   uploadKeyWraps: vi.fn(),
 }));
+vi.mock('../../src/api/devices.js', () => ({
+  getMyDevices: vi.fn(),
+  getUserDevices: vi.fn(),
+}));
 
 import { getConversations } from '../../src/api/messages.js';
 import { getKeyWraps, uploadKeyWraps } from '../../src/api/keyWraps.js';
-import { rescueConversationKeysForDevice } from '../../src/crypto/rescue.js';
+import { getMyDevices, getUserDevices } from '../../src/api/devices.js';
+import {
+  rescueConversationKeysForDevice,
+  reconcileConversationKeys,
+} from '../../src/crypto/rescue.js';
 import { getSodium } from '../../src/crypto/sodium.js';
 import {
   generateConversationKey,
@@ -23,11 +31,14 @@ import {
 const mockedGetConvs = vi.mocked(getConversations);
 const mockedGetKeyWraps = vi.mocked(getKeyWraps);
 const mockedUpload = vi.mocked(uploadKeyWraps);
+const mockedGetMyDevices = vi.mocked(getMyDevices);
+const mockedGetUserDevices = vi.mocked(getUserDevices);
 
 const ME = '00000000-0000-4000-a000-000000000001';
 const PEER = '00000000-0000-4000-a000-000000000002';
 const MY_DEVICE = '00000000-0000-4000-a000-000000000010';
 const NEW_DEVICE = '00000000-0000-4000-a000-000000000011';
+const OTHER_OWN_DEVICE = '00000000-0000-4000-a000-000000000012';
 const CONV_ID = '00000000-0000-4000-a000-000000000030';
 
 beforeAll(async () => {
@@ -374,5 +385,180 @@ describe('rescueConversationKeysForDevice', () => {
     // an unrelated user's new device.
     expect(mockedGetKeyWraps).not.toHaveBeenCalled();
     expect(mockedUpload).not.toHaveBeenCalled();
+  });
+});
+
+// A Device row as returned by getMyDevices (our own devices, including the
+// current one). Only id/encryptionPublicKey/revokedAt matter to the sweep.
+function makeMyDeviceRow(
+  id: string,
+  encryptionPublicKey: string,
+  overrides: Record<string, unknown> = {},
+) {
+  return {
+    id,
+    userId: ME,
+    label: null,
+    signingPublicKey: 'AAAA',
+    encryptionPublicKey,
+    encryptionKeySig: 'AAAA',
+    createdAt: '2026-05-22T00:00:00Z',
+    lastSeenAt: null,
+    revokedAt: null,
+    ...overrides,
+  };
+}
+
+describe('reconcileConversationKeys (on-connect recovery sweep)', () => {
+  it('wraps the CK for an active peer device that is missing it', async () => {
+    const ownDevice = await makeDeviceKeys();
+    const peer = await makePeerDevice(NEW_DEVICE, PEER);
+    const ck = await generateConversationKey();
+    const wrappedForMe = await wrapConversationKey(ck, ownDevice.encryption.publicKey);
+
+    mockedGetConvs.mockResolvedValueOnce([makeConv(PEER)]);
+    mockedGetMyDevices.mockResolvedValueOnce([
+      makeMyDeviceRow(MY_DEVICE, await toBase64(ownDevice.encryption.publicKey)),
+    ] as never);
+    mockedGetKeyWraps.mockResolvedValueOnce([
+      {
+        id: 'kw1', conversationId: CONV_ID, deviceId: MY_DEVICE,
+        wrappedKey: await toBase64(wrappedForMe), keyEpoch: 1, createdAt: '',
+      },
+    ]);
+    mockedGetUserDevices.mockResolvedValueOnce([peer.peerDevice]);
+    mockedUpload.mockResolvedValueOnce(undefined);
+
+    await reconcileConversationKeys({ ownDevice, ownDeviceServerId: MY_DEVICE });
+
+    expect(mockedUpload).toHaveBeenCalledTimes(1);
+    const [convId, wraps] = mockedUpload.mock.calls[0]!;
+    expect(convId).toBe(CONV_ID);
+    expect(wraps).toHaveLength(1);
+    expect(wraps[0].deviceId).toBe(NEW_DEVICE);
+
+    // The peer's device must actually be able to decrypt the wrap we uploaded.
+    const recovered = await unwrapConversationKey(
+      await fromBase64(wraps[0].wrappedKey),
+      peer.publicEncryption,
+      peer.privateEncryption,
+    );
+    expect(Array.from(recovered!)).toEqual(Array.from(ck));
+  });
+
+  it('skips a conversation where we do not hold the CK (no peer lookup, no upload)', async () => {
+    const ownDevice = await makeDeviceKeys();
+
+    mockedGetConvs.mockResolvedValueOnce([makeConv(PEER)]);
+    mockedGetMyDevices.mockResolvedValueOnce([
+      makeMyDeviceRow(MY_DEVICE, await toBase64(ownDevice.encryption.publicKey)),
+    ] as never);
+    mockedGetKeyWraps.mockResolvedValueOnce([]); // no wrap addressed to us
+
+    await reconcileConversationKeys({ ownDevice, ownDeviceServerId: MY_DEVICE });
+
+    // We can't share a key we don't have — and must not even enumerate the
+    // peer's devices for a conversation we have no access to.
+    expect(mockedGetUserDevices).not.toHaveBeenCalled();
+    expect(mockedUpload).not.toHaveBeenCalled();
+  });
+
+  it('also wraps for our own other devices (multi-device handoff)', async () => {
+    const ownDevice = await makeDeviceKeys();
+    const otherOwn = await makePeerDevice(OTHER_OWN_DEVICE, ME);
+    const ck = await generateConversationKey();
+    const wrappedForMe = await wrapConversationKey(ck, ownDevice.encryption.publicKey);
+
+    mockedGetConvs.mockResolvedValueOnce([makeConv(PEER)]);
+    mockedGetMyDevices.mockResolvedValueOnce([
+      makeMyDeviceRow(MY_DEVICE, await toBase64(ownDevice.encryption.publicKey)),
+      makeMyDeviceRow(OTHER_OWN_DEVICE, otherOwn.peerDevice.encryptionPublicKey),
+    ] as never);
+    mockedGetKeyWraps.mockResolvedValueOnce([
+      {
+        id: 'kw1', conversationId: CONV_ID, deviceId: MY_DEVICE,
+        wrappedKey: await toBase64(wrappedForMe), keyEpoch: 1, createdAt: '',
+      },
+    ]);
+    mockedGetUserDevices.mockResolvedValueOnce([]); // peer has no devices
+    mockedUpload.mockResolvedValueOnce(undefined);
+
+    await reconcileConversationKeys({ ownDevice, ownDeviceServerId: MY_DEVICE });
+
+    expect(mockedUpload).toHaveBeenCalledTimes(1);
+    const [, wraps] = mockedUpload.mock.calls[0]!;
+    expect(wraps).toHaveLength(1);
+    // Our own *current* device must never be a target; only the other one.
+    expect(wraps[0].deviceId).toBe(OTHER_OWN_DEVICE);
+
+    const recovered = await unwrapConversationKey(
+      await fromBase64(wraps[0].wrappedKey),
+      otherOwn.publicEncryption,
+      otherOwn.privateEncryption,
+    );
+    expect(Array.from(recovered!)).toEqual(Array.from(ck));
+  });
+
+  it('does not re-wrap a device that already holds the epoch (quiet when in sync)', async () => {
+    const ownDevice = await makeDeviceKeys();
+    const otherOwn = await makePeerDevice(OTHER_OWN_DEVICE, ME);
+    const ck = await generateConversationKey();
+    const wrappedForMe = await wrapConversationKey(ck, ownDevice.encryption.publicKey);
+    const wrappedForOther = await wrapConversationKey(ck, otherOwn.publicEncryption);
+
+    mockedGetConvs.mockResolvedValueOnce([makeConv(PEER)]);
+    mockedGetMyDevices.mockResolvedValueOnce([
+      makeMyDeviceRow(MY_DEVICE, await toBase64(ownDevice.encryption.publicKey)),
+      makeMyDeviceRow(OTHER_OWN_DEVICE, otherOwn.peerDevice.encryptionPublicKey),
+    ] as never);
+    mockedGetKeyWraps.mockResolvedValueOnce([
+      {
+        id: 'kw1', conversationId: CONV_ID, deviceId: MY_DEVICE,
+        wrappedKey: await toBase64(wrappedForMe), keyEpoch: 1, createdAt: '',
+      },
+      {
+        id: 'kw2', conversationId: CONV_ID, deviceId: OTHER_OWN_DEVICE,
+        wrappedKey: await toBase64(wrappedForOther), keyEpoch: 1, createdAt: '',
+      },
+    ]);
+    mockedGetUserDevices.mockResolvedValueOnce([]); // peer has no devices
+
+    await reconcileConversationKeys({ ownDevice, ownDeviceServerId: MY_DEVICE });
+
+    // Every visible target already has the epoch — nothing to upload.
+    expect(mockedUpload).not.toHaveBeenCalled();
+  });
+
+  it('wraps every epoch we hold for a peer device so it can read full history', async () => {
+    const ownDevice = await makeDeviceKeys();
+    const peer = await makePeerDevice(NEW_DEVICE, PEER);
+    const ck1 = await generateConversationKey();
+    const ck2 = await generateConversationKey();
+    const wrappedE1 = await wrapConversationKey(ck1, ownDevice.encryption.publicKey);
+    const wrappedE2 = await wrapConversationKey(ck2, ownDevice.encryption.publicKey);
+
+    mockedGetConvs.mockResolvedValueOnce([makeConv(PEER)]);
+    mockedGetMyDevices.mockResolvedValueOnce([
+      makeMyDeviceRow(MY_DEVICE, await toBase64(ownDevice.encryption.publicKey)),
+    ] as never);
+    mockedGetKeyWraps.mockResolvedValueOnce([
+      {
+        id: 'kw1', conversationId: CONV_ID, deviceId: MY_DEVICE,
+        wrappedKey: await toBase64(wrappedE1), keyEpoch: 1, createdAt: '',
+      },
+      {
+        id: 'kw2', conversationId: CONV_ID, deviceId: MY_DEVICE,
+        wrappedKey: await toBase64(wrappedE2), keyEpoch: 2, createdAt: '',
+      },
+    ]);
+    mockedGetUserDevices.mockResolvedValueOnce([peer.peerDevice]);
+    mockedUpload.mockResolvedValueOnce(undefined);
+
+    await reconcileConversationKeys({ ownDevice, ownDeviceServerId: MY_DEVICE });
+
+    expect(mockedUpload).toHaveBeenCalledTimes(1);
+    const [, wraps] = mockedUpload.mock.calls[0]!;
+    expect(wraps.map((w) => w.keyEpoch).sort()).toEqual([1, 2]);
+    expect(wraps.every((w) => w.deviceId === NEW_DEVICE)).toBe(true);
   });
 });
