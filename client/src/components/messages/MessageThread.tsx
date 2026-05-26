@@ -39,14 +39,20 @@ function renderWithLinks(content: string, isMine: boolean) {
 
 export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
   const intl = useIntl();
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  // Scroll the container directly instead of using scrollIntoView on a marker
+  // element. scrollIntoView scrolls every ancestor scroll container — including
+  // the window — to bring the target into view, which would scroll the page
+  // body down and push the mobile drawer header behind the sticky global header.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = containerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
 
   return (
     <div
+      ref={containerRef}
       role="log"
       className="flex-1 overflow-y-auto p-4 space-y-3"
       aria-live="polite"
@@ -123,7 +129,6 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
           </article>
         );
       })}
-      <div ref={bottomRef} />
     </div>
   );
 }

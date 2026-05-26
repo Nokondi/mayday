@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, Lock } from 'lucide-react';
-import { FormattedMessage } from 'react-intl';
+import { MessageSquare, Lock, ChevronLeft } from 'lucide-react';
+import { FormattedMessage, useIntl } from 'react-intl';
 import {
   getConversations,
   getConversationMessages,
@@ -29,6 +29,7 @@ export function MessagesPage() {
   const { e2eeEnabled } = useServerConfig();
   const { addHandler, removeHandler } = useWebSocket();
   const queryClient = useQueryClient();
+  const intl = useIntl();
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const initialDraft = (location.state as { draft?: string } | null)?.draft ?? '';
@@ -96,6 +97,21 @@ export function MessagesPage() {
     return () => removeHandler(handleNewMessage);
   }, [handleNewMessage, addHandler, removeHandler]);
 
+  // Lock body scroll while this page is mounted. Without this, the document
+  // (global Header + MessagesPage at 100dvh-4rem + Footer) is taller than the
+  // visible viewport, so the body scrolls and drags the drawer header out of
+  // view. Scroll to the top first — React Router doesn't reset scroll across
+  // routes, so if the user navigated here from a scrolled page, freezing the
+  // body at scrollY > 0 would hide the drawer header behind the sticky global
+  // header. Internal scroll containers (conversation list, message thread)
+  // continue to scroll normally.
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    window.scrollTo(0, 0);
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; };
+  }, []);
+
   // Sending decides between plaintext and encrypted at call time. Order of
   // checks reflects the rollout policy:
   //  1) E2EE off (or device not ready)             → plaintext (legacy path)
@@ -139,9 +155,9 @@ export function MessagesPage() {
   if (convLoading) return <LoadingSpinner className="py-20" />;
 
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100vh-4rem)] flex">
-      {/* Conversation list */}
-      <div className="w-80 border-r border-gray-200 bg-white overflow-y-auto">
+    <div className="max-w-6xl mx-auto h-[calc(100dvh-4rem)] flex relative overflow-hidden">
+      {/* Conversation list — full width on mobile, fixed sidebar on md+ */}
+      <div className="w-full md:w-80 md:border-r border-gray-200 bg-white overflow-y-auto flex-shrink-0">
         <div className="p-4 border-b border-gray-200">
           <h2 className="font-semibold text-gray-900">
             <FormattedMessage
@@ -157,8 +173,36 @@ export function MessagesPage() {
         />
       </div>
 
-      {/* Message thread */}
-      <div className="flex-1 flex flex-col bg-white">
+      {/*
+        Message thread.
+        - On mobile, this is an absolutely-positioned drawer that sits off-screen
+          to the right by default and slides in when activeConversation is set.
+        - On md+ it becomes a normal flex child sharing the row with the list.
+        The translate classes are gated by md: so desktop is always at rest.
+      */}
+      <div
+        className={`absolute inset-0 md:relative md:flex-1 flex flex-col bg-white z-10 transform transition-transform duration-300 ease-in-out md:transform-none ${
+          activeConversation ? 'translate-x-0' : 'translate-x-full md:translate-x-0'
+        }`}
+      >
+        {activeConversation && (
+          <div className="md:hidden sticky top-0 z-20 flex items-center gap-2 p-2 border-b border-gray-200 bg-white">
+            <button
+              type="button"
+              onClick={() => setActiveConversation('')}
+              aria-label={intl.formatMessage({
+                id: 'messages.page.backToConversations',
+                defaultMessage: 'Back to conversations',
+              })}
+              className="p-2 hover:bg-gray-100 rounded"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-700" aria-hidden="true" />
+            </button>
+            {peerName && (
+              <span className="font-medium text-gray-900 truncate">{peerName}</span>
+            )}
+          </div>
+        )}
         {activeConversation ? (
           <>
             {showWaitingBanner && (

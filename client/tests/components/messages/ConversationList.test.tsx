@@ -127,6 +127,28 @@ describe('ConversationList — rendering', () => {
     expect(screen.getByText('See you at 5')).toBeInTheDocument();
   });
 
+  it('renders the "Encrypted message" placeholder when lastMessage.content is null (E2EE)', () => {
+    // Regression for the JSX-attribute-escape bug: previously the placeholder
+    // used "\u{1F512}" in a JSX attribute string, which FormatJS parsed as
+    // an ICU placeholder named 1F512 and threw at runtime. The rendered
+    // text must contain the literal phrase "Encrypted message" without
+    // throwing.
+    const conversations = [
+      makeConversation({
+        lastMessage: makeMessage({
+          content: null,
+          ciphertext: 'opaque',
+          nonce: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+          senderDeviceId: '00000000-0000-4000-a000-000000000001',
+          keyEpoch: 1,
+          protocolVersion: 1,
+        }),
+      }),
+    ];
+    render(<ConversationList conversations={conversations} onSelect={() => {}} />);
+    expect(screen.getByText(/Encrypted message/)).toBeInTheDocument();
+  });
+
   it('does not render the last-message or timestamp lines when lastMessage is null', () => {
     const conversations = [makeConversation({ lastMessage: null })];
     const { container } = render(

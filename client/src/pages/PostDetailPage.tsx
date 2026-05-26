@@ -412,7 +412,10 @@ export function PostDetailPage() {
                 : `${format(start, dateFmt)} – ${format(end, dateFmt)}`;
             } else if (post.startAt) {
               label = intl.formatMessage(
-                { id: "posts.schedule.startsAt", defaultMessage: "Starts {date}" },
+                {
+                  id: "posts.schedule.startsAt",
+                  defaultMessage: "Starts {date}",
+                },
                 { date: format(new Date(post.startAt), dateFmt) },
               );
             } else {
@@ -604,8 +607,7 @@ export function PostDetailPage() {
                 id="report.detailsLabel"
                 defaultMessage="Additional details"
               />
-              {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between label and (optional) suffix */}
-              {" "}
+              {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between label and (optional) suffix */}{" "}
               <span className="text-gray-500 font-normal">
                 <FormattedMessage
                   id="common.formField.optionalSuffix"

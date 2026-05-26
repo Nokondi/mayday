@@ -458,6 +458,9 @@
   "common.devicesSection.addedDate": {
     "defaultMessage": "Added {date}"
   },
+  "common.devicesSection.capReachedBanner": {
+    "defaultMessage": "You've reached the device limit. Revoke an existing device below, then sign in again here to register this one."
+  },
   "common.devicesSection.description": {
     "defaultMessage": "Each browser you sign in from registers a device key used for end-to-end encryption. Compare fingerprints with the people you message to verify their identity."
   },
@@ -481,6 +484,15 @@
   },
   "common.devicesSection.revokeSuccessToast": {
     "defaultMessage": "Device revoked"
+  },
+  "common.devicesSection.signOutOthersButton": {
+    "defaultMessage": "Sign out all other devices"
+  },
+  "common.devicesSection.signOutOthersFailedToast": {
+    "defaultMessage": "Failed to sign out other devices"
+  },
+  "common.devicesSection.signOutOthersSuccessToast": {
+    "defaultMessage": "{count, plural, one {# device} other {# devices}} signed out"
   },
   "common.devicesSection.thisDeviceBadge": {
     "defaultMessage": "This device"
@@ -1031,14 +1043,29 @@
   "messages.list.emptyState": {
     "defaultMessage": "No conversations yet. Contact someone from a post to start chatting."
   },
+  "messages.list.encryptedPreview": {
+    "defaultMessage": "🔒 Encrypted message"
+  },
+  "messages.page.backToConversations": {
+    "defaultMessage": "Back to conversations"
+  },
   "messages.page.emptyState": {
     "defaultMessage": "Select a conversation to start messaging"
   },
   "messages.page.title": {
     "defaultMessage": "Messages"
   },
+  "messages.page.waitingForSync": {
+    "defaultMessage": "Older messages will appear once another of your devices or {peer} comes online to share the key."
+  },
   "messages.thread.ariaLabel": {
     "defaultMessage": "Message history"
+  },
+  "messages.thread.legacyBadge": {
+    "defaultMessage": "Not end-to-end encrypted"
+  },
+  "messages.thread.legacyBadgeTitle": {
+    "defaultMessage": "Sent before end-to-end encryption was enabled"
   },
   "messages.thread.messageAriaLabel": {
     "defaultMessage": "{sender} said {content}, {time}"
