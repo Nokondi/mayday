@@ -10,6 +10,7 @@ import {
   Mail,
   MapPinned,
   Calendar,
+  Binoculars,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -254,6 +255,21 @@ export function Header() {
                 className="flex items-center gap-4"
               >
                 <Link
+                  to="/posts"
+                  aria-label={intl.formatMessage({
+                    id: "layout.header.nav.browse",
+                    defaultMessage: "Browse",
+                  })}
+                  aria-current={isActive("/posts") ? "page" : undefined}
+                  className={
+                    isActive("/posts")
+                      ? "text-mayday-700"
+                      : "text-gray-600 hover:text-gray-900"
+                  }
+                >
+                  <Binoculars className="w-6 h-6" aria-hidden="true" />
+                </Link>
+                <Link
                   to="/map"
                   aria-label={intl.formatMessage({
                     id: "layout.header.nav.map",
@@ -343,16 +359,6 @@ export function Header() {
           >
             {user ? (
               <>
-                <Link
-                  to="/posts"
-                  className="block px-3 py-2 rounded hover:bg-gray-100"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <FormattedMessage
-                    id="layout.header.nav.browse"
-                    defaultMessage="Browse"
-                  />
-                </Link>
                 <Link
                   to="/organizations"
                   className="block px-3 py-2 rounded hover:bg-gray-100"

@@ -267,7 +267,6 @@ describe('Header — mobile menu toggle', () => {
     const mobileNav = queryMobileNav();
     expect(mobileNav).not.toBeNull();
     const nav = mobileNav as HTMLElement;
-    expect(within(nav).getByRole('link', { name: /browse/i })).toHaveAttribute('href', '/posts');
     expect(within(nav).getByRole('link', { name: /organizations/i })).toHaveAttribute(
       'href',
       '/organizations',
@@ -303,7 +302,7 @@ describe('Header — mobile menu toggle', () => {
     const mobileNav = queryMobileNav() as HTMLElement;
     expect(mobileNav).not.toBeNull();
 
-    await user.click(within(mobileNav).getByRole('link', { name: /browse/i }));
+    await user.click(within(mobileNav).getByRole('link', { name: /organizations/i }));
 
     expect(queryMobileNav()).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /toggle menu/i })).toHaveAttribute(
@@ -326,7 +325,7 @@ describe('Header — mobile menu toggle', () => {
     expect(invites).toHaveAttribute('href', '/invites');
   });
 
-  it('does not include Map, Calendar, New Post, or Messages in the mobile dropdown', async () => {
+  it('does not include Browse, Map, Calendar, New Post, or Messages in the mobile dropdown', async () => {
     setAuth({ user: { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null } });
     const user = userEvent.setup();
     renderHeader();
@@ -334,6 +333,7 @@ describe('Header — mobile menu toggle', () => {
     await user.click(screen.getByRole('button', { name: /toggle menu/i }));
 
     const mobileNav = queryMobileNav() as HTMLElement;
+    expect(within(mobileNav).queryByRole('link', { name: /browse/i })).not.toBeInTheDocument();
     expect(within(mobileNav).queryByRole('link', { name: /^map$/i })).not.toBeInTheDocument();
     expect(within(mobileNav).queryByRole('link', { name: /^calendar$/i })).not.toBeInTheDocument();
     expect(within(mobileNav).queryByRole('link', { name: /new post/i })).not.toBeInTheDocument();
@@ -344,12 +344,13 @@ describe('Header — mobile menu toggle', () => {
 describe('Header — mobile quick-nav icons', () => {
   const user = { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null };
 
-  it('renders Map, Calendar, New Post, and Messages icon links when signed in', () => {
+  it('renders Browse, Map, Calendar, New Post, and Messages icon links when signed in', () => {
     setAuth({ user });
     renderHeader();
     const quickNav = queryQuickNav();
     expect(quickNav).not.toBeNull();
     const nav = quickNav as HTMLElement;
+    expect(within(nav).getByRole('link', { name: /browse/i })).toHaveAttribute('href', '/posts');
     expect(within(nav).getByRole('link', { name: /^map$/i })).toHaveAttribute('href', '/map');
     expect(within(nav).getByRole('link', { name: /^calendar$/i })).toHaveAttribute('href', '/calendar');
     expect(within(nav).getByRole('link', { name: /new post/i })).toHaveAttribute('href', '/posts/new');
@@ -357,6 +358,7 @@ describe('Header — mobile quick-nav icons', () => {
   });
 
   it.each([
+    ['/posts', /browse/i],
     ['/map', /^map$/i],
     ['/calendar', /^calendar$/i],
     ['/posts/new', /new post/i],
@@ -371,7 +373,7 @@ describe('Header — mobile quick-nav icons', () => {
 
   it('does not mark any quick-nav link as current when on an unrelated route', () => {
     setAuth({ user });
-    renderHeader({ initialPath: '/posts' });
+    renderHeader({ initialPath: '/organizations' });
     const nav = queryQuickNav() as HTMLElement;
     expect(within(nav).queryByRole('link', { current: 'page' })).not.toBeInTheDocument();
   });
