@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Heart, Users, MapPin, HandHeart } from "lucide-react";
 import { FormattedMessage } from "react-intl";
-import { WaveDivider } from "../components/common/WaveDivider.js";
 import { useAuth } from "../context/AuthContext.js";
 
 export function AboutPage() {
@@ -13,7 +12,6 @@ export function AboutPage() {
         aria-labelledby="about-hero-heading"
         className="relative overflow-hidden bg-gradient-to-br from-mayday-500 to-mayday-700 text-white py-20"
       >
-        <WaveDivider />
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <h1
             id="about-hero-heading"

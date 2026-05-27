@@ -121,6 +121,12 @@ describe('Header — logged-out state', () => {
     expect(queryQuickNav()).not.toBeInTheDocument();
   });
 
+  it('renders the decorative wave divider', () => {
+    const { container } = renderHeader();
+    // The WaveDivider is the only svg that stretches with preserveAspectRatio="none".
+    expect(container.querySelector('svg[preserveAspectRatio="none"]')).toBeInTheDocument();
+  });
+
   it('does not fetch invites when no user is signed in', async () => {
     renderHeader();
     // Wait a tick so any enabled query would have fired if mis-configured.

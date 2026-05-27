@@ -5,7 +5,6 @@ import { FormattedMessage } from "react-intl";
 import { getPosts } from "../api/posts.js";
 import { PostList } from "../components/posts/PostList.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
-import { WaveDivider } from "../components/common/WaveDivider.js";
 
 export function HomePage() {
   const { data, isLoading } = useQuery({
@@ -15,18 +14,6 @@ export function HomePage() {
 
   return (
     <div>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-mayday-500 to-mayday-700 text-white py-20">
-        <WaveDivider />
-        <div className="relative max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-            <FormattedMessage
-              id="home.heroHeading"
-              defaultMessage="MayDay Mutual Aid Hub"
-            />
-          </h1>
-        </div>
-      </section>
       {/* Recent Posts */}
       <section className="py-16">
         <div className="max-w-4xl mx-auto px-4">

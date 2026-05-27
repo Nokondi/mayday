@@ -19,6 +19,7 @@ import { useAuth } from "../../context/AuthContext.js";
 import { getMyInvites } from "../../api/organizations.js";
 import { getMyCommunityInvites } from "../../api/communities.js";
 import MayDayLogo from "../../assets/mayday-logo.svg?react";
+import { WaveDivider } from "../common/WaveDivider.js";
 
 // Product brand name — kept out of i18n so it renders identically in all locales.
 const BRAND_NAME = "MayDay";
@@ -485,6 +486,11 @@ export function Header() {
             )}
           </nav>
         )}
+      </div>
+      {/* Decorative wave in normal flow directly below the nav, so it
+          reserves its own height and never overlaps page content. */}
+      <div className="relative h-8 sm:h-11 overflow-hidden pointer-events-none">
+        <WaveDivider />
       </div>
     </header>
   );
