@@ -268,10 +268,7 @@ export function AdminPage() {
       <div className="flex items-center gap-2 mb-6">
         <Shield className="w-6 h-6 text-mayday-600" aria-hidden="true" />
         <h1 className="text-2xl font-bold text-gray-900">
-          <FormattedMessage
-            id="admin.pageTitle"
-            defaultMessage="Admin Panel"
-          />
+          <FormattedMessage id="admin.pageTitle" defaultMessage="Admin Panel" />
         </h1>
       </div>
 
@@ -295,7 +292,7 @@ export function AdminPage() {
           className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
             tab === "reports"
               ? "bg-mayday-700 text-white"
-              : "bg-gray-100 text-gray-700"
+              : "bg-white text-gray-700"
           }`}
         >
           {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}
@@ -317,7 +314,7 @@ export function AdminPage() {
           className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
             tab === "bugs"
               ? "bg-mayday-700 text-white"
-              : "bg-gray-100 text-gray-700"
+              : "bg-white text-gray-700"
           }`}
         >
           {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}
@@ -339,7 +336,7 @@ export function AdminPage() {
           className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
             tab === "users"
               ? "bg-mayday-700 text-white"
-              : "bg-gray-100 text-gray-700"
+              : "bg-white text-gray-700"
           }`}
         >
           {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}
@@ -358,7 +355,7 @@ export function AdminPage() {
           className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
             tab === "announcements"
               ? "bg-mayday-700 text-white"
-              : "bg-gray-100 text-gray-700"
+              : "bg-white text-gray-700"
           }`}
         >
           {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}

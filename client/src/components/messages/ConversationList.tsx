@@ -47,7 +47,7 @@ export function ConversationList({
               { name: conv.otherParticipant.name, unread: conv.unreadCount },
             )}
             aria-current={activeId === conv.id || undefined}
-            className={`w-full text-left p-4 hover:bg-gray-50 transition-colors ${
+            className={`w-full text-left p-4 hover:bg-white transition-colors ${
               activeId === conv.id ? "bg-mayday-50" : ""
             }`}
           >

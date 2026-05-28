@@ -1,17 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
-import { Crown, X } from 'lucide-react';
-import { FormattedMessage, useIntl } from 'react-intl';
+import { useEffect, useRef, useState } from "react";
+import { Crown, X } from "lucide-react";
+import { FormattedMessage, useIntl } from "react-intl";
 
 export interface TransferOwnershipCandidate {
   userId: string;
   name: string;
-  role: 'ADMIN' | 'MEMBER';
+  role: "ADMIN" | "MEMBER";
 }
 
 interface TransferOwnershipDialogProps {
   open: boolean;
   onClose: () => void;
-  groupKind: 'community' | 'organization';
+  groupKind: "community" | "organization";
   groupName: string;
   candidates: TransferOwnershipCandidate[];
   /** Called with the chosen heir's userId. Resolves on success; reject keeps the dialog open. */
@@ -30,7 +30,7 @@ export function TransferOwnershipDialog({
 }: TransferOwnershipDialogProps) {
   const intl = useIntl();
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const [selectedId, setSelectedId] = useState<string>('');
+  const [selectedId, setSelectedId] = useState<string>("");
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -43,13 +43,13 @@ export function TransferOwnershipDialog({
     const dialog = dialogRef.current;
     if (!dialog) return;
     const handleClose = () => onClose();
-    dialog.addEventListener('close', handleClose);
-    return () => dialog.removeEventListener('close', handleClose);
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
   }, [onClose]);
 
   // Reset selection each time the dialog re-opens.
   useEffect(() => {
-    if (open) setSelectedId('');
+    if (open) setSelectedId("");
   }, [open]);
 
   const handleSubmit = async () => {
@@ -85,8 +85,8 @@ export function TransferOwnershipDialog({
             type="button"
             onClick={onClose}
             aria-label={intl.formatMessage({
-              id: 'common.actions.close',
-              defaultMessage: 'Close',
+              id: "common.actions.close",
+              defaultMessage: "Close",
             })}
             className="text-gray-500 hover:text-gray-600"
           >
@@ -156,7 +156,7 @@ export function TransferOwnershipDialog({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-mayday-50 disabled:opacity-50"
           >
             <FormattedMessage
               id="common.actions.cancel"
