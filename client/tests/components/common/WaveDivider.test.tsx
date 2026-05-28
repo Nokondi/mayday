@@ -10,36 +10,46 @@ function renderDivider(className?: string) {
   return svg;
 }
 
+function strokePaths(svg: SVGSVGElement) {
+  return Array.from(svg.querySelectorAll('path[class*="stroke-"]'));
+}
+
+function fillPaths(svg: SVGSVGElement) {
+  return Array.from(svg.querySelectorAll('path[class*="fill-"]'));
+}
+
 describe('WaveDivider', () => {
-  it('renders three wave paths', () => {
+  it('renders three stroke waves over a single filled base', () => {
     const svg = renderDivider();
-    expect(svg.querySelectorAll('path')).toHaveLength(3);
+    expect(svg.querySelectorAll('path')).toHaveLength(4);
+    expect(strokePaths(svg)).toHaveLength(3);
+    expect(fillPaths(svg)).toHaveLength(1);
   });
 
-  it('draws strokes with no fill', () => {
+  it('draws the wave lines as open, non-scaling strokes with no fill', () => {
     const svg = renderDivider();
-    // The svg disables fill, and every path is a stroke (no fill-* class).
+    // The svg defaults fill to none; the wave lines never opt back into a fill.
     expect(svg).toHaveAttribute('fill', 'none');
-    svg.querySelectorAll('path').forEach((path) => {
-      expect(path.getAttribute('class')).toMatch(/\bstroke-/);
+    strokePaths(svg).forEach((path) => {
       expect(path.getAttribute('class')).not.toMatch(/\bfill-/);
-    });
-  });
-
-  it('keeps the wave curves open (no closing fill segment)', () => {
-    const svg = renderDivider();
-    // A closed fill shape ended with "...L1440,0 L0,0 Z"; open stroke paths must not.
-    svg.querySelectorAll('path').forEach((path) => {
+      // Open curves: no closepath command, so they read as lines, not shapes.
       expect(path.getAttribute('d')).not.toMatch(/z/i);
-    });
-  });
-
-  it('uses a non-scaling stroke so width stays even under preserveAspectRatio="none"', () => {
-    const svg = renderDivider();
-    expect(svg).toHaveAttribute('preserveAspectRatio', 'none');
-    svg.querySelectorAll('path').forEach((path) => {
       expect(path).toHaveAttribute('vector-effect', 'non-scaling-stroke');
     });
+  });
+
+  it('fills the area below the middle wave with mayday-50', () => {
+    const svg = renderDivider();
+    const fill = fillPaths(svg);
+    expect(fill).toHaveLength(1);
+    expect(fill[0].getAttribute('class')).toContain('fill-mayday-50');
+    // Closed shape: a wave across the top, down to the bottom edge and back.
+    expect(fill[0].getAttribute('d')).toMatch(/z$/i);
+  });
+
+  it('stretches edge-to-edge via preserveAspectRatio="none"', () => {
+    const svg = renderDivider();
+    expect(svg).toHaveAttribute('preserveAspectRatio', 'none');
   });
 
   it('is hidden from assistive tech and forwards the className', () => {

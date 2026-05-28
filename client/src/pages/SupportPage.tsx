@@ -26,21 +26,17 @@ const strong = (chunks: React.ReactNode) => (
   <span className="font-medium">{chunks}</span>
 );
 
-const externalLink =
-  (href: string) =>
-  (chunks: React.ReactNode) => (
-    <Link to={href} className="text-mayday-600 hover:underline">
-      {chunks}
-    </Link>
-  );
+const externalLink = (href: string) => (chunks: React.ReactNode) => (
+  <Link to={href} className="text-mayday-600 hover:underline">
+    {chunks}
+  </Link>
+);
 
-const internalLink =
-  (to: string) =>
-  (chunks: React.ReactNode) => (
-    <Link to={to} className="text-mayday-600 hover:underline">
-      {chunks}
-    </Link>
-  );
+const internalLink = (to: string) => (chunks: React.ReactNode) => (
+  <Link to={to} className="text-mayday-600 hover:underline">
+    {chunks}
+  </Link>
+);
 
 const italicChunks = (chunks: React.ReactNode) => <i>{chunks}</i>;
 
@@ -59,6 +55,22 @@ export function SupportPage() {
           <FormattedMessage
             id="support.topics.general.whatIsMayDay.answer"
             defaultMessage="MayDay is a different kind of social network, where the objective isn't just communication, but making real-world connections between people who need help and people who can provide it. It's a tool to help communities coordinate and keep track of <strong>mutual aid</strong> efforts, and to connect people to the resources they need to survive and thrive."
+            values={{ strong }}
+          />
+        </p>
+      ),
+    },
+    {
+      id: "whyMayDay",
+      question: intl.formatMessage({
+        id: "support.topics.general.whyMayDay.question",
+        defaultMessage: "Why MayDay?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.general.whyMayDay.answer"
+            defaultMessage={`MayDay is both a call for help and a celebration of community. Ships in distress use the call, "mayday," to signal that they need immediate assistance. May Day is also an ancient spring festival ― a celebration of life and renewal ― and it is the date of International Workers' Day, a day of solidarity and mutual aid. We chose the name MayDay to reflect our mission of connecting people in need with those who can help, while also honoring the spirit of community and solidarity that has been practiced and celebrated for centuries.`}
             values={{ strong }}
           />
         </p>
