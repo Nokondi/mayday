@@ -607,8 +607,7 @@ export function PostDetailPage() {
                 id="report.detailsLabel"
                 defaultMessage="Additional details"
               />
-              {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between label and (optional) suffix */}{" "}
-              <span className="text-gray-500 font-normal">
+              <span className="text-gray-500 font-normal ml-1">
                 <FormattedMessage
                   id="common.formField.optionalSuffix"
                   defaultMessage="(optional)"

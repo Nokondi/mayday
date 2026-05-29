@@ -118,7 +118,8 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
                     })}
                     className="inline-flex items-center gap-0.5"
                   >
-                    &middot;
+                    {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- decorative separator glyph; badge is labelled via aria-label and the sr-only text below */}
+                    <span aria-hidden="true">·</span>
                     <Unlock className="w-3 h-3" aria-hidden="true" />
                     <span className="sr-only">
                       <FormattedMessage
