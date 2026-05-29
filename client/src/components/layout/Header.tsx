@@ -268,7 +268,11 @@ export function Header() {
                       : "text-gray-600 hover:text-gray-900"
                   }
                 >
-                  <Binoculars className="w-8 h-8" aria-hidden="true" />
+                  <Binoculars
+                    strokeWidth={1.5}
+                    className="w-8 h-8"
+                    aria-hidden="true"
+                  />
                 </Link>
                 <Link
                   to="/map"
@@ -283,7 +287,11 @@ export function Header() {
                       : "text-gray-600 hover:text-gray-900"
                   }
                 >
-                  <MapPinned className="w-8 h-8" aria-hidden="true" />
+                  <MapPinned
+                    strokeWidth={1.5}
+                    className="w-8 h-8"
+                    aria-hidden="true"
+                  />
                 </Link>
                 <Link
                   to="/calendar"
@@ -298,7 +306,11 @@ export function Header() {
                       : "text-gray-600 hover:text-gray-900"
                   }
                 >
-                  <Calendar className="w-8 h-8" aria-hidden="true" />
+                  <Calendar
+                    strokeWidth={1.5}
+                    className="w-8 h-8"
+                    aria-hidden="true"
+                  />
                 </Link>
                 <Link
                   to="/messages"
@@ -313,7 +325,11 @@ export function Header() {
                       : "text-gray-600 hover:text-gray-900"
                   }
                 >
-                  <MessageSquare className="w-8 h-8" aria-hidden="true" />
+                  <MessageSquare
+                    strokeWidth={1.5}
+                    className="w-8 h-8"
+                    aria-hidden="true"
+                  />
                 </Link>
                 <Link
                   to="/posts/new"
@@ -328,7 +344,11 @@ export function Header() {
                       : "text-gray-600 hover:text-gray-900"
                   }
                 >
-                  <Plus className="w-8 h-8" aria-hidden="true" />
+                  <Plus
+                    strokeWidth={1.5}
+                    className="w-8 h-8"
+                    aria-hidden="true"
+                  />
                 </Link>
               </nav>
             )}
@@ -342,9 +362,13 @@ export function Header() {
               className="text-gray-600 hover:text-gray-900"
             >
               {menuOpen ? (
-                <X className="w-8 h-8" aria-hidden="true" />
+                <X strokeWidth={1.5} className="w-8 h-8" aria-hidden="true" />
               ) : (
-                <Menu className="w-8 h-8" aria-hidden="true" />
+                <Menu
+                  strokeWidth={1.5}
+                  className="w-8 h-8"
+                  aria-hidden="true"
+                />
               )}
             </button>
           </div>

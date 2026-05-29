@@ -53,8 +53,8 @@ export function AboutPage() {
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="flex gap-4">
-              <div className="w-12 h-12 bg-mayday-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Heart className="w-6 h-6 text-mayday-600" aria-hidden="true" />
+              <div className="w-12 h-12 bg-orange-100  rounded-full flex items-center justify-center flex-shrink-0">
+                <Heart className="w-6 h-6 text-orange-600" aria-hidden="true" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg mb-1">

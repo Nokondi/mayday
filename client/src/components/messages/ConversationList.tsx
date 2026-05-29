@@ -32,7 +32,6 @@ export function ConversationList({
         id: "messages.list.ariaLabel",
         defaultMessage: "Conversations",
       })}
-      className="divide-y divide-gray-200"
     >
       {conversations.map((conv) => (
         <li key={conv.id}>
@@ -47,25 +46,35 @@ export function ConversationList({
               { name: conv.otherParticipant.name, unread: conv.unreadCount },
             )}
             aria-current={activeId === conv.id || undefined}
-            className={`w-full text-left p-4 hover:bg-white transition-colors ${
-              activeId === conv.id ? "bg-mayday-50" : ""
+            className={`w-full text-left p-2 transition-colors ${
+              activeId === conv.id ? "bg-mayday-700" : "hover:bg-white"
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="font-medium text-gray-900">
+              <span
+                className={`font-medium ${
+                  activeId === conv.id ? "text-white" : "text-gray-900"
+                }`}
+              >
                 {conv.otherParticipant.name}
               </span>
               {conv.unreadCount > 0 && (
                 <span
                   aria-hidden="true"
-                  className="bg-mayday-700 text-white text-xs px-2 py-0.5 rounded-full"
+                  className={`bg-mayday-700 text-white text-xs px-2 py-0.5 rounded-full ${
+                    activeId === conv.id ? "bg-white text-mayday-700" : ""
+                  }`}
                 >
                   {conv.unreadCount}
                 </span>
               )}
             </div>
             {conv.lastMessage && (
-              <p className="text-sm text-gray-500 truncate mt-1">
+              <p
+                className={`text-sm truncate mt-1 ${
+                  activeId === conv.id ? "text-white" : "text-gray-900"
+                }`}
+              >
                 {conv.lastMessage.content !== null ? (
                   conv.lastMessage.content
                 ) : (
@@ -86,7 +95,11 @@ export function ConversationList({
               </p>
             )}
             {conv.lastMessage && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p
+                className={`text-xs mt-1 ${
+                  activeId === conv.id ? "text-white" : "text-gray-500"
+                }`}
+              >
                 {formatDistanceToNow(new Date(conv.lastMessage.createdAt), {
                   addSuffix: true,
                 })}

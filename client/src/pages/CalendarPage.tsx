@@ -130,7 +130,7 @@ export function CalendarPage() {
               id: "calendar.previousMonthAriaLabel",
               defaultMessage: "Previous month",
             })}
-            className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+            className="p-2 rounded-lg border border-gray-300 bg-white hover:bg-mayday-50"
           >
             <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           </button>
@@ -182,7 +182,7 @@ export function CalendarPage() {
 
       {(() => {
         const openDayOccs = openDayKey
-          ? occurrencesByDay.get(openDayKey) ?? []
+          ? (occurrencesByDay.get(openDayKey) ?? [])
           : [];
         const openDayDate = openDayKey
           ? new Date(`${openDayKey}T00:00:00`)
@@ -203,9 +203,7 @@ export function CalendarPage() {
                   id="day-events-title"
                   className="text-lg font-bold text-gray-900"
                 >
-                  {openDayDate
-                    ? format(openDayDate, "EEEE, MMMM d, yyyy")
-                    : ""}
+                  {openDayDate ? format(openDayDate, "EEEE, MMMM d, yyyy") : ""}
                 </h2>
                 <button
                   type="button"
@@ -293,8 +291,7 @@ export function CalendarPage() {
                           <span className="font-medium">
                             {format(occ.start, "h:mma").toLowerCase()}
                           </span>
-                          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between time and title */}
-                          {" "}
+                          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between time and title */}{" "}
                           {occ.post.title}
                         </Link>
                       );
