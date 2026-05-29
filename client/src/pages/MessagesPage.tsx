@@ -260,7 +260,7 @@ export function MessagesPage() {
         }`}
       >
         {activeConversation && (
-          <div className="md:hidden sticky top-0 z-20 flex items-center gap-2 p-2 border-b border-gray-200 bg-mayday-50">
+          <div className="md:hidden sticky top-0 z-20 flex items-center gap-2 p-2 border-b border-mayday-200 bg-mayday-50">
             <button
               type="button"
               onClick={() => setActiveConversation("")}

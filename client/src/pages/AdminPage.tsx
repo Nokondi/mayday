@@ -387,7 +387,7 @@ export function AdminPage() {
           {reports?.data.map((report) => (
             <div
               key={report.id}
-              className="bg-white rounded-lg border border-gray-200 p-4"
+              className="bg-white rounded-lg border border-mayday-200 p-4"
             >
               <div className="flex items-start justify-between">
                 <div>
@@ -530,7 +530,7 @@ export function AdminPage() {
                   e.target.value as BugReport["status"] | "ALL",
                 )
               }
-              className="border border-gray-300 rounded px-2 py-1 text-sm"
+              className="border border-mayday-300 rounded px-2 py-1 text-sm"
             >
               <option value="ALL">
                 {intl.formatMessage({
@@ -557,7 +557,7 @@ export function AdminPage() {
             {bugReports?.data.map((bug) => (
               <div
                 key={bug.id}
-                className="bg-white rounded-lg border border-gray-200 p-4"
+                className="bg-white rounded-lg border border-mayday-200 p-4"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -603,7 +603,7 @@ export function AdminPage() {
                           status: e.target.value as BugReport["status"],
                         })
                       }
-                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="border border-mayday-300 rounded px-2 py-1 text-sm"
                     >
                       {BUG_STATUSES.map((s) => (
                         <option key={s} value={s}>
@@ -646,7 +646,7 @@ export function AdminPage() {
                   id: "admin.users.searchPlaceholder",
                   defaultMessage: "Search by name or email",
                 })}
-                className="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+                className="w-full border border-mayday-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
               />
             </div>
             <label className="sr-only" htmlFor="user-role-filter">
@@ -661,7 +661,7 @@ export function AdminPage() {
               onChange={(e) =>
                 setUserRoleFilter(e.target.value as "ALL" | "USER" | "ADMIN")
               }
-              className="border border-gray-300 rounded-lg px-2 py-2 text-sm"
+              className="border border-mayday-300 rounded-lg px-2 py-2 text-sm"
             >
               <option value="ALL">
                 {intl.formatMessage({
@@ -696,7 +696,7 @@ export function AdminPage() {
                   e.target.value as "ALL" | "BANNED" | "ACTIVE",
                 )
               }
-              className="border border-gray-300 rounded-lg px-2 py-2 text-sm"
+              className="border border-mayday-300 rounded-lg px-2 py-2 text-sm"
             >
               <option value="ALL">
                 {intl.formatMessage({
@@ -719,7 +719,7 @@ export function AdminPage() {
             </select>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+          <div className="bg-white rounded-lg border border-mayday-200 divide-y divide-gray-200">
             {isFetchingUsers && !users && (
               <p className="text-center py-8 text-gray-500">
                 <FormattedMessage
@@ -797,7 +797,7 @@ export function AdminPage() {
                   disabled={banUser.isPending}
                   className={`text-sm px-3 py-1.5 rounded border disabled:opacity-50 ${
                     u.isBanned
-                      ? "border-gray-300 text-gray-700 hover:bg-gray-50"
+                      ? "border-mayday-300 text-gray-700 hover:bg-gray-50"
                       : "border-red-300 text-red-700 hover:bg-red-50"
                   }`}
                 >
@@ -834,7 +834,7 @@ export function AdminPage() {
                 <button
                   onClick={() => setUserPage((p) => Math.max(1, p - 1))}
                   disabled={userPage <= 1}
-                  className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
+                  className="px-3 py-1 border border-mayday-300 rounded disabled:opacity-50"
                 >
                   <FormattedMessage
                     id="admin.users.previousPageButton"
@@ -844,7 +844,7 @@ export function AdminPage() {
                 <button
                   onClick={() => setUserPage((p) => p + 1)}
                   disabled={userPage >= users.totalPages}
-                  className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
+                  className="px-3 py-1 border border-mayday-300 rounded disabled:opacity-50"
                 >
                   <FormattedMessage
                     id="admin.users.nextPageButton"
@@ -871,7 +871,7 @@ export function AdminPage() {
               if (!message) return;
               postAnnouncement.mutate(message);
             }}
-            className="bg-white rounded-lg border border-gray-200 p-4 space-y-3"
+            className="bg-white rounded-lg border border-mayday-200 p-4 space-y-3"
           >
             <label
               htmlFor="announcement-message"
@@ -893,7 +893,7 @@ export function AdminPage() {
               })}
               rows={3}
               maxLength={500}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+              className="w-full border border-mayday-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
             />
             <div className="flex items-center justify-between">
               <p className="text-xs text-gray-500">
@@ -944,7 +944,7 @@ export function AdminPage() {
                 <div
                   key={a.id}
                   className={`bg-white rounded-lg border p-4 flex items-start justify-between gap-4 ${
-                    a.active ? "border-mayday-300" : "border-gray-200"
+                    a.active ? "border-mayday-300" : "border-mayday-200"
                   }`}
                 >
                   <div className="flex-1 min-w-0">
@@ -977,7 +977,7 @@ export function AdminPage() {
                       <button
                         onClick={() => deactivateAnnouncement.mutate(a.id)}
                         disabled={deactivateAnnouncement.isPending}
-                        className="text-sm px-3 py-1.5 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        className="text-sm px-3 py-1.5 rounded border border-mayday-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                       >
                         <FormattedMessage
                           id="admin.announcements.clearButton"

@@ -166,7 +166,7 @@ export function AboutPage() {
               </Link>
               <Link
                 to="/login"
-                className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50"
+                className="border border-mayday-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50"
               >
                 <FormattedMessage
                   id="common.actions.login"

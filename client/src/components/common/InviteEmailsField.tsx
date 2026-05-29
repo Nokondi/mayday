@@ -92,7 +92,7 @@ export function InviteEmailsField({
                 },
                 { n: idx + 1 },
               )}
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+              className="flex-1 border border-mayday-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
             />
             {emails.length > 1 && (
               <button

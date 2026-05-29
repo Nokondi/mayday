@@ -189,7 +189,7 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
                     id: 'posts.fulfillModal.searchPlaceholder',
                     defaultMessage: 'Type a name to search...',
                   })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+                  className="w-full border border-mayday-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
                 />
                 {fulfiller.userId && (
                   <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -199,7 +199,7 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
                 )}
 
                 {activeIndex === index && (hasResults || searching) && (
-                  <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                  <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-mayday-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                     {searching && (
                       <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500">
                         {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between icon and label */}
@@ -303,7 +303,7 @@ export function FulfillModal({ postId, open, onClose }: FulfillModalProps) {
           <button
             type="button"
             onClick={resetAndClose}
-            className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 text-sm text-gray-600 border border-mayday-300 rounded-lg hover:bg-gray-50"
           >
             <FormattedMessage
               id="common.actions.cancel"

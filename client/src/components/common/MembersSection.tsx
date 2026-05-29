@@ -71,7 +71,7 @@ export function MembersSection({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white rounded-lg border border-mayday-200 p-6">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -94,7 +94,7 @@ export function MembersSection({
       {open && (
         <div id={listId}>
           {invite && (
-            <div className="mt-4 pb-6 border-b border-gray-200">
+            <div className="mt-4 pb-6 border-b border-mayday-200">
               <h3 className="text-sm font-medium text-gray-700 mb-2">
                 <FormattedMessage
                   id="common.membersSection.inviteMembersHeading"

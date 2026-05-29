@@ -9,12 +9,10 @@ import {
   Share,
   Flag,
   MessageSquare,
+  ChevronRight,
 } from "lucide-react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { BugReportForm } from "../components/support/BugReportForm.js";
-
-// Decorative chevron in collapsible summaries — purely typographic, not translated.
-const CHEVRON_GLYPH = "›";
 
 interface Topic {
   id: string;
@@ -538,7 +536,7 @@ export function SupportPage() {
             />
           </h2>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+        <div className="bg-white rounded-lg border border-mayday-200 divide-y divide-gray-200">
           {techTopics.map((topic) => (
             <details key={topic.id} className="group">
               <summary className="flex justify-between items-center cursor-pointer list-none px-4 py-3 font-medium text-gray-800 hover:bg-gray-50">
@@ -547,7 +545,7 @@ export function SupportPage() {
                   className="text-gray-500 group-open:rotate-90 transition-transform"
                   aria-hidden="true"
                 >
-                  {CHEVRON_GLYPH}
+                  <ChevronRight className="w-4 h-4" />
                 </span>
               </summary>
               <div className="px-4 pb-4 text-gray-700 space-y-2">
@@ -570,7 +568,7 @@ export function SupportPage() {
             />
           </h2>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+        <div className="bg-white rounded-lg border border-mayday-200 divide-y divide-gray-200">
           {generalTopics.map((topic) => (
             <details key={topic.id} className="group">
               <summary className="flex justify-between items-center cursor-pointer list-none px-4 py-3 font-medium text-gray-800 hover:bg-gray-50">
@@ -579,7 +577,7 @@ export function SupportPage() {
                   className="text-gray-500 group-open:rotate-90 transition-transform"
                   aria-hidden="true"
                 >
-                  {CHEVRON_GLYPH}
+                  <ChevronRight className="w-4 h-4" />
                 </span>
               </summary>
               <div className="px-4 pb-4 text-gray-700 space-y-2">
@@ -609,7 +607,7 @@ export function SupportPage() {
             defaultMessage="Found something broken? Tell us what happened and we'll look into it."
           />
         </p>
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg border border-mayday-200 p-6">
           <BugReportForm />
         </div>
       </section>

@@ -39,7 +39,7 @@ export function PostFilters({
           defaultMessage: "Filter by type",
         })}
         onChange={(e) => onTypeChange(e.target.value)}
-        className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+        className="border border-mayday-300 rounded-lg px-3 py-2 text-sm bg-white"
       >
         <option value="">
           {intl.formatMessage({
@@ -68,7 +68,7 @@ export function PostFilters({
           defaultMessage: "Filter by category",
         })}
         onChange={(e) => onCategoryChange(e.target.value)}
-        className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+        className="border border-mayday-300 rounded-lg px-3 py-2 text-sm bg-white"
       >
         <option value="">
           {intl.formatMessage({
@@ -91,7 +91,7 @@ export function PostFilters({
             defaultMessage: "Filter by community",
           })}
           onChange={(e) => onCommunityChange(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white w-40 truncate"
+          className="border border-mayday-300 rounded-lg px-3 py-2 text-sm bg-white w-40 truncate"
         >
           <option value="">
             {intl.formatMessage({
@@ -114,7 +114,7 @@ export function PostFilters({
           defaultMessage: "Filter by urgency",
         })}
         onChange={(e) => onUrgencyChange(e.target.value)}
-        className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+        className="border border-mayday-300 rounded-lg px-3 py-2 text-sm bg-white"
       >
         <option value="">
           {intl.formatMessage({
@@ -150,7 +150,7 @@ export function PostFilters({
             defaultMessage: "Sort posts",
           })}
           onChange={(e) => onSortChange(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+          className="border border-mayday-300 rounded-lg px-3 py-2 text-sm bg-white"
         >
           <option value="recent">
             {intl.formatMessage({

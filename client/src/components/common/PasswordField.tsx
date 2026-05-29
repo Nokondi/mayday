@@ -42,7 +42,7 @@ export function PasswordField({
           type={showPassword ? "text" : "password"}
           aria-invalid={error ? true : undefined}
           aria-describedby={errorId}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+          className="w-full border border-mayday-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
           {...rest}
         />
         <button

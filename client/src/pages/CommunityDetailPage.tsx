@@ -146,7 +146,7 @@ export function CommunityDetailPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6 mb-6">
         <div className="flex items-start gap-4">
           {community.avatarUrl && (
             <img
@@ -198,7 +198,7 @@ export function CommunityDetailPage() {
           {isAdminOrOwner && (
             <Link
               to={`/communities/${community.id}/manage`}
-              className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+              className="flex items-center gap-1 px-3 py-2 border border-mayday-300 rounded-lg text-sm hover:bg-gray-50"
             >
               <Settings className="w-4 h-4" />
               <FormattedMessage
@@ -220,7 +220,7 @@ export function CommunityDetailPage() {
                 )
                   leaveMutation.mutate();
               }}
-              className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+              className="flex items-center gap-1 px-3 py-2 border border-mayday-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
             >
               <LogOut className="w-4 h-4" />
               <FormattedMessage
@@ -277,7 +277,7 @@ export function CommunityDetailPage() {
               <button
                 onClick={() => withdrawMutation.mutate()}
                 disabled={withdrawMutation.isPending}
-                className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="flex items-center gap-1 px-3 py-2 border border-mayday-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
                 <X className="w-4 h-4" />
                 <FormattedMessage

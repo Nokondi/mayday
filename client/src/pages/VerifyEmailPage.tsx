@@ -53,7 +53,7 @@ export function VerifyEmailPage() {
           defaultMessage="Confirm your email"
         />
       </h1>
-      <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6 space-y-4">
         {status === 'idle' && (
           <>
             <p className="text-gray-700">

@@ -114,7 +114,7 @@ export function TransferOwnershipDialog({
             />
           </p>
         ) : (
-          <fieldset className="mt-4 max-h-60 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
+          <fieldset className="mt-4 max-h-60 overflow-y-auto border border-mayday-200 rounded-lg divide-y divide-gray-100">
             <legend className="sr-only">
               <FormattedMessage
                 id="groups.transferOwnership.selectNewOwnerLegend"
@@ -137,7 +137,7 @@ export function TransferOwnershipDialog({
                     checked={selectedId === c.userId}
                     onChange={() => setSelectedId(c.userId)}
                     disabled={isPending}
-                    className="w-4 h-4 text-mayday-600 border-gray-300 focus:ring-mayday-500"
+                    className="w-4 h-4 text-mayday-600 border-mayday-300 focus:ring-mayday-500"
                   />
                   <span className="flex-1 text-sm text-gray-900 truncate">
                     {c.name}
@@ -156,7 +156,7 @@ export function TransferOwnershipDialog({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-mayday-50 disabled:opacity-50"
+            className="px-4 py-2 rounded-lg border border-mayday-300 text-gray-700 hover:bg-mayday-50 disabled:opacity-50"
           >
             <FormattedMessage
               id="common.actions.cancel"

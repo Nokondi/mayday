@@ -79,7 +79,7 @@ export function LoginPage() {
       <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
         <FormattedMessage id="auth.loginPage.title" defaultMessage="Log in to MayDay" />
       </h1>
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6">
         <LoginForm
           onSubmit={handleSubmit}
           isSubmitting={loginMutation.isPending}

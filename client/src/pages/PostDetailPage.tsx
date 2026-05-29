@@ -88,7 +88,7 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
             target="_blank"
             rel="noopener noreferrer"
             data-carousel-item
-            className="snap-start shrink-0 block rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
+            className="snap-start shrink-0 block rounded-lg overflow-hidden border border-mayday-200 hover:shadow-md transition-shadow"
           >
             <img
               src={img.url}
@@ -113,7 +113,7 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
             id: "posts.imageCarousel.previousAria",
             defaultMessage: "Previous image",
           })}
-          className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-1.5 shadow"
+          className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
         >
           <ChevronLeft className="w-4 h-4 text-gray-700" />
         </button>
@@ -126,7 +126,7 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
             id: "posts.imageCarousel.nextAria",
             defaultMessage: "Next image",
           })}
-          className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-1.5 shadow"
+          className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
         >
           <ChevronRight className="w-4 h-4 text-gray-700" />
         </button>
@@ -259,7 +259,7 @@ export function PostDetailPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="relative bg-white rounded-lg border border-gray-200 p-6">
+      <div className="relative bg-white rounded-lg border border-mayday-200 p-6">
         {user && !isOwner && (
           <button
             type="button"
@@ -510,7 +510,7 @@ export function PostDetailPage() {
                 id: "posts.actions.reopen",
                 defaultMessage: "Reopen",
               })}
-              className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50"
+              className="flex items-center gap-2 border border-mayday-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50"
             >
               <RotateCcw className="w-4 h-4" />
               <span className="hidden sm:inline">
@@ -626,7 +626,7 @@ export function PostDetailPage() {
                 defaultMessage:
                   "What's wrong with this post? Any context that will help the admin team is welcome.",
               })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+              className="w-full border border-mayday-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
             />
           </div>
           <div className="mt-6 flex justify-end gap-2">
@@ -634,7 +634,7 @@ export function PostDetailPage() {
               type="button"
               onClick={() => setShowReportConfirm(false)}
               disabled={reportMutation.isPending}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="px-4 py-2 rounded-lg border border-mayday-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
             >
               <FormattedMessage
                 id="common.actions.cancel"

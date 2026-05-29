@@ -131,7 +131,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
                   checked={emailNotificationsEnabled}
                   onChange={(e) => handleToggle(e.target.checked)}
                   disabled={mutation.isPending}
-                  className="mt-1 w-4 h-4 text-mayday-600 border-gray-300 rounded focus:ring-mayday-500"
+                  className="mt-1 w-4 h-4 text-mayday-600 border-mayday-300 rounded focus:ring-mayday-500"
                 />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-gray-900">
@@ -163,7 +163,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 text-sm text-gray-600 border border-mayday-300 rounded-lg hover:bg-gray-50"
           >
             <FormattedMessage
               id="common.settingsModal.doneButton"

@@ -59,7 +59,7 @@ describe("MessageThread", () => {
     expect(row).toHaveClass("justify-end");
   });
 
-  it('styles other users\' messages as "theirs" (left-aligned, gray)', () => {
+  it('styles other users\' messages as "theirs" (left-aligned, white with border)', () => {
     const messages = [
       makeMessage({ id: "m1", content: "theirs", senderId: "u2" }),
     ];
@@ -67,7 +67,12 @@ describe("MessageThread", () => {
 
     const text = screen.getByText("theirs");
     const bubble = text.parentElement as HTMLElement;
-    expect(bubble).toHaveClass("bg-gray-100", "text-gray-900");
+    expect(bubble).toHaveClass(
+      "bg-white",
+      "text-gray-900",
+      "border",
+      "border-mayday-300",
+    );
     const row = bubble.parentElement as HTMLElement;
     expect(row).toHaveClass("justify-start");
   });

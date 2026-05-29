@@ -29,7 +29,7 @@ export function MessageInput({ onSend, disabled, initialContent = "" }: MessageI
   return (
     <form
       onSubmit={handleSubmit}
-      className="border-t border-gray-200 p-4 flex gap-2"
+      className="border-t border-mayday-200 p-4 flex gap-2"
     >
       <input
         type="text"
@@ -44,7 +44,7 @@ export function MessageInput({ onSend, disabled, initialContent = "" }: MessageI
           defaultMessage: "Type a message",
         })}
         disabled={disabled}
-        className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+        className="flex-1 border border-mayday-300 rounded-full px-4 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
       />
       <button
         type="submit"

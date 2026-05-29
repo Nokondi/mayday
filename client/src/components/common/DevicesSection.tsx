@@ -174,7 +174,7 @@ export function DevicesSection() {
           return (
             <li
               key={d.id}
-              className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg"
+              className="flex items-start gap-3 p-3 border border-mayday-200 rounded-lg"
             >
               <Smartphone className="w-4 h-4 mt-0.5 text-gray-500 shrink-0" />
               <div className="flex-1 min-w-0">
