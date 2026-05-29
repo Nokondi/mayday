@@ -1,8 +1,73 @@
-import type { PeerDevice, UploadKeyWrapsRequest } from '@mayday/shared';
+import type { ConversationKeyWrap, PeerDevice, UploadKeyWrapsRequest } from '@mayday/shared';
 import type { DeviceKeys } from './device.js';
 import { getConversations } from '../api/messages.js';
+import { getMyDevices, getUserDevices } from '../api/devices.js';
 import { getKeyWraps, uploadKeyWraps } from '../api/keyWraps.js';
 import { unwrapConversationKey, wrapConversationKey, fromBase64, toBase64 } from './conversation.js';
+
+// A device we want to hand the conversation key to. Both Device and PeerDevice
+// satisfy this shape — we only ever need its id and encryption public key.
+interface WrapTarget {
+  id: string;
+  encryptionPublicKey: string;
+}
+
+// Core wrapping primitive shared by the event-driven rescue and the
+// on-connect reconciliation sweep. Given the wraps we can see for a single
+// conversation (`getKeyWraps` returns only our *own user's* device wraps) and
+// a list of target devices, produce the wraps needed so every target holds
+// the CK at every epoch we hold.
+//
+// We unwrap each epoch's CK once (cached) rather than per target. A target is
+// skipped for an epoch only when we can already see a wrap for it at that
+// epoch — which, since the server only returns our own user's wraps, means
+// the skip is effective for own devices but never fires for peer devices.
+// That's fine: re-wrapping a peer device is idempotent server-side (upsert),
+// and the alternative (enumerating a peer's wraps) would leak the peer's
+// device provisioning state.
+async function buildMissingWraps(
+  visibleWraps: ConversationKeyWrap[],
+  ownDevice: DeviceKeys,
+  ownDeviceServerId: string,
+  targets: WrapTarget[],
+): Promise<UploadKeyWrapsRequest['wraps']> {
+  const ourWraps = visibleWraps.filter((w) => w.deviceId === ownDeviceServerId);
+  if (ourWraps.length === 0) return []; // We don't hold this conversation's CK.
+
+  // Unwrap each epoch's CK once. Map iteration order is insertion order, which
+  // doesn't matter here since every missing epoch gets its own wrap.
+  const ckByEpoch = new Map<number, Uint8Array>();
+  for (const w of ourWraps) {
+    if (ckByEpoch.has(w.keyEpoch)) continue;
+    const ck = await unwrapConversationKey(
+      await fromBase64(w.wrappedKey),
+      ownDevice.encryption.publicKey,
+      ownDevice.encryption.privateKey,
+    );
+    if (ck) ckByEpoch.set(w.keyEpoch, ck);
+  }
+
+  const out: UploadKeyWrapsRequest['wraps'] = [];
+  for (const target of targets) {
+    // Never wrap for ourselves: we'd be sealing to a public key whose private
+    // key we already have. Pointless, and it would mask bugs by succeeding.
+    if (target.id === ownDeviceServerId) continue;
+
+    const have = new Set(
+      visibleWraps.filter((w) => w.deviceId === target.id).map((w) => w.keyEpoch),
+    );
+    const pubKey = await fromBase64(target.encryptionPublicKey);
+    for (const [epoch, ck] of ckByEpoch) {
+      if (have.has(epoch)) continue;
+      out.push({
+        deviceId: target.id,
+        wrappedKey: await toBase64(await wrapConversationKey(ck, pubKey)),
+        keyEpoch: epoch,
+      });
+    }
+  }
+  return out;
+}
 
 // Runs when a DEVICE_ADDED event arrives. The same algorithm covers both
 // own-handoff (newDevice.userId === me) and peer-rescue (newDevice.userId
@@ -42,39 +107,58 @@ export async function rescueConversationKeysForDevice(params: RescueParams): Pro
     return c.otherParticipant.id === newDevice.userId;
   });
 
-  const newDevicePubKey = await fromBase64(newDevice.encryptionPublicKey);
-
   await Promise.allSettled(targetConversations.map(async (conv) => {
     const wraps = await getKeyWraps(conv.id);
-    const ourWraps = wraps.filter((w) => w.deviceId === ownDeviceServerId);
-    if (ourWraps.length === 0) return; // No access to this conversation's CK.
+    const wrapsToUpload = await buildMissingWraps(wraps, ownDevice, ownDeviceServerId, [
+      { id: newDevice.id, encryptionPublicKey: newDevice.encryptionPublicKey },
+    ]);
+    if (wrapsToUpload.length === 0) return;
+    await uploadKeyWraps(conv.id, wrapsToUpload);
+  }));
+}
 
-    // For each epoch we hold a wrap at, produce a wrap for the new device —
-    // unless one already exists at that epoch (race-safe). Without this loop,
-    // post-rotation conversations would leave the rescued device able to
-    // decrypt only the latest epoch and showing "Could not decrypt" for the
-    // history.
-    const alreadyWrappedEpochs = new Set(
-      wraps.filter((w) => w.deviceId === newDevice.id).map((w) => w.keyEpoch),
-    );
-    const wrapsToUpload: UploadKeyWrapsRequest['wraps'] = [];
-    for (const ours of ourWraps) {
-      if (alreadyWrappedEpochs.has(ours.keyEpoch)) continue;
-      const wrappedBytes = await fromBase64(ours.wrappedKey);
-      const ck = await unwrapConversationKey(
-        wrappedBytes,
-        ownDevice.encryption.publicKey,
-        ownDevice.encryption.privateKey,
-      );
-      if (!ck) continue;
-      const wrappedForNewDevice = await wrapConversationKey(ck, newDevicePubKey);
-      wrapsToUpload.push({
-        deviceId: newDevice.id,
-        wrappedKey: await toBase64(wrappedForNewDevice),
-        keyEpoch: ours.keyEpoch,
-      });
-    }
+// Recovery sweep run whenever we (re)connect to the WebSocket. DEVICE_ADDED is
+// a one-shot, fire-and-forget event: if the device holding a conversation's CK
+// wasn't connected at the instant a new device registered, that event is gone
+// and the new device is left unable to decrypt — with no retry path. This
+// sweep closes that gap by making handoff/rescue eventually-consistent: for
+// every conversation where we hold the CK, ensure every *currently active*
+// participant device (the peer's devices and our own other devices) has a wrap
+// at each epoch we hold.
+//
+// Symmetric and safe to run on every device: a device that doesn't hold a
+// conversation's CK simply skips it (buildMissingWraps returns nothing), so a
+// freshly-enrolled device can't (and shouldn't) self-rescue — it waits for a
+// holder's sweep or a live DEVICE_ADDED. The work is bounded by our own
+// conversation count; uploads are idempotent so redundant passes are cheap.
+export interface ReconcileParams {
+  ownDevice: DeviceKeys;
+  ownDeviceServerId: string;
+}
 
+export async function reconcileConversationKeys(params: ReconcileParams): Promise<void> {
+  const { ownDevice, ownDeviceServerId } = params;
+
+  const [conversations, myDevices] = await Promise.all([
+    getConversations(),
+    getMyDevices(),
+  ]);
+  const ownOtherTargets: WrapTarget[] = myDevices
+    .filter((d) => !d.revokedAt && d.id !== ownDeviceServerId)
+    .map((d) => ({ id: d.id, encryptionPublicKey: d.encryptionPublicKey }));
+
+  await Promise.allSettled(conversations.map(async (conv) => {
+    const wraps = await getKeyWraps(conv.id);
+    // Bail before fetching peer devices if we don't hold this CK anyway.
+    if (!wraps.some((w) => w.deviceId === ownDeviceServerId)) return;
+
+    const peerDevices = await getUserDevices(conv.otherParticipant.id);
+    const targets: WrapTarget[] = [
+      ...peerDevices.map((d) => ({ id: d.id, encryptionPublicKey: d.encryptionPublicKey })),
+      ...ownOtherTargets,
+    ];
+
+    const wrapsToUpload = await buildMissingWraps(wraps, ownDevice, ownDeviceServerId, targets);
     if (wrapsToUpload.length === 0) return;
     await uploadKeyWraps(conv.id, wrapsToUpload);
   }));
