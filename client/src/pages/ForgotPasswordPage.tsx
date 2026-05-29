@@ -36,7 +36,7 @@ export function ForgotPasswordPage() {
             defaultMessage="Check your inbox"
           />
         </h1>
-        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+        <div className="bg-white rounded-lg border border-mayday-200 p-6 space-y-4">
           <p className="text-gray-700">
             <FormattedMessage
               id="auth.forgotPasswordPage.confirmationSentMessage"
@@ -53,7 +53,7 @@ export function ForgotPasswordPage() {
               defaultMessage="The link expires in 1 hour. Don't see it? Check your spam folder, or try again in a few minutes."
             />
           </p>
-          <p className="text-center text-sm text-gray-500 pt-2 border-t border-gray-200">
+          <p className="text-center text-sm text-gray-500 pt-2 border-t border-mayday-200">
             <Link
               to="/login"
               className="text-mayday-600 hover:text-mayday-700 font-medium"
@@ -77,7 +77,7 @@ export function ForgotPasswordPage() {
           defaultMessage="Reset your password"
         />
       </h1>
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6">
         <p className="text-sm text-gray-600 mb-4">
           <FormattedMessage
             id="auth.forgotPasswordPage.instructions"
@@ -106,7 +106,7 @@ export function ForgotPasswordPage() {
               aria-invalid={errors.email ? true : undefined}
               aria-describedby={errors.email ? "forgot-email-error" : undefined}
               {...register("email")}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+              className="w-full border border-mayday-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
               placeholder={intl.formatMessage({
                 id: "auth.forgotPasswordPage.emailPlaceholder",
                 defaultMessage: "you@example.com",

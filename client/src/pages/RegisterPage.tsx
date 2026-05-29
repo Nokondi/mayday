@@ -64,7 +64,7 @@ export function RegisterPage() {
             defaultMessage="Check your inbox"
           />
         </h1>
-        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+        <div className="bg-white rounded-lg border border-mayday-200 p-6 space-y-4">
           <p className="text-gray-700">
             <FormattedMessage
               id="auth.registerPage.confirmationSentMessage"
@@ -81,7 +81,7 @@ export function RegisterPage() {
               defaultMessage="The link expires in 24 hours. Don't see the email? Check your spam folder."
             />
           </p>
-          <div className="pt-2 border-t border-gray-200">
+          <div className="pt-2 border-t border-mayday-200">
             {resendState === 'sent' ? (
               <p role="status" className="text-sm text-green-700">
                 <FormattedMessage
@@ -129,7 +129,7 @@ export function RegisterPage() {
       <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
         <FormattedMessage id="auth.registerPage.title" defaultMessage="Join MayDay" />
       </h1>
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6">
         <RegisterForm onSubmit={handleSubmit} isSubmitting={registerMutation.isPending} error={error} defaultEmail={prefilledEmail} />
         <p className="text-center text-sm text-gray-500 mt-4">
           <FormattedMessage

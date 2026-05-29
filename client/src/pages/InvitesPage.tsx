@@ -101,7 +101,7 @@ export function InvitesPage() {
       {isLoading ? (
         <LoadingSpinner className="py-12" />
       ) : totalInvites === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-500">
+        <div className="bg-white rounded-lg border border-mayday-200 p-8 text-center text-gray-500">
           <Mail className="w-10 h-10 mx-auto mb-3 text-gray-300" />
           <p>
             <FormattedMessage
@@ -115,7 +115,7 @@ export function InvitesPage() {
           {orgInvites?.map((inv) => (
             <li
               key={`org-${inv.id}`}
-              className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between gap-3"
+              className="bg-white rounded-lg border border-mayday-200 p-4 flex items-center justify-between gap-3"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -158,7 +158,7 @@ export function InvitesPage() {
                 <button
                   onClick={() => declineOrgMutation.mutate(inv.id)}
                   disabled={declineOrgMutation.isPending}
-                  className="flex items-center gap-1 border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
+                  className="flex items-center gap-1 border border-mayday-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
                 >
                   <X className="w-4 h-4" />
                   <FormattedMessage
@@ -172,7 +172,7 @@ export function InvitesPage() {
           {communityInvites?.map((inv) => (
             <li
               key={`comm-${inv.id}`}
-              className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between gap-3"
+              className="bg-white rounded-lg border border-mayday-200 p-4 flex items-center justify-between gap-3"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -215,7 +215,7 @@ export function InvitesPage() {
                 <button
                   onClick={() => declineCommunityMutation.mutate(inv.id)}
                   disabled={declineCommunityMutation.isPending}
-                  className="flex items-center gap-1 border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
+                  className="flex items-center gap-1 border border-mayday-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
                 >
                   <X className="w-4 h-4" />
                   <FormattedMessage

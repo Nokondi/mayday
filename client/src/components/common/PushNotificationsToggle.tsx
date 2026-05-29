@@ -210,7 +210,7 @@ export function PushNotificationsToggle({
             mutation.mutate(next);
           }}
           disabled={disabled}
-          className="mt-1 w-4 h-4 text-mayday-600 border-gray-300 rounded focus:ring-mayday-500 disabled:opacity-50"
+          className="mt-1 w-4 h-4 text-mayday-600 border-mayday-300 rounded focus:ring-mayday-500 disabled:opacity-50"
         />
         <div className="flex-1">
           <div className="text-sm font-medium text-gray-900">{heading}</div>

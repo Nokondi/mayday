@@ -1,27 +1,33 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, Lock, ChevronLeft } from 'lucide-react';
-import { FormattedMessage, useIntl } from 'react-intl';
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useMemo,
+} from "react";
+import { useSearchParams, useLocation } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { MessageSquare, Lock, ChevronLeft } from "lucide-react";
+import { FormattedMessage, useIntl } from "react-intl";
 import {
   getConversations,
   getConversationMessages,
   sendMessage,
   sendEncryptedMessage,
-} from '../api/messages.js';
-import { useAuth } from '../context/AuthContext.js';
-import { useDevice } from '../context/DeviceContext.js';
-import { useWebSocket } from '../context/WebSocketContext.js';
-import { useServerConfig } from '../hooks/useServerConfig.js';
-import { useConversationKey } from '../hooks/useConversationKey.js';
-import { useDecryptedMessages } from '../hooks/useDecryptedMessages.js';
-import { encryptToEnvelope } from '../crypto/envelope.js';
-import { establishConversationKey } from '../crypto/establish.js';
-import { ConversationList } from '../components/messages/ConversationList.js';
-import { MessageThread } from '../components/messages/MessageThread.js';
-import { MessageInput } from '../components/messages/MessageInput.js';
-import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
-import type { WSMessage, Message } from '@mayday/shared';
+} from "../api/messages.js";
+import { useAuth } from "../context/AuthContext.js";
+import { useDevice } from "../context/DeviceContext.js";
+import { useWebSocket } from "../context/WebSocketContext.js";
+import { useServerConfig } from "../hooks/useServerConfig.js";
+import { useConversationKey } from "../hooks/useConversationKey.js";
+import { useDecryptedMessages } from "../hooks/useDecryptedMessages.js";
+import { encryptToEnvelope } from "../crypto/envelope.js";
+import { establishConversationKey } from "../crypto/establish.js";
+import { ConversationList } from "../components/messages/ConversationList.js";
+import { MessageThread } from "../components/messages/MessageThread.js";
+import { MessageInput } from "../components/messages/MessageInput.js";
+import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
+import type { WSMessage, Message } from "@mayday/shared";
 
 export function MessagesPage() {
   const { user } = useAuth();
@@ -32,16 +38,25 @@ export function MessagesPage() {
   const intl = useIntl();
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const initialDraft = (location.state as { draft?: string } | null)?.draft ?? '';
-  const [activeConversation, setActiveConversation] = useState(searchParams.get('conversation') || '');
+  const initialDraft =
+    (location.state as { draft?: string } | null)?.draft ?? "";
+  const [activeConversation, setActiveConversation] = useState(
+    searchParams.get("conversation") || "",
+  );
+  // Callback ref: stored in state so the measurement effect below re-runs
+  // when the element actually mounts. We can't use a plain useRef here
+  // because the early-return spinner branch means the ref'd <div> doesn't
+  // exist on the first render, and useLayoutEffect deps don't see useRef
+  // mutations.
+  const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
 
   const { data: conversations, isLoading: convLoading } = useQuery({
-    queryKey: ['conversations'],
+    queryKey: ["conversations"],
     queryFn: getConversations,
   });
 
   const { data: messages, isLoading: msgLoading } = useQuery({
-    queryKey: ['messages', activeConversation],
+    queryKey: ["messages", activeConversation],
     queryFn: () => getConversationMessages(activeConversation),
     enabled: !!activeConversation,
   });
@@ -58,17 +73,25 @@ export function MessagesPage() {
   // the next send encrypts under the rotated CK so the revoked device can't
   // decrypt it even with its still-cached old CK.
   const resolved = useConversationKey(activeConversation || null);
-  const [localCk, setLocalCk] = useState<{ ck: Uint8Array; keyEpoch: number } | null>(null);
-  useEffect(() => { setLocalCk(null); }, [activeConversation]);
+  const [localCk, setLocalCk] = useState<{
+    ck: Uint8Array;
+    keyEpoch: number;
+  } | null>(null);
+  useEffect(() => {
+    setLocalCk(null);
+  }, [activeConversation]);
   const conversationKey = resolved ?? localCk;
 
-  const decryptedMessages = useDecryptedMessages(messages, conversationKey?.ck ?? null);
+  const decryptedMessages = useDecryptedMessages(
+    messages,
+    conversationKey?.ck ?? null,
+  );
 
   const activeConv = useMemo(() => {
     return conversations?.find((c) => c.id === activeConversation) ?? null;
   }, [conversations, activeConversation]);
   const peerUserId = activeConv?.otherParticipant.id ?? null;
-  const peerName = activeConv?.otherParticipant.name ?? '';
+  const peerName = activeConv?.otherParticipant.name ?? "";
 
   // Render the "waiting for sync" banner when this device has no CK yet but
   // the conversation contains encrypted messages. This happens on a freshly
@@ -78,39 +101,75 @@ export function MessagesPage() {
     () => !!messages?.some((m) => m.ciphertext !== null),
     [messages],
   );
-  const showWaitingBanner = e2eeEnabled && !conversationKey && hasEncryptedMessages;
+  const showWaitingBanner =
+    e2eeEnabled && !conversationKey && hasEncryptedMessages;
 
-  const handleNewMessage = useCallback((wsMsg: WSMessage) => {
-    if (wsMsg.type === 'NEW_MESSAGE') {
-      const msg = wsMsg.payload as Message;
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      if (msg.conversationId === activeConversation) {
-        queryClient.setQueryData<Message[]>(['messages', activeConversation], (old) =>
-          old ? [...old, msg] : [msg]
-        );
+  const handleNewMessage = useCallback(
+    (wsMsg: WSMessage) => {
+      if (wsMsg.type === "NEW_MESSAGE") {
+        const msg = wsMsg.payload as Message;
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+        if (msg.conversationId === activeConversation) {
+          queryClient.setQueryData<Message[]>(
+            ["messages", activeConversation],
+            (old) => (old ? [...old, msg] : [msg]),
+          );
+        }
       }
-    }
-  }, [activeConversation, queryClient]);
+    },
+    [activeConversation, queryClient],
+  );
 
   useEffect(() => {
     addHandler(handleNewMessage);
     return () => removeHandler(handleNewMessage);
   }, [handleNewMessage, addHandler, removeHandler]);
 
-  // Lock body scroll while this page is mounted. Without this, the document
-  // (global Header + MessagesPage at 100dvh-4rem + Footer) is taller than the
-  // visible viewport, so the body scrolls and drags the drawer header out of
-  // view. Scroll to the top first — React Router doesn't reset scroll across
-  // routes, so if the user navigated here from a scrolled page, freezing the
-  // body at scrollY > 0 would hide the drawer header behind the sticky global
-  // header. Internal scroll containers (conversation list, message thread)
-  // continue to scroll normally.
+  // Lock body scroll and scroll-to-top while this page is mounted. This is
+  // a separate effect from the height measurement below because the
+  // measurement depends on the container being in the DOM — which it isn't
+  // during the `convLoading` spinner branch — and we still want the body
+  // locked even while loading. Without this split, a slow conversations
+  // fetch would leave the body scrollable until the first render that
+  // includes the ref'd container.
   useEffect(() => {
-    const previous = document.body.style.overflow;
+    const previousOverflow = document.body.style.overflow;
     window.scrollTo(0, 0);
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = previous; };
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
   }, []);
+
+  // Size the container to fill exactly the area below the global chrome
+  // (announcement banner + sticky header). We measure the container's
+  // distance from the viewport top rather than using a fixed `calc()`
+  // because the announcement banner is conditional, its rendered height
+  // isn't known until it mounts, and it can be dismissed at runtime. The
+  // ResizeObserver on <body> catches the layout shift whenever the banner
+  // mounts, unmounts, or changes size; the window resize listener handles
+  // viewport / breakpoint changes (the wave-divider height in the header
+  // grows at `sm:`).
+  //
+  // The effect depends on `containerEl` (a setState-as-ref) rather than a
+  // plain useRef so it re-runs once `convLoading` flips false and the
+  // ref'd <div> finally mounts.
+  useLayoutEffect(() => {
+    const el = containerEl;
+    if (!el) return;
+    const update = () => {
+      el.style.height = `calc(100dvh - ${el.getBoundingClientRect().top}px)`;
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(document.body);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+      el.style.height = "";
+    };
+  }, [containerEl]);
 
   // Sending decides between plaintext and encrypted at call time. Order of
   // checks reflects the rollout policy:
@@ -133,11 +192,20 @@ export function MessagesPage() {
       );
       msg = await sendEncryptedMessage(activeConversation, envelope);
     } else if (peerUserId) {
-      const fresh = await establishConversationKey(activeConversation, peerUserId, deviceServerId);
+      const fresh = await establishConversationKey(
+        activeConversation,
+        peerUserId,
+        deviceServerId,
+      );
       if (fresh) {
         // Establish creates the very first epoch — epoch 1.
         setLocalCk({ ck: fresh, keyEpoch: 1 });
-        const envelope = await encryptToEnvelope(content, fresh, deviceServerId, 1);
+        const envelope = await encryptToEnvelope(
+          content,
+          fresh,
+          deviceServerId,
+          1,
+        );
         msg = await sendEncryptedMessage(activeConversation, envelope);
       } else {
         msg = await sendMessage(activeConversation, content);
@@ -146,19 +214,23 @@ export function MessagesPage() {
       msg = await sendMessage(activeConversation, content);
     }
 
-    queryClient.setQueryData<Message[]>(['messages', activeConversation], (old) =>
-      old ? [...old, msg] : [msg]
+    queryClient.setQueryData<Message[]>(
+      ["messages", activeConversation],
+      (old) => (old ? [...old, msg] : [msg]),
     );
-    queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    queryClient.invalidateQueries({ queryKey: ["conversations"] });
   };
 
   if (convLoading) return <LoadingSpinner className="py-20" />;
 
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100dvh-4rem)] flex relative overflow-hidden">
+    <div
+      ref={setContainerEl}
+      className="max-w-6xl mx-auto flex relative overflow-hidden"
+    >
       {/* Conversation list — full width on mobile, fixed sidebar on md+ */}
-      <div className="w-full md:w-80 md:border-r border-gray-200 bg-white overflow-y-auto flex-shrink-0">
-        <div className="p-4 border-b border-gray-200">
+      <div className="w-full md:w-80 overflow-y-auto flex-shrink-0">
+        <div className="p-4">
           <h2 className="font-semibold text-gray-900">
             <FormattedMessage
               id="messages.page.title"
@@ -181,25 +253,32 @@ export function MessagesPage() {
         The translate classes are gated by md: so desktop is always at rest.
       */}
       <div
-        className={`absolute inset-0 md:relative md:flex-1 flex flex-col bg-white z-10 transform transition-transform duration-300 ease-in-out md:transform-none ${
-          activeConversation ? 'translate-x-0' : 'translate-x-full md:translate-x-0'
+        className={`absolute inset-0 bg-mayday-50 md:relative md:flex-1 flex flex-col z-10 transform transition-transform duration-300 ease-in-out md:transform-none ${
+          activeConversation
+            ? "translate-x-0"
+            : "translate-x-full md:translate-x-0"
         }`}
       >
         {activeConversation && (
-          <div className="md:hidden sticky top-0 z-20 flex items-center gap-2 p-2 border-b border-gray-200 bg-white">
+          <div className="md:hidden sticky top-0 z-20 flex items-center gap-2 p-2 border-b border-mayday-200 bg-mayday-50">
             <button
               type="button"
-              onClick={() => setActiveConversation('')}
+              onClick={() => setActiveConversation("")}
               aria-label={intl.formatMessage({
-                id: 'messages.page.backToConversations',
-                defaultMessage: 'Back to conversations',
+                id: "messages.page.backToConversations",
+                defaultMessage: "Back to conversations",
               })}
               className="p-2 hover:bg-gray-100 rounded"
             >
-              <ChevronLeft className="w-5 h-5 text-gray-700" aria-hidden="true" />
+              <ChevronLeft
+                className="w-5 h-5 text-gray-700"
+                aria-hidden="true"
+              />
             </button>
             {peerName && (
-              <span className="font-medium text-gray-900 truncate">{peerName}</span>
+              <span className="font-medium text-gray-900 truncate">
+                {peerName}
+              </span>
             )}
           </div>
         )}
@@ -223,7 +302,10 @@ export function MessagesPage() {
             {msgLoading ? (
               <LoadingSpinner className="flex-1" />
             ) : (
-              <MessageThread messages={decryptedMessages} currentUserId={user!.id} />
+              <MessageThread
+                messages={decryptedMessages}
+                currentUserId={user!.id}
+              />
             )}
             <MessageInput onSend={handleSend} initialContent={initialDraft} />
           </>

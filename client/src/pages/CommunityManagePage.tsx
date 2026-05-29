@@ -251,7 +251,7 @@ export function CommunityManagePage() {
       </Link>
 
       {/* Edit details */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           <FormattedMessage
             id="communities.managePage.detailsHeading"
@@ -346,7 +346,7 @@ export function CommunityManagePage() {
       </div>
 
       {/* Invite form */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           <FormattedMessage
             id="groups.managePage.inviteMembersHeading"
@@ -400,7 +400,7 @@ export function CommunityManagePage() {
 
       {/* Join Requests */}
       {joinRequests && joinRequests.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg border border-mayday-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             <FormattedMessage
               id="communities.managePage.joinRequestsHeading"
@@ -445,7 +445,7 @@ export function CommunityManagePage() {
                   <button
                     onClick={() => rejectMutation.mutate(jr.id)}
                     disabled={rejectMutation.isPending}
-                    className="flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    className="flex items-center gap-1 px-3 py-1.5 border border-mayday-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                   >
                     <UserX className="w-4 h-4" />
                     <FormattedMessage
@@ -462,7 +462,7 @@ export function CommunityManagePage() {
 
       {/* Transfer ownership (OWNER only) */}
       {isOwner && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg border border-mayday-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
             <FormattedMessage
               id="groups.transferOwnership.title"
@@ -491,7 +491,7 @@ export function CommunityManagePage() {
       )}
 
       {/* Members */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           <FormattedMessage
             id="groups.managePage.membersHeading"
@@ -545,7 +545,7 @@ export function CommunityManagePage() {
                         },
                         { name: m.user.name },
                       )}
-                      className="text-xs border border-gray-300 rounded px-2 py-1"
+                      className="text-xs border border-mayday-300 rounded px-2 py-1"
                     >
                       <option value="MEMBER">
                         {intl.formatMessage({

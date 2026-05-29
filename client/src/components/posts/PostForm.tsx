@@ -258,7 +258,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           <select
             id="post-organization"
             {...register("organizationId")}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
+            className="w-full border border-mayday-300 rounded-lg px-3 py-2 bg-white"
           >
             <option value="">
               {user?.name ??
@@ -290,7 +290,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           <select
             id="post-community"
             {...register("communityId")}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
+            className="w-full border border-mayday-300 rounded-lg px-3 py-2 bg-white"
           >
             <option value="">
               {intl.formatMessage({
@@ -365,7 +365,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             {previews.map((src, i) => (
               <div
                 key={i}
-                className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 group"
+                className="relative w-24 h-24 rounded-lg overflow-hidden border border-mayday-200 group"
               >
                 <img
                   src={src}
@@ -401,7 +401,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-mayday-400 hover:text-mayday-500 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-mayday-300 rounded-lg text-gray-500 hover:border-mayday-400 hover:text-mayday-500 transition-colors"
           >
             <ImagePlus className="w-5 h-5" />
             <FormattedMessage
@@ -439,7 +439,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
               errors.category ? "post-category-error" : undefined
             }
             {...register("category")}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
+            className="w-full border border-mayday-300 rounded-lg px-3 py-2 bg-white"
           >
             <option value="">
               {intl.formatMessage({
@@ -473,7 +473,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           <select
             id="post-urgency"
             {...register("urgency")}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
+            className="w-full border border-mayday-300 rounded-lg px-3 py-2 bg-white"
           >
             <option value="LOW">
               {intl.formatMessage({ id: "urgency.low", defaultMessage: "Low" })}
@@ -557,7 +557,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
             max={365}
             {...register("recurrenceInterval")}
             disabled={!recurrenceFreq}
-            className="w-20 border border-gray-300 rounded-lg px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500"
+            className="w-20 border border-mayday-300 rounded-lg px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500"
           />
           <select
             aria-label={intl.formatMessage({
@@ -565,7 +565,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
               defaultMessage: "Recurrence frequency",
             })}
             {...register("recurrenceFreq")}
-            className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
+            className="border border-mayday-300 rounded-lg px-3 py-2 bg-white"
           >
             <option value="">
               {intl.formatMessage({
@@ -665,7 +665,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
                 setActiveOptionIndex(-1);
               }}
               onKeyDown={handleLocationKeyDown}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+              className="w-full border border-mayday-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
               placeholder={intl.formatMessage({
                 id: "posts.form.locationPlaceholder",
                 defaultMessage: "Search for an address or place...",
@@ -688,7 +688,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
               id: "posts.form.locationSuggestionsAria",
               defaultMessage: "Location suggestions",
             })}
-            className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+            className="absolute z-10 w-full mt-1 bg-white border border-mayday-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
           >
             {geocodeResults.map((result, i) => (
               <li

@@ -199,7 +199,7 @@ export function OrganizationManagePage() {
       </Link>
 
       {/* Edit org details */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           <FormattedMessage
             id="orgs.managePage.detailsHeading"
@@ -294,7 +294,7 @@ export function OrganizationManagePage() {
       </div>
 
       {/* Invite form */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           <FormattedMessage
             id="groups.managePage.inviteMembersHeading"
@@ -348,7 +348,7 @@ export function OrganizationManagePage() {
 
       {/* Transfer ownership (OWNER only) */}
       {isOwner && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg border border-mayday-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
             <FormattedMessage
               id="groups.transferOwnership.title"
@@ -377,7 +377,7 @@ export function OrganizationManagePage() {
       )}
 
       {/* Members */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           <FormattedMessage
             id="groups.managePage.membersHeading"
@@ -431,7 +431,7 @@ export function OrganizationManagePage() {
                         },
                         { name: m.user.name },
                       )}
-                      className="text-xs border border-gray-300 rounded px-2 py-1"
+                      className="text-xs border border-mayday-300 rounded px-2 py-1"
                     >
                       <option value="MEMBER">
                         {intl.formatMessage({

@@ -87,7 +87,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
   return (
     <Link
       to={`/posts/${post.id}`}
-      className={`block bg-white rounded-lg border border-gray-200 border-l-4 ${typeColor} p-4 hover:shadow-md transition-shadow`}
+      className={`block bg-white rounded-lg border border-mayday-200 border-l-4 ${typeColor} p-4 hover:shadow-md transition-shadow`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">

@@ -176,7 +176,7 @@ export function CreateCommunityPage() {
           defaultMessage="Create a Community"
         />
       </h1>
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6">
         <form
           onSubmit={handleSubmit((data) => {
             const clean: CreateCommunityRequest = { name: data.name };
@@ -204,7 +204,7 @@ export function CreateCommunityPage() {
               </span>
             </p>
             {avatarPreview ? (
-              <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 group">
+              <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-mayday-200 group">
                 <img
                   src={avatarPreview}
                   alt={intl.formatMessage({
@@ -229,7 +229,7 @@ export function CreateCommunityPage() {
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-mayday-400 hover:text-mayday-500 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-mayday-300 rounded-lg text-gray-500 hover:border-mayday-400 hover:text-mayday-500 transition-colors"
               >
                 <ImagePlus className="w-5 h-5" aria-hidden="true" />
                 <FormattedMessage

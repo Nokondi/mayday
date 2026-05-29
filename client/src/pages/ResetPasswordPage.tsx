@@ -76,7 +76,7 @@ export function ResetPasswordPage() {
             defaultMessage="Reset your password"
           />
         </h1>
-        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+        <div className="bg-white rounded-lg border border-mayday-200 p-6 space-y-4">
           <p className="text-red-600">
             <FormattedMessage
               id="auth.resetPasswordPage.missingTokenError"
@@ -113,7 +113,7 @@ export function ResetPasswordPage() {
             defaultMessage="Password updated"
           />
         </h1>
-        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+        <div className="bg-white rounded-lg border border-mayday-200 p-6 space-y-4">
           <p className="text-green-700">
             <FormattedMessage
               id="auth.resetPasswordPage.successMessage"
@@ -153,7 +153,7 @@ export function ResetPasswordPage() {
           defaultMessage="Choose a new password"
         />
       </h1>
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6">
         <form
           onSubmit={handleSubmit((data) => mutation.mutate(data))}
           className="space-y-4"

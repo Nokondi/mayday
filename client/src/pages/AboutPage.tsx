@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Heart, Users, MapPin, HandHeart } from "lucide-react";
 import { FormattedMessage } from "react-intl";
-import { WaveDivider } from "../components/common/WaveDivider.js";
 import { useAuth } from "../context/AuthContext.js";
 
 export function AboutPage() {
@@ -9,11 +8,7 @@ export function AboutPage() {
   return (
     <div>
       {/* Hero */}
-      <section
-        aria-labelledby="about-hero-heading"
-        className="relative overflow-hidden bg-gradient-to-br from-mayday-500 to-mayday-700 text-white py-20"
-      >
-        <WaveDivider />
+      <section aria-labelledby="about-hero-heading" className="pt-16">
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <h1
             id="about-hero-heading"
@@ -24,7 +19,7 @@ export function AboutPage() {
               defaultMessage="Welcome to MayDay"
             />
           </h1>
-          <blockquote className="text-mayday-100">
+          <blockquote>
             <p className="text-xl">
               <FormattedMessage
                 id="about.hero.quoteText"
@@ -43,31 +38,9 @@ export function AboutPage() {
           </blockquote>
         </div>
       </section>
-      <section aria-labelledby="about-why-heading" className="py-16 bg-white">
-        <div className="max-w-3xl mx-auto px-4">
-          <h2
-            id="about-why-heading"
-            className="text-2xl font-bold text-gray-900 mb-4"
-          >
-            <FormattedMessage
-              id="about.why.heading"
-              defaultMessage="Why MayDay?"
-            />
-          </h2>
-          <p className="text-gray-600 text-lg leading-relaxed mb-4">
-            <FormattedMessage
-              id="about.why.body"
-              defaultMessage={`MayDay is both a call for help and a celebration of community. Ships in distress use the call, "mayday," to signal that they need immediate assistance. May Day is also an ancient spring festival ― a celebration of life and renewal ― and it is the date of International Workers' Day, a day of solidarity and mutual aid. We chose the name MayDay to reflect our mission of connecting people in need with those who can help, while also honoring the spirit of community and solidarity that has been practiced and celebrated for centuries.`}
-            />
-          </p>
-        </div>
-      </section>
 
       {/* How It Works */}
-      <section
-        aria-labelledby="about-how-heading"
-        className="py-16 bg-gray-50"
-      >
+      <section aria-labelledby="about-how-heading" className="py-16">
         <div className="max-w-4xl mx-auto px-4">
           <h2
             id="about-how-heading"
@@ -80,8 +53,8 @@ export function AboutPage() {
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="flex gap-4">
-              <div className="w-12 h-12 bg-mayday-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Heart className="w-6 h-6 text-mayday-600" aria-hidden="true" />
+              <div className="w-12 h-12 bg-orange-100  rounded-full flex items-center justify-center flex-shrink-0">
+                <Heart className="w-6 h-6 text-orange-600" aria-hidden="true" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg mb-1">
@@ -193,7 +166,7 @@ export function AboutPage() {
               </Link>
               <Link
                 to="/login"
-                className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50"
+                className="border border-mayday-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50"
               >
                 <FormattedMessage
                   id="common.actions.login"

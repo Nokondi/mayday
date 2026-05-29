@@ -130,14 +130,14 @@ export function CalendarPage() {
               id: "calendar.previousMonthAriaLabel",
               defaultMessage: "Previous month",
             })}
-            className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+            className="p-2 rounded-lg border border-mayday-300 bg-white hover:bg-mayday-50"
           >
             <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           </button>
           <button
             type="button"
             onClick={() => setCursor(new Date())}
-            className="px-3 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-50"
+            className="px-3 py-2 text-sm rounded-lg border border-mayday-300 bg-white hover:bg-mayday-50"
           >
             <FormattedMessage
               id="calendar.todayButton"
@@ -151,7 +151,7 @@ export function CalendarPage() {
               id: "calendar.nextMonthAriaLabel",
               defaultMessage: "Next month",
             })}
-            className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+            className="p-2 rounded-lg border border-mayday-300 bg-white hover:bg-mayday-50"
           >
             <ChevronRight className="w-4 h-4" aria-hidden="true" />
           </button>
@@ -182,7 +182,7 @@ export function CalendarPage() {
 
       {(() => {
         const openDayOccs = openDayKey
-          ? occurrencesByDay.get(openDayKey) ?? []
+          ? (occurrencesByDay.get(openDayKey) ?? [])
           : [];
         const openDayDate = openDayKey
           ? new Date(`${openDayKey}T00:00:00`)
@@ -198,14 +198,12 @@ export function CalendarPage() {
             }}
           >
             <div className="bg-white rounded-lg shadow-xl flex flex-col max-h-[80vh]">
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between p-4 border-b border-mayday-200">
                 <h2
                   id="day-events-title"
                   className="text-lg font-bold text-gray-900"
                 >
-                  {openDayDate
-                    ? format(openDayDate, "EEEE, MMMM d, yyyy")
-                    : ""}
+                  {openDayDate ? format(openDayDate, "EEEE, MMMM d, yyyy") : ""}
                 </h2>
                 <button
                   type="button"
@@ -248,8 +246,8 @@ export function CalendarPage() {
       {isLoading ? (
         <LoadingSpinner className="py-12" />
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
+        <div className="bg-white border border-mayday-200 rounded-lg overflow-hidden">
+          <div className="grid grid-cols-7 border-b border-mayday-200 bg-gray-50">
             {WEEKDAY_KEYS.map((d) => (
               <div
                 key={d}
@@ -270,7 +268,7 @@ export function CalendarPage() {
               return (
                 <div
                   key={key}
-                  className={`min-h-[100px] border-b border-r border-gray-200 p-1.5 ${inMonth ? "bg-white" : "bg-gray-50"}`}
+                  className={`min-h-[100px] border-b border-r border-mayday-200 p-1.5 ${inMonth ? "bg-white" : "bg-gray-50"}`}
                 >
                   <div
                     className={`text-xs mb-1 ${isToday ? "inline-flex items-center justify-center w-5 h-5 rounded-full bg-mayday-700 text-white font-semibold" : inMonth ? "text-gray-700" : "text-gray-500"}`}
@@ -293,8 +291,7 @@ export function CalendarPage() {
                           <span className="font-medium">
                             {format(occ.start, "h:mma").toLowerCase()}
                           </span>
-                          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between time and title */}
-                          {" "}
+                          {/* eslint-disable-next-line formatjs/no-literal-string-in-jsx -- layout whitespace between time and title */}{" "}
                           {occ.post.title}
                         </Link>
                       );

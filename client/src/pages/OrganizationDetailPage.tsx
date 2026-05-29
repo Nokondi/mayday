@@ -105,7 +105,7 @@ export function OrganizationDetailPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6 mb-6">
         <div className="flex items-start gap-4">
           {org.avatarUrl && (
             <img
@@ -165,7 +165,7 @@ export function OrganizationDetailPage() {
           {isAdminOrOwner && (
             <Link
               to={`/organizations/${org.id}/manage`}
-              className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+              className="flex items-center gap-1 px-3 py-2 border border-mayday-300 rounded-lg text-sm hover:bg-gray-50"
             >
               <Settings className="w-4 h-4" />
               <FormattedMessage
@@ -187,7 +187,7 @@ export function OrganizationDetailPage() {
                 )
                   leaveMutation.mutate();
               }}
-              className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+              className="flex items-center gap-1 px-3 py-2 border border-mayday-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
             >
               <LogOut className="w-4 h-4" />
               <FormattedMessage
@@ -245,7 +245,7 @@ export function OrganizationDetailPage() {
         />
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           <FormattedMessage
             id="orgs.detailPage.postsHeading"

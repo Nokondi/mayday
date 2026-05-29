@@ -15,7 +15,8 @@ function renderWithLinks(content: string, isMine: boolean) {
   const parts: Array<string | { url: string }> = [];
   let lastIndex = 0;
   for (const match of content.matchAll(URL_PATTERN)) {
-    if (match.index! > lastIndex) parts.push(content.slice(lastIndex, match.index));
+    if (match.index! > lastIndex)
+      parts.push(content.slice(lastIndex, match.index));
     parts.push({ url: match[0] });
     lastIndex = match.index! + match[0].length;
   }
@@ -54,7 +55,7 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
     <div
       ref={containerRef}
       role="log"
-      className="flex-1 overflow-y-auto p-4 space-y-3"
+      className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3"
       aria-live="polite"
       aria-label={intl.formatMessage({
         id: "messages.thread.ariaLabel",
@@ -89,11 +90,13 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
             <div
               className={`max-w-[70%] px-4 py-2 rounded-2xl ${
                 isMine
-                  ? "bg-mayday-700 text-white rounded-br-md"
-                  : "bg-gray-100 text-gray-900 rounded-bl-md"
+                  ? "bg-mayday-700 text-white rounded-br-sm"
+                  : "bg-white text-gray-900 rounded-bl-sm border-mayday-300 border"
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap break-words">{renderWithLinks(msg.content, isMine)}</p>
+              <p className="text-sm whitespace-pre-wrap break-words">
+                {renderWithLinks(msg.content, isMine)}
+              </p>
               <p
                 className={`text-xs mt-1 flex items-center gap-1 ${isMine ? "text-mayday-200" : "text-gray-500"}`}
               >
@@ -110,7 +113,8 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
                     })}
                     title={intl.formatMessage({
                       id: "messages.thread.legacyBadgeTitle",
-                      defaultMessage: "Sent before end-to-end encryption was enabled",
+                      defaultMessage:
+                        "Sent before end-to-end encryption was enabled",
                     })}
                     className="inline-flex items-center gap-0.5"
                   >

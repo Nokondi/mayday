@@ -24,7 +24,7 @@ export function EntityCard({
   return (
     <Link
       to={to}
-      className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+      className="block bg-white rounded-lg border border-mayday-200 p-4 hover:shadow-md transition-shadow"
     >
       <div className="flex items-start justify-between gap-3">
         {avatarUrl && (

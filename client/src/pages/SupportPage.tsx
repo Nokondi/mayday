@@ -9,12 +9,10 @@ import {
   Share,
   Flag,
   MessageSquare,
+  ChevronRight,
 } from "lucide-react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { BugReportForm } from "../components/support/BugReportForm.js";
-
-// Decorative chevron in collapsible summaries — purely typographic, not translated.
-const CHEVRON_GLYPH = "›";
 
 interface Topic {
   id: string;
@@ -26,21 +24,17 @@ const strong = (chunks: React.ReactNode) => (
   <span className="font-medium">{chunks}</span>
 );
 
-const externalLink =
-  (href: string) =>
-  (chunks: React.ReactNode) => (
-    <Link to={href} className="text-mayday-600 hover:underline">
-      {chunks}
-    </Link>
-  );
+const externalLink = (href: string) => (chunks: React.ReactNode) => (
+  <Link to={href} className="text-mayday-600 hover:underline">
+    {chunks}
+  </Link>
+);
 
-const internalLink =
-  (to: string) =>
-  (chunks: React.ReactNode) => (
-    <Link to={to} className="text-mayday-600 hover:underline">
-      {chunks}
-    </Link>
-  );
+const internalLink = (to: string) => (chunks: React.ReactNode) => (
+  <Link to={to} className="text-mayday-600 hover:underline">
+    {chunks}
+  </Link>
+);
 
 const italicChunks = (chunks: React.ReactNode) => <i>{chunks}</i>;
 
@@ -59,6 +53,22 @@ export function SupportPage() {
           <FormattedMessage
             id="support.topics.general.whatIsMayDay.answer"
             defaultMessage="MayDay is a different kind of social network, where the objective isn't just communication, but making real-world connections between people who need help and people who can provide it. It's a tool to help communities coordinate and keep track of <strong>mutual aid</strong> efforts, and to connect people to the resources they need to survive and thrive."
+            values={{ strong }}
+          />
+        </p>
+      ),
+    },
+    {
+      id: "whyMayDay",
+      question: intl.formatMessage({
+        id: "support.topics.general.whyMayDay.question",
+        defaultMessage: "Why MayDay?",
+      }),
+      answer: (
+        <p>
+          <FormattedMessage
+            id="support.topics.general.whyMayDay.answer"
+            defaultMessage={`MayDay is both a call for help and a celebration of community. Ships in distress use the call, "mayday," to signal that they need immediate assistance. May Day is also an ancient spring festival ― a celebration of life and renewal ― and it is the date of International Workers' Day, a day of solidarity and mutual aid. We chose the name MayDay to reflect our mission of connecting people in need with those who can help, while also honoring the spirit of community and solidarity that has been practiced and celebrated for centuries.`}
             values={{ strong }}
           />
         </p>
@@ -526,7 +536,7 @@ export function SupportPage() {
             />
           </h2>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+        <div className="bg-white rounded-lg border border-mayday-200 divide-y divide-gray-200">
           {techTopics.map((topic) => (
             <details key={topic.id} className="group">
               <summary className="flex justify-between items-center cursor-pointer list-none px-4 py-3 font-medium text-gray-800 hover:bg-gray-50">
@@ -535,7 +545,7 @@ export function SupportPage() {
                   className="text-gray-500 group-open:rotate-90 transition-transform"
                   aria-hidden="true"
                 >
-                  {CHEVRON_GLYPH}
+                  <ChevronRight className="w-4 h-4" />
                 </span>
               </summary>
               <div className="px-4 pb-4 text-gray-700 space-y-2">
@@ -558,7 +568,7 @@ export function SupportPage() {
             />
           </h2>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+        <div className="bg-white rounded-lg border border-mayday-200 divide-y divide-gray-200">
           {generalTopics.map((topic) => (
             <details key={topic.id} className="group">
               <summary className="flex justify-between items-center cursor-pointer list-none px-4 py-3 font-medium text-gray-800 hover:bg-gray-50">
@@ -567,7 +577,7 @@ export function SupportPage() {
                   className="text-gray-500 group-open:rotate-90 transition-transform"
                   aria-hidden="true"
                 >
-                  {CHEVRON_GLYPH}
+                  <ChevronRight className="w-4 h-4" />
                 </span>
               </summary>
               <div className="px-4 pb-4 text-gray-700 space-y-2">
@@ -597,7 +607,7 @@ export function SupportPage() {
             defaultMessage="Found something broken? Tell us what happened and we'll look into it."
           />
         </p>
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg border border-mayday-200 p-6">
           <BugReportForm />
         </div>
       </section>

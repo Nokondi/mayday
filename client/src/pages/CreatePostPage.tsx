@@ -36,7 +36,7 @@ export function CreatePostPage() {
           defaultMessage="Create a Post"
         />
       </h1>
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-mayday-200 p-6">
         <PostForm
           onSubmit={async (data, images) => {
             await createPostMutation.mutateAsync({ data, images }).catch(() => {});

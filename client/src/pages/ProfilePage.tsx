@@ -245,7 +245,7 @@ export function ProfilePage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="relative bg-white rounded-lg border border-gray-200 p-6 mb-8">
+      <div className="relative bg-white rounded-lg border border-mayday-200 p-6 mb-8">
         {!isOwnProfile && (
           <button
             type="button"
@@ -294,7 +294,7 @@ export function ProfilePage() {
                   onChange={(e) =>
                     setEditForm((f) => ({ ...f, name: e.target.value }))
                   }
-                  className="w-full text-xl font-bold border border-gray-300 rounded px-2 py-1"
+                  className="w-full text-xl font-bold border border-mayday-300 rounded px-2 py-1"
                 />
               ) : (
                 <h1 className="text-xl font-bold text-gray-900">
@@ -314,7 +314,7 @@ export function ProfilePage() {
                             location: e.target.value,
                           }))
                         }
-                        className="border border-gray-300 rounded px-2 py-0.5 text-sm"
+                        className="border border-mayday-300 rounded px-2 py-0.5 text-sm"
                       />
                     ) : (
                       profile.location
@@ -399,7 +399,7 @@ export function ProfilePage() {
                   setEditForm((f) => ({ ...f, bio: e.target.value }))
                 }
                 rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                className="w-full border border-mayday-300 rounded-lg px-3 py-2"
               />
             </div>
             <div>
@@ -418,7 +418,7 @@ export function ProfilePage() {
                 onChange={(e) =>
                   setEditForm((f) => ({ ...f, skills: e.target.value }))
                 }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                className="w-full border border-mayday-300 rounded-lg px-3 py-2"
               />
             </div>
             <LinksEditor
@@ -599,7 +599,7 @@ export function ProfilePage() {
                                 }))
                               }
                               disabled={deleteMutation.isPending}
-                              className="text-sm border border-gray-300 rounded px-2 py-1 max-w-[60%]"
+                              className="text-sm border border-mayday-300 rounded px-2 py-1 max-w-[60%]"
                             >
                               {g.candidates.map((c) => (
                                 <option key={c.userId} value={c.userId}>
@@ -650,7 +650,7 @@ export function ProfilePage() {
                 <button
                   onClick={() => setConfirmingDelete(false)}
                   disabled={deleteMutation.isPending}
-                  className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg border border-mayday-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                 >
                   <FormattedMessage
                     id="common.actions.cancel"
@@ -731,7 +731,7 @@ export function ProfilePage() {
                 defaultMessage:
                   "What happened? Any context that will help the admin team is welcome.",
               })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
+              className="w-full border border-mayday-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-mayday-500 focus:border-transparent"
             />
           </div>
           <div className="mt-6 flex justify-end gap-2">
@@ -739,7 +739,7 @@ export function ProfilePage() {
               type="button"
               onClick={() => setShowReportConfirm(false)}
               disabled={reportMutation.isPending}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="px-4 py-2 rounded-lg border border-mayday-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
             >
               <FormattedMessage
                 id="common.actions.cancel"
