@@ -1,10 +1,12 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { FormattedMessage } from "react-intl";
+import type { PostWithAuthor } from "@mayday/shared";
 import { getPosts } from "../api/posts.js";
 import { listMyCommunities } from "../api/communities.js";
 import { MapView } from "../components/map/MapView.js";
+import { PostListPanel } from "../components/map/PostListPanel.js";
 import { PostFilters } from "../components/posts/PostFilters.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { useGeolocation } from "../hooks/useGeolocation.js";
@@ -22,6 +24,7 @@ export function MapPage() {
     swLat: number;
     swLng: number;
   } | null>(null);
+  const [selectedPosts, setSelectedPosts] = useState<PostWithAuthor[]>([]);
 
   const { data: myCommunities } = useQuery({
     queryKey: ["my-communities"],
@@ -48,6 +51,23 @@ export function MapPage() {
     setBounds(newBounds);
   }, []);
 
+  // Keep the selection panel in sync with the latest fetched posts: drop posts
+  // that fell out of the result set, and refresh the rest with current data.
+  const posts = data?.data;
+  useEffect(() => {
+    if (!posts) return;
+    setSelectedPosts((prev) => {
+      if (prev.length === 0) return prev;
+      const byId = new Map(posts.map((p) => [p.id, p]));
+      const next = prev
+        .map((p) => byId.get(p.id))
+        .filter((p): p is PostWithAuthor => p != null);
+      const unchanged =
+        next.length === prev.length && next.every((p, i) => p === prev[i]);
+      return unchanged ? prev : next;
+    });
+  }, [posts]);
+
   // URL params take priority (from location links), then geolocation, then default
   const paramLat = searchParams.get("lat");
   const paramLng = searchParams.get("lng");
@@ -64,7 +84,7 @@ export function MapPage() {
 
   return (
     <div className="relative h-[calc(100vh-4rem)]">
-      <div className="absolute top-4 left-4 z-[1000] bg-white rounded-lg shadow-lg p-4 mr-4">
+      <div className="absolute top-4 right-4 z-[1000] bg-white rounded-lg shadow-lg p-4 ml-4">
         <PostFilters
           type={type}
           category={category}
@@ -94,9 +114,11 @@ export function MapPage() {
           center={center}
           zoom={initialZoom}
           onBoundsChange={handleBoundsChange}
+          onSelectPosts={setSelectedPosts}
           className="h-full rounded-none"
         />
       )}
+      <PostListPanel posts={selectedPosts} onClose={() => setSelectedPosts([])} />
     </div>
   );
 }
