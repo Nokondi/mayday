@@ -127,12 +127,12 @@ describe('ConversationList — rendering', () => {
     expect(screen.getByText('See you at 5')).toBeInTheDocument();
   });
 
-  it('renders the "Encrypted message" placeholder when lastMessage.content is null (E2EE)', () => {
-    // Regression for the JSX-attribute-escape bug: previously the placeholder
-    // used "\u{1F512}" in a JSX attribute string, which FormatJS parsed as
-    // an ICU placeholder named 1F512 and threw at runtime. The rendered
-    // text must contain the literal phrase "Encrypted message" without
-    // throwing.
+  it('renders the "Encrypted message" placeholder with a Lock icon when lastMessage.content is null (E2EE)', () => {
+    // The placeholder shows a generic "Encrypted message" label for messages
+    // the server can't preview. It pairs the lucide Lock icon (for design
+    // parity with the rest of the app) with the text — and notably must NOT
+    // use the 🔒 emoji, whose earlier "\u{1F512}" JSX-attribute escape was
+    // parsed by FormatJS as an ICU placeholder and threw at runtime.
     const conversations = [
       makeConversation({
         lastMessage: makeMessage({
@@ -145,8 +145,14 @@ describe('ConversationList — rendering', () => {
         }),
       }),
     ];
-    render(<ConversationList conversations={conversations} onSelect={() => {}} />);
+    const { container } = render(
+      <ConversationList conversations={conversations} onSelect={() => {}} />,
+    );
     expect(screen.getByText(/Encrypted message/)).toBeInTheDocument();
+    // lucide-react renders an <svg class="lucide lucide-lock ...">.
+    expect(container.querySelector('svg.lucide-lock')).toBeInTheDocument();
+    // The literal padlock emoji must not appear.
+    expect(container.textContent).not.toContain('🔒');
   });
 
   it('does not render the last-message or timestamp lines when lastMessage is null', () => {

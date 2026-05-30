@@ -8,7 +8,11 @@ interface MessageInputProps {
   initialContent?: string;
 }
 
-export function MessageInput({ onSend, disabled, initialContent = "" }: MessageInputProps) {
+export function MessageInput({
+  onSend,
+  disabled,
+  initialContent = "",
+}: MessageInputProps) {
   const intl = useIntl();
   const [content, setContent] = useState(initialContent);
   const [sending, setSending] = useState(false);
@@ -27,10 +31,7 @@ export function MessageInput({ onSend, disabled, initialContent = "" }: MessageI
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="border-t border-mayday-200 p-4 flex gap-2"
-    >
+    <form onSubmit={handleSubmit} className="p-4 flex gap-2">
       <input
         type="text"
         value={content}
