@@ -1,33 +1,41 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { IntlProvider } from 'react-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PostWithAuthor } from '@mayday/shared';
 
 /**
- * react-leaflet renders a real Leaflet map, which depends on DOM APIs jsdom
- * does not implement (canvas, layout, etc.). For a unit test we don't care
- * about the map itself — only that MapView forwards the correct props to it,
- * emits one Marker per geolocated post, and assigns the right icon per post
- * type. A thin stub of react-leaflet captures those decisions and renders
- * them as plain DOM so we can assert on them.
+ * react-leaflet (and the markercluster plugin) render a real Leaflet map, which
+ * depends on DOM APIs jsdom does not implement. For a unit test we only care
+ * that MapView forwards the right props, emits one Marker per geolocated post
+ * with the correct icon, and routes pin/cluster/empty-map clicks to
+ * `onSelectPosts`. Thin stubs capture those decisions as plain DOM + spies.
  */
-const lastPropsCapture: { map: unknown } = { map: null };
+const mapStub = {
+  setView: vi.fn(),
+  getZoom: vi.fn(() => 12),
+  getMaxZoom: vi.fn(() => 18),
+};
+
+// Handlers MapView registers via useMapEvents (moveend, click).
+const capturedMapEvents: Record<string, (e: unknown) => void> = {};
+// Cluster-group handlers MapView passes (onClick → clusterclick, onKeypress).
+const capturedClusterHandlers: {
+  onClick?: (e: unknown) => void;
+  onKeypress?: (e: unknown) => void;
+} = {};
 
 vi.mock('react-leaflet', () => {
-  const MapContainer = ({ children, ...props }: Record<string, unknown>) => {
-    lastPropsCapture.map = props;
-    return (
-      <div
-        data-testid="map-container"
-        data-center={JSON.stringify((props as { center: unknown }).center)}
-        data-zoom={String((props as { zoom: unknown }).zoom)}
-        className={(props as { className?: string }).className}
-      >
-        {children as React.ReactNode}
-      </div>
-    );
-  };
+  const MapContainer = ({ children, ...props }: Record<string, unknown>) => (
+    <div
+      data-testid="map-container"
+      data-center={JSON.stringify((props as { center: unknown }).center)}
+      data-zoom={String((props as { zoom: unknown }).zoom)}
+      className={(props as { className?: string }).className}
+    >
+      {children as React.ReactNode}
+    </div>
+  );
 
   const TileLayer = (props: Record<string, unknown>) => (
     <div
@@ -37,35 +45,69 @@ vi.mock('react-leaflet', () => {
     />
   );
 
-  const Marker = ({ position, icon, children }: Record<string, unknown> & { children?: React.ReactNode }) => {
+  const Marker = ({
+    position,
+    icon,
+    eventHandlers,
+  }: Record<string, unknown> & {
+    eventHandlers?: { click?: () => void };
+  }) => {
     const typedIcon = icon as { options?: { iconUrl?: string } } | undefined;
     return (
-      <div
+      <button
+        type="button"
         data-testid="marker"
         data-position={JSON.stringify(position)}
         data-icon={typedIcon?.options?.iconUrl ?? ''}
-      >
-        {children}
-      </div>
+        onClick={() => eventHandlers?.click?.()}
+      />
     );
   };
 
-  const Popup = ({ children }: { children?: React.ReactNode }) => (
-    <div data-testid="popup">{children}</div>
-  );
+  const useMapEvents = (handlers: Record<string, (e: unknown) => void>) => {
+    Object.assign(capturedMapEvents, handlers);
+    return null;
+  };
 
   return {
     MapContainer,
     TileLayer,
     Marker,
-    Popup,
-    useMap: () => ({ setView: vi.fn() }),
-    useMapEvents: () => null,
+    useMap: () => mapStub,
+    useMapEvents,
   };
 });
 
-// Avoid "leaflet/dist/leaflet.css" import errors in jsdom.
+vi.mock('react-leaflet-cluster', async () => {
+  const React = await import('react');
+  // Fake L.MarkerClusterGroup: MapView binds 'clusterkeypress' via the ref.
+  const fakeGroup = {
+    on: (event: string, cb: (e: unknown) => void) => {
+      if (event === 'clusterkeypress') capturedClusterHandlers.onKeypress = cb;
+    },
+    off: () => {},
+  };
+  const MarkerClusterGroup = React.forwardRef(
+    (
+      { children, onClick }: { children?: React.ReactNode; onClick?: (e: unknown) => void },
+      ref: React.Ref<unknown>,
+    ) => {
+      capturedClusterHandlers.onClick = onClick;
+      React.useImperativeHandle(ref, () => fakeGroup, []);
+      return <div data-testid="cluster-group">{children}</div>;
+    },
+  );
+  return { default: MarkerClusterGroup };
+});
+
+// The plugin's runtime is unused here (the cluster group is stubbed above); we
+// only need its type augmentation, so stub the module to a no-op.
+vi.mock('leaflet.markercluster', () => ({}));
+
+// Avoid CSS import errors in jsdom.
 vi.mock('leaflet/dist/leaflet.css', () => ({}));
+vi.mock('leaflet.markercluster/dist/MarkerCluster.css', () => ({}));
+vi.mock('leaflet.markercluster/dist/MarkerCluster.Default.css', () => ({}));
 
 import { MapView } from '../../../src/components/map/MapView.js';
 
@@ -108,6 +150,24 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
   };
 }
 
+// Build a fake LatLng with the `.equals` Leaflet exposes.
+function latLng(lat: number, lng: number) {
+  return { lat, lng, equals: (o: { lat: number; lng: number }) => o.lat === lat && o.lng === lng };
+}
+
+// Build a fake L.MarkerCluster for a set of child coordinates.
+function fakeCluster(coords: Array<[number, number]>) {
+  const lats = coords.map((c) => c[0]);
+  const lngs = coords.map((c) => c[1]);
+  const sw = latLng(Math.min(...lats), Math.min(...lngs));
+  const ne = latLng(Math.max(...lats), Math.max(...lngs));
+  return {
+    getBounds: () => ({ getNorthEast: () => ne, getSouthWest: () => sw }),
+    getAllChildMarkers: () => coords.map(([lat, lng]) => ({ getLatLng: () => latLng(lat, lng) })),
+    zoomToBounds: vi.fn(),
+  };
+}
+
 function renderMap(props: Partial<Parameters<typeof MapView>[0]> = {}) {
   return render(
     <IntlProvider locale="en" defaultLocale="en">
@@ -119,7 +179,13 @@ function renderMap(props: Partial<Parameters<typeof MapView>[0]> = {}) {
 }
 
 beforeEach(() => {
-  lastPropsCapture.map = null;
+  vi.clearAllMocks();
+  delete capturedMapEvents.moveend;
+  delete capturedMapEvents.click;
+  capturedClusterHandlers.onClick = undefined;
+  capturedClusterHandlers.onKeypress = undefined;
+  mapStub.getZoom.mockReturnValue(12);
+  mapStub.getMaxZoom.mockReturnValue(18);
 });
 
 describe('MapView — container', () => {
@@ -163,13 +229,14 @@ describe('MapView — container', () => {
 });
 
 describe('MapView — markers', () => {
-  it('renders one marker per geolocated post', () => {
+  it('renders one marker per geolocated post inside the cluster group', () => {
     renderMap({
       posts: [
         makePost({ id: 'p1', latitude: 1, longitude: 2 }),
         makePost({ id: 'p2', latitude: 3, longitude: 4 }),
       ],
     });
+    expect(screen.getByTestId('cluster-group')).toBeInTheDocument();
     expect(screen.getAllByTestId('marker')).toHaveLength(2);
   });
 
@@ -205,23 +272,112 @@ describe('MapView — markers', () => {
     );
   });
 
-  it('renders a popup containing the post details inside each marker', () => {
-    renderMap({
-      posts: [
-        makePost({
-          id: 'p1',
-          title: 'Need groceries',
-          latitude: 1,
-          longitude: 2,
-        }),
-      ],
-    });
-    const popup = screen.getByTestId('popup');
-    expect(within(popup).getByRole('heading', { name: 'Need groceries' })).toBeInTheDocument();
-  });
-
   it('renders no markers when no posts are geolocated', () => {
     renderMap({ posts: [makePost({ latitude: null, longitude: null })] });
     expect(screen.queryByTestId('marker')).not.toBeInTheDocument();
+  });
+});
+
+describe('MapView — selection', () => {
+  it('selects the single post when its marker is clicked', () => {
+    const onSelectPosts = vi.fn();
+    const post = makePost({ id: 'p1', latitude: 1, longitude: 2 });
+    renderMap({ posts: [post], onSelectPosts });
+
+    fireEvent.click(screen.getByTestId('marker'));
+    expect(onSelectPosts).toHaveBeenCalledWith([post]);
+  });
+
+  it('selects all co-located posts when their cluster is clicked', () => {
+    const onSelectPosts = vi.fn();
+    const a = makePost({ id: 'a', latitude: 1, longitude: 2 });
+    const b = makePost({ id: 'b', latitude: 1, longitude: 2 });
+    const c = makePost({ id: 'c', latitude: 3, longitude: 4 });
+    renderMap({ posts: [a, b, c], onSelectPosts });
+
+    // Cluster of the two posts that share (1, 2): zero-area bounds → list.
+    capturedClusterHandlers.onClick!({
+      type: 'clusterclick',
+      layer: fakeCluster([
+        [1, 2],
+        [1, 2],
+      ]),
+    });
+    expect(onSelectPosts).toHaveBeenCalledWith([a, b]);
+  });
+
+  it('zooms into a splittable cluster instead of selecting when not maxed out', () => {
+    const onSelectPosts = vi.fn();
+    const a = makePost({ id: 'a', latitude: 1, longitude: 2 });
+    const b = makePost({ id: 'b', latitude: 3, longitude: 4 });
+    renderMap({ posts: [a, b], onSelectPosts });
+
+    const cluster = fakeCluster([
+      [1, 2],
+      [3, 4],
+    ]);
+    capturedClusterHandlers.onClick!({ type: 'clusterclick', layer: cluster });
+
+    expect(cluster.zoomToBounds).toHaveBeenCalled();
+    expect(onSelectPosts).not.toHaveBeenCalled();
+  });
+
+  it('selects a spread cluster (rather than zooming) when already at max zoom', () => {
+    mapStub.getZoom.mockReturnValue(18); // == getMaxZoom()
+    const onSelectPosts = vi.fn();
+    const a = makePost({ id: 'a', latitude: 1, longitude: 2 });
+    const b = makePost({ id: 'b', latitude: 3, longitude: 4 });
+    renderMap({ posts: [a, b], onSelectPosts });
+
+    capturedClusterHandlers.onClick!({
+      type: 'clusterclick',
+      layer: fakeCluster([
+        [1, 2],
+        [3, 4],
+      ]),
+    });
+    expect(onSelectPosts).toHaveBeenCalledWith([a, b]);
+  });
+
+  it('ignores a cluster keypress that is not Enter', () => {
+    const onSelectPosts = vi.fn();
+    const a = makePost({ id: 'a', latitude: 1, longitude: 2 });
+    const b = makePost({ id: 'b', latitude: 1, longitude: 2 });
+    renderMap({ posts: [a, b], onSelectPosts });
+
+    capturedClusterHandlers.onKeypress!({
+      type: 'clusterkeypress',
+      originalEvent: { key: 'a' },
+      layer: fakeCluster([
+        [1, 2],
+        [1, 2],
+      ]),
+    });
+    expect(onSelectPosts).not.toHaveBeenCalled();
+  });
+
+  it('selects co-located posts on an Enter cluster keypress', () => {
+    const onSelectPosts = vi.fn();
+    const a = makePost({ id: 'a', latitude: 1, longitude: 2 });
+    const b = makePost({ id: 'b', latitude: 1, longitude: 2 });
+    renderMap({ posts: [a, b], onSelectPosts });
+
+    capturedClusterHandlers.onKeypress!({
+      type: 'clusterkeypress',
+      originalEvent: { key: 'Enter' },
+      layer: fakeCluster([
+        [1, 2],
+        [1, 2],
+      ]),
+    });
+    expect(onSelectPosts).toHaveBeenCalledWith([a, b]);
+  });
+
+  it('clears the selection on an empty-map click', () => {
+    const onSelectPosts = vi.fn();
+    renderMap({ posts: [makePost({ id: 'p1', latitude: 1, longitude: 2 })], onSelectPosts });
+
+    capturedMapEvents.click!(undefined);
+    expect(onSelectPosts).toHaveBeenCalledWith([]);
   });
 });

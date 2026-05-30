@@ -2983,6 +2983,50 @@
       "value": "count"
     }
   ],
+  "map.postListPanel.closeAriaLabel": [
+    {
+      "type": 0,
+      "value": "Close list"
+    }
+  ],
+  "map.postListPanel.heading": [
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " post here"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " posts here"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    }
+  ],
+  "map.postListPanel.landmarkLabel": [
+    {
+      "type": 0,
+      "value": "Posts at this location"
+    }
+  ],
   "map.view.containerAriaLabel": [
     {
       "type": 0,

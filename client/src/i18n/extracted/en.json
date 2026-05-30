@@ -1046,6 +1046,15 @@
   "map.page.postsInViewCount": {
     "defaultMessage": "{count, plural, one {# post in view} other {# posts in view}}"
   },
+  "map.postListPanel.closeAriaLabel": {
+    "defaultMessage": "Close list"
+  },
+  "map.postListPanel.heading": {
+    "defaultMessage": "{count, plural, one {# post here} other {# posts here}}"
+  },
+  "map.postListPanel.landmarkLabel": {
+    "defaultMessage": "Posts at this location"
+  },
   "map.view.containerAriaLabel": {
     "defaultMessage": "Map of mutual aid posts"
   },
