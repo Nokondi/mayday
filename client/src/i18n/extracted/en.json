@@ -1077,7 +1077,7 @@
     "defaultMessage": "No conversations yet. Contact someone from a post to start chatting."
   },
   "messages.list.encryptedPreview": {
-    "defaultMessage": "🔒 Encrypted message"
+    "defaultMessage": "Encrypted message"
   },
   "messages.page.backToConversations": {
     "defaultMessage": "Back to conversations"

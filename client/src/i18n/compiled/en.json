@@ -3103,7 +3103,7 @@
   "messages.list.encryptedPreview": [
     {
       "type": 0,
-      "value": "🔒 Encrypted message"
+      "value": "Encrypted message"
     }
   ],
   "messages.page.backToConversations": [
