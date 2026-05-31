@@ -11,9 +11,13 @@ import {
   Calendar,
   Binoculars,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FormattedMessage, useIntl } from "react-intl";
+import type { WSMessage } from "@mayday/shared";
 import { useAuth } from "../../context/AuthContext.js";
+import { useWebSocket } from "../../context/WebSocketContext.js";
+import { getConversations } from "../../api/messages.js";
 import MayDayLogo from "../../assets/mayday-logo.svg?react";
 import { WaveDivider } from "../common/WaveDivider.js";
 
@@ -28,6 +32,64 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isActive = (path: string) => pathname === path;
+
+  const queryClient = useQueryClient();
+  const { addHandler, removeHandler } = useWebSocket();
+
+  // Total unread messages, summed across conversations, to badge the Messages
+  // icon. We reuse the ["conversations"] cache that MessagesPage reads/writes,
+  // so opening a thread (which marks it read) clears the badge. A slow poll is
+  // the fallback; the websocket handler below keeps it live on every page.
+  const { data: conversations } = useQuery({
+    queryKey: ["conversations"],
+    queryFn: getConversations,
+    enabled: !!user,
+    refetchInterval: 60_000,
+  });
+  const unreadCount =
+    conversations?.reduce((sum, c) => sum + c.unreadCount, 0) ?? 0;
+
+  // A new/updated message anywhere should refresh the unread count even when
+  // MessagesPage isn't mounted. NEW_MESSAGE bumps it; MESSAGE_UPDATED covers
+  // invite-card status flips that change read/relevance.
+  const handleWsMessage = useCallback(
+    (msg: WSMessage) => {
+      if (msg.type === "NEW_MESSAGE" || msg.type === "MESSAGE_UPDATED") {
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      }
+    },
+    [queryClient],
+  );
+  useEffect(() => {
+    if (!user) return;
+    addHandler(handleWsMessage);
+    return () => removeHandler(handleWsMessage);
+  }, [user, handleWsMessage, addHandler, removeHandler]);
+
+  const messagesLabel =
+    unreadCount > 0
+      ? intl.formatMessage(
+          {
+            id: "layout.header.nav.messagesUnreadAria",
+            defaultMessage: "Messages ({count} unread)",
+          },
+          { count: unreadCount },
+        )
+      : intl.formatMessage({
+          id: "layout.header.nav.messages",
+          defaultMessage: "Messages",
+        });
+  // Cap the displayed count; the precise number lives in the aria-label.
+  const unreadDisplay = unreadCount > 99 ? "99+" : String(unreadCount);
+  const messagesBadge =
+    unreadCount > 0 ? (
+      <span
+        aria-hidden="true"
+        className="absolute -top-1 -right-1 bg-mayday-700 text-white text-[10px] rounded-full min-w-4 h-4 px-1 flex items-center justify-center font-medium"
+      >
+        {unreadDisplay}
+      </span>
+    ) : null;
 
   const handleLogout = async () => {
     await logout();
@@ -129,13 +191,11 @@ export function Header() {
                 </Link>
                 <Link
                   to="/messages"
-                  aria-label={intl.formatMessage({
-                    id: "layout.header.nav.messages",
-                    defaultMessage: "Messages",
-                  })}
-                  className="text-gray-600 hover:text-gray-900"
+                  aria-label={messagesLabel}
+                  className="relative text-gray-600 hover:text-gray-900"
                 >
                   <MessageSquare className="w-5 h-5" aria-hidden="true" />
+                  {messagesBadge}
                 </Link>
                 {user.role === "ADMIN" && (
                   <Link
@@ -273,22 +333,20 @@ export function Header() {
                 </Link>
                 <Link
                   to="/messages"
-                  aria-label={intl.formatMessage({
-                    id: "layout.header.nav.messages",
-                    defaultMessage: "Messages",
-                  })}
+                  aria-label={messagesLabel}
                   aria-current={isActive("/messages") ? "page" : undefined}
-                  className={
+                  className={`relative ${
                     isActive("/messages")
                       ? "text-mayday-700"
                       : "text-gray-600 hover:text-gray-900"
-                  }
+                  }`}
                 >
                   <MessageSquare
                     strokeWidth={1.5}
                     className="w-8 h-8"
                     aria-hidden="true"
                   />
+                  {messagesBadge}
                 </Link>
                 <Link
                   to="/posts/new"
