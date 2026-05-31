@@ -1,4 +1,4 @@
-import type { Message } from '@mayday/shared';
+import type { Message, MessageType, InviteMessageMetadata } from '@mayday/shared';
 import { decryptEnvelope } from './envelope.js';
 
 // The UI never sees the raw wire shape. We transform each Message into a
@@ -16,6 +16,8 @@ export interface RenderableMessage {
   readAt: string | null;
   content: string;
   encryptionStatus: EncryptionStatus;
+  type: MessageType;
+  metadata: InviteMessageMetadata | null;
 }
 
 const FAILED_PLACEHOLDER = '\u{1F512} Could not decrypt this message';
@@ -29,6 +31,8 @@ function meta(msg: Message) {
     conversationId: msg.conversationId,
     createdAt: msg.createdAt,
     readAt: msg.readAt,
+    type: msg.type,
+    metadata: msg.metadata,
   };
 }
 
@@ -36,6 +40,12 @@ export async function toRenderable(
   msg: Message,
   conversationKey: Uint8Array | null,
 ): Promise<RenderableMessage> {
+  // Server-authored invite card. Never encrypted — its detail lives in
+  // `metadata`, which the thread renders instead of a text bubble. Content
+  // stays empty so the bubble path is never taken for these.
+  if (msg.type === 'INVITE') {
+    return { ...meta(msg), content: '', encryptionStatus: 'legacy' };
+  }
   // Legacy plaintext (pre-Phase-2 messages). Content is in the clear; the
   // UI shows a badge so the user knows this one wasn't encrypted.
   if (msg.content !== null) {

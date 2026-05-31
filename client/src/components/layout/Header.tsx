@@ -7,17 +7,13 @@ import {
   LogOut,
   User,
   Plus,
-  Mail,
   MapPinned,
   Calendar,
   Binoculars,
 } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useAuth } from "../../context/AuthContext.js";
-import { getMyInvites } from "../../api/organizations.js";
-import { getMyCommunityInvites } from "../../api/communities.js";
 import MayDayLogo from "../../assets/mayday-logo.svg?react";
 import { WaveDivider } from "../common/WaveDivider.js";
 
@@ -32,21 +28,6 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isActive = (path: string) => pathname === path;
-
-  const { data: orgInvites } = useQuery({
-    queryKey: ["my-invites"],
-    queryFn: getMyInvites,
-    enabled: !!user,
-    refetchInterval: 60_000,
-  });
-  const { data: communityInvites } = useQuery({
-    queryKey: ["my-community-invites"],
-    queryFn: getMyCommunityInvites,
-    enabled: !!user,
-    refetchInterval: 60_000,
-  });
-  const inviteCount =
-    (orgInvites?.length ?? 0) + (communityInvites?.length ?? 0);
 
   const handleLogout = async () => {
     await logout();
@@ -155,28 +136,6 @@ export function Header() {
                   className="text-gray-600 hover:text-gray-900"
                 >
                   <MessageSquare className="w-5 h-5" aria-hidden="true" />
-                </Link>
-                <Link
-                  to="/invites"
-                  aria-label={intl.formatMessage(
-                    {
-                      id: "layout.header.desktopNav.invitesAriaLabel",
-                      defaultMessage:
-                        "{count, plural, =0 {Invites} other {Invites ({count} pending)}}",
-                    },
-                    { count: inviteCount },
-                  )}
-                  className="relative text-gray-600 hover:text-gray-900"
-                >
-                  <Mail className="w-5 h-5" aria-hidden="true" />
-                  {inviteCount > 0 && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute -top-1 -right-1 bg-mayday-700 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium"
-                    >
-                      {inviteCount}
-                    </span>
-                  )}
                 </Link>
                 {user.role === "ADMIN" && (
                   <Link
@@ -422,17 +381,6 @@ export function Header() {
                   <FormattedMessage
                     id="layout.header.nav.support"
                     defaultMessage="Support"
-                  />
-                </Link>
-                <Link
-                  to="/invites"
-                  className="block px-3 py-2 rounded hover:bg-gray-100"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <FormattedMessage
-                    id="layout.header.mobileNav.invites"
-                    defaultMessage="{count, plural, =0 {Invites} other {Invites ({count})}}"
-                    values={{ count: inviteCount }}
                   />
                 </Link>
                 <Link

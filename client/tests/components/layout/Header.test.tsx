@@ -8,21 +8,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../../../src/context/AuthContext.js', () => ({
   useAuth: vi.fn(),
 }));
-vi.mock('../../../src/api/organizations.js', () => ({
-  getMyInvites: vi.fn(),
-}));
-vi.mock('../../../src/api/communities.js', () => ({
-  getMyCommunityInvites: vi.fn(),
-}));
 
-import { getMyCommunityInvites } from '../../../src/api/communities.js';
-import { getMyInvites } from '../../../src/api/organizations.js';
 import { Header } from '../../../src/components/layout/Header.js';
 import { useAuth } from '../../../src/context/AuthContext.js';
 
 const mockedUseAuth = vi.mocked(useAuth);
-const mockedGetMyInvites = vi.mocked(getMyInvites);
-const mockedGetMyCommunityInvites = vi.mocked(getMyCommunityInvites);
 
 type AuthState = Partial<ReturnType<typeof useAuth>>;
 
@@ -83,9 +73,6 @@ function queryQuickNav() {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // Default: queries resolve to empty arrays so they don't throw on access.
-  mockedGetMyInvites.mockResolvedValue([]);
-  mockedGetMyCommunityInvites.mockResolvedValue([]);
 });
 
 describe('Header — logged-out state', () => {
@@ -125,14 +112,6 @@ describe('Header — logged-out state', () => {
     const { container } = renderHeader();
     // The WaveDivider is the only svg that stretches with preserveAspectRatio="none".
     expect(container.querySelector('svg[preserveAspectRatio="none"]')).toBeInTheDocument();
-  });
-
-  it('does not fetch invites when no user is signed in', async () => {
-    renderHeader();
-    // Wait a tick so any enabled query would have fired if mis-configured.
-    await new Promise((r) => setTimeout(r, 10));
-    expect(mockedGetMyInvites).not.toHaveBeenCalled();
-    expect(mockedGetMyCommunityInvites).not.toHaveBeenCalled();
   });
 });
 
@@ -179,40 +158,6 @@ describe('Header — admin link visibility', () => {
     const nav = getDesktopNav();
     const admin = within(nav).getByRole('link', { name: /admin panel/i });
     expect(admin).toHaveAttribute('href', '/admin');
-  });
-});
-
-describe('Header — invite badge', () => {
-  const user = { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null };
-
-  it('uses the plain "Invites" label when there are no pending invites', async () => {
-    setAuth({ user });
-    mockedGetMyInvites.mockResolvedValue([]);
-    mockedGetMyCommunityInvites.mockResolvedValue([]);
-    renderHeader();
-
-    // Wait for queries to settle so the count is reflected in the label.
-    await waitFor(() => {
-      expect(mockedGetMyInvites).toHaveBeenCalled();
-      expect(mockedGetMyCommunityInvites).toHaveBeenCalled();
-    });
-    const invites = within(getDesktopNav()).getByRole('link', { name: /^invites$/i });
-    expect(invites).toHaveAttribute('href', '/invites');
-    // No numeric badge is rendered at zero.
-    expect(invites).not.toHaveTextContent(/\d/);
-  });
-
-  it('sums org invites and community invites into the badge and aria-label', async () => {
-    setAuth({ user });
-    mockedGetMyInvites.mockResolvedValue([{ id: 'i1' }, { id: 'i2' }] as never);
-    mockedGetMyCommunityInvites.mockResolvedValue([{ id: 'c1' }] as never);
-    renderHeader();
-
-    const invites = await within(getDesktopNav()).findByRole('link', {
-      name: /invites \(3 pending\)/i,
-    });
-    expect(invites).toHaveAttribute('href', '/invites');
-    expect(invites).toHaveTextContent('3');
   });
 });
 
@@ -315,20 +260,6 @@ describe('Header — mobile menu toggle', () => {
       'aria-expanded',
       'false',
     );
-  });
-
-  it('includes the invite count in the mobile Invites label when there are pending invites', async () => {
-    setAuth({ user: { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null } });
-    mockedGetMyInvites.mockResolvedValue([{ id: 'i1' }] as never);
-    mockedGetMyCommunityInvites.mockResolvedValue([{ id: 'c1' }] as never);
-    const user = userEvent.setup();
-    renderHeader();
-
-    await user.click(screen.getByRole('button', { name: /toggle menu/i }));
-
-    const mobileNav = queryMobileNav() as HTMLElement;
-    const invites = await within(mobileNav).findByRole('link', { name: /invites \(2\)/i });
-    expect(invites).toHaveAttribute('href', '/invites');
   });
 
   it('does not include Browse, Map, Calendar, New Post, or Messages in the mobile dropdown', async () => {

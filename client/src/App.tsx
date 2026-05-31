@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { WebSocketProvider } from "./context/WebSocketContext.js";
 import { Layout } from "./components/layout/Layout.js";
 import { RescueListener } from "./components/e2ee/RescueListener.js";
@@ -25,7 +25,6 @@ import { CommunitiesPage } from "./pages/CommunitiesPage.js";
 import { CreateCommunityPage } from "./pages/CreateCommunityPage.js";
 import { CommunityDetailPage } from "./pages/CommunityDetailPage.js";
 import { CommunityManagePage } from "./pages/CommunityManagePage.js";
-import { InvitesPage } from "./pages/InvitesPage.js";
 import { AboutPage } from "./pages/AboutPage.js";
 import { NotFoundPage } from "./pages/NotFoundPage.js";
 import { SupportPage } from "./pages/SupportPage.js";
@@ -160,13 +159,11 @@ export function App() {
               </ProtectedRoute>
             }
           />
+          {/* Invites are now surfaced as messages; keep the path as a redirect
+              for old notification/email deep links. */}
           <Route
             path="/invites"
-            element={
-              <ProtectedRoute>
-                <InvitesPage />
-              </ProtectedRoute>
-            }
+            element={<Navigate to="/messages" replace />}
           />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage />} />

@@ -79,14 +79,14 @@ function buildPushPayload(event: NotificationEvent): PushPayload {
       return {
         title: `Invite to join ${event.communityName}`,
         body: `${event.inviterName} invited you to join the community.`,
-        url: '/invites',
+        url: '/messages',
         tag: `inv:c:${event.communityId}`,
       };
     case 'ORGANIZATION_INVITE':
       return {
         title: `Invite to join ${event.organizationName}`,
         body: `${event.inviterName} invited you to join the organization.`,
-        url: '/invites',
+        url: '/messages',
         tag: `inv:o:${event.organizationId}`,
       };
     case 'ANNOUNCEMENT':

@@ -2,11 +2,19 @@ import { Fragment, useEffect, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Unlock } from "lucide-react";
+import type { InviteMessageMetadata } from "@mayday/shared";
 import type { RenderableMessage } from "../../crypto/render.js";
+import { InviteMessageCard } from "./InviteMessageCard.js";
 
 interface MessageThreadProps {
   messages: RenderableMessage[];
   currentUserId: string;
+  // Invite-card actions. Optional: a thread with no invite messages never
+  // invokes them.
+  onAcceptInvite?: (metadata: InviteMessageMetadata) => void;
+  onDeclineInvite?: (metadata: InviteMessageMetadata) => void;
+  // inviteId currently being accepted/declined, to disable its buttons.
+  actingInviteId?: string | null;
 }
 
 const URL_PATTERN = /\bhttps?:\/\/[^\s<>"']+/g;
@@ -38,7 +46,13 @@ function renderWithLinks(content: string, isMine: boolean) {
   );
 }
 
-export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
+export function MessageThread({
+  messages,
+  currentUserId,
+  onAcceptInvite,
+  onDeclineInvite,
+  actingInviteId,
+}: MessageThreadProps) {
   const intl = useIntl();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -66,6 +80,27 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
         const isMine = msg.senderId === currentUserId;
         const sentAt = new Date(msg.createdAt);
         const relativeTime = formatDistanceToNow(sentAt, { addSuffix: true });
+
+        // Server-authored invitation: render an actionable card instead of a
+        // text bubble. Only the invitee (receiver) sees Accept/Decline.
+        if (msg.type === "INVITE" && msg.metadata) {
+          const metadata = msg.metadata;
+          return (
+            <div
+              key={msg.id}
+              className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+            >
+              <InviteMessageCard
+                metadata={metadata}
+                isRecipient={msg.receiverId === currentUserId}
+                onAccept={() => onAcceptInvite?.(metadata)}
+                onDecline={() => onDeclineInvite?.(metadata)}
+                isActing={actingInviteId === metadata.inviteId}
+              />
+            </div>
+          );
+        }
+
         const senderLabel = isMine
           ? intl.formatMessage({
               id: "messages.thread.senderYou",

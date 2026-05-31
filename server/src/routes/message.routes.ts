@@ -6,6 +6,8 @@ import {
   type EncryptedEnvelope,
   type Message as WireMessage,
   type ConversationKeyWrap as WireKeyWrap,
+  type InviteMessageMetadata,
+  type InviteMessageStatus,
 } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.middleware.js';
@@ -15,6 +17,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { publicUserSelect } from '../utils/prisma-selects.js';
 import { sendToUser } from '../websocket/index.js';
 import { notify } from '../services/notification.service.js';
+import type { Prisma } from '@prisma/client';
 
 // Helpers for the new encrypted-envelope path. The server never decrypts;
 // it just shuttles base64-encoded bytes between Prisma's Bytes columns and
@@ -53,6 +56,8 @@ function envelopeToCreateData(envelope: EncryptedEnvelope) {
 // ciphertext/nonce columns and surfaces nullability cleanly.
 function toWireMessage(msg: {
   id: string;
+  type: string;
+  metadata: unknown;
   content: string | null;
   ciphertext: Buffer | Uint8Array | null;
   nonce: Buffer | Uint8Array | null;
@@ -67,6 +72,8 @@ function toWireMessage(msg: {
 }): WireMessage {
   return {
     id: msg.id,
+    type: msg.type === 'INVITE' ? 'INVITE' : 'TEXT',
+    metadata: (msg.metadata as InviteMessageMetadata | null) ?? null,
     content: msg.content,
     ciphertext: bytesToBase64(msg.ciphertext),
     nonce: bytesToBase64(msg.nonce),
@@ -129,6 +136,67 @@ async function notifyReceiver(params: {
   }
 }
 
+// Find (or create) the 1:1 conversation between two users. Participant order
+// is normalized to match the @@unique([participantAId, participantBId])
+// constraint, so the same pair always resolves to the same row regardless of
+// who initiates.
+export async function getOrCreateConversation(userOneId: string, userTwoId: string) {
+  const [aId, bId] = [userOneId, userTwoId].sort();
+  const existing = await prisma.conversation.findUnique({
+    where: { participantAId_participantBId: { participantAId: aId, participantBId: bId } },
+  });
+  if (existing) return existing;
+  return prisma.conversation.create({ data: { participantAId: aId, participantBId: bId } });
+}
+
+// Create a server-authored INVITE message in the inviter↔invitee conversation
+// and push it live to the invitee. Attributed to the inviter (senderId), never
+// encrypted — its detail lives in `metadata`. Returns the new message id plus
+// the conversation it landed in.
+export async function createInviteMessage(params: {
+  inviterId: string;
+  inviteeId: string;
+  metadata: InviteMessageMetadata;
+}): Promise<{ id: string; conversationId: string }> {
+  const conversation = await getOrCreateConversation(params.inviterId, params.inviteeId);
+  const msg = await prisma.message.create({
+    data: {
+      type: 'INVITE',
+      // InviteMessageMetadata is a fixed-shape object; Prisma's Json input type
+      // wants an index signature, so cast through its InputJsonValue.
+      metadata: params.metadata as unknown as Prisma.InputJsonValue,
+      content: null,
+      senderId: params.inviterId,
+      receiverId: params.inviteeId,
+      conversationId: conversation.id,
+    },
+  });
+  await prisma.conversation.update({
+    where: { id: conversation.id },
+    data: { updatedAt: new Date() },
+  });
+  sendToUser(params.inviteeId, { type: 'NEW_MESSAGE', payload: toWireMessage(msg) });
+  return { id: msg.id, conversationId: conversation.id };
+}
+
+// Update the rendered status on an existing INVITE card after the invite is
+// accepted/declined/revoked. No websocket re-broadcast: NEW_MESSAGE is an
+// append signal on the client, so re-emitting it would duplicate the card —
+// the acting client simply refetches its messages query.
+export async function setInviteMessageStatus(
+  messageId: string | null | undefined,
+  status: InviteMessageStatus,
+): Promise<void> {
+  if (!messageId) return;
+  const msg = await prisma.message.findUnique({ where: { id: messageId } });
+  if (!msg || msg.type !== 'INVITE' || !msg.metadata) return;
+  const metadata = { ...(msg.metadata as unknown as InviteMessageMetadata), status };
+  await prisma.message.update({
+    where: { id: messageId },
+    data: { metadata: metadata as unknown as Prisma.InputJsonValue },
+  });
+}
+
 export const messageRoutes = Router();
 
 messageRoutes.use(requireAuth);
@@ -172,7 +240,7 @@ messageRoutes.get('/conversations', asyncHandler(async (req: AuthRequest, res) =
       createdAt: conv.createdAt.toISOString(),
       updatedAt: conv.updatedAt.toISOString(),
       otherParticipant,
-      lastMessage: conv.messages[0] || null,
+      lastMessage: conv.messages[0] ? toWireMessage(conv.messages[0]) : null,
       unreadCount,
     };
   }));
@@ -365,18 +433,7 @@ messageRoutes.post('/conversations', validate(startConversationSchema), asyncHan
   const other = await prisma.user.findUnique({ where: { id: participantId } });
   if (!other) throw new AppError(404, 'User not found');
 
-  // Normalize participant order for unique constraint
-  const [aId, bId] = [userId, participantId].sort();
-
-  let conversation = await prisma.conversation.findUnique({
-    where: { participantAId_participantBId: { participantAId: aId, participantBId: bId } },
-  });
-
-  if (!conversation) {
-    conversation = await prisma.conversation.create({
-      data: { participantAId: aId, participantBId: bId },
-    });
-  }
+  const conversation = await getOrCreateConversation(userId, participantId);
 
   // A starting message is optional. When present it can be either plaintext
   // (the legacy path; pre-Phase-2 clients still use this) or an encrypted

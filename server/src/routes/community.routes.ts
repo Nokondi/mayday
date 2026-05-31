@@ -18,6 +18,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { publicUserSelect, memberInclude } from '../utils/prisma-selects.js';
 import { sendCommunitySignupInviteEmail } from '../services/mail.service.js';
 import { notify, notifyMany } from '../services/notification.service.js';
+import { createInviteMessage, setInviteMessageStatus } from './message.routes.js';
 import type { Prisma } from '@prisma/client';
 
 async function notifyAdminsOfJoinRequest(params: {
@@ -144,6 +145,7 @@ communityRoutes.post('/me/invites/:inviteId/accept', asyncHandler(async (req: Au
     prisma.communityMember.create({ data: { communityId: invite.communityId, userId: req.user!.id, role: 'MEMBER' } }),
     prisma.communityInvite.update({ where: { id: invite.id }, data: { status: 'ACCEPTED' } }),
   ]);
+  await setInviteMessageStatus(invite.inviteMessageId, 'ACCEPTED');
   res.json({ message: 'Invite accepted' });
 }));
 
@@ -154,6 +156,7 @@ communityRoutes.post('/me/invites/:inviteId/decline', asyncHandler(async (req: A
   if (invite.status !== 'PENDING') throw new AppError(400, 'Invite is no longer pending');
 
   await prisma.communityInvite.update({ where: { id: invite.id }, data: { status: 'DECLINED' } });
+  await setInviteMessageStatus(invite.inviteMessageId, 'DECLINED');
   res.json({ message: 'Invite declined' });
 }));
 
@@ -458,6 +461,31 @@ communityRoutes.post('/:id/invites', validate(inviteToCommunitySchema), asyncHan
     });
   }
 
+  // Surface the invite as an actionable message card in the inviter↔invitee
+  // conversation. On reactivation, flip the prior card back to PENDING rather
+  // than orphaning it with a duplicate.
+  const communityForCard = await prisma.community.findUnique({ where: { id: cid }, select: { name: true } });
+  if (existingInvite?.inviteMessageId) {
+    await setInviteMessageStatus(existingInvite.inviteMessageId, 'PENDING');
+  } else {
+    const card = await createInviteMessage({
+      inviterId: req.user!.id,
+      inviteeId: targetUser.id,
+      metadata: {
+        inviteKind: 'COMMUNITY',
+        inviteId: invite.id,
+        targetId: cid,
+        targetName: communityForCard?.name ?? '',
+        status: 'PENDING',
+      },
+    });
+    invite = await prisma.communityInvite.update({
+      where: { id: invite.id },
+      data: { inviteMessageId: card.id },
+      include: { invitedUser: { select: publicUserSelect }, invitedBy: { select: publicUserSelect } },
+    });
+  }
+
   void (async () => {
     try {
       const [community, inviter] = await Promise.all([
@@ -496,6 +524,7 @@ communityRoutes.delete('/:id/invites/:inviteId', asyncHandler(async (req: AuthRe
   if (invite.status !== 'PENDING') throw new AppError(400, 'Invite is no longer pending');
 
   await prisma.communityInvite.update({ where: { id: inviteId }, data: { status: 'REVOKED' } });
+  await setInviteMessageStatus(invite.inviteMessageId, 'REVOKED');
   res.json({ message: 'Invite revoked' });
 }));
 

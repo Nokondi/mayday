@@ -1,12 +1,30 @@
 import type { UserPublicProfile } from './user.js';
 import type { PeerDevice } from './device.js';
 
+export type MessageType = 'TEXT' | 'INVITE';
+
+export type InviteMessageStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'REVOKED';
+
+// Structured payload carried by an INVITE message. The server populates this
+// when an already-registered user is invited to an organization/community; the
+// Messages UI renders it as an actionable card. Not secret — never encrypted.
+export interface InviteMessageMetadata {
+  inviteKind: 'ORGANIZATION' | 'COMMUNITY';
+  inviteId: string;
+  targetId: string; // organization or community id
+  targetName: string;
+  status: InviteMessageStatus;
+}
+
 // On-the-wire message. `content` is set for legacy (pre-E2EE) plaintext
 // messages; encrypted messages leave it null and populate the envelope
 // fields (ciphertext, nonce, senderDeviceId, keyEpoch, protocolVersion).
-// All Bytes columns are base64-encoded on the wire.
+// All Bytes columns are base64-encoded on the wire. INVITE messages leave the
+// content/envelope fields null and carry their detail in `metadata`.
 export interface Message {
   id: string;
+  type: MessageType;
+  metadata: InviteMessageMetadata | null;
   content: string | null;
   ciphertext: string | null;
   nonce: string | null;
