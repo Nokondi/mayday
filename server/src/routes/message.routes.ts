@@ -180,9 +180,11 @@ export async function createInviteMessage(params: {
 }
 
 // Update the rendered status on an existing INVITE card after the invite is
-// accepted/declined/revoked. No websocket re-broadcast: NEW_MESSAGE is an
-// append signal on the client, so re-emitting it would duplicate the card —
-// the acting client simply refetches its messages query.
+// accepted/declined/revoked, then push the change to both participants as a
+// MESSAGE_UPDATED event. We deliberately do NOT use NEW_MESSAGE here: that is
+// an append signal on the client and would duplicate the card. MESSAGE_UPDATED
+// is replace-by-id, so the actor's thread and the inviter's thread both update
+// in place and idempotently.
 export async function setInviteMessageStatus(
   messageId: string | null | undefined,
   status: InviteMessageStatus,
@@ -191,10 +193,13 @@ export async function setInviteMessageStatus(
   const msg = await prisma.message.findUnique({ where: { id: messageId } });
   if (!msg || msg.type !== 'INVITE' || !msg.metadata) return;
   const metadata = { ...(msg.metadata as unknown as InviteMessageMetadata), status };
-  await prisma.message.update({
+  const updated = await prisma.message.update({
     where: { id: messageId },
     data: { metadata: metadata as unknown as Prisma.InputJsonValue },
   });
+  const wire = toWireMessage(updated);
+  sendToUser(updated.senderId, { type: 'MESSAGE_UPDATED', payload: wire });
+  sendToUser(updated.receiverId, { type: 'MESSAGE_UPDATED', payload: wire });
 }
 
 export const messageRoutes = Router();

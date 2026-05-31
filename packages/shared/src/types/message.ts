@@ -62,6 +62,7 @@ export interface Conversation {
 
 export type WSMessageType =
   | 'NEW_MESSAGE'
+  | 'MESSAGE_UPDATED'
   | 'TYPING'
   | 'READ'
   | 'DEVICE_ADDED'
@@ -70,6 +71,15 @@ export type WSMessageType =
 
 export interface WSNewMessage {
   type: 'NEW_MESSAGE';
+  payload: Message;
+}
+
+// An existing message changed in place (not a new message). Currently emitted
+// when an INVITE card's status flips on accept/decline/revoke. Clients replace
+// the message by id rather than appending — re-using NEW_MESSAGE here would
+// duplicate the message in the thread.
+export interface WSMessageUpdated {
+  type: 'MESSAGE_UPDATED';
   payload: Message;
 }
 
@@ -107,6 +117,7 @@ export interface WSKeyWrapsUpdated {
 
 export type WSMessage =
   | WSNewMessage
+  | WSMessageUpdated
   | WSTyping
   | WSRead
   | WSDeviceAdded

@@ -212,6 +212,18 @@ export function MessagesPage() {
             (old) => (old ? [...old, msg] : [msg]),
           );
         }
+      } else if (wsMsg.type === "MESSAGE_UPDATED") {
+        // An existing message changed in place (e.g. an invite card's status
+        // flipped). Replace it by id rather than appending — appending would
+        // duplicate the card in the thread.
+        const msg = wsMsg.payload as Message;
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+        if (msg.conversationId === activeConversation) {
+          queryClient.setQueryData<Message[]>(
+            ["messages", activeConversation],
+            (old) => old?.map((m) => (m.id === msg.id ? msg : m)),
+          );
+        }
       }
     },
     [activeConversation, queryClient],
