@@ -656,11 +656,18 @@ describe('createInviteMessage', () => {
 });
 
 describe('setInviteMessageStatus', () => {
-  it('flips the status on an existing invite card', async () => {
+  it('flips the status on an existing invite card and broadcasts MESSAGE_UPDATED to both participants', async () => {
     mockedMsg.findUnique.mockResolvedValueOnce(
       dbMessage({ id: 'inv-msg', type: 'INVITE', content: null, metadata: INVITE_METADATA }) as never,
     );
-    mockedMsg.update.mockResolvedValueOnce({} as never);
+    mockedMsg.update.mockResolvedValueOnce(
+      dbMessage({
+        id: 'inv-msg',
+        type: 'INVITE',
+        content: null,
+        metadata: { ...INVITE_METADATA, status: 'ACCEPTED' },
+      }) as never,
+    );
 
     await setInviteMessageStatus('inv-msg', 'ACCEPTED');
 
@@ -668,6 +675,16 @@ describe('setInviteMessageStatus', () => {
       where: { id: 'inv-msg' },
       data: { metadata: expect.objectContaining({ status: 'ACCEPTED', inviteId: 'inv1' }) },
     });
+    // Pushed to both participants as a replace-by-id update, not a new message.
+    const updatedPayload = expect.objectContaining({
+      type: 'MESSAGE_UPDATED',
+      payload: expect.objectContaining({
+        id: 'inv-msg',
+        metadata: expect.objectContaining({ status: 'ACCEPTED' }),
+      }),
+    });
+    expect(mockedSend).toHaveBeenCalledWith(USER_ID, updatedPayload);
+    expect(mockedSend).toHaveBeenCalledWith(OTHER_ID, updatedPayload);
   });
 
   it('is a no-op when the id is missing', async () => {

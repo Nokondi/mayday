@@ -8,11 +8,28 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../../../src/context/AuthContext.js', () => ({
   useAuth: vi.fn(),
 }));
+// The Header subscribes to the websocket and reads the conversations list to
+// badge the Messages icon. Stub both so these tests don't open a real socket
+// or hit the network.
+vi.mock('../../../src/context/WebSocketContext.js', () => ({
+  useWebSocket: () => ({ isConnected: true, addHandler: vi.fn(), removeHandler: vi.fn() }),
+}));
+vi.mock('../../../src/api/messages.js', () => ({
+  getConversations: vi.fn(),
+}));
 
 import { Header } from '../../../src/components/layout/Header.js';
 import { useAuth } from '../../../src/context/AuthContext.js';
+import { getConversations } from '../../../src/api/messages.js';
 
 const mockedUseAuth = vi.mocked(useAuth);
+const mockedGetConversations = vi.mocked(getConversations);
+
+// A conversations fixture with a given unread count; only the fields the
+// Header reads (unreadCount) matter.
+function conv(unreadCount: number, id = 'c1') {
+  return { id, unreadCount } as never;
+}
 
 type AuthState = Partial<ReturnType<typeof useAuth>>;
 
@@ -73,6 +90,8 @@ function queryQuickNav() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Default: no unread messages so the badge is absent unless a test opts in.
+  mockedGetConversations.mockResolvedValue([]);
 });
 
 describe('Header — logged-out state', () => {
@@ -313,5 +332,48 @@ describe('Header — mobile quick-nav icons', () => {
     renderHeader({ initialPath: '/organizations' });
     const nav = queryQuickNav() as HTMLElement;
     expect(within(nav).queryByRole('link', { current: 'page' })).not.toBeInTheDocument();
+  });
+});
+
+describe('Header — unread message badge', () => {
+  const user = { id: 'u1', email: 'a@b.com', name: 'A', role: 'USER', avatarUrl: null };
+
+  it('badges the desktop Messages link with the summed unread count', async () => {
+    setAuth({ user });
+    mockedGetConversations.mockResolvedValue([conv(2, 'c1'), conv(1, 'c2')]);
+    renderHeader();
+
+    const link = await within(getDesktopNav()).findByRole('link', {
+      name: /messages \(3 unread\)/i,
+    });
+    expect(link).toHaveTextContent('3');
+  });
+
+  it('shows no badge and a plain label when there are no unread messages', async () => {
+    setAuth({ user });
+    mockedGetConversations.mockResolvedValue([conv(0, 'c1')]);
+    renderHeader();
+
+    await waitFor(() => expect(mockedGetConversations).toHaveBeenCalled());
+    const link = within(getDesktopNav()).getByRole('link', { name: /^messages$/i });
+    expect(link).not.toHaveTextContent(/\d/);
+  });
+
+  it('caps the displayed count at 99+ while keeping the exact count in the label', async () => {
+    setAuth({ user });
+    mockedGetConversations.mockResolvedValue([conv(150, 'c1')]);
+    renderHeader();
+
+    const link = await within(getDesktopNav()).findByRole('link', {
+      name: /messages \(150 unread\)/i,
+    });
+    expect(link).toHaveTextContent('99+');
+  });
+
+  it('does not fetch conversations when signed out', async () => {
+    setAuth({ user: null });
+    renderHeader();
+    await new Promise((r) => setTimeout(r, 10));
+    expect(mockedGetConversations).not.toHaveBeenCalled();
   });
 });

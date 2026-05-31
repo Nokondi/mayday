@@ -71,6 +71,15 @@ export function MessagesPage() {
     enabled: !!activeConversation,
   });
 
+  // Fetching a conversation's messages marks them read server-side, so refresh
+  // the conversations list once that load settles. This drops the unread count
+  // for this thread — and the Header's unread badge with it.
+  useEffect(() => {
+    if (activeConversation && !msgLoading) {
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    }
+  }, [activeConversation, msgLoading, queryClient]);
+
   // Conversation key resolution. The hook fetches wraps and unwraps with the
   // local device key, picking the highest-epoch wrap. We also keep a session-
   // local fallback (`localCk`) for the freshly-established case: when we
@@ -210,6 +219,18 @@ export function MessagesPage() {
           queryClient.setQueryData<Message[]>(
             ["messages", activeConversation],
             (old) => (old ? [...old, msg] : [msg]),
+          );
+        }
+      } else if (wsMsg.type === "MESSAGE_UPDATED") {
+        // An existing message changed in place (e.g. an invite card's status
+        // flipped). Replace it by id rather than appending — appending would
+        // duplicate the card in the thread.
+        const msg = wsMsg.payload as Message;
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+        if (msg.conversationId === activeConversation) {
+          queryClient.setQueryData<Message[]>(
+            ["messages", activeConversation],
+            (old) => old?.map((m) => (m.id === msg.id ? msg : m)),
           );
         }
       }
