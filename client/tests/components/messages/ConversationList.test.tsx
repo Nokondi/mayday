@@ -21,6 +21,8 @@ function makeParticipant(overrides: Partial<UserPublicProfile> = {}): UserPublic
 function makeMessage(overrides: Partial<Message> = {}): Message {
   return {
     id: 'm1',
+    type: 'TEXT',
+    metadata: null,
     content: 'hello',
     ciphertext: null,
     nonce: null,
@@ -153,6 +155,28 @@ describe('ConversationList — rendering', () => {
     expect(container.querySelector('svg.lucide-lock')).toBeInTheDocument();
     // The literal padlock emoji must not appear.
     expect(container.textContent).not.toContain('🔒');
+  });
+
+  it('previews an invite last message with the target name instead of raw content', () => {
+    const conversations = [
+      makeConversation({
+        lastMessage: makeMessage({
+          type: 'INVITE',
+          content: null,
+          metadata: {
+            inviteKind: 'ORGANIZATION',
+            inviteId: 'inv1',
+            targetId: 'org1',
+            targetName: 'Acme Co',
+            status: 'PENDING',
+          },
+        }),
+      }),
+    ];
+    render(<ConversationList conversations={conversations} onSelect={() => {}} />);
+    expect(screen.getByText(/Invitation to join Acme Co/)).toBeInTheDocument();
+    // Must not fall through to the generic encrypted-message placeholder.
+    expect(screen.queryByText(/Encrypted message/)).toBeNull();
   });
 
   it('does not render the last-message or timestamp lines when lastMessage is null', () => {

@@ -228,7 +228,7 @@ export async function sendCommunityInviteEmail(
     return;
   }
 
-  const invitesUrl = `${env.CLIENT_URL}/invites`;
+  const messagesUrl = `${env.CLIENT_URL}/messages`;
   const from = env.SMTP_FROM || env.SMTP_USER!;
   const escape = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -239,10 +239,10 @@ export async function sendCommunityInviteEmail(
     from,
     to,
     subject: `${inviterName} invited you to join ${communityName} on Mayday`,
-    text: `${inviterName} invited you to join the "${communityName}" community on Mayday.\n\nReview your invites: ${invitesUrl}`,
+    text: `${inviterName} invited you to join the "${communityName}" community on Mayday.\n\nView the invitation in your messages: ${messagesUrl}`,
     html: `
       <p><strong>${escapedInviter}</strong> invited you to join the <strong>${escapedCommunity}</strong> community on Mayday.</p>
-      <p><a href="${invitesUrl}">Review your invites</a></p>
+      <p><a href="${messagesUrl}">View the invitation in your messages</a></p>
     `,
   });
 }
@@ -260,7 +260,7 @@ export async function sendOrganizationInviteEmail(
     return;
   }
 
-  const invitesUrl = `${env.CLIENT_URL}/invites`;
+  const messagesUrl = `${env.CLIENT_URL}/messages`;
   const from = env.SMTP_FROM || env.SMTP_USER!;
   const escape = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -271,10 +271,10 @@ export async function sendOrganizationInviteEmail(
     from,
     to,
     subject: `${inviterName} invited you to join ${organizationName} on Mayday`,
-    text: `${inviterName} invited you to join the "${organizationName}" organization on Mayday.\n\nReview your invites: ${invitesUrl}`,
+    text: `${inviterName} invited you to join the "${organizationName}" organization on Mayday.\n\nView the invitation in your messages: ${messagesUrl}`,
     html: `
       <p><strong>${escapedInviter}</strong> invited you to join the <strong>${escapedOrg}</strong> organization on Mayday.</p>
-      <p><a href="${invitesUrl}">Review your invites</a></p>
+      <p><a href="${messagesUrl}">View the invitation in your messages</a></p>
     `,
   });
 }

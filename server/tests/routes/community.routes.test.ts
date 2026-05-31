@@ -45,6 +45,15 @@ vi.mock('../../src/config/storage.js', () => ({
   deleteObjectByUrl: vi.fn().mockResolvedValue(undefined),
 }));
 
+// The invite routes now surface the invite as a message card. Stub the message
+// helpers so these tests stay focused on invite bookkeeping, not messaging.
+vi.mock('../../src/routes/message.routes.js', () => ({
+  createInviteMessage: vi
+    .fn()
+    .mockResolvedValue({ id: 'invite-msg-id', conversationId: 'conv-id' }),
+  setInviteMessageStatus: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('../../src/middleware/upload.middleware.js', () => ({
   uploadAvatar: (req: { file?: unknown }, _res: unknown, next: () => void) => {
     req.file = { location: 'https://cdn.example.com/new-avatar.png' };
@@ -513,6 +522,9 @@ describe('POST /api/communities/:id/invites', () => {
     mockedUser.findUnique.mockResolvedValueOnce(dbUser() as never).mockResolvedValueOnce({ id: OTHER_USER_ID } as never);
     mockedInvite.findUnique.mockResolvedValueOnce(null as never);
     mockedInvite.create.mockResolvedValueOnce({ id: INVITE_ID, status: 'PENDING' } as never);
+    // After creating the invite-message card the route updates the invite with
+    // its inviteMessageId.
+    mockedInvite.update.mockResolvedValueOnce({ id: INVITE_ID, status: 'PENDING' } as never);
 
     const res = await request(makeApp())
       .post(`/api/communities/${COMMUNITY_ID}/invites`)

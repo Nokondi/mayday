@@ -195,6 +195,14 @@ model Conversation {
 
 model Message {
   id             String    @id @default(uuid())
+  // Message kind. "TEXT" is an ordinary user message (plaintext or encrypted,
+  // per the fields below). "INVITE" is a server-authored organization/community
+  // invitation rendered as an actionable card — its details live in `metadata`,
+  // it is never encrypted, and `content` stays NULL.
+  type           String    @default("TEXT")
+  // Structured payload for non-TEXT messages. For "INVITE": { inviteKind,
+  // inviteId, targetId, targetName, status }. NULL for ordinary messages.
+  metadata       Json?
   // Plaintext body — only set for legacy (pre-E2EE) messages. New messages
   // sent under E2EE leave this NULL and populate the ciphertext fields below.
   content        String?
@@ -326,6 +334,9 @@ model OrganizationInvite {
   invitedUserId   String
   invitedById     String
   status          InviteStatus @default(PENDING)
+  // Back-link to the actionable invite-message card in the inviter↔invitee
+  // conversation, so accept/decline/revoke can update the card's rendered status.
+  inviteMessageId String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
@@ -380,6 +391,9 @@ model CommunityInvite {
   invitedUserId String
   invitedById   String
   status        InviteStatus @default(PENDING)
+  // Back-link to the actionable invite-message card in the inviter↔invitee
+  // conversation, so accept/decline/revoke can update the card's rendered status.
+  inviteMessageId String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 

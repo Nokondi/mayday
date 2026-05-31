@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Lock } from "lucide-react";
+import { Lock, Mail } from "lucide-react";
 import type { Conversation } from "@mayday/shared";
 
 interface ConversationListProps {
@@ -73,7 +73,18 @@ export function ConversationList({
             </div>
             {conv.lastMessage && (
               <p className={`text-sm truncate mt-1`}>
-                {conv.lastMessage.content !== null ? (
+                {conv.lastMessage.type === "INVITE" ? (
+                  <span className="inline-flex items-center gap-1">
+                    <Mail className="w-3 h-3 shrink-0" aria-hidden="true" />
+                    <FormattedMessage
+                      id="messages.list.invitePreview"
+                      defaultMessage="Invitation to join {name}"
+                      values={{
+                        name: conv.lastMessage.metadata?.targetName ?? "",
+                      }}
+                    />
+                  </span>
+                ) : conv.lastMessage.content !== null ? (
                   conv.lastMessage.content
                 ) : (
                   // For encrypted last messages the server can't supply a

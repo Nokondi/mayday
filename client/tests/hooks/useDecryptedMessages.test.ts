@@ -13,6 +13,8 @@ beforeAll(async () => {
 function legacyMessage(content: string, id = 'm1'): Message {
   return {
     id,
+    type: 'TEXT',
+    metadata: null,
     content,
     ciphertext: null,
     nonce: null,

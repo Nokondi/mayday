@@ -14,6 +14,8 @@ beforeAll(async () => {
 function legacyMessage(overrides: Partial<Message> = {}): Message {
   return {
     id: 'm1',
+    type: 'TEXT',
+    metadata: null,
     content: 'hello',
     ciphertext: null,
     nonce: null,
@@ -74,6 +76,23 @@ describe('toRenderable', () => {
     expect(result.encryptionStatus).toBe('failed');
     // Failed state must not surface the ciphertext or partial plaintext.
     expect(result.content).not.toContain('should fail');
+  });
+
+  it('passes invite messages through with their type and metadata intact', async () => {
+    const metadata = {
+      inviteKind: 'ORGANIZATION' as const,
+      inviteId: 'inv1',
+      targetId: 'org1',
+      targetName: 'Acme Co',
+      status: 'PENDING' as const,
+    };
+    const msg = legacyMessage({ type: 'INVITE', content: null, metadata });
+    // No conversation key — an invite must not be treated as a pending
+    // (waiting-for-key) encrypted message.
+    const result = await toRenderable(msg, null);
+    expect(result.type).toBe('INVITE');
+    expect(result.metadata).toEqual(metadata);
+    expect(result.encryptionStatus).not.toBe('pending');
   });
 });
 

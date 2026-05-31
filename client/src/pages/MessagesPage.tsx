@@ -15,6 +15,12 @@ import {
   sendMessage,
   sendEncryptedMessage,
 } from "../api/messages.js";
+import { acceptInvite, declineInvite } from "../api/organizations.js";
+import {
+  acceptCommunityInvite,
+  declineCommunityInvite,
+} from "../api/communities.js";
+import { useToastMutation } from "../hooks/useToastMutation.js";
 import { useAuth } from "../context/AuthContext.js";
 import { useDevice } from "../context/DeviceContext.js";
 import { useWebSocket } from "../context/WebSocketContext.js";
@@ -27,7 +33,11 @@ import { ConversationList } from "../components/messages/ConversationList.js";
 import { MessageThread } from "../components/messages/MessageThread.js";
 import { MessageInput } from "../components/messages/MessageInput.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
-import type { WSMessage, Message } from "@mayday/shared";
+import type {
+  WSMessage,
+  Message,
+  InviteMessageMetadata,
+} from "@mayday/shared";
 
 export function MessagesPage() {
   const { user } = useAuth();
@@ -92,6 +102,93 @@ export function MessagesPage() {
   }, [conversations, activeConversation]);
   const peerUserId = activeConv?.otherParticipant.id ?? null;
   const peerName = activeConv?.otherParticipant.name ?? "";
+
+  // Accepting/declining an invite card. These reuse the existing invite
+  // endpoints; on success we refetch the active thread (the server has flipped
+  // the card's metadata.status) plus the membership lists the user just joined.
+  const acceptFailedMessage = intl.formatMessage({
+    id: "invites.acceptFailedToast",
+    defaultMessage: "Failed to accept invite",
+  });
+  const declineFailedMessage = intl.formatMessage({
+    id: "invites.declineFailedToast",
+    defaultMessage: "Failed to decline invite",
+  });
+  const inviteDeclinedMessage = intl.formatMessage({
+    id: "invites.declinedToast",
+    defaultMessage: "Invite declined",
+  });
+  const invalidateAfterInvite = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["messages", activeConversation] });
+    queryClient.invalidateQueries({ queryKey: ["conversations"] });
+  }, [queryClient, activeConversation]);
+
+  const acceptOrgMutation = useToastMutation({
+    mutationFn: acceptInvite,
+    successMessage: intl.formatMessage({
+      id: "invites.joinedOrganizationToast",
+      defaultMessage: "Joined organization",
+    }),
+    errorMessage: acceptFailedMessage,
+    onSuccess: () => {
+      invalidateAfterInvite();
+      queryClient.invalidateQueries({ queryKey: ["my-organizations"] });
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+    },
+  });
+  const declineOrgMutation = useToastMutation({
+    mutationFn: declineInvite,
+    successMessage: inviteDeclinedMessage,
+    errorMessage: declineFailedMessage,
+    onSuccess: invalidateAfterInvite,
+  });
+  const acceptCommunityMutation = useToastMutation({
+    mutationFn: acceptCommunityInvite,
+    successMessage: intl.formatMessage({
+      id: "invites.joinedCommunityToast",
+      defaultMessage: "Joined community",
+    }),
+    errorMessage: acceptFailedMessage,
+    onSuccess: () => {
+      invalidateAfterInvite();
+      queryClient.invalidateQueries({ queryKey: ["my-communities"] });
+      queryClient.invalidateQueries({ queryKey: ["communities"] });
+    },
+  });
+  const declineCommunityMutation = useToastMutation({
+    mutationFn: declineCommunityInvite,
+    successMessage: inviteDeclinedMessage,
+    errorMessage: declineFailedMessage,
+    onSuccess: invalidateAfterInvite,
+  });
+
+  const handleAcceptInvite = useCallback(
+    (metadata: InviteMessageMetadata) => {
+      if (metadata.inviteKind === "ORGANIZATION") {
+        acceptOrgMutation.mutate(metadata.inviteId);
+      } else {
+        acceptCommunityMutation.mutate(metadata.inviteId);
+      }
+    },
+    [acceptOrgMutation, acceptCommunityMutation],
+  );
+  const handleDeclineInvite = useCallback(
+    (metadata: InviteMessageMetadata) => {
+      if (metadata.inviteKind === "ORGANIZATION") {
+        declineOrgMutation.mutate(metadata.inviteId);
+      } else {
+        declineCommunityMutation.mutate(metadata.inviteId);
+      }
+    },
+    [declineOrgMutation, declineCommunityMutation],
+  );
+  const actingInviteId =
+    [
+      acceptOrgMutation,
+      declineOrgMutation,
+      acceptCommunityMutation,
+      declineCommunityMutation,
+    ].find((m) => m.isPending)?.variables ?? null;
 
   // Render the "waiting for sync" banner when this device has no CK yet but
   // the conversation contains encrypted messages. This happens on a freshly
@@ -305,6 +402,9 @@ export function MessagesPage() {
               <MessageThread
                 messages={decryptedMessages}
                 currentUserId={user!.id}
+                onAcceptInvite={handleAcceptInvite}
+                onDeclineInvite={handleDeclineInvite}
+                actingInviteId={actingInviteId}
               />
             )}
             <MessageInput onSend={handleSend} initialContent={initialDraft} />

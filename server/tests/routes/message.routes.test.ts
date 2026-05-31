@@ -16,8 +16,10 @@ vi.mock('../../src/config/database.js', () => {
         update: vi.fn(),
       },
       message: {
+        findUnique: vi.fn(),
         findMany: vi.fn(),
         create: vi.fn(),
+        update: vi.fn(),
         count: vi.fn(),
         updateMany: vi.fn(),
       },
@@ -42,7 +44,11 @@ vi.mock('../../src/websocket/index.js', () => ({
 
 import { prisma } from '../../src/config/database.js';
 import { errorMiddleware } from '../../src/middleware/error.middleware.js';
-import { messageRoutes } from '../../src/routes/message.routes.js';
+import {
+  messageRoutes,
+  createInviteMessage,
+  setInviteMessageStatus,
+} from '../../src/routes/message.routes.js';
 import { signAccessToken } from '../../src/utils/jwt.js';
 import { sendToUser } from '../../src/websocket/index.js';
 
@@ -592,5 +598,87 @@ describe('GET /api/messages/conversations/:id/key-wraps', () => {
       .get(`/api/messages/conversations/${CONV_ID}/key-wraps`)
       .set('Authorization', authHeader());
     expect(res.status).toBe(404);
+  });
+});
+
+const INVITE_METADATA = {
+  inviteKind: 'ORGANIZATION' as const,
+  inviteId: 'inv1',
+  targetId: 'org1',
+  targetName: 'Acme Co',
+  status: 'PENDING' as const,
+};
+
+describe('createInviteMessage', () => {
+  it('creates an INVITE message attributed to the inviter and pushes it to the invitee', async () => {
+    mockedConv.findUnique.mockResolvedValueOnce(dbConv() as never);
+    mockedMsg.create.mockResolvedValueOnce(
+      dbMessage({ id: 'inv-msg', type: 'INVITE', content: null, metadata: INVITE_METADATA }) as never,
+    );
+    mockedConv.update.mockResolvedValueOnce(dbConv() as never);
+
+    const result = await createInviteMessage({
+      inviterId: USER_ID,
+      inviteeId: OTHER_ID,
+      metadata: INVITE_METADATA,
+    });
+
+    expect(result).toEqual({ id: 'inv-msg', conversationId: CONV_ID });
+    // The stored message is a server-authored, never-encrypted invite card.
+    expect(mockedMsg.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        type: 'INVITE',
+        content: null,
+        senderId: USER_ID,
+        receiverId: OTHER_ID,
+        conversationId: CONV_ID,
+      }),
+    });
+    // Pushed live to the invitee as a NEW_MESSAGE carrying the invite metadata.
+    expect(mockedSend).toHaveBeenCalledWith(
+      OTHER_ID,
+      expect.objectContaining({
+        type: 'NEW_MESSAGE',
+        payload: expect.objectContaining({ type: 'INVITE', metadata: INVITE_METADATA }),
+      }),
+    );
+  });
+
+  it('reuses an existing conversation rather than creating a duplicate', async () => {
+    mockedConv.findUnique.mockResolvedValueOnce(dbConv() as never);
+    mockedMsg.create.mockResolvedValueOnce(dbMessage({ id: 'inv-msg', type: 'INVITE' }) as never);
+    mockedConv.update.mockResolvedValueOnce(dbConv() as never);
+
+    await createInviteMessage({ inviterId: USER_ID, inviteeId: OTHER_ID, metadata: INVITE_METADATA });
+
+    expect(mockedConv.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('setInviteMessageStatus', () => {
+  it('flips the status on an existing invite card', async () => {
+    mockedMsg.findUnique.mockResolvedValueOnce(
+      dbMessage({ id: 'inv-msg', type: 'INVITE', content: null, metadata: INVITE_METADATA }) as never,
+    );
+    mockedMsg.update.mockResolvedValueOnce({} as never);
+
+    await setInviteMessageStatus('inv-msg', 'ACCEPTED');
+
+    expect(mockedMsg.update).toHaveBeenCalledWith({
+      where: { id: 'inv-msg' },
+      data: { metadata: expect.objectContaining({ status: 'ACCEPTED', inviteId: 'inv1' }) },
+    });
+  });
+
+  it('is a no-op when the id is missing', async () => {
+    await setInviteMessageStatus(null, 'ACCEPTED');
+    expect(mockedMsg.findUnique).not.toHaveBeenCalled();
+    expect(mockedMsg.update).not.toHaveBeenCalled();
+  });
+
+  it('does not touch non-invite messages', async () => {
+    mockedMsg.findUnique.mockResolvedValueOnce(dbMessage({ id: 'm1', type: 'TEXT' }) as never);
+    await setInviteMessageStatus('m1', 'ACCEPTED');
+    expect(mockedMsg.update).not.toHaveBeenCalled();
   });
 });

@@ -21,6 +21,10 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { publicUserSelect, memberInclude } from "../utils/prisma-selects.js";
 import { sendOrganizationSignupInviteEmail } from "../services/mail.service.js";
 import { notify } from "../services/notification.service.js";
+import {
+  createInviteMessage,
+  setInviteMessageStatus,
+} from "./message.routes.js";
 import { postInclude } from "./post.routes.js";
 import type { Prisma } from "@prisma/client";
 
@@ -146,6 +150,8 @@ organizationRoutes.post(
       }),
     ]);
 
+    await setInviteMessageStatus(invite.inviteMessageId, "ACCEPTED");
+
     res.json({ message: "Invite accepted" });
   }),
 );
@@ -168,6 +174,8 @@ organizationRoutes.post(
       where: { id: invite.id },
       data: { status: "DECLINED" },
     });
+
+    await setInviteMessageStatus(invite.inviteMessageId, "DECLINED");
 
     res.json({ message: "Invite declined" });
   }),
@@ -676,6 +684,37 @@ organizationRoutes.post(
       });
     }
 
+    // Surface the invite as an actionable message card in the inviter↔invitee
+    // conversation. On reactivation, flip the prior card back to PENDING rather
+    // than orphaning it with a duplicate.
+    const orgForCard = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { name: true },
+    });
+    if (existingInvite?.inviteMessageId) {
+      await setInviteMessageStatus(existingInvite.inviteMessageId, "PENDING");
+    } else {
+      const card = await createInviteMessage({
+        inviterId: req.user!.id,
+        inviteeId: targetUser.id,
+        metadata: {
+          inviteKind: "ORGANIZATION",
+          inviteId: invite.id,
+          targetId: orgId,
+          targetName: orgForCard?.name ?? "",
+          status: "PENDING",
+        },
+      });
+      invite = await prisma.organizationInvite.update({
+        where: { id: invite.id },
+        data: { inviteMessageId: card.id },
+        include: {
+          invitedUser: { select: publicUserSelect },
+          invitedBy: { select: publicUserSelect },
+        },
+      });
+    }
+
     void (async () => {
       try {
         const [org, inviter] = await Promise.all([
@@ -736,6 +775,7 @@ organizationRoutes.delete(
       where: { id: inviteId },
       data: { status: "REVOKED" },
     });
+    await setInviteMessageStatus(invite.inviteMessageId, "REVOKED");
     res.json({ message: "Invite revoked" });
   }),
 );

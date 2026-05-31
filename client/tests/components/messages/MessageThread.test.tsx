@@ -1,5 +1,7 @@
 import { screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import type { RenderableMessage } from "../../../src/crypto/render.js";
 import { MessageThread } from "../../../src/components/messages/MessageThread.js";
 import { renderWithIntl as render } from "../../helpers/renderWithIntl.js";
@@ -7,6 +9,8 @@ import { renderWithIntl as render } from "../../helpers/renderWithIntl.js";
 function makeMessage(overrides: Partial<RenderableMessage> = {}): RenderableMessage {
   return {
     id: "m1",
+    type: "TEXT",
+    metadata: null,
     content: "hi",
     senderId: "u2",
     receiverId: "u1",
@@ -141,5 +145,65 @@ describe("MessageThread", () => {
     ];
     render(<MessageThread messages={messages} currentUserId="u1" />);
     expect(screen.queryByLabelText("Not end-to-end encrypted")).toBeNull();
+  });
+
+  const inviteMessage = (status: "PENDING" | "ACCEPTED" = "PENDING") =>
+    makeMessage({
+      id: "inv-msg",
+      type: "INVITE",
+      content: "",
+      senderId: "u2",
+      receiverId: "u1",
+      metadata: {
+        inviteKind: "ORGANIZATION",
+        inviteId: "inv1",
+        targetId: "org1",
+        targetName: "Acme Co",
+        status,
+      },
+    });
+
+  it("renders an invite card with Accept/Decline for the recipient", async () => {
+    const onAcceptInvite = vi.fn();
+    const onDeclineInvite = vi.fn();
+    render(
+      <MemoryRouter>
+        <MessageThread
+          messages={[inviteMessage()]}
+          currentUserId="u1"
+          onAcceptInvite={onAcceptInvite}
+          onDeclineInvite={onDeclineInvite}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText("Acme Co")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Accept" }));
+    expect(onAcceptInvite).toHaveBeenCalledWith(
+      expect.objectContaining({ inviteId: "inv1", inviteKind: "ORGANIZATION" }),
+    );
+  });
+
+  it("hides Accept/Decline for the sender's own invite card", () => {
+    // currentUserId is the sender (u2) here, so no action buttons.
+    render(
+      <MemoryRouter>
+        <MessageThread messages={[inviteMessage()]} currentUserId="u2" />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByRole("button", { name: "Accept" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Decline" })).toBeNull();
+  });
+
+  it("shows a resolved status instead of buttons once the invite is accepted", () => {
+    render(
+      <MemoryRouter>
+        <MessageThread
+          messages={[inviteMessage("ACCEPTED")]}
+          currentUserId="u1"
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText("Joined")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Accept" })).toBeNull();
   });
 });

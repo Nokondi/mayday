@@ -389,7 +389,7 @@ describe('notify — per-event push payloads', () => {
     expect(p.tag).toBe('cja:c-1');
   });
 
-  it('COMMUNITY_INVITE — deep links to /invites', async () => {
+  it('COMMUNITY_INVITE — deep links to /messages', async () => {
     const { notify } = await import('../../src/services/notification.service.js');
     await notify('user-1', {
       type: 'COMMUNITY_INVITE',
@@ -398,11 +398,12 @@ describe('notify — per-event push payloads', () => {
       inviterName: 'Bob',
     });
     const p = payloadOf();
-    expect(p.url).toBe('/invites');
+    // Invites now arrive as a message, so the push deep-links to the thread.
+    expect(p.url).toBe('/messages');
     expect(p.tag).toBe('inv:c:c-1');
   });
 
-  it('ORGANIZATION_INVITE — deep links to /invites', async () => {
+  it('ORGANIZATION_INVITE — deep links to /messages', async () => {
     const { notify } = await import('../../src/services/notification.service.js');
     await notify('user-1', {
       type: 'ORGANIZATION_INVITE',
@@ -411,7 +412,8 @@ describe('notify — per-event push payloads', () => {
       inviterName: 'Bob',
     });
     const p = payloadOf();
-    expect(p.url).toBe('/invites');
+    // Invites now arrive as a message, so the push deep-links to the thread.
+    expect(p.url).toBe('/messages');
     expect(p.tag).toBe('inv:o:o-1');
   });
 
