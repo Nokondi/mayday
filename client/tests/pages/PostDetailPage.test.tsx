@@ -123,7 +123,7 @@ function renderPage() {
         <MemoryRouter initialEntries={['/posts/p1']}>
           <Routes>
             <Route path="/posts/:id" element={<PostDetailPage />} />
-            <Route path="/posts" element={<div>POSTS LIST</div>} />
+            <Route path="/" element={<div>POSTS LIST</div>} />
             <Route path="/messages" element={<MessagesProbe />} />
           </Routes>
         </MemoryRouter>

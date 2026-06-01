@@ -121,7 +121,7 @@ export function Header() {
           >
             {user ? (
               <>
-                <Link to="/posts" className="text-gray-600 hover:text-gray-900">
+                <Link to="/" className="text-gray-600 hover:text-gray-900">
                   <FormattedMessage
                     id="layout.header.nav.browse"
                     defaultMessage="Browse"
@@ -275,14 +275,14 @@ export function Header() {
                 className="flex items-center gap-4"
               >
                 <Link
-                  to="/posts"
+                  to="/"
                   aria-label={intl.formatMessage({
                     id: "layout.header.nav.browse",
                     defaultMessage: "Browse",
                   })}
-                  aria-current={isActive("/posts") ? "page" : undefined}
+                  aria-current={isActive("/") ? "page" : undefined}
                   className={
-                    isActive("/posts")
+                    isActive("/")
                       ? "text-mayday-700"
                       : "text-gray-600 hover:text-gray-900"
                   }

@@ -204,7 +204,7 @@ export function PostDetailPage() {
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
-      navigate("/posts");
+      navigate("/");
     },
   });
 
