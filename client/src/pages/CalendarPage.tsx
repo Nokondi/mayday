@@ -1,6 +1,12 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  SlidersHorizontal,
+} from "lucide-react";
 import {
   addDays,
   addMonths,
@@ -22,6 +28,10 @@ import { DayView } from "../components/calendar/DayView.js";
 import { PostPreviewDialog } from "../components/calendar/PostPreviewDialog.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { PostFilters } from "../components/posts/PostFilters.js";
+import {
+  ActiveFilterChips,
+  type FilterKey,
+} from "../components/posts/ActiveFilterChips.js";
 import { SearchBar } from "../components/common/SearchBar.js";
 import { useDebounce } from "../hooks/useDebounce.js";
 import { expandOccurrences, type Occurrence } from "../utils/recurrence.js";
@@ -63,8 +73,17 @@ export function CalendarPage() {
   const [urgency, setUrgency] = useState("");
   const [community, setCommunity] = useState("");
   const [search, setSearch] = useState("");
+  const [showControls, setShowControls] = useState(false);
   const [selected, setSelected] = useState<Occurrence | null>(null);
   const debouncedSearch = useDebounce(search, 300);
+
+  function clearFilter(key: FilterKey) {
+    if (key === "type") setType("");
+    else if (key === "category") setCategory("");
+    else if (key === "urgency") setUrgency("");
+    else if (key === "community") setCommunity("");
+    else if (key === "q") setSearch("");
+  }
 
   const gridStart = useMemo(() => startOfWeek(startOfMonth(cursor)), [cursor]);
   const gridEnd = useMemo(() => endOfWeek(endOfMonth(cursor)), [cursor]);
@@ -190,26 +209,61 @@ export function CalendarPage() {
         </div>
       </div>
 
-      <div className="space-y-4 mb-6">
-        <SearchBar
-          value={search}
-          onChange={setSearch}
-          placeholder={intl.formatMessage({
-            id: "calendar.searchPlaceholder",
-            defaultMessage: "Search events...",
-          })}
-        />
-        <PostFilters
-          type={type}
-          category={category}
-          urgency={urgency}
-          community={community}
-          communities={myCommunities}
-          onTypeChange={setType}
-          onCategoryChange={setCategory}
-          onUrgencyChange={setUrgency}
-          onCommunityChange={setCommunity}
-        />
+      <div className="mb-6">
+        <button
+          type="button"
+          onClick={() => setShowControls((v) => !v)}
+          aria-expanded={showControls}
+          className="flex items-center gap-1.5 text-sm font-medium text-mayday-800 hover:text-mayday-700"
+        >
+          <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
+          <FormattedMessage
+            id="calendar.toggleFilters"
+            defaultMessage="Search & filters"
+          />
+          {showControls ? (
+            <ChevronUp className="w-4 h-4" aria-hidden="true" />
+          ) : (
+            <ChevronDown className="w-4 h-4" aria-hidden="true" />
+          )}
+        </button>
+
+        {showControls && (
+          <div className="space-y-4 mt-4">
+            <SearchBar
+              value={search}
+              onChange={setSearch}
+              placeholder={intl.formatMessage({
+                id: "calendar.searchPlaceholder",
+                defaultMessage: "Search events...",
+              })}
+            />
+            <PostFilters
+              type={type}
+              category={category}
+              urgency={urgency}
+              community={community}
+              communities={myCommunities}
+              onTypeChange={setType}
+              onCategoryChange={setCategory}
+              onUrgencyChange={setUrgency}
+              onCommunityChange={setCommunity}
+            />
+          </div>
+        )}
+
+        <div className="mt-4">
+          <ActiveFilterChips
+            type={type}
+            category={category}
+            urgency={urgency}
+            sort="recent"
+            community={community}
+            q={debouncedSearch}
+            communities={myCommunities}
+            onClear={clearFilter}
+          />
+        </div>
       </div>
 
       <PostPreviewDialog

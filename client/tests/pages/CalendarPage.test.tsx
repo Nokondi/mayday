@@ -240,6 +240,61 @@ describe('CalendarPage — month grid', () => {
 
 });
 
+describe('CalendarPage — collapsible search & filters', () => {
+  it('hides the search bar and filters by default', async () => {
+    mockedGetPosts.mockResolvedValue({ data: [], total: 0, limit: 200, page: 1, totalPages: 1 });
+    renderCalendar();
+    await waitFor(() => expect(mockedGetPosts).toHaveBeenCalled());
+
+    expect(screen.queryByRole('search')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('combobox', { name: /filter by type/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('reveals the search bar and filters when the toggle is clicked', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    mockedGetPosts.mockResolvedValue({ data: [], total: 0, limit: 200, page: 1, totalPages: 1 });
+    renderCalendar();
+
+    await user.click(screen.getByRole('button', { name: /search & filters/i }));
+
+    expect(screen.getByRole('search')).toBeInTheDocument();
+    expect(
+      screen.getByRole('combobox', { name: /filter by type/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('shows a dismissable chip for an active filter and clears it when dismissed', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    mockedGetPosts.mockResolvedValue({ data: [], total: 0, limit: 200, page: 1, totalPages: 1 });
+    renderCalendar();
+
+    await user.click(screen.getByRole('button', { name: /search & filters/i }));
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: /filter by type/i }),
+      'REQUEST',
+    );
+
+    // The chip's remove button is unique (the filter dropdown also has a
+    // "Requests" option), so scope the assertion to it.
+    const remove = await screen.findByRole('button', { name: /remove requests/i });
+    await user.click(remove);
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: /remove requests/i }),
+      ).not.toBeInTheDocument(),
+    );
+    // Clearing the filter refetches without the type constraint.
+    await waitFor(() =>
+      expect(mockedGetPosts).toHaveBeenLastCalledWith(
+        expect.objectContaining({ type: undefined }),
+      ),
+    );
+  });
+});
+
 describe('CalendarPage — day view', () => {
   it('switches to an hourly day view for the current day via the Day toggle', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });

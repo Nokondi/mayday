@@ -144,7 +144,7 @@ describe('Header — logged-in state', () => {
   it('shows the authenticated desktop nav links', () => {
     renderHeader();
     const nav = getDesktopNav();
-    expect(within(nav).getByRole('link', { name: /browse/i })).toHaveAttribute('href', '/posts');
+    expect(within(nav).getByRole('link', { name: /browse/i })).toHaveAttribute('href', '/');
     expect(within(nav).getByRole('link', { name: /^map$/i })).toHaveAttribute('href', '/map');
     expect(within(nav).getByRole('link', { name: /orgs/i })).toHaveAttribute('href', '/organizations');
     expect(within(nav).getByRole('link', { name: /communities/i })).toHaveAttribute('href', '/communities');
@@ -306,7 +306,7 @@ describe('Header — mobile quick-nav icons', () => {
     const quickNav = queryQuickNav();
     expect(quickNav).not.toBeNull();
     const nav = quickNav as HTMLElement;
-    expect(within(nav).getByRole('link', { name: /browse/i })).toHaveAttribute('href', '/posts');
+    expect(within(nav).getByRole('link', { name: /browse/i })).toHaveAttribute('href', '/');
     expect(within(nav).getByRole('link', { name: /^map$/i })).toHaveAttribute('href', '/map');
     expect(within(nav).getByRole('link', { name: /^calendar$/i })).toHaveAttribute('href', '/calendar');
     expect(within(nav).getByRole('link', { name: /new post/i })).toHaveAttribute('href', '/posts/new');
@@ -314,7 +314,7 @@ describe('Header — mobile quick-nav icons', () => {
   });
 
   it.each([
-    ['/posts', /browse/i],
+    ['/', /browse/i],
     ['/map', /^map$/i],
     ['/calendar', /^calendar$/i],
     ['/posts/new', /new post/i],

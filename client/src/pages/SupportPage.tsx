@@ -204,7 +204,7 @@ export function SupportPage() {
             defaultMessage="Anything you post is either a <strong>Request</strong> (you need help) or an <strong>Offer</strong> (you have something to give). Both are browsable on the <browse>Browse</browse> page, visible on the <map>Map</map>, and — if they have a start time — listed on the <calendar>Calendar</calendar>."
             values={{
               strong,
-              browse: internalLink("/posts"),
+              browse: internalLink("/"),
               map: internalLink("/map"),
               calendar: internalLink("/calendar"),
             }}

@@ -3,7 +3,6 @@ import { WebSocketProvider } from "./context/WebSocketContext.js";
 import { Layout } from "./components/layout/Layout.js";
 import { RescueListener } from "./components/e2ee/RescueListener.js";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute.js";
-import { HomePage } from "./pages/HomePage.js";
 import { PostsPage } from "./pages/PostsPage.js";
 import { PostDetailPage } from "./pages/PostDetailPage.js";
 import { CreatePostPage } from "./pages/CreatePostPage.js";
@@ -38,15 +37,10 @@ export function App() {
       <RescueListener />
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={user ? <HomePage /> : <AboutPage />} />
-          <Route
-            path="/posts"
-            element={
-              <ProtectedRoute>
-                <PostsPage />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/" element={user ? <PostsPage /> : <AboutPage />} />
+          {/* Browsing now lives at the home route; keep /posts as a redirect
+              for old deep links. */}
+          <Route path="/posts" element={<Navigate to="/" replace />} />
           <Route
             path="/posts/:id"
             element={
