@@ -98,7 +98,7 @@ export function ActiveFilterChips({
       {chips.map((chip) => (
         <span
           key={chip.key}
-          className="inline-flex items-center gap-1 rounded-full bg-mayday-100 text-mayday-800 text-sm px-3 py-1"
+          className="inline-flex items-center gap-1 rounded-full bg-mayday-800 text-white text-sm px-3 py-1"
         >
           {chip.label}
           <button
@@ -111,7 +111,6 @@ export function ActiveFilterChips({
               },
               { label: chip.label },
             )}
-            className="hover:text-mayday-950"
           >
             <X className="w-3.5 h-3.5" aria-hidden="true" />
           </button>

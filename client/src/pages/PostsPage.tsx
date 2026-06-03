@@ -1,30 +1,33 @@
-import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
-import { FormattedMessage, useIntl } from 'react-intl';
-import { ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
-import { getPosts } from '../api/posts.js';
-import { listMyCommunities } from '../api/communities.js';
-import { PostList } from '../components/posts/PostList.js';
-import { PostFilters } from '../components/posts/PostFilters.js';
-import { ActiveFilterChips, type FilterKey } from '../components/posts/ActiveFilterChips.js';
-import { SearchBar } from '../components/common/SearchBar.js';
-import { Pagination } from '../components/common/Pagination.js';
-import { LoadingSpinner } from '../components/common/LoadingSpinner.js';
-import { useDebounce } from '../hooks/useDebounce.js';
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
+import { FormattedMessage, useIntl } from "react-intl";
+import { ChevronDown, ChevronUp, SlidersHorizontal } from "lucide-react";
+import { getPosts } from "../api/posts.js";
+import { listMyCommunities } from "../api/communities.js";
+import { PostList } from "../components/posts/PostList.js";
+import { PostFilters } from "../components/posts/PostFilters.js";
+import {
+  ActiveFilterChips,
+  type FilterKey,
+} from "../components/posts/ActiveFilterChips.js";
+import { SearchBar } from "../components/common/SearchBar.js";
+import { Pagination } from "../components/common/Pagination.js";
+import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
+import { useDebounce } from "../hooks/useDebounce.js";
 
 export function PostsPage() {
   const intl = useIntl();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // URL search params are the single source of truth for the post query.
-  const type = searchParams.get('type') || '';
-  const category = searchParams.get('category') || '';
-  const urgency = searchParams.get('urgency') || '';
-  const sort = searchParams.get('sort') || 'recent';
-  const community = searchParams.get('community') || '';
-  const q = searchParams.get('q') || '';
-  const page = Number(searchParams.get('page')) || 1;
+  const type = searchParams.get("type") || "";
+  const category = searchParams.get("category") || "";
+  const urgency = searchParams.get("urgency") || "";
+  const sort = searchParams.get("sort") || "recent";
+  const community = searchParams.get("community") || "";
+  const q = searchParams.get("q") || "";
+  const page = Number(searchParams.get("page")) || 1;
 
   const [showControls, setShowControls] = useState(false);
   // The search box stays responsive locally and writes to the URL once debounced.
@@ -38,7 +41,7 @@ export function PostsPage() {
         const next = new URLSearchParams(prev);
         if (value) next.set(key, value);
         else next.delete(key);
-        next.delete('page');
+        next.delete("page");
         return next;
       },
       { replace: true },
@@ -47,33 +50,34 @@ export function PostsPage() {
 
   // Push the debounced search term into the URL (guarded to avoid a render loop).
   useEffect(() => {
-    if (debouncedSearch !== q) updateParam('q', debouncedSearch);
+    if (debouncedSearch !== q) updateParam("q", debouncedSearch);
   }, [debouncedSearch]);
 
   const { data: myCommunities } = useQuery({
-    queryKey: ['my-communities'],
+    queryKey: ["my-communities"],
     queryFn: listMyCommunities,
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['posts', { type, category, urgency, sort, community, q, page }],
-    queryFn: () => getPosts({
-      type: type as any || undefined,
-      category: category || undefined,
-      urgency: urgency as any || undefined,
-      sort: sort as any,
-      communityId: community || undefined,
-      q: q || undefined,
-      page,
-      limit: 20,
-      status: 'OPEN',
-    }),
+    queryKey: ["posts", { type, category, urgency, sort, community, q, page }],
+    queryFn: () =>
+      getPosts({
+        type: (type as any) || undefined,
+        category: category || undefined,
+        urgency: (urgency as any) || undefined,
+        sort: sort as any,
+        communityId: community || undefined,
+        q: q || undefined,
+        page,
+        limit: 20,
+        status: "OPEN",
+      }),
   });
 
   function clearFilter(key: FilterKey) {
-    if (key === 'q') setSearchInput('');
+    if (key === "q") setSearchInput("");
     // Clearing sort returns to the default chronological order.
-    updateParam(key, key === 'sort' ? '' : '');
+    updateParam(key, key === "sort" ? "" : "");
   }
 
   return (
@@ -110,25 +114,34 @@ export function PostsPage() {
             value={searchInput}
             onChange={setSearchInput}
             placeholder={intl.formatMessage({
-              id: 'posts.browsePage.searchPlaceholder',
-              defaultMessage: 'Search requests and offers...',
+              id: "posts.browsePage.searchPlaceholder",
+              defaultMessage: "Search requests and offers...",
             })}
           />
           <PostFilters
-            type={type} category={category} urgency={urgency} sort={sort}
-            community={community} communities={myCommunities}
-            onTypeChange={(v) => updateParam('type', v)}
-            onCategoryChange={(v) => updateParam('category', v)}
-            onUrgencyChange={(v) => updateParam('urgency', v)}
-            onSortChange={(v) => updateParam('sort', v === 'recent' ? '' : v)}
-            onCommunityChange={(v) => updateParam('community', v)}
+            type={type}
+            category={category}
+            urgency={urgency}
+            sort={sort}
+            community={community}
+            communities={myCommunities}
+            onTypeChange={(v) => updateParam("type", v)}
+            onCategoryChange={(v) => updateParam("category", v)}
+            onUrgencyChange={(v) => updateParam("urgency", v)}
+            onSortChange={(v) => updateParam("sort", v === "recent" ? "" : v)}
+            onCommunityChange={(v) => updateParam("community", v)}
           />
         </div>
       )}
 
       <ActiveFilterChips
-        type={type} category={category} urgency={urgency} sort={sort}
-        community={community} q={q} communities={myCommunities}
+        type={type}
+        category={category}
+        urgency={urgency}
+        sort={sort}
+        community={community}
+        q={q}
+        communities={myCommunities}
         onClear={clearFilter}
       />
 
@@ -136,7 +149,7 @@ export function PostsPage() {
         <LoadingSpinner className="py-12" />
       ) : data ? (
         <>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-900 mb-4">
             <FormattedMessage
               id="posts.browsePage.resultCount"
               defaultMessage="{count, plural, one {# post found} other {# posts found}}"
@@ -144,7 +157,11 @@ export function PostsPage() {
             />
           </p>
           <PostList posts={data.data} />
-          <Pagination page={data.page} totalPages={data.totalPages} onPageChange={(p) => updateParam('page', String(p))} />
+          <Pagination
+            page={data.page}
+            totalPages={data.totalPages}
+            onPageChange={(p) => updateParam("page", String(p))}
+          />
         </>
       ) : null}
     </div>
