@@ -12,9 +12,176 @@
     <meta name="apple-mobile-web-app-title" content="MayDay" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>MayDay Mutual Aid Hub</title>
+    <style>
+      /* Bootstrap styles are inline so they apply even if the JS bundle never
+         loads. #app-boot is the pre-React placeholder; React replaces #root's
+         children on mount, removing it. */
+      #app-boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        font-family: system-ui, -apple-system, sans-serif;
+        color: #2c6f93;
+        background: #fff;
+      }
+      #app-boot .app-boot-spinner {
+        width: 2rem;
+        height: 2rem;
+        border: 3px solid #cfe7f3;
+        border-bottom-color: #3fa7de;
+        border-radius: 50%;
+        animation: app-boot-spin 0.8s linear infinite;
+      }
+      #app-boot .app-boot-retry {
+        max-width: 22rem;
+        text-align: center;
+        padding: 0 1.5rem;
+        line-height: 1.4;
+      }
+      #app-boot button {
+        font: inherit;
+        color: #fff;
+        background: #3fa7de;
+        border: 0;
+        border-radius: 0.5rem;
+        padding: 0.6rem 1.25rem;
+        cursor: pointer;
+      }
+      @keyframes app-boot-spin {
+        to { transform: rotate(360deg); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #app-boot .app-boot-spinner { animation: none; }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="app-boot" role="status" aria-live="polite">
+        <div class="app-boot-spinner" aria-hidden="true"></div>
+        <span class="app-boot-label">Loading MayDay…</span>
+      </div>
+    </div>
+    <!-- Boot watchdog. Runs as a classic script BEFORE the module bundle so it
+         is active even if the bundle is slow or fails to fetch/parse — the most
+         common cause of a blank first paint on mobile. If the app hasn't
+         mounted within the timeout (or the bundle errors outright), it reloads
+         once automatically; if a reload doesn't help, it shows a manual button
+         instead of leaving a blank screen. Every failure is beaconed to the
+         server for diagnostics. main.tsx calls window.__maydayBooted__() on a
+         successful mount to cancel all of this. -->
+    <script>
+      (function () {
+        var RETRY_KEY = 'mayday-boot-retried';
+        var TIMEOUT_MS = 12000;
+        var booted = false;
+        var lastError = null;
+
+        function beacon(kind, detail) {
+          try {
+            var body = JSON.stringify({
+              kind: kind,
+              detail: String(detail || '').slice(0, 500),
+              url: location.href,
+              userAgent: navigator.userAgent,
+              referrer: document.referrer || null,
+              standalone:
+                window.matchMedia &&
+                window.matchMedia('(display-mode: standalone)').matches,
+            });
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon(
+                '/api/client-logs',
+                new Blob([body], { type: 'application/json' }),
+              );
+            } else {
+              fetch('/api/client-logs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: body,
+                keepalive: true,
+              }).catch(function () {});
+            }
+          } catch (_e) {
+            /* diagnostics must never throw */
+          }
+        }
+
+        function showManualRetry() {
+          var boot = document.getElementById('app-boot');
+          if (!boot) return;
+          boot.innerHTML =
+            '<div class="app-boot-retry">' +
+            '<p>MayDay didn’t load. This is usually a network hiccup.</p>' +
+            '<p><button type="button" id="app-boot-reload">Reload</button></p>' +
+            '</div>';
+          var btn = document.getElementById('app-boot-reload');
+          if (btn) {
+            btn.addEventListener('click', function () {
+              try { sessionStorage.removeItem(RETRY_KEY); } catch (_e) {}
+              location.reload();
+            });
+          }
+        }
+
+        function recover(kind) {
+          if (booted) return;
+          beacon(kind, lastError);
+          var retried = false;
+          try {
+            retried = sessionStorage.getItem(RETRY_KEY) === '1';
+          } catch (_e) {}
+          if (retried) {
+            // A reload already failed — stop looping and let the user decide.
+            showManualRetry();
+            return;
+          }
+          try { sessionStorage.setItem(RETRY_KEY, '1'); } catch (_e) {}
+          location.reload();
+        }
+
+        // Capture-phase listener catches both runtime errors and failed
+        // <script>/resource loads (the bundle failing to fetch).
+        window.addEventListener(
+          'error',
+          function (event) {
+            var target = event && event.target;
+            if (target && target !== window && target.tagName === 'SCRIPT') {
+              lastError = 'script load failed: ' + (target.src || '');
+              recover('bundle-load-error');
+              return;
+            }
+            if (event && event.message) {
+              lastError = event.message;
+              beacon('runtime-error', event.message);
+            }
+          },
+          true,
+        );
+
+        window.addEventListener('unhandledrejection', function (event) {
+          var reason = event && event.reason;
+          lastError =
+            reason && reason.message ? reason.message : String(reason);
+          beacon('unhandled-rejection', lastError);
+        });
+
+        var timer = setTimeout(function () {
+          recover('boot-timeout');
+        }, TIMEOUT_MS);
+
+        // Called by main.tsx once React has mounted successfully.
+        window.__maydayBooted__ = function () {
+          booted = true;
+          clearTimeout(timer);
+          try { sessionStorage.removeItem(RETRY_KEY); } catch (_e) {}
+        };
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

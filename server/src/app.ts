@@ -99,6 +99,35 @@ export function createApp() {
     res.json({ status: "ok" });
   });
 
+  // Client error beacon. The client posts here (via sendBeacon) when the app
+  // fails to boot or hits an uncaught error — including before login — so
+  // otherwise-invisible failures (e.g. a blank first paint on mobile) surface
+  // in the server logs. Unauthenticated by design. It has its own limiter so a
+  // reload loop on one device can't exhaust the shared /api budget, and is
+  // mounted before that budget for the same reason.
+  const clientLogLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: () => limiterDisabled,
+  });
+  app.post("/api/client-logs", clientLogLimiter, (req, res) => {
+    const b = (req.body ?? {}) as Record<string, unknown>;
+    const str = (v: unknown, max: number) =>
+      typeof v === "string" ? v.slice(0, max) : undefined;
+    console.warn("[client-log]", {
+      kind: str(b.kind, 64) ?? "unknown",
+      detail: str(b.detail, 2000),
+      url: str(b.url, 500),
+      userAgent: str(b.userAgent, 300),
+      referrer: str(b.referrer, 500),
+      standalone: typeof b.standalone === "boolean" ? b.standalone : undefined,
+      ip: req.ip,
+    });
+    res.status(204).end();
+  });
+
   app.use("/api", apiLimiter);
 
   // Routes
