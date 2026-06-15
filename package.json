@@ -19,5 +19,8 @@
     "db:seed": "npm run db:seed --workspace=server",
     "db:clear": "npm run db:clear --workspace=server",
     "test": "npm run test:run --workspace=client && npm run test:run --workspace=server"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   }
 }
