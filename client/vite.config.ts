@@ -2,22 +2,28 @@
 import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
 import svgr from 'vite-plugin-svgr';
 
-export default defineConfig({
+// @vitejs/plugin-react v6 transforms JSX with oxc and no longer accepts a
+// `babel` option, so babel-plugin-formatjs (which pre-compiles inline
+// `defineMessage`/`<FormattedMessage>` to AST and injects ids) is run as a
+// standalone Babel pass via @rolldown/plugin-babel. It must run BEFORE
+// react() so formatjs sees the original JSX before oxc lowers it. The plugin
+// is async, so the config is an async factory.
+export default defineConfig(async () => ({
   plugins: [
-    react({
-      babel: {
-        plugins: [
-          [
-            'formatjs',
-            {
-              ast: true,
-            },
-          ],
+    await babel({
+      plugins: [
+        [
+          'formatjs',
+          {
+            ast: true,
+          },
         ],
-      },
+      ],
     }),
+    react(),
     svgr(),
   ],
   resolve: {
@@ -51,4 +57,4 @@ export default defineConfig({
     setupFiles: ['./tests/setup.ts'],
     css: false,
   },
-});
+}));
