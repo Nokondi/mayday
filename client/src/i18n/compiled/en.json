@@ -4375,6 +4375,12 @@
       "value": "Skills"
     }
   ],
+  "profile.tabs.friends": [
+    {
+      "type": 0,
+      "value": "Friends"
+    }
+  ],
   "profile.updateFailedToast": [
     {
       "type": 0,

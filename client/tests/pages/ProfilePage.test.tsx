@@ -27,6 +27,14 @@ vi.mock('../../src/api/messages.js', () => ({
   startConversation: vi.fn(),
 }));
 
+vi.mock('../../src/api/friends.js', () => ({
+  getUserFriends: vi.fn(),
+  sendFriendRequest: vi.fn(),
+  acceptFriendRequest: vi.fn(),
+  cancelFriendRequest: vi.fn(),
+  removeFriend: vi.fn(),
+}));
+
 import { useAuth } from '../../src/context/AuthContext.js';
 import {
   getUser,
@@ -36,6 +44,7 @@ import {
   getOwnedGroups,
 } from '../../src/api/users.js';
 import { startConversation } from '../../src/api/messages.js';
+import { getUserFriends } from '../../src/api/friends.js';
 import { toast } from 'sonner';
 import { ProfilePage } from '../../src/pages/ProfilePage.js';
 
@@ -43,6 +52,7 @@ const mockedUseAuth = vi.mocked(useAuth);
 const mockedGetUser = vi.mocked(getUser);
 const mockedGetUserPosts = vi.mocked(getUserPosts);
 const mockedStartConversation = vi.mocked(startConversation);
+const mockedGetUserFriends = vi.mocked(getUserFriends);
 const mockedDeleteProfile = vi.mocked(deleteProfile);
 const mockedCreateReport = vi.mocked(createReport);
 const mockedGetOwnedGroups = vi.mocked(getOwnedGroups);
@@ -120,6 +130,7 @@ beforeEach(() => {
   // Default: viewer doesn't own anything. Individual tests override for the
   // heir-picker scenarios.
   mockedGetOwnedGroups.mockResolvedValue({ communities: [], organizations: [] } as never);
+  mockedGetUserFriends.mockResolvedValue([] as never);
 });
 
 describe('ProfilePage message button', () => {
@@ -500,5 +511,27 @@ describe('ProfilePage report flag', () => {
     await waitFor(() =>
       expect(mockedToast.error).toHaveBeenCalledWith(expect.stringMatching(/failed to submit/i)),
     );
+  });
+});
+
+describe('ProfilePage posts/friends tabs', () => {
+  it('shows posts by default and switches to the friends list when the Friends tab is clicked', async () => {
+    setAuth(VIEWER_ID);
+    mockedGetUserFriends.mockResolvedValue([
+      { ...profile({ id: 'friend-1', name: 'Emma Goldman' }) },
+    ] as never);
+    const user = userEvent.setup();
+    renderProfile();
+
+    await screen.findByRole('heading', { level: 1, name: /Peter Kropotkin/i });
+    // Posts is the default tab; the friends list isn't mounted yet.
+    expect(screen.getByRole('tab', { name: /posts/i })).toHaveAttribute('aria-selected', 'true');
+    expect(mockedGetUserFriends).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('tab', { name: /friends/i }));
+
+    expect(await screen.findByRole('link', { name: /Emma Goldman/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /friends/i })).toHaveAttribute('aria-selected', 'true');
+    expect(mockedGetUserFriends).toHaveBeenCalledWith(OWNER_ID);
   });
 });

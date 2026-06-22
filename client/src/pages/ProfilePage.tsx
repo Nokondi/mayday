@@ -54,6 +54,8 @@ export function ProfilePage() {
   const [editLinks, setEditLinks] = useState<ProfileLink[]>([]);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  // Which list the profile body shows — toggled by the Posts/Friends tabs.
+  const [activeTab, setActiveTab] = useState<"posts" | "friends">("posts");
   const [showReportConfirm, setShowReportConfirm] = useState(false);
   const [reportDetails, setReportDetails] = useState("");
   const reportDialogRef = useRef<HTMLDialogElement>(null);
@@ -511,17 +513,50 @@ export function ProfilePage() {
         )}
       </div>
 
-      <h2 className="text-xl font-bold text-gray-900 mb-4">
-        <FormattedMessage
-          id="orgs.detailPage.postsHeading"
-          defaultMessage="Posts"
-        />
-      </h2>
-      {postsData ? <PostList posts={postsData.data} /> : <LoadingSpinner />}
-
-      <div className="mt-12">
-        <FriendsList userId={id!} />
+      <div className="flex gap-2 mb-6" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "posts"}
+          onClick={() => setActiveTab("posts")}
+          className={`px-4 py-2 rounded-lg text-sm font-medium ${
+            activeTab === "posts"
+              ? "bg-mayday-700 text-white"
+              : "border border-mayday-300 text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          <FormattedMessage
+            id="orgs.detailPage.postsHeading"
+            defaultMessage="Posts"
+          />
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "friends"}
+          onClick={() => setActiveTab("friends")}
+          className={`px-4 py-2 rounded-lg text-sm font-medium ${
+            activeTab === "friends"
+              ? "bg-mayday-700 text-white"
+              : "border border-mayday-300 text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          <FormattedMessage
+            id="profile.tabs.friends"
+            defaultMessage="Friends"
+          />
+        </button>
       </div>
+
+      {activeTab === "posts" ? (
+        postsData ? (
+          <PostList posts={postsData.data} />
+        ) : (
+          <LoadingSpinner />
+        )
+      ) : (
+        <FriendsList userId={id!} />
+      )}
 
       {isOwnProfile && (
         <div className="mt-12 border border-red-200 bg-red-50 rounded-lg p-6">

@@ -1583,6 +1583,9 @@
   "profile.skillsListAriaLabel": {
     "defaultMessage": "Skills"
   },
+  "profile.tabs.friends": {
+    "defaultMessage": "Friends"
+  },
   "profile.updateFailedToast": {
     "defaultMessage": "Failed to update profile"
   },
