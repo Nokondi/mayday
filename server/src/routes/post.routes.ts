@@ -24,8 +24,8 @@ export const postInclude = {
   organization: {
     select: { id: true, name: true, avatarUrl: true },
   },
-  community: {
-    select: { id: true, name: true },
+  communities: {
+    select: { community: { select: { id: true, name: true } } },
   },
   images: {
     select: { id: true, url: true, order: true },
@@ -51,6 +51,18 @@ async function getUserCommunityIds(userId: string): Promise<string[]> {
     select: { communityId: true },
   });
   return memberships.map((m) => m.communityId);
+}
+
+/**
+ * Flatten the PostCommunity join rows (as loaded by `postInclude`) into the
+ * `communities: [{ id, name }]` shape the API contract exposes. A null input
+ * (e.g. a missing findUnique result) passes straight through.
+ */
+export function serializePost<
+  T extends { communities: { community: { id: string; name: string } }[] },
+>(post: T | null) {
+  if (!post) return null;
+  return { ...post, communities: post.communities.map((pc) => pc.community) };
 }
 
 /**
@@ -147,21 +159,22 @@ postRoutes.get(
       ];
     }
 
-    // Community visibility: if filtering by a specific community, only show that
-    // community's posts. Otherwise show public posts + posts from user's communities.
+    // Community visibility: if filtering by a specific community, only show
+    // posts scoped to it. Otherwise show public posts (scoped to no community)
+    // plus posts scoped to any community the user belongs to.
     if (typeof communityId === "string" && communityId) {
-      where.communityId = communityId;
+      where.communities = { some: { communityId } };
     } else {
       const myCommunityIds = await getUserCommunityIds(req.user!.id);
       const visibilityFilter: Prisma.PostWhereInput =
         myCommunityIds.length > 0
           ? {
               OR: [
-                { communityId: null },
-                { communityId: { in: myCommunityIds } },
+                { communities: { none: {} } },
+                { communities: { some: { communityId: { in: myCommunityIds } } } },
               ],
             }
-          : { communityId: null };
+          : { communities: { none: {} } };
       where.AND = [
         ...(Array.isArray(where.AND) ? where.AND : []),
         visibilityFilter,
@@ -183,7 +196,7 @@ postRoutes.get(
     ]);
 
     res.json({
-      data,
+      data: data.map(serializePost),
       total,
       page: pageNum,
       limit: limitNum,
@@ -229,17 +242,17 @@ postRoutes.get(
     });
     if (!post) throw new AppError(404, "Post not found");
 
-    // Check community visibility
-    if (post.communityId) {
-      const membership = await prisma.communityMember.findUnique({
+    // Check community visibility: a scoped post is visible to a member of any
+    // of its communities (or a site ADMIN). A public post (no communities) is
+    // visible to everyone.
+    if (post.communities.length > 0 && req.user!.role !== "ADMIN") {
+      const membership = await prisma.communityMember.findFirst({
         where: {
-          communityId_userId: {
-            communityId: post.communityId,
-            userId: req.user!.id,
-          },
+          userId: req.user!.id,
+          communityId: { in: post.communities.map((pc) => pc.community.id) },
         },
       });
-      if (!membership && req.user!.role !== "ADMIN") {
+      if (!membership) {
         throw new AppError(
           403,
           "This post is only visible to community members",
@@ -247,7 +260,7 @@ postRoutes.get(
       }
     }
 
-    res.json(post);
+    res.json(serializePost(post));
   }),
 );
 
@@ -257,20 +270,20 @@ postRoutes.get(
   asyncHandler(async (req: AuthRequest, res) => {
     const post = await prisma.post.findUnique({
       where: { id: req.params.id as string },
+      include: { communities: { select: { communityId: true } } },
     });
     if (!post) throw new AppError(404, "Post not found");
 
-    // If the source post is community-scoped, the viewer must be a member (or site ADMIN)
-    if (post.communityId) {
-      const membership = await prisma.communityMember.findUnique({
+    // If the source post is community-scoped, the viewer must be a member of at
+    // least one of its communities (or a site ADMIN).
+    if (post.communities.length > 0 && req.user!.role !== "ADMIN") {
+      const membership = await prisma.communityMember.findFirst({
         where: {
-          communityId_userId: {
-            communityId: post.communityId,
-            userId: req.user!.id,
-          },
+          userId: req.user!.id,
+          communityId: { in: post.communities.map((pc) => pc.communityId) },
         },
       });
-      if (!membership && req.user!.role !== "ADMIN") {
+      if (!membership) {
         throw new AppError(
           403,
           "This post is only visible to community members",
@@ -303,8 +316,11 @@ postRoutes.get(
     const myCommunityIds = await getUserCommunityIds(req.user!.id);
     where.OR =
       myCommunityIds.length > 0
-        ? [{ communityId: null }, { communityId: { in: myCommunityIds } }]
-        : [{ communityId: null }];
+        ? [
+            { communities: { none: {} } },
+            { communities: { some: { communityId: { in: myCommunityIds } } } },
+          ]
+        : [{ communities: { none: {} } }];
 
     const matches = await prisma.post.findMany({
       where,
@@ -313,7 +329,7 @@ postRoutes.get(
       take: 10,
     });
 
-    res.json(matches);
+    res.json(matches.map(serializePost));
   }),
 );
 
@@ -352,29 +368,33 @@ postRoutes.post(
       }
     }
 
-    // If scoping to a community, verify membership
-    if (parsed.data.communityId) {
-      const membership = await prisma.communityMember.findUnique({
+    // If scoping to communities, verify membership in every one of them.
+    const { communityIds, startAt, endAt, ...postData } = parsed.data;
+    const uniqueCommunityIds = [...new Set(communityIds ?? [])];
+    if (uniqueCommunityIds.length > 0) {
+      const memberships = await prisma.communityMember.findMany({
         where: {
-          communityId_userId: {
-            communityId: parsed.data.communityId,
-            userId: req.user!.id,
-          },
+          userId: req.user!.id,
+          communityId: { in: uniqueCommunityIds },
         },
+        select: { communityId: true },
       });
-      if (!membership) {
+      const memberOf = new Set(memberships.map((m) => m.communityId));
+      if (uniqueCommunityIds.some((id) => !memberOf.has(id))) {
         throw new AppError(403, "You are not a member of this community");
       }
     }
 
     const post = await prisma.post.create({
       data: {
-        ...parsed.data,
-        startAt: parsed.data.startAt
-          ? new Date(parsed.data.startAt)
-          : undefined,
-        endAt: parsed.data.endAt ? new Date(parsed.data.endAt) : undefined,
+        ...postData,
+        startAt: startAt ? new Date(startAt) : undefined,
+        endAt: endAt ? new Date(endAt) : undefined,
         authorId: req.user!.id,
+        communities:
+          uniqueCommunityIds.length > 0
+            ? { create: uniqueCommunityIds.map((communityId) => ({ communityId })) }
+            : undefined,
       },
     });
 
@@ -396,7 +416,7 @@ postRoutes.post(
       include: postInclude,
     });
 
-    res.status(201).json(fullPost);
+    res.status(201).json(serializePost(fullPost));
   }),
 );
 
@@ -416,7 +436,7 @@ postRoutes.put(
     // Don't let editors change the org/community link via update
     const {
       organizationId: _ignoreOrg,
-      communityId: _ignoreCommunity,
+      communityIds: _ignoreCommunities,
       ...updateData
     } = req.body;
 
@@ -428,7 +448,7 @@ postRoutes.put(
       data: updateData,
       include: postInclude,
     });
-    res.json(post);
+    res.json(serializePost(post));
   }),
 );
 
@@ -473,7 +493,7 @@ postRoutes.post(
       });
     });
 
-    res.json(post);
+    res.json(serializePost(post));
   }),
 );
 
@@ -503,7 +523,7 @@ postRoutes.post(
       });
     });
 
-    res.json(post);
+    res.json(serializePost(post));
   }),
 );
 

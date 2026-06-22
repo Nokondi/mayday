@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { hashPassword } from "../utils/password.js";
 
 const prisma = new PrismaClient();
@@ -754,9 +754,10 @@ async function main() {
   });
 
   // ---- Community Posts ----
+  // Each post is scoped to one or more communities via the PostCommunity join
+  // table, so we create them individually (createMany can't write relations).
 
-  await prisma.post.createMany({
-    data: [
+  const communityPosts: Prisma.PostUncheckedCreateInput[] = [
       // Meadowbrook Neighbors
       {
         type: "REQUEST",
@@ -769,7 +770,7 @@ async function main() {
         longitude: neighborhoods.meadowbrook.lng,
         urgency: "LOW",
         authorId: emma.id,
-        communityId: meadowbrookNeighbors.id,
+        communities: { create: { communityId: meadowbrookNeighbors.id } },
       },
       {
         type: "OFFER",
@@ -782,7 +783,7 @@ async function main() {
         longitude: neighborhoods.meadowbrook.lng,
         urgency: "LOW",
         authorId: ursula.id,
-        communityId: meadowbrookNeighbors.id,
+        communities: { create: { communityId: meadowbrookNeighbors.id } },
       },
       // Quapaw Quarter Community
       {
@@ -796,7 +797,7 @@ async function main() {
         longitude: neighborhoods.quapawQuarter.lng,
         urgency: "MEDIUM",
         authorId: peter.id,
-        communityId: quapawQuarterCommunity.id,
+        communities: { create: { communityId: quapawQuarterCommunity.id } },
       },
       {
         type: "OFFER",
@@ -809,7 +810,7 @@ async function main() {
         longitude: neighborhoods.quapawQuarter.lng,
         urgency: "LOW",
         authorId: david.id,
-        communityId: quapawQuarterCommunity.id,
+        communities: { create: { communityId: quapawQuarterCommunity.id } },
       },
       // Baseline Community
       {
@@ -823,7 +824,7 @@ async function main() {
         longitude: neighborhoods.baseline.lng,
         urgency: "MEDIUM",
         authorId: ursula.id,
-        communityId: baselineCommunity.id,
+        communities: { create: { communityId: baselineCommunity.id } },
       },
       {
         type: "OFFER",
@@ -836,7 +837,7 @@ async function main() {
         longitude: neighborhoods.baseline.lng,
         urgency: "LOW",
         authorId: emma.id,
-        communityId: baselineCommunity.id,
+        communities: { create: { communityId: baselineCommunity.id } },
       },
       // Capitol View Neighbors
       {
@@ -850,7 +851,7 @@ async function main() {
         longitude: neighborhoods.capitolView.lng,
         urgency: "MEDIUM",
         authorId: david.id,
-        communityId: capitolViewNeighbors.id,
+        communities: { create: { communityId: capitolViewNeighbors.id } },
         startAt: nextWeekdayAt(6, 10, 0),
         endAt: nextWeekdayAt(6, 11, 0),
       },
@@ -865,7 +866,7 @@ async function main() {
         longitude: neighborhoods.capitolView.lng,
         urgency: "LOW",
         authorId: peter.id,
-        communityId: capitolViewNeighbors.id,
+        communities: { create: { communityId: capitolViewNeighbors.id } },
       },
       // Midtown Neighbors
       {
@@ -879,7 +880,7 @@ async function main() {
         longitude: neighborhoods.midtown.lng,
         urgency: "LOW",
         authorId: emma.id,
-        communityId: midtownNeighbors.id,
+        communities: { create: { communityId: midtownNeighbors.id } },
       },
       {
         type: "REQUEST",
@@ -892,7 +893,7 @@ async function main() {
         longitude: neighborhoods.midtown.lng,
         urgency: "LOW",
         authorId: david.id,
-        communityId: midtownNeighbors.id,
+        communities: { create: { communityId: midtownNeighbors.id } },
       },
       // Downtown Little Rock
       {
@@ -906,7 +907,7 @@ async function main() {
         longitude: neighborhoods.downtown.lng,
         urgency: "LOW",
         authorId: david.id,
-        communityId: downtownCommunity.id,
+        communities: { create: { communityId: downtownCommunity.id } },
         startAt: nextWeekdayAt(4, 18, 0),
         endAt: nextWeekdayAt(4, 20, 0),
         recurrenceFreq: "WEEK",
@@ -923,7 +924,7 @@ async function main() {
         longitude: neighborhoods.downtown.lng,
         urgency: "HIGH",
         authorId: peter.id,
-        communityId: downtownCommunity.id,
+        communities: { create: { communityId: downtownCommunity.id } },
       },
       // Riverdale Community
       {
@@ -937,7 +938,7 @@ async function main() {
         longitude: neighborhoods.riverdale.lng,
         urgency: "LOW",
         authorId: ursula.id,
-        communityId: riverdaleCommunity.id,
+        communities: { create: { communityId: riverdaleCommunity.id } },
       },
       {
         type: "REQUEST",
@@ -950,10 +951,12 @@ async function main() {
         longitude: neighborhoods.riverdale.lng,
         urgency: "MEDIUM",
         authorId: david.id,
-        communityId: riverdaleCommunity.id,
+        communities: { create: { communityId: riverdaleCommunity.id } },
       },
-    ],
-  });
+  ];
+  for (const data of communityPosts) {
+    await prisma.post.create({ data });
+  }
 
   console.log("Seed data created:");
   console.log(`  Admin: ${admin.email}`);

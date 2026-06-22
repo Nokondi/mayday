@@ -19,9 +19,13 @@ export async function getPostMatches(id: string): Promise<PostWithAuthor[]> {
 export async function createPost(data: CreatePostRequest, images?: File[]): Promise<PostWithAuthor> {
   const formData = new FormData();
 
-  // Append all post fields
+  // Append all post fields. Arrays (e.g. communityIds) are appended one entry
+  // per key so the server receives a real list, not a stringified "a,b".
   for (const [key, value] of Object.entries(data)) {
-    if (value !== undefined && value !== null) {
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) {
+      for (const item of value) formData.append(key, String(item));
+    } else {
       formData.append(key, String(value));
     }
   }

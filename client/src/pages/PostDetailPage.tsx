@@ -305,15 +305,16 @@ export function PostDetailPage() {
               {intl.formatMessage(statusLabels[post.status])}
             </span>
           </div>
-          {post.community && (
+          {post.communities.map((community) => (
             <Link
-              to={`/communities/${post.community.id}`}
+              key={community.id}
+              to={`/communities/${community.id}`}
               className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-100"
             >
               <Lock className="w-3 h-3" />
-              {post.community.name}
+              {community.name}
             </Link>
-          )}
+          ))}
         </div>
 
         {post.images?.length > 0 && <ImageCarousel images={post.images} />}

@@ -9,6 +9,7 @@ vi.mock('../../src/config/database.js', () => ({
       findUnique: vi.fn(),
       findMany: vi.fn(),
       count: vi.fn(),
+      create: vi.fn(),
       update: vi.fn(),
     },
     postFulfillment: {
@@ -54,6 +55,8 @@ const USER_ID = '00000000-0000-4000-a000-000000000001';
 const OTHER_USER_ID = '00000000-0000-4000-a000-000000000002';
 const ADMIN_ID = '00000000-0000-4000-a000-000000000099';
 const ORG_ID = '00000000-0000-4000-a000-000000000010';
+const COMMUNITY_ID_1 = '00000000-0000-4000-a000-000000000020';
+const COMMUNITY_ID_2 = '00000000-0000-4000-a000-000000000021';
 
 const userPayload = { id: USER_ID, email: 'alice@example.com', role: 'USER' };
 const adminPayload = { id: ADMIN_ID, email: 'admin@example.com', role: 'ADMIN' };
@@ -84,7 +87,6 @@ function dbPost(overrides: Partial<Record<string, unknown>> = {}) {
     urgency: 'MEDIUM',
     authorId: USER_ID,
     organizationId: null,
-    communityId: null,
     startAt: null,
     endAt: null,
     recurrenceFreq: null,
@@ -95,7 +97,9 @@ function dbPost(overrides: Partial<Record<string, unknown>> = {}) {
     updatedAt: new Date(),
     author: { id: USER_ID, name: 'Alice', bio: null, location: null, skills: [], avatarUrl: null, createdAt: new Date() },
     organization: null,
-    community: null,
+    // PostCommunity join rows as loaded by `postInclude` (the route flattens
+    // these to `communities: [{ id, name }]` in the response).
+    communities: [],
     ...overrides,
   };
 }
@@ -147,6 +151,127 @@ describe('GET /api/posts — scheduled filter', () => {
 
     const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: Record<string, unknown> }])[0].where;
     expect(whereArg.startAt).toBeUndefined();
+  });
+});
+
+describe('GET /api/posts — community visibility', () => {
+  it('filters to a single community via communities.some when communityId is given', async () => {
+    vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([] as never);
+    mockedPost.findMany.mockResolvedValueOnce([] as never);
+    mockedPost.count.mockResolvedValueOnce(0 as never);
+
+    await request(makeApp())
+      .get(`/api/posts?communityId=${COMMUNITY_ID_1}`)
+      .set('Authorization', authHeader());
+
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: Record<string, unknown> }])[0].where;
+    expect(whereArg.communities).toEqual({ some: { communityId: COMMUNITY_ID_1 } });
+  });
+
+  it('shows public posts plus the viewer\'s communities when no community filter is given', async () => {
+    vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([
+      { communityId: COMMUNITY_ID_1 },
+    ] as never);
+    mockedPost.findMany.mockResolvedValueOnce([] as never);
+    mockedPost.count.mockResolvedValueOnce(0 as never);
+
+    await request(makeApp())
+      .get('/api/posts')
+      .set('Authorization', authHeader());
+
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: { AND: unknown[] } }])[0].where;
+    expect(whereArg.AND).toContainEqual({
+      OR: [
+        { communities: { none: {} } },
+        { communities: { some: { communityId: { in: [COMMUNITY_ID_1] } } } },
+      ],
+    });
+  });
+
+  it('flattens join rows into a communities array in the response', async () => {
+    vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([] as never);
+    mockedPost.findMany.mockResolvedValueOnce([
+      dbPost({ communities: [{ community: { id: COMMUNITY_ID_1, name: 'Neighbors' } }] }),
+    ] as never);
+    mockedPost.count.mockResolvedValueOnce(1 as never);
+
+    const res = await request(makeApp())
+      .get('/api/posts')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+    expect(res.body.data[0].communities).toEqual([{ id: COMMUNITY_ID_1, name: 'Neighbors' }]);
+  });
+});
+
+describe('POST /api/posts — multiple communities', () => {
+  const validBody = {
+    type: 'REQUEST',
+    title: 'Need help',
+    description: 'Some description here',
+    category: 'Food',
+    urgency: 'MEDIUM',
+  };
+
+  it('creates a post scoped to every selected community after verifying membership', async () => {
+    vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([
+      { communityId: COMMUNITY_ID_1 },
+      { communityId: COMMUNITY_ID_2 },
+    ] as never);
+    mockedPost.create.mockResolvedValueOnce({ id: 'p1' } as never);
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({
+        communities: [
+          { community: { id: COMMUNITY_ID_1, name: 'Neighbors' } },
+          { community: { id: COMMUNITY_ID_2, name: 'Garden Club' } },
+        ],
+      }) as never,
+    );
+
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send({ ...validBody, communityIds: [COMMUNITY_ID_1, COMMUNITY_ID_2] });
+
+    expect(res.status).toBe(201);
+    expect(res.body.communities).toHaveLength(2);
+    // The join rows are created for both communities.
+    const createArg = (mockedPost.create.mock.calls[0] as [{ data: { communities: unknown } }])[0].data;
+    expect(createArg.communities).toEqual({
+      create: [{ communityId: COMMUNITY_ID_1 }, { communityId: COMMUNITY_ID_2 }],
+    });
+  });
+
+  it('returns 403 when the author is not a member of one of the selected communities', async () => {
+    // Only a member of community 1, but the post targets 1 and 2.
+    vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([
+      { communityId: COMMUNITY_ID_1 },
+    ] as never);
+
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send({ ...validBody, communityIds: [COMMUNITY_ID_1, COMMUNITY_ID_2] });
+
+    expect(res.status).toBe(403);
+    expect(mockedPost.create).not.toHaveBeenCalled();
+  });
+
+  it('creates a public post (no community links) when communityIds is omitted', async () => {
+    mockedPost.create.mockResolvedValueOnce({ id: 'p1' } as never);
+    mockedPost.findUnique.mockResolvedValueOnce(dbPost() as never);
+
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send(validBody);
+
+    expect(res.status).toBe(201);
+    expect(res.body.communities).toEqual([]);
+    const createArg = (mockedPost.create.mock.calls[0] as [{ data: { communities?: unknown } }])[0].data;
+    expect(createArg.communities).toBeUndefined();
+    // No membership lookup needed when there are no communities.
+    expect(prisma.communityMember.findMany).not.toHaveBeenCalled();
   });
 });
 

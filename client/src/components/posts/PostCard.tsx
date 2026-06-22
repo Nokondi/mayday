@@ -135,12 +135,15 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
                 {intl.formatMessage(statusLabels.CLOSED)}
               </span>
             )}
-            {post.community && (
-              <span className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
+            {post.communities.map((community) => (
+              <span
+                key={community.id}
+                className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded"
+              >
                 <Lock className="w-3 h-3" aria-hidden="true" />
-                {post.community.name}
+                {community.name}
               </span>
-            )}
+            ))}
           </div>
           <div className="flex items-center gap-x-3 flex-wrap mt-1 text-xs text-gray-500">
             {post.organization ? (

@@ -61,7 +61,15 @@ const postFields = {
   longitude: z.number().min(-180).max(180).optional(),
   urgency: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).default('MEDIUM'),
   organizationId: z.string().uuid().optional().or(z.literal('').transform(() => undefined)),
-  communityId: z.string().uuid().optional().or(z.literal('').transform(() => undefined)),
+  // Communities the post is scoped to. Empty/omitted = public. Members of ANY
+  // listed community can see it. Accepts a single id (multipart sends one field
+  // as a string) or an array, and drops empties so a cleared selector is public.
+  communityIds: z
+    .preprocess(
+      (v) => (v === '' || v == null ? undefined : Array.isArray(v) ? v : [v]),
+      z.array(z.string().uuid()).max(20),
+    )
+    .optional(),
   startAt: optionalDateTime,
   endAt: optionalDateTime,
   recurrenceFreq: z

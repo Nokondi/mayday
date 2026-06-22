@@ -404,9 +404,8 @@ describe('POST /api/communities/:id/avatar', () => {
 });
 
 describe('DELETE /api/communities/:id', () => {
-  it('allows the OWNER to delete, detaching posts', async () => {
+  it('allows the OWNER to delete, cascade-removing post links', async () => {
     mockedMember.findUnique.mockResolvedValueOnce({ role: 'OWNER' } as never);
-    mockedPost.updateMany.mockResolvedValueOnce({ count: 2 } as never);
     mockedCommunity.delete.mockResolvedValueOnce({} as never);
 
     const res = await request(makeApp())
@@ -414,10 +413,9 @@ describe('DELETE /api/communities/:id', () => {
       .set('Authorization', authHeader());
 
     expect(res.status).toBe(200);
-    expect(mockedPost.updateMany).toHaveBeenCalledWith({
-      where: { communityId: COMMUNITY_ID },
-      data: { communityId: null },
-    });
+    // PostCommunity rows are removed by the DB cascade on community.delete —
+    // the route no longer touches posts directly.
+    expect(mockedPost.updateMany).not.toHaveBeenCalled();
     expect(mockedCommunity.delete).toHaveBeenCalled();
   });
 

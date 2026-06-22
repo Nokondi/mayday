@@ -14,7 +14,8 @@ import { deleteObjectByUrl } from '../config/storage.js';
 import { AppError } from '../middleware/error.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { publicUserSelect } from '../utils/prisma-selects.js';
-import { postInclude } from './post.routes.js';
+import { postInclude, serializePost } from './post.routes.js';
+import type { Prisma } from '@prisma/client';
 
 export const userRoutes = Router();
 
@@ -235,10 +236,9 @@ userRoutes.delete('/:id', requireAuth, validate(deleteAccountSchema), asyncHandl
         });
         // Departing user's OWNER membership row is cascade-deleted with the user.
       } else {
-        await tx.post.updateMany({
-          where: { communityId },
-          data: { communityId: null },
-        });
+        // Deleting the community cascade-removes its PostCommunity links, so
+        // posts scoped only to it become public (and posts shared with other
+        // communities keep those links).
         await tx.community.delete({ where: { id: communityId } });
       }
     }
@@ -323,7 +323,7 @@ userRoutes.get('/:id/posts', requireAuth, asyncHandler(async (req: AuthRequest, 
   const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
 
   // Hide community posts the viewer isn't a member of (site ADMINs see everything)
-  const where: { authorId: string; OR?: Array<{ communityId: null | { in: string[] } }> } = {
+  const where: Prisma.PostWhereInput = {
     authorId: req.params.id as string,
   };
   if (req.user!.role !== 'ADMIN') {
@@ -333,8 +333,11 @@ userRoutes.get('/:id/posts', requireAuth, asyncHandler(async (req: AuthRequest, 
     });
     const myCommunityIds = memberships.map((m) => m.communityId);
     where.OR = myCommunityIds.length > 0
-      ? [{ communityId: null }, { communityId: { in: myCommunityIds } }]
-      : [{ communityId: null }];
+      ? [
+          { communities: { none: {} } },
+          { communities: { some: { communityId: { in: myCommunityIds } } } },
+        ]
+      : [{ communities: { none: {} } }];
   }
 
   const [data, total] = await Promise.all([
@@ -349,7 +352,7 @@ userRoutes.get('/:id/posts', requireAuth, asyncHandler(async (req: AuthRequest, 
   ]);
 
   res.json({
-    data,
+    data: data.map(serializePost),
     total,
     page,
     limit,

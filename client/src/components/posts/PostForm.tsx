@@ -38,6 +38,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
   });
 
   const recurrenceFreq = watch("recurrenceFreq");
+  const selectedCommunityIds = watch("communityIds") ?? [];
 
   // Organizations the user can post on behalf of
   const { data: myOrgs } = useQuery({
@@ -193,7 +194,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
     const cleaned: CreatePostRequest = { ...data };
     // Selects/inputs use '' for "none" — convert to undefined
     if (!cleaned.organizationId) cleaned.organizationId = undefined;
-    if (!cleaned.communityId) cleaned.communityId = undefined;
+    if (!cleaned.communityIds?.length) cleaned.communityIds = undefined;
     if (!cleaned.startAt) cleaned.startAt = undefined;
     if (!cleaned.endAt) cleaned.endAt = undefined;
     if (!cleaned.recurrenceFreq) {
@@ -276,42 +277,98 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         </div>
       )}
 
-      {myCommunities && myCommunities.length > 0 && (
-        <div>
-          <label
-            htmlFor="post-community"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            <FormattedMessage
-              id="posts.form.visibilityLabel"
-              defaultMessage="Visibility"
-            />
-          </label>
-          <select
-            id="post-community"
-            {...register("communityId")}
-            className="w-full border border-mayday-300 rounded-lg px-3 py-2 bg-white"
-          >
-            <option value="">
-              {intl.formatMessage({
-                id: "posts.form.visibilityPublic",
-                defaultMessage: "Public (visible to everyone)",
-              })}
-            </option>
-            {myCommunities.map((c) => (
-              <option key={c.id} value={c.id}>
-                {intl.formatMessage(
-                  {
-                    id: "posts.form.visibilityCommunity",
-                    defaultMessage: "{name} members only",
-                  },
-                  { name: c.name },
+      {myCommunities &&
+        myCommunities.length > 0 &&
+        (() => {
+          const selected = myCommunities.filter((c) =>
+            selectedCommunityIds.includes(c.id),
+          );
+          const available = myCommunities.filter(
+            (c) => !selectedCommunityIds.includes(c.id),
+          );
+          return (
+            <div>
+              <label
+                htmlFor="post-community"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                <FormattedMessage
+                  id="posts.form.visibilityLabel"
+                  defaultMessage="Visibility"
+                />
+              </label>
+              {selected.length > 0 && (
+                <ul className="flex flex-wrap gap-2 mb-2">
+                  {selected.map((c) => (
+                    <li key={c.id}>
+                      <span className="inline-flex items-center gap-1 text-sm bg-mayday-100 text-mayday-800 rounded-full pl-3 pr-1 py-1">
+                        {c.name}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setValue(
+                              "communityIds",
+                              selectedCommunityIds.filter((id) => id !== c.id),
+                            )
+                          }
+                          aria-label={intl.formatMessage(
+                            {
+                              id: "posts.form.removeCommunityAria",
+                              defaultMessage: "Remove {name}",
+                            },
+                            { name: c.name },
+                          )}
+                          className="text-mayday-600 hover:text-mayday-800 rounded-full p-0.5"
+                        >
+                          <X className="w-3.5 h-3.5" aria-hidden="true" />
+                        </button>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <select
+                id="post-community"
+                value=""
+                disabled={available.length === 0}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setValue("communityIds", [
+                      ...selectedCommunityIds,
+                      e.target.value,
+                    ]);
+                  }
+                }}
+                className="w-full border border-mayday-300 rounded-lg px-3 py-2 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+              >
+                <option value="">
+                  {intl.formatMessage({
+                    id: "posts.form.addCommunityPlaceholder",
+                    defaultMessage: "Add a community…",
+                  })}
+                </option>
+                {available.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                {selected.length === 0 ? (
+                  <FormattedMessage
+                    id="posts.form.visibilityPublicHint"
+                    defaultMessage="Public — visible to everyone. Add communities to limit who can see this post."
+                  />
+                ) : (
+                  <FormattedMessage
+                    id="posts.form.visibilityCommunityHint"
+                    defaultMessage="Visible only to members of the selected communities."
+                  />
                 )}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+              </p>
+            </div>
+          );
+        })()}
 
       <FormField
         id="post-title"
