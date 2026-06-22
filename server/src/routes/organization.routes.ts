@@ -25,7 +25,7 @@ import {
   createInviteMessage,
   setInviteMessageStatus,
 } from "./message.routes.js";
-import { postInclude } from "./post.routes.js";
+import { postInclude, serializePost } from "./post.routes.js";
 import type { Prisma } from "@prisma/client";
 
 export const organizationRoutes = Router();
@@ -356,8 +356,11 @@ organizationRoutes.get(
       const myCommunityIds = memberships.map((m) => m.communityId);
       where.OR =
         myCommunityIds.length > 0
-          ? [{ communityId: null }, { communityId: { in: myCommunityIds } }]
-          : [{ communityId: null }];
+          ? [
+              { communities: { none: {} } },
+              { communities: { some: { communityId: { in: myCommunityIds } } } },
+            ]
+          : [{ communities: { none: {} } }];
     }
 
     const [data, total] = await Promise.all([
@@ -372,7 +375,7 @@ organizationRoutes.get(
     ]);
 
     res.json({
-      data,
+      data: data.map(serializePost),
       total,
       page,
       limit,

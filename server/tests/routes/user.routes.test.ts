@@ -203,7 +203,12 @@ describe('POST /api/users/:id/avatar', () => {
 
 describe('GET /api/users/:id/posts', () => {
   it('returns a user\'s posts with pagination meta', async () => {
-    mockedPost.findMany.mockResolvedValueOnce([{ id: 'p1' }, { id: 'p2' }] as never);
+    // The route flattens PostCommunity join rows, so mocked posts carry a
+    // `communities` array (here empty → public).
+    mockedPost.findMany.mockResolvedValueOnce([
+      { id: 'p1', communities: [] },
+      { id: 'p2', communities: [] },
+    ] as never);
     mockedPost.count.mockResolvedValueOnce(2 as never);
 
     const res = await request(makeApp())
@@ -211,7 +216,14 @@ describe('GET /api/users/:id/posts', () => {
       .set('Authorization', authHeader());
 
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ data: [{ id: 'p1' }, { id: 'p2' }], total: 2, page: 1 });
+    expect(res.body).toMatchObject({
+      data: [
+        { id: 'p1', communities: [] },
+        { id: 'p2', communities: [] },
+      ],
+      total: 2,
+      page: 1,
+    });
   });
 
   it('clamps limit at 50', async () => {
@@ -343,7 +355,7 @@ describe('DELETE /api/users/:id', () => {
     expect(mockedCommunity.delete).not.toHaveBeenCalled();
   });
 
-  it('deletes communities with no other members (after detaching their posts)', async () => {
+  it('deletes communities with no other members (cascade-removing post links)', async () => {
     const COMMUNITY_ID = 'c-solo';
 
     mockNoAvatar();
@@ -357,10 +369,8 @@ describe('DELETE /api/users/:id', () => {
       .delete(`/api/users/${USER_ID}`)
       .set('Authorization', authHeader());
 
-    expect(mockedPost.updateMany).toHaveBeenCalledWith({
-      where: { communityId: COMMUNITY_ID },
-      data: { communityId: null },
-    });
+    // Posts are no longer detached manually — deleting the community cascades
+    // to its PostCommunity rows.
     expect(mockedCommunity.delete).toHaveBeenCalledWith({ where: { id: COMMUNITY_ID } });
     expect(mockedCommunityMember.update).not.toHaveBeenCalled();
   });

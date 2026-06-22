@@ -148,27 +148,75 @@ describe('PostForm — organization and community selects', () => {
     expect(within(select).getByRole('option', { name: 'Yourself' })).toHaveValue('');
   });
 
-  it('does not render the visibility select when the user has no communities', async () => {
+  it('does not render the visibility dropdown when the user has no communities', async () => {
     const { container } = renderForm();
     await waitFor(() => expect(mockedListMyCommunities).toHaveBeenCalled());
-    expect(container.querySelector('select[name="communityId"]')).toBeNull();
+    expect(container.querySelector('#post-community')).toBeNull();
   });
 
-  it('renders the visibility select with a Public default when communities exist', async () => {
+  it('renders the community dropdown with a Public hint when communities exist', async () => {
     mockedListMyCommunities.mockResolvedValue([
       { id: 'c1', name: 'Neighbors' } as never,
     ]);
     const { container } = renderForm();
     await waitFor(() => {
-      expect(container.querySelector('select[name="communityId"]')).not.toBeNull();
+      expect(container.querySelector('#post-community')).not.toBeNull();
     });
-    const select = getField<HTMLSelectElement>(container, 'communityId');
+    const select = container.querySelector('#post-community') as HTMLSelectElement;
     expect(
-      within(select).getByRole('option', { name: /public \(visible to everyone\)/i }),
+      within(select).getByRole('option', { name: /add a community/i }),
     ).toHaveValue('');
-    expect(
-      within(select).getByRole('option', { name: /neighbors members only/i }),
-    ).toHaveValue('c1');
+    expect(within(select).getByRole('option', { name: 'Neighbors' })).toHaveValue('c1');
+    expect(screen.getByText(/public — visible to everyone/i)).toBeInTheDocument();
+  });
+
+  it('adds a chip on selection, removes the option from the dropdown, and submits the id', async () => {
+    const user = userEvent.setup();
+    // Community ids must be UUIDs — the form validates communityIds via the
+    // shared createPostSchema, which rejects non-UUID values.
+    const NEIGHBORS_ID = '00000000-0000-4000-a000-000000000001';
+    mockedListMyCommunities.mockResolvedValue([
+      { id: NEIGHBORS_ID, name: 'Neighbors' } as never,
+      { id: '00000000-0000-4000-a000-000000000002', name: 'Garden Club' } as never,
+    ]);
+    const { onSubmit, container } = renderForm();
+    await waitFor(() => {
+      expect(container.querySelector('#post-community')).not.toBeNull();
+    });
+    const select = container.querySelector('#post-community') as HTMLSelectElement;
+    await user.selectOptions(select, NEIGHBORS_ID);
+
+    // A removable chip appears and the chosen community leaves the dropdown.
+    expect(screen.getByRole('button', { name: /remove neighbors/i })).toBeInTheDocument();
+    expect(within(select).queryByRole('option', { name: 'Neighbors' })).toBeNull();
+
+    await user.type(getField(container, 'title'), 'Need food');
+    await user.type(getField(container, 'description'), 'Short on supplies today');
+    await user.selectOptions(getField<HTMLSelectElement>(container, 'category'), 'Food');
+    await user.click(screen.getByRole('button', { name: /create post/i }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    const [data] = onSubmit.mock.calls[0];
+    expect(data.communityIds).toEqual([NEIGHBORS_ID]);
+  });
+
+  it('removes a chip when its remove button is clicked', async () => {
+    const user = userEvent.setup();
+    mockedListMyCommunities.mockResolvedValue([
+      { id: 'c1', name: 'Neighbors' } as never,
+    ]);
+    const { container } = renderForm();
+    await waitFor(() => {
+      expect(container.querySelector('#post-community')).not.toBeNull();
+    });
+    const select = container.querySelector('#post-community') as HTMLSelectElement;
+    await user.selectOptions(select, 'c1');
+
+    await user.click(screen.getByRole('button', { name: /remove neighbors/i }));
+
+    expect(screen.queryByRole('button', { name: /remove neighbors/i })).not.toBeInTheDocument();
+    // The community returns to the dropdown as a selectable option.
+    expect(within(select).getByRole('option', { name: 'Neighbors' })).toBeInTheDocument();
   });
 });
 
@@ -203,9 +251,9 @@ describe('PostForm — validation', () => {
       description: 'Short on supplies today',
       category: 'Food',
     });
-    // No org/community selected: the form converts '' to undefined.
+    // No org/community selected: the form converts '' / empty to undefined.
     expect(data.organizationId).toBeUndefined();
-    expect(data.communityId).toBeUndefined();
+    expect(data.communityIds).toBeUndefined();
     expect(images).toEqual([]);
   });
 });

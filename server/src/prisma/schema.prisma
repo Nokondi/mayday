@@ -125,7 +125,6 @@ model Post {
   urgency        UrgencyLevel @default(MEDIUM)
   authorId       String
   organizationId String?
-  communityId    String?
   startAt        DateTime?
   endAt          DateTime?
   recurrenceFreq     RecurrenceFrequency?
@@ -135,7 +134,7 @@ model Post {
 
   author       User          @relation(fields: [authorId], references: [id])
   organization Organization? @relation(fields: [organizationId], references: [id])
-  community    Community?    @relation(fields: [communityId], references: [id])
+  communities  PostCommunity[]
   reports      Report[]
   images       PostImage[]
   fulfillments PostFulfillment[]
@@ -145,8 +144,21 @@ model Post {
   @@index([status])
   @@index([authorId])
   @@index([organizationId])
-  @@index([communityId])
   @@index([latitude, longitude])
+}
+
+// Join table linking a post to the communities it's scoped to. A post with no
+// rows here is public; a post with one or more rows is visible only to members
+// of any of those communities. Replaces the former single Post.communityId FK.
+model PostCommunity {
+  postId      String
+  communityId String
+
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@id([postId, communityId])
+  @@index([communityId])
 }
 
 model PostImage {
@@ -365,7 +377,7 @@ model Community {
   invites        CommunityInvite[]
   pendingInvites PendingCommunityInvite[]
   joinRequests   CommunityJoinRequest[]
-  posts          Post[]
+  posts          PostCommunity[]
 
   @@index([name])
   @@index([latitude, longitude])

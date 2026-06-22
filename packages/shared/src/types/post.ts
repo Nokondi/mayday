@@ -36,7 +36,6 @@ export interface Post {
   urgency: UrgencyLevel;
   authorId: string;
   organizationId: string | null;
-  communityId: string | null;
   startAt: string | null;
   endAt: string | null;
   recurrenceFreq: RecurrenceFrequency | null;
@@ -50,5 +49,5 @@ export interface Post {
 export interface PostWithAuthor extends Post {
   author: UserPublicProfile;
   organization: Pick<Organization, 'id' | 'name' | 'avatarUrl'> | null;
-  community: Pick<Community, 'id' | 'name'> | null;
+  communities: Pick<Community, 'id' | 'name'>[];
 }

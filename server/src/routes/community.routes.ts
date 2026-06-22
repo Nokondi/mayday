@@ -255,8 +255,9 @@ communityRoutes.delete('/:id', asyncHandler(async (req: AuthRequest, res) => {
     throw new AppError(403, 'Only the owner can delete the community');
   }
 
-  // Detach posts — make them public rather than deleting them
-  await prisma.post.updateMany({ where: { communityId: cid }, data: { communityId: null } });
+  // Deleting the community cascade-removes its PostCommunity links, so posts
+  // scoped only to it become public (posts shared with other communities keep
+  // those links) rather than being deleted.
   await prisma.community.delete({ where: { id: cid } });
   res.json({ message: 'Community deleted' });
 }));

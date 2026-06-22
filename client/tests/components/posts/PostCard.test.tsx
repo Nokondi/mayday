@@ -19,7 +19,6 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
     urgency: "MEDIUM",
     authorId: "u1",
     organizationId: null,
-    communityId: null,
     startAt: null,
     endAt: null,
     recurrenceFreq: null,
@@ -39,7 +38,7 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
       createdAt: "2020-01-01T00:00:00Z",
     },
     organization: null,
-    community: null,
+    communities: [],
     ...overrides,
   };
 }
@@ -158,16 +157,29 @@ describe("PostCard — status badges", () => {
   });
 });
 
-describe("PostCard — community badge", () => {
+describe("PostCard — community badges", () => {
   it("renders the community name when the post is scoped to a community", () => {
     renderCard(
-      makePost({ community: { id: "c1", name: "Neighborhood Watch" } }),
+      makePost({ communities: [{ id: "c1", name: "Neighborhood Watch" }] }),
     );
     expect(screen.getByText("Neighborhood Watch")).toBeInTheDocument();
   });
 
-  it("does not render a community badge when community is null", () => {
-    renderCard(makePost({ community: null }));
+  it("renders a badge for every community the post is scoped to", () => {
+    renderCard(
+      makePost({
+        communities: [
+          { id: "c1", name: "Neighborhood Watch" },
+          { id: "c2", name: "Garden Club" },
+        ],
+      }),
+    );
+    expect(screen.getByText("Neighborhood Watch")).toBeInTheDocument();
+    expect(screen.getByText("Garden Club")).toBeInTheDocument();
+  });
+
+  it("does not render a community badge when the post has no communities", () => {
+    renderCard(makePost({ communities: [] }));
     expect(screen.queryByText("Neighborhood Watch")).not.toBeInTheDocument();
   });
 });

@@ -17,7 +17,6 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
     urgency: 'MEDIUM',
     authorId: 'u1',
     organizationId: null,
-    communityId: null,
     startAt: null,
     endAt: null,
     recurrenceFreq: null,
@@ -37,7 +36,7 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
       createdAt: '2020-01-01T00:00:00Z',
     },
     organization: null,
-    community: null,
+    communities: [],
     ...overrides,
   };
 }
