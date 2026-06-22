@@ -17,6 +17,7 @@ import { reportRoutes } from "./routes/report.routes.js";
 import { bugReportRoutes } from "./routes/bugReport.routes.js";
 import { organizationRoutes } from "./routes/organization.routes.js";
 import { communityRoutes } from "./routes/community.routes.js";
+import { friendRoutes } from "./routes/friend.routes.js";
 import { announcementRoutes } from "./routes/announcement.routes.js";
 import { pushRoutes } from "./routes/push.routes.js";
 import { deviceRoutes } from "./routes/device.routes.js";
@@ -141,6 +142,7 @@ export function createApp() {
   app.use("/api/bug-reports", bugReportRoutes);
   app.use("/api/organizations", organizationRoutes);
   app.use("/api/communities", communityRoutes);
+  app.use("/api/friends", friendRoutes);
   app.use("/api/announcements", announcementRoutes);
   app.use("/api/push", pushRoutes);
   app.use("/api/devices", deviceRoutes);

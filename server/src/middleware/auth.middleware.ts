@@ -23,6 +23,20 @@ export function requireAuth(req: AuthRequest, _res: Response, next: NextFunction
   next();
 }
 
+/**
+ * Populates req.user when a valid Bearer token is present, but never rejects:
+ * routes that are public yet personalize their response for a logged-in viewer
+ * (e.g. a public profile that also reports the viewer's friend status) use this.
+ */
+export function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction) {
+  const header = req.headers.authorization;
+  if (header?.startsWith('Bearer ')) {
+    const payload = verifyAccessToken(header.slice(7));
+    if (payload) req.user = payload;
+  }
+  next();
+}
+
 export function requireAdmin(req: AuthRequest, _res: Response, next: NextFunction) {
   if (req.user?.role !== 'ADMIN') {
     throw new AppError(403, 'Admin access required');

@@ -279,6 +279,67 @@ export async function sendOrganizationInviteEmail(
   });
 }
 
+export async function sendFriendRequestEmail(
+  to: string,
+  senderName: string,
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(
+      `[mail] SMTP not configured; skipping friend-request email to ${to}`,
+    );
+    return;
+  }
+
+  const messagesUrl = `${env.CLIENT_URL}/messages`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escape = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escapedSender = escape(senderName);
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `${senderName} sent you a friend request on Mayday`,
+    text: `${senderName} sent you a friend request on Mayday.\n\nAccept or decline it in your messages: ${messagesUrl}`,
+    html: `
+      <p><strong>${escapedSender}</strong> sent you a friend request on Mayday.</p>
+      <p><a href="${messagesUrl}">Accept or decline it in your messages</a></p>
+    `,
+  });
+}
+
+export async function sendFriendRequestAcceptedEmail(
+  to: string,
+  accepterName: string,
+  accepterId: string,
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(
+      `[mail] SMTP not configured; skipping friend-accepted email to ${to}`,
+    );
+    return;
+  }
+
+  const profileUrl = `${env.CLIENT_URL}/profile/${accepterId}`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escape = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escapedAccepter = escape(accepterName);
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `${accepterName} accepted your friend request on Mayday`,
+    text: `${accepterName} accepted your friend request. You're now friends on Mayday.\n\nView their profile: ${profileUrl}`,
+    html: `
+      <p><strong>${escapedAccepter}</strong> accepted your friend request. You're now friends on Mayday.</p>
+      <p><a href="${profileUrl}">View their profile</a></p>
+    `,
+  });
+}
+
 export async function sendCommunitySignupInviteEmail(
   to: string,
   inviterName: string,

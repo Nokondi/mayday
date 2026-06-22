@@ -110,6 +110,10 @@ model User {
   pendingOrganizationInvitesSent PendingOrganizationInvite[] @relation("pendingOrganizationInviteSender")
   pushSubscriptions              PushSubscription[]
   devices                        Device[]
+  friendRequestsSent     FriendRequest[] @relation("friendRequestSender")
+  friendRequestsReceived FriendRequest[] @relation("friendRequestRecipient")
+  friendshipsAsA         Friendship[]    @relation("friendshipA")
+  friendshipsAsB         Friendship[]    @relation("friendshipB")
 }
 
 model Post {
@@ -416,6 +420,40 @@ model CommunityInvite {
   @@unique([communityId, invitedUserId])
   @@index([invitedUserId])
   @@index([status])
+}
+
+model FriendRequest {
+  id          String       @id @default(uuid())
+  senderId    String
+  recipientId String
+  status      InviteStatus @default(PENDING)
+  // Back-link to the actionable friend-request card in the sender↔recipient
+  // conversation, so accept/decline/revoke can update the card's rendered status.
+  requestMessageId String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  sender    User @relation("friendRequestSender",    fields: [senderId],    references: [id], onDelete: Cascade)
+  recipient User @relation("friendRequestRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, recipientId])
+  @@index([recipientId])
+  @@index([status])
+}
+
+// An accepted friendship. Stored once per pair with userAId < userBId (sorted,
+// mirroring Conversation) so the relationship is order-independent and unique.
+model Friendship {
+  id        String   @id @default(uuid())
+  userAId   String
+  userBId   String
+  createdAt DateTime @default(now())
+
+  userA User @relation("friendshipA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("friendshipB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+  @@index([userBId])
 }
 
 model CommunityJoinRequest {

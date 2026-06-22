@@ -6,12 +6,15 @@ export type MessageType = 'TEXT' | 'INVITE';
 export type InviteMessageStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'REVOKED';
 
 // Structured payload carried by an INVITE message. The server populates this
-// when an already-registered user is invited to an organization/community; the
-// Messages UI renders it as an actionable card. Not secret — never encrypted.
+// when an already-registered user is invited to an organization/community, or
+// sent a friend request; the Messages UI renders it as an actionable card. Not
+// secret — never encrypted.
 export interface InviteMessageMetadata {
-  inviteKind: 'ORGANIZATION' | 'COMMUNITY';
+  inviteKind: 'ORGANIZATION' | 'COMMUNITY' | 'FRIEND';
   inviteId: string;
-  targetId: string; // organization or community id
+  // For ORGANIZATION/COMMUNITY: the org/community id and name. For FRIEND: the
+  // requester's user id and name (so the card links to their profile).
+  targetId: string;
   targetName: string;
   status: InviteMessageStatus;
 }

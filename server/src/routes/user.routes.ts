@@ -7,7 +7,7 @@ import {
   type OwnedGroupSummary,
 } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
-import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js';
+import { requireAuth, optionalAuth, type AuthRequest } from '../middleware/auth.middleware.js';
 import { uploadAvatar } from '../middleware/upload.middleware.js';
 import { prisma } from '../config/database.js';
 import { deleteObjectByUrl } from '../config/storage.js';
@@ -15,6 +15,7 @@ import { AppError } from '../middleware/error.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { publicUserSelect } from '../utils/prisma-selects.js';
 import { postInclude, serializePost } from './post.routes.js';
+import { getFriendStatus } from '../services/friend.service.js';
 import type { Prisma } from '@prisma/client';
 
 export const userRoutes = Router();
@@ -106,7 +107,7 @@ userRoutes.put('/me/settings', requireAuth, validate(updateUserSettingsSchema), 
   res.json(user);
 }));
 
-userRoutes.get('/:id', asyncHandler(async (req, res) => {
+userRoutes.get('/:id', optionalAuth, asyncHandler(async (req: AuthRequest, res) => {
   const id = req.params.id as string;
   const [user, fulfilledCount] = await Promise.all([
     prisma.user.findUnique({
@@ -118,6 +119,16 @@ userRoutes.get('/:id', asyncHandler(async (req, res) => {
     }),
   ]);
   if (!user) throw new AppError(404, 'User not found');
+
+  // Personalize with the viewer's friend relationship when logged in and viewing
+  // someone else's profile; omitted for own profile and anonymous requests.
+  const viewerId = req.user?.id;
+  if (viewerId && viewerId !== id) {
+    const { status, requestId } = await getFriendStatus(viewerId, id);
+    res.json({ ...user, fulfilledCount, friendStatus: status, friendRequestId: requestId });
+    return;
+  }
+
   res.json({ ...user, fulfilledCount });
 }));
 
@@ -316,6 +327,23 @@ userRoutes.delete('/:id', requireAuth, validate(deleteAccountSchema), asyncHandl
 
   res.clearCookie('refreshToken');
   res.json({ message: 'Account deleted' });
+}));
+
+// GET /api/users/:id/friends — the user's accepted friends. Friendships are
+// stored as a sorted pair, so a friend of :id is the other side of any row where
+// :id is userA or userB.
+userRoutes.get('/:id/friends', requireAuth, asyncHandler(async (req: AuthRequest, res) => {
+  const id = req.params.id as string;
+  const friendships = await prisma.friendship.findMany({
+    where: { OR: [{ userAId: id }, { userBId: id }] },
+    include: {
+      userA: { select: publicUserSelect },
+      userB: { select: publicUserSelect },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+  const friends = friendships.map((f) => (f.userAId === id ? f.userB : f.userA));
+  res.json(friends);
 }));
 
 userRoutes.get('/:id/posts', requireAuth, asyncHandler(async (req: AuthRequest, res) => {

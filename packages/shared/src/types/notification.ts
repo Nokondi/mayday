@@ -38,6 +38,17 @@ export type NotificationEvent =
       inviterName: string;
     }
   | {
+      type: 'FRIEND_REQUEST';
+      senderId: string;
+      senderName: string;
+    }
+  | {
+      type: 'FRIEND_REQUEST_ACCEPTED';
+      // The user who accepted the request (the original recipient).
+      accepterId: string;
+      accepterName: string;
+    }
+  | {
       type: 'ANNOUNCEMENT';
       message: string;
     }

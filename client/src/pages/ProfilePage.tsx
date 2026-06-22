@@ -35,6 +35,8 @@ import { AvatarUploader } from "../components/common/AvatarUploader.js";
 import { SettingsModal } from "../components/common/SettingsModal.js";
 import { LinksEditor, cleanLinks } from "../components/common/LinksEditor.js";
 import { LinksList } from "../components/common/LinksList.js";
+import { FriendButton } from "../components/users/FriendButton.js";
+import { FriendsList } from "../components/users/FriendsList.js";
 
 export function ProfilePage() {
   const intl = useIntl();
@@ -479,7 +481,14 @@ export function ProfilePage() {
         )}
 
         {!isOwnProfile && (
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex justify-end gap-2">
+            {profile.friendStatus && (
+              <FriendButton
+                userId={id!}
+                friendStatus={profile.friendStatus}
+                friendRequestId={profile.friendRequestId}
+              />
+            )}
             <button
               onClick={() => messageMutation.mutate()}
               disabled={messageMutation.isPending}
@@ -509,6 +518,10 @@ export function ProfilePage() {
         />
       </h2>
       {postsData ? <PostList posts={postsData.data} /> : <LoadingSpinner />}
+
+      <div className="mt-12">
+        <FriendsList userId={id!} />
+      </div>
 
       {isOwnProfile && (
         <div className="mt-12 border border-red-200 bg-red-50 rounded-lg p-6">
