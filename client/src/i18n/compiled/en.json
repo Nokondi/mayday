@@ -1131,6 +1131,12 @@
       "value": "Today"
     }
   ],
+  "calendar.toggleFilters": [
+    {
+      "type": 0,
+      "value": "Search & filters"
+    }
+  ],
   "calendar.viewDayAriaLabel": [
     {
       "type": 0,
@@ -2631,18 +2637,6 @@
       "value": "Transferring…"
     }
   ],
-  "home.recentPostsHeading": [
-    {
-      "type": 0,
-      "value": "Recent Posts"
-    }
-  ],
-  "home.viewAllLink": [
-    {
-      "type": 0,
-      "value": "View all"
-    }
-  ],
   "invites.acceptButton": [
     {
       "type": 0,
@@ -2653,6 +2647,12 @@
     {
       "type": 0,
       "value": "Failed to accept invite"
+    }
+  ],
+  "invites.acceptedFriendToast": [
+    {
+      "type": 0,
+      "value": "Friend request accepted"
     }
   ],
   "invites.communityBadge": [
@@ -2679,20 +2679,10 @@
       "value": "Invite declined"
     }
   ],
-  "invites.emptyState": [
+  "invites.friendBadge": [
     {
       "type": 0,
-      "value": "You don't have any pending invites."
-    }
-  ],
-  "invites.invitedByLine": [
-    {
-      "type": 0,
-      "value": "Invited by "
-    },
-    {
-      "type": 1,
-      "value": "name"
+      "value": "Friend request"
     }
   ],
   "invites.joinedCommunityToast": [
@@ -2711,12 +2701,6 @@
     {
       "type": 0,
       "value": "Organization"
-    }
-  ],
-  "invites.pageHeading": [
-    {
-      "type": 0,
-      "value": "Invites"
     }
   ],
   "layout.footer.brand": [
@@ -2757,40 +2741,6 @@
       "value": " for community"
     }
   ],
-  "layout.header.desktopNav.invitesAriaLabel": [
-    {
-      "offset": 0,
-      "options": {
-        "=0": {
-          "value": [
-            {
-              "type": 0,
-              "value": "Invites"
-            }
-          ]
-        },
-        "other": {
-          "value": [
-            {
-              "type": 0,
-              "value": "Invites ("
-            },
-            {
-              "type": 1,
-              "value": "count"
-            },
-            {
-              "type": 0,
-              "value": " pending)"
-            }
-          ]
-        }
-      },
-      "pluralType": "cardinal",
-      "type": 6,
-      "value": "count"
-    }
-  ],
   "layout.header.desktopNav.orgs": [
     {
       "type": 0,
@@ -2813,40 +2763,6 @@
     {
       "type": 0,
       "value": "Admin"
-    }
-  ],
-  "layout.header.mobileNav.invites": [
-    {
-      "offset": 0,
-      "options": {
-        "=0": {
-          "value": [
-            {
-              "type": 0,
-              "value": "Invites"
-            }
-          ]
-        },
-        "other": {
-          "value": [
-            {
-              "type": 0,
-              "value": "Invites ("
-            },
-            {
-              "type": 1,
-              "value": "count"
-            },
-            {
-              "type": 0,
-              "value": ")"
-            }
-          ]
-        }
-      },
-      "pluralType": "cardinal",
-      "type": 6,
-      "value": "count"
     }
   ],
   "layout.header.mobileNav.organizations": [
@@ -2919,6 +2835,20 @@
     {
       "type": 0,
       "value": "Messages"
+    }
+  ],
+  "layout.header.nav.messagesUnreadAria": [
+    {
+      "type": 0,
+      "value": "Messages ("
+    },
+    {
+      "type": 1,
+      "value": "count"
+    },
+    {
+      "type": 0,
+      "value": " unread)"
     }
   ],
   "layout.header.nav.newPost": [
@@ -3051,6 +2981,58 @@
       "value": "Send message"
     }
   ],
+  "messages.invite.communityPrompt": [
+    {
+      "type": 0,
+      "value": "You've been invited to join this community."
+    }
+  ],
+  "messages.invite.friendPrompt": [
+    {
+      "type": 1,
+      "value": "name"
+    },
+    {
+      "type": 0,
+      "value": " wants to be your friend."
+    }
+  ],
+  "messages.invite.organizationPrompt": [
+    {
+      "type": 0,
+      "value": "You've been invited to join this organization."
+    }
+  ],
+  "messages.invite.statusAccepted": [
+    {
+      "type": 0,
+      "value": "Joined"
+    }
+  ],
+  "messages.invite.statusDeclined": [
+    {
+      "type": 0,
+      "value": "Declined"
+    }
+  ],
+  "messages.invite.statusFriends": [
+    {
+      "type": 0,
+      "value": "Friends"
+    }
+  ],
+  "messages.invite.statusPending": [
+    {
+      "type": 0,
+      "value": "Invitation pending"
+    }
+  ],
+  "messages.invite.statusRevoked": [
+    {
+      "type": 0,
+      "value": "Invitation withdrawn"
+    }
+  ],
   "messages.list.ariaLabel": [
     {
       "type": 0,
@@ -3104,6 +3086,16 @@
     {
       "type": 0,
       "value": "Encrypted message"
+    }
+  ],
+  "messages.list.invitePreview": [
+    {
+      "type": 0,
+      "value": "Invitation to join "
+    },
+    {
+      "type": 1,
+      "value": "name"
     }
   ],
   "messages.page.backToConversations": [
@@ -3410,6 +3402,26 @@
       "value": "Report post"
     }
   ],
+  "posts.activeFilters.removeAria": [
+    {
+      "type": 0,
+      "value": "Remove "
+    },
+    {
+      "type": 1,
+      "value": "label"
+    }
+  ],
+  "posts.activeFilters.searchChip": [
+    {
+      "type": 0,
+      "value": "Search: "
+    },
+    {
+      "type": 1,
+      "value": "q"
+    }
+  ],
   "posts.browsePage.resultCount": [
     {
       "offset": 0,
@@ -3452,6 +3464,12 @@
     {
       "type": 0,
       "value": "Browse Posts"
+    }
+  ],
+  "posts.browsePage.toggleFilters": [
+    {
+      "type": 0,
+      "value": "Search & filters"
     }
   ],
   "posts.createPage.failureToast": [
@@ -3636,6 +3654,12 @@
       "value": "Filter by urgency"
     }
   ],
+  "posts.form.addCommunityPlaceholder": [
+    {
+      "type": 0,
+      "value": "Add a community…"
+    }
+  ],
   "posts.form.addImagesButton": [
     {
       "type": 0,
@@ -3754,6 +3778,16 @@
       "value": "week(s)"
     }
   ],
+  "posts.form.removeCommunityAria": [
+    {
+      "type": 0,
+      "value": "Remove "
+    },
+    {
+      "type": 1,
+      "value": "name"
+    }
+  ],
   "posts.form.removeImageAria": [
     {
       "type": 0,
@@ -3830,14 +3864,10 @@
       "value": "Urgency"
     }
   ],
-  "posts.form.visibilityCommunity": [
-    {
-      "type": 1,
-      "value": "name"
-    },
+  "posts.form.visibilityCommunityHint": [
     {
       "type": 0,
-      "value": " members only"
+      "value": "Visible only to members of the selected communities."
     }
   ],
   "posts.form.visibilityLabel": [
@@ -3846,10 +3876,10 @@
       "value": "Visibility"
     }
   ],
-  "posts.form.visibilityPublic": [
+  "posts.form.visibilityPublicHint": [
     {
       "type": 0,
-      "value": "Public (visible to everyone)"
+      "value": "Public — visible to everyone. Add communities to limit who can see this post."
     }
   ],
   "posts.fulfillModal.addAnother": [
@@ -4211,6 +4241,56 @@
       "value": "Edit"
     }
   ],
+  "profile.friend.acceptButton": [
+    {
+      "type": 0,
+      "value": "Accept request"
+    }
+  ],
+  "profile.friend.addButton": [
+    {
+      "type": 0,
+      "value": "Add friend"
+    }
+  ],
+  "profile.friend.cancelButton": [
+    {
+      "type": 0,
+      "value": "Cancel request"
+    }
+  ],
+  "profile.friend.friendsLabel": [
+    {
+      "type": 0,
+      "value": "Friends"
+    }
+  ],
+  "profile.friend.removeConfirm": [
+    {
+      "type": 0,
+      "value": "Remove friend?"
+    }
+  ],
+  "profile.friends.empty": [
+    {
+      "type": 0,
+      "value": "No friends yet."
+    }
+  ],
+  "profile.friends.heading": [
+    {
+      "type": 0,
+      "value": "Friends ("
+    },
+    {
+      "type": 1,
+      "value": "count"
+    },
+    {
+      "type": 0,
+      "value": ")"
+    }
+  ],
   "profile.joinedRelative": [
     {
       "type": 0,
@@ -4293,6 +4373,12 @@
     {
       "type": 0,
       "value": "Skills"
+    }
+  ],
+  "profile.tabs.friends": [
+    {
+      "type": 0,
+      "value": "Friends"
     }
   ],
   "profile.updateFailedToast": [

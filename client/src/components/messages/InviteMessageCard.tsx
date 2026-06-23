@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { FormattedMessage } from "react-intl";
-import { Check, X, Building2, Users } from "lucide-react";
+import { Check, X, Building2, Users, UserPlus } from "lucide-react";
 import type { InviteMessageMetadata } from "@mayday/shared";
 
 interface InviteMessageCardProps {
@@ -21,10 +21,13 @@ export function InviteMessageCard({
   isActing,
 }: InviteMessageCardProps) {
   const isOrg = metadata.inviteKind === "ORGANIZATION";
-  const Icon = isOrg ? Building2 : Users;
+  const isFriend = metadata.inviteKind === "FRIEND";
+  const Icon = isOrg ? Building2 : isFriend ? UserPlus : Users;
   const to = isOrg
     ? `/organizations/${metadata.targetId}`
-    : `/communities/${metadata.targetId}`;
+    : isFriend
+      ? `/profile/${metadata.targetId}`
+      : `/communities/${metadata.targetId}`;
 
   return (
     <div className="max-w-[85%] w-full sm:max-w-md bg-white rounded-2xl border border-mayday-300 p-4">
@@ -40,13 +43,20 @@ export function InviteMessageCard({
           className={`text-xs px-1.5 py-0.5 rounded ${
             isOrg
               ? "bg-gray-100 text-gray-600"
-              : "bg-blue-100 text-blue-600"
+              : isFriend
+                ? "bg-green-100 text-green-700"
+                : "bg-blue-100 text-blue-600"
           }`}
         >
           {isOrg ? (
             <FormattedMessage
               id="invites.organizationBadge"
               defaultMessage="Organization"
+            />
+          ) : isFriend ? (
+            <FormattedMessage
+              id="invites.friendBadge"
+              defaultMessage="Friend request"
             />
           ) : (
             <FormattedMessage
@@ -62,6 +72,12 @@ export function InviteMessageCard({
           <FormattedMessage
             id="messages.invite.organizationPrompt"
             defaultMessage="You've been invited to join this organization."
+          />
+        ) : isFriend ? (
+          <FormattedMessage
+            id="messages.invite.friendPrompt"
+            defaultMessage="{name} wants to be your friend."
+            values={{ name: metadata.targetName }}
           />
         ) : (
           <FormattedMessage
@@ -104,10 +120,17 @@ export function InviteMessageCard({
       ) : (
         <p className="text-xs font-medium text-gray-500 mt-3">
           {metadata.status === "ACCEPTED" ? (
-            <FormattedMessage
-              id="messages.invite.statusAccepted"
-              defaultMessage="Joined"
-            />
+            isFriend ? (
+              <FormattedMessage
+                id="messages.invite.statusFriends"
+                defaultMessage="Friends"
+              />
+            ) : (
+              <FormattedMessage
+                id="messages.invite.statusAccepted"
+                defaultMessage="Joined"
+              />
+            )
           ) : metadata.status === "DECLINED" ? (
             <FormattedMessage
               id="messages.invite.statusDeclined"

@@ -20,6 +20,10 @@ import {
   acceptCommunityInvite,
   declineCommunityInvite,
 } from "../api/communities.js";
+import {
+  acceptFriendRequest,
+  declineFriendRequest,
+} from "../api/friends.js";
 import { useToastMutation } from "../hooks/useToastMutation.js";
 import { useAuth } from "../context/AuthContext.js";
 import { useDevice } from "../context/DeviceContext.js";
@@ -170,26 +174,45 @@ export function MessagesPage() {
     errorMessage: declineFailedMessage,
     onSuccess: invalidateAfterInvite,
   });
+  const acceptFriendMutation = useToastMutation({
+    mutationFn: acceptFriendRequest,
+    successMessage: intl.formatMessage({
+      id: "invites.acceptedFriendToast",
+      defaultMessage: "Friend request accepted",
+    }),
+    errorMessage: acceptFailedMessage,
+    onSuccess: invalidateAfterInvite,
+  });
+  const declineFriendMutation = useToastMutation({
+    mutationFn: declineFriendRequest,
+    successMessage: inviteDeclinedMessage,
+    errorMessage: declineFailedMessage,
+    onSuccess: invalidateAfterInvite,
+  });
 
   const handleAcceptInvite = useCallback(
     (metadata: InviteMessageMetadata) => {
       if (metadata.inviteKind === "ORGANIZATION") {
         acceptOrgMutation.mutate(metadata.inviteId);
+      } else if (metadata.inviteKind === "FRIEND") {
+        acceptFriendMutation.mutate(metadata.inviteId);
       } else {
         acceptCommunityMutation.mutate(metadata.inviteId);
       }
     },
-    [acceptOrgMutation, acceptCommunityMutation],
+    [acceptOrgMutation, acceptCommunityMutation, acceptFriendMutation],
   );
   const handleDeclineInvite = useCallback(
     (metadata: InviteMessageMetadata) => {
       if (metadata.inviteKind === "ORGANIZATION") {
         declineOrgMutation.mutate(metadata.inviteId);
+      } else if (metadata.inviteKind === "FRIEND") {
+        declineFriendMutation.mutate(metadata.inviteId);
       } else {
         declineCommunityMutation.mutate(metadata.inviteId);
       }
     },
-    [declineOrgMutation, declineCommunityMutation],
+    [declineOrgMutation, declineCommunityMutation, declineFriendMutation],
   );
   const actingInviteId =
     [
@@ -197,6 +220,8 @@ export function MessagesPage() {
       declineOrgMutation,
       acceptCommunityMutation,
       declineCommunityMutation,
+      acceptFriendMutation,
+      declineFriendMutation,
     ].find((m) => m.isPending)?.variables ?? null;
 
   // Render the "waiting for sync" banner when this device has no CK yet but

@@ -425,6 +425,9 @@
   "calendar.todayButton": {
     "defaultMessage": "Today"
   },
+  "calendar.toggleFilters": {
+    "defaultMessage": "Search & filters"
+  },
   "calendar.viewDayAriaLabel": {
     "defaultMessage": "View {date}"
   },
@@ -923,17 +926,14 @@
   "groups.transferOwnership.transferringButton": {
     "defaultMessage": "Transferring…"
   },
-  "home.recentPostsHeading": {
-    "defaultMessage": "Recent Posts"
-  },
-  "home.viewAllLink": {
-    "defaultMessage": "View all"
-  },
   "invites.acceptButton": {
     "defaultMessage": "Accept"
   },
   "invites.acceptFailedToast": {
     "defaultMessage": "Failed to accept invite"
+  },
+  "invites.acceptedFriendToast": {
+    "defaultMessage": "Friend request accepted"
   },
   "invites.communityBadge": {
     "defaultMessage": "Community"
@@ -947,11 +947,8 @@
   "invites.declinedToast": {
     "defaultMessage": "Invite declined"
   },
-  "invites.emptyState": {
-    "defaultMessage": "You don't have any pending invites."
-  },
-  "invites.invitedByLine": {
-    "defaultMessage": "Invited by {name}"
+  "invites.friendBadge": {
+    "defaultMessage": "Friend request"
   },
   "invites.joinedCommunityToast": {
     "defaultMessage": "Joined community"
@@ -962,9 +959,6 @@
   "invites.organizationBadge": {
     "defaultMessage": "Organization"
   },
-  "invites.pageHeading": {
-    "defaultMessage": "Invites"
-  },
   "layout.footer.brand": {
     "defaultMessage": "MayDay Mutual Aid Hub"
   },
@@ -973,9 +967,6 @@
   },
   "layout.footer.tagline": {
     "defaultMessage": "Built with <heart></heart><love>love</love> for community"
-  },
-  "layout.header.desktopNav.invitesAriaLabel": {
-    "defaultMessage": "{count, plural, =0 {Invites} other {Invites ({count} pending)}}"
   },
   "layout.header.desktopNav.orgs": {
     "defaultMessage": "Orgs"
@@ -988,9 +979,6 @@
   },
   "layout.header.mobileNav.admin": {
     "defaultMessage": "Admin"
-  },
-  "layout.header.mobileNav.invites": {
-    "defaultMessage": "{count, plural, =0 {Invites} other {Invites ({count})}}"
   },
   "layout.header.mobileNav.organizations": {
     "defaultMessage": "Organizations"
@@ -1027,6 +1015,9 @@
   },
   "layout.header.nav.messages": {
     "defaultMessage": "Messages"
+  },
+  "layout.header.nav.messagesUnreadAria": {
+    "defaultMessage": "Messages ({count} unread)"
   },
   "layout.header.nav.newPost": {
     "defaultMessage": "New Post"
@@ -1067,6 +1058,30 @@
   "messages.input.sendButtonAriaLabel": {
     "defaultMessage": "Send message"
   },
+  "messages.invite.communityPrompt": {
+    "defaultMessage": "You've been invited to join this community."
+  },
+  "messages.invite.friendPrompt": {
+    "defaultMessage": "{name} wants to be your friend."
+  },
+  "messages.invite.organizationPrompt": {
+    "defaultMessage": "You've been invited to join this organization."
+  },
+  "messages.invite.statusAccepted": {
+    "defaultMessage": "Joined"
+  },
+  "messages.invite.statusDeclined": {
+    "defaultMessage": "Declined"
+  },
+  "messages.invite.statusFriends": {
+    "defaultMessage": "Friends"
+  },
+  "messages.invite.statusPending": {
+    "defaultMessage": "Invitation pending"
+  },
+  "messages.invite.statusRevoked": {
+    "defaultMessage": "Invitation withdrawn"
+  },
   "messages.list.ariaLabel": {
     "defaultMessage": "Conversations"
   },
@@ -1078,6 +1093,9 @@
   },
   "messages.list.encryptedPreview": {
     "defaultMessage": "Encrypted message"
+  },
+  "messages.list.invitePreview": {
+    "defaultMessage": "Invitation to join {name}"
   },
   "messages.page.backToConversations": {
     "defaultMessage": "Back to conversations"
@@ -1187,6 +1205,12 @@
   "posts.actions.reportPost": {
     "defaultMessage": "Report post"
   },
+  "posts.activeFilters.removeAria": {
+    "defaultMessage": "Remove {label}"
+  },
+  "posts.activeFilters.searchChip": {
+    "defaultMessage": "Search: {q}"
+  },
   "posts.browsePage.resultCount": {
     "defaultMessage": "{count, plural, one {# post found} other {# posts found}}"
   },
@@ -1195,6 +1219,9 @@
   },
   "posts.browsePage.title": {
     "defaultMessage": "Browse Posts"
+  },
+  "posts.browsePage.toggleFilters": {
+    "defaultMessage": "Search & filters"
   },
   "posts.createPage.failureToast": {
     "defaultMessage": "Failed to create post"
@@ -1283,6 +1310,9 @@
   "posts.filters.urgencyAria": {
     "defaultMessage": "Filter by urgency"
   },
+  "posts.form.addCommunityPlaceholder": {
+    "defaultMessage": "Add a community…"
+  },
   "posts.form.addImagesButton": {
     "defaultMessage": "Add images"
   },
@@ -1340,6 +1370,9 @@
   "posts.form.recurrenceWeeks": {
     "defaultMessage": "week(s)"
   },
+  "posts.form.removeCommunityAria": {
+    "defaultMessage": "Remove {name}"
+  },
   "posts.form.removeImageAria": {
     "defaultMessage": "Remove image {n}"
   },
@@ -1376,14 +1409,14 @@
   "posts.form.urgencyLabel": {
     "defaultMessage": "Urgency"
   },
-  "posts.form.visibilityCommunity": {
-    "defaultMessage": "{name} members only"
+  "posts.form.visibilityCommunityHint": {
+    "defaultMessage": "Visible only to members of the selected communities."
   },
   "posts.form.visibilityLabel": {
     "defaultMessage": "Visibility"
   },
-  "posts.form.visibilityPublic": {
-    "defaultMessage": "Public (visible to everyone)"
+  "posts.form.visibilityPublicHint": {
+    "defaultMessage": "Public — visible to everyone. Add communities to limit who can see this post."
   },
   "posts.fulfillModal.addAnother": {
     "defaultMessage": "Add another"
@@ -1493,6 +1526,27 @@
   "profile.editButton": {
     "defaultMessage": "Edit"
   },
+  "profile.friend.acceptButton": {
+    "defaultMessage": "Accept request"
+  },
+  "profile.friend.addButton": {
+    "defaultMessage": "Add friend"
+  },
+  "profile.friend.cancelButton": {
+    "defaultMessage": "Cancel request"
+  },
+  "profile.friend.friendsLabel": {
+    "defaultMessage": "Friends"
+  },
+  "profile.friend.removeConfirm": {
+    "defaultMessage": "Remove friend?"
+  },
+  "profile.friends.empty": {
+    "defaultMessage": "No friends yet."
+  },
+  "profile.friends.heading": {
+    "defaultMessage": "Friends ({count})"
+  },
   "profile.joinedRelative": {
     "defaultMessage": "Joined {time}"
   },
@@ -1528,6 +1582,9 @@
   },
   "profile.skillsListAriaLabel": {
     "defaultMessage": "Skills"
+  },
+  "profile.tabs.friends": {
+    "defaultMessage": "Friends"
   },
   "profile.updateFailedToast": {
     "defaultMessage": "Failed to update profile"

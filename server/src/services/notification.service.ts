@@ -6,6 +6,8 @@ import {
   sendCommunityJoinRequestApprovedEmail,
   sendCommunityInviteEmail,
   sendOrganizationInviteEmail,
+  sendFriendRequestEmail,
+  sendFriendRequestAcceptedEmail,
   sendAnnouncementEmail,
   sendBugReportAdminEmail,
   sendUserReportAdminEmail,
@@ -89,6 +91,20 @@ function buildPushPayload(event: NotificationEvent): PushPayload {
         url: '/messages',
         tag: `inv:o:${event.organizationId}`,
       };
+    case 'FRIEND_REQUEST':
+      return {
+        title: `${event.senderName} sent you a friend request`,
+        body: 'Tap to accept or decline.',
+        url: '/messages',
+        tag: `friend:req:${event.senderId}`,
+      };
+    case 'FRIEND_REQUEST_ACCEPTED':
+      return {
+        title: `${event.accepterName} accepted your friend request`,
+        body: `You and ${event.accepterName} are now friends.`,
+        url: `/profile/${event.accepterId}`,
+        tag: `friend:acc:${event.accepterId}`,
+      };
     case 'ANNOUNCEMENT':
       return {
         title: 'Announcement from Mayday',
@@ -164,6 +180,14 @@ function sendEmailFor(
         user.email,
         event.inviterName,
         event.organizationName,
+      );
+    case 'FRIEND_REQUEST':
+      return sendFriendRequestEmail(user.email, event.senderName);
+    case 'FRIEND_REQUEST_ACCEPTED':
+      return sendFriendRequestAcceptedEmail(
+        user.email,
+        event.accepterName,
+        event.accepterId,
       );
     case 'ANNOUNCEMENT':
       return sendAnnouncementEmail(user.email, user.name, event.message);

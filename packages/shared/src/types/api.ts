@@ -309,6 +309,13 @@ export const transferOwnershipSchema = z.object({
   newOwnerId: z.string().uuid(),
 });
 
+// Friends — send a request to another user by id.
+export const sendFriendRequestSchema = z.object({
+  userId: z.string().uuid(),
+});
+
+export type SendFriendRequestRequest = z.infer<typeof sendFriendRequestSchema>;
+
 export type CreateOrganizationRequest = z.infer<typeof createOrganizationSchema>;
 export type UpdateOrganizationRequest = z.infer<typeof updateOrganizationSchema>;
 export type InviteToOrganizationRequest = z.infer<typeof inviteToOrganizationSchema>;

@@ -59,6 +59,38 @@ describe("InviteMessageCard", () => {
     expect(screen.getByText("Community")).toBeInTheDocument();
   });
 
+  it("links a friend request to the requester's profile and prompts the recipient", () => {
+    render(
+      <InviteMessageCard
+        metadata={makeMetadata({ inviteKind: "FRIEND", targetId: "u1", targetName: "Dana" })}
+        isRecipient
+        onAccept={() => {}}
+        onDecline={() => {}}
+        isActing={false}
+      />,
+    );
+    expect(screen.getByRole("link", { name: "Dana" })).toHaveAttribute(
+      "href",
+      "/profile/u1",
+    );
+    expect(screen.getByText("Friend request")).toBeInTheDocument();
+    expect(screen.getByText("Dana wants to be your friend.")).toBeInTheDocument();
+  });
+
+  it("shows a 'Friends' state for an accepted friend request", () => {
+    render(
+      <InviteMessageCard
+        metadata={makeMetadata({ inviteKind: "FRIEND", status: "ACCEPTED", targetName: "Dana" })}
+        isRecipient
+        onAccept={() => {}}
+        onDecline={() => {}}
+        isActing={false}
+      />,
+    );
+    expect(screen.getByText("Friends")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Accept" })).toBeNull();
+  });
+
   it("fires onDecline when the recipient declines", async () => {
     const onDecline = vi.fn();
     render(
