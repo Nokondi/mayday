@@ -70,7 +70,15 @@ export function ActiveFilterChips({
   if (category) {
     chips.push({ key: "category", label: category });
   }
-  if (community) {
+  if (community === "friends") {
+    chips.push({
+      key: "community",
+      label: intl.formatMessage({
+        id: "posts.filters.friends",
+        defaultMessage: "Friends",
+      }),
+    });
+  } else if (community) {
     const name = communities?.find((c) => c.id === community)?.name;
     if (name) chips.push({ key: "community", label: name });
   }

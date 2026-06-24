@@ -112,7 +112,8 @@ export function CalendarPage() {
         category: category || undefined,
         urgency:
           (urgency as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL") || undefined,
-        communityId: community || undefined,
+        communityId: community && community !== "friends" ? community : undefined,
+        friends: community === "friends" ? true : undefined,
         q: debouncedSearch || undefined,
       }),
   });

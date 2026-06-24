@@ -83,12 +83,12 @@ export function PostFilters({
         ))}
       </select>
 
-      {communities && communities.length > 0 && onCommunityChange && (
+      {onCommunityChange && (
         <select
           value={community ?? ""}
           aria-label={intl.formatMessage({
             id: "posts.filters.communityAria",
-            defaultMessage: "Filter by community",
+            defaultMessage: "Filter by community or friends",
           })}
           onChange={(e) => onCommunityChange(e.target.value)}
           className="border border-mayday-300 rounded-lg px-3 py-2 text-sm bg-white w-40 truncate"
@@ -99,7 +99,13 @@ export function PostFilters({
               defaultMessage: "All Communities",
             })}
           </option>
-          {communities.map((c) => (
+          <option value="friends">
+            {intl.formatMessage({
+              id: "posts.filters.friends",
+              defaultMessage: "Friends",
+            })}
+          </option>
+          {communities?.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
             </option>

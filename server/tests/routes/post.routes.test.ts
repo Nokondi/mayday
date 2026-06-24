@@ -215,6 +215,24 @@ describe('GET /api/posts — community visibility', () => {
     expect(whereArg.AND).toBeUndefined();
   });
 
+  it('narrows to friends-shared posts by the viewer\'s friends when friends=true', async () => {
+    vi.mocked(prisma.friendship.findMany).mockResolvedValue([
+      { userAId: USER_ID, userBId: OTHER_USER_ID },
+    ] as never);
+    mockedPost.findMany.mockResolvedValueOnce([] as never);
+    mockedPost.count.mockResolvedValueOnce(0 as never);
+
+    await request(makeApp())
+      .get('/api/posts?friends=true')
+      .set('Authorization', authHeader());
+
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: { AND: unknown[] } }])[0].where;
+    expect(whereArg.AND).toContainEqual({
+      sharedWithFriends: true,
+      authorId: { in: [OTHER_USER_ID] },
+    });
+  });
+
   it('flattens join rows into a communities array in the response', async () => {
     vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([] as never);
     mockedPost.findMany.mockResolvedValueOnce([

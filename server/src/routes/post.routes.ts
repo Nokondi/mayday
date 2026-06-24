@@ -175,6 +175,7 @@ postRoutes.get(
       limit = "20",
       sort = "recent",
       communityId,
+      friends,
       scheduled,
     } = req.query;
 
@@ -222,9 +223,17 @@ postRoutes.get(
     if (typeof communityId === "string" && communityId) {
       where.communities = { some: { communityId } };
     }
+    // …or narrow to posts friends have shared with the viewer.
+    if (friends === "true") {
+      const friendIds = await getFriendIds(req.user!.id);
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : []),
+        { sharedWithFriends: true, authorId: { in: friendIds } },
+      ];
+    }
     // …and always enforce visibility (PUBLIC / own / member-COMMUNITY / FRIENDS),
     // except for site ADMINs who see everything. AND'd so it composes with the
-    // text-search OR above and the optional community narrowing.
+    // text-search OR above and the optional community/friends narrowing.
     const visibilityFilter = await getPostVisibilityFilter(req.user!);
     if (visibilityFilter) {
       where.AND = [
