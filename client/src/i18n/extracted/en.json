@@ -1223,6 +1223,9 @@
   "posts.browsePage.toggleFilters": {
     "defaultMessage": "Search & filters"
   },
+  "posts.card.friendsBadge": {
+    "defaultMessage": "Friends"
+  },
   "posts.createPage.failureToast": {
     "defaultMessage": "Failed to create post"
   },
@@ -1310,8 +1313,8 @@
   "posts.filters.urgencyAria": {
     "defaultMessage": "Filter by urgency"
   },
-  "posts.form.addCommunityPlaceholder": {
-    "defaultMessage": "Add a community…"
+  "posts.form.addAudiencePlaceholder": {
+    "defaultMessage": "Add friends or a community…"
   },
   "posts.form.addImagesButton": {
     "defaultMessage": "Add images"
@@ -1327,6 +1330,9 @@
   },
   "posts.form.endsLabel": {
     "defaultMessage": "Ends"
+  },
+  "posts.form.friendsOption": {
+    "defaultMessage": "Friends"
   },
   "posts.form.imagePreviewAlt": {
     "defaultMessage": "Upload preview {n}"
@@ -1370,7 +1376,7 @@
   "posts.form.recurrenceWeeks": {
     "defaultMessage": "week(s)"
   },
-  "posts.form.removeCommunityAria": {
+  "posts.form.removeAudienceAria": {
     "defaultMessage": "Remove {name}"
   },
   "posts.form.removeImageAria": {
@@ -1409,14 +1415,14 @@
   "posts.form.urgencyLabel": {
     "defaultMessage": "Urgency"
   },
-  "posts.form.visibilityCommunityHint": {
-    "defaultMessage": "Visible only to members of the selected communities."
-  },
   "posts.form.visibilityLabel": {
     "defaultMessage": "Visibility"
   },
   "posts.form.visibilityPublicHint": {
-    "defaultMessage": "Public — visible to everyone. Add communities to limit who can see this post."
+    "defaultMessage": "Public — visible to everyone."
+  },
+  "posts.form.visibilityRestrictedHint": {
+    "defaultMessage": "Visible only to the friends and communities you select."
   },
   "posts.fulfillModal.addAnother": {
     "defaultMessage": "Add another"

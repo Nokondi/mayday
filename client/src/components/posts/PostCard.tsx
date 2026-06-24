@@ -3,6 +3,7 @@ import {
   MapPin,
   Clock,
   User,
+  Users,
   Building2,
   Lock,
   CheckCircle,
@@ -133,6 +134,15 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             {post.status === "CLOSED" && (
               <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
                 {intl.formatMessage(statusLabels.CLOSED)}
+              </span>
+            )}
+            {post.sharedWithFriends && (
+              <span className="flex items-center gap-1 text-xs bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
+                <Users className="w-3 h-3" aria-hidden="true" />
+                {intl.formatMessage({
+                  id: "posts.card.friendsBadge",
+                  defaultMessage: "Friends",
+                })}
               </span>
             )}
             {post.communities.map((community) => (

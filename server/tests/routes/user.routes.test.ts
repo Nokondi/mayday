@@ -28,6 +28,13 @@ vi.mock('../../src/config/database.js', () => {
     communityInvite: {
       deleteMany: vi.fn(),
     },
+    friendship: {
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+    },
+    friendRequest: {
+      findUnique: vi.fn(),
+    },
     organization: {
       delete: vi.fn(),
     },
@@ -95,6 +102,11 @@ const authHeader = (id = USER_ID) =>
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(prisma.communityMember.findMany).mockResolvedValue([] as never);
+  // Friend lookups default to "no relationship" so profile/post-list tests that
+  // don't care about friendship aren't affected by it.
+  vi.mocked(prisma.friendship.findMany).mockResolvedValue([] as never);
+  vi.mocked(prisma.friendship.findUnique).mockResolvedValue(null as never);
+  vi.mocked(prisma.friendRequest.findUnique).mockResolvedValue(null as never);
 });
 afterEach(() => vi.restoreAllMocks());
 

@@ -9,6 +9,7 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
     id: 'p1',
     type: 'REQUEST',
     status: 'OPEN',
+    sharedWithFriends: false,
     title: 'Need help',
     description: 'Short description',
     category: 'Food',

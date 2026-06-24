@@ -3472,6 +3472,12 @@
       "value": "Search & filters"
     }
   ],
+  "posts.card.friendsBadge": [
+    {
+      "type": 0,
+      "value": "Friends"
+    }
+  ],
   "posts.createPage.failureToast": [
     {
       "type": 0,
@@ -3654,10 +3660,10 @@
       "value": "Filter by urgency"
     }
   ],
-  "posts.form.addCommunityPlaceholder": [
+  "posts.form.addAudiencePlaceholder": [
     {
       "type": 0,
-      "value": "Add a community…"
+      "value": "Add friends or a community…"
     }
   ],
   "posts.form.addImagesButton": [
@@ -3688,6 +3694,12 @@
     {
       "type": 0,
       "value": "Ends"
+    }
+  ],
+  "posts.form.friendsOption": [
+    {
+      "type": 0,
+      "value": "Friends"
     }
   ],
   "posts.form.imagePreviewAlt": [
@@ -3778,7 +3790,7 @@
       "value": "week(s)"
     }
   ],
-  "posts.form.removeCommunityAria": [
+  "posts.form.removeAudienceAria": [
     {
       "type": 0,
       "value": "Remove "
@@ -3864,12 +3876,6 @@
       "value": "Urgency"
     }
   ],
-  "posts.form.visibilityCommunityHint": [
-    {
-      "type": 0,
-      "value": "Visible only to members of the selected communities."
-    }
-  ],
   "posts.form.visibilityLabel": [
     {
       "type": 0,
@@ -3879,7 +3885,13 @@
   "posts.form.visibilityPublicHint": [
     {
       "type": 0,
-      "value": "Public — visible to everyone. Add communities to limit who can see this post."
+      "value": "Public — visible to everyone."
+    }
+  ],
+  "posts.form.visibilityRestrictedHint": [
+    {
+      "type": 0,
+      "value": "Visible only to the friends and communities you select."
     }
   ],
   "posts.fulfillModal.addAnother": [

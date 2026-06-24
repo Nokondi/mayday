@@ -12,6 +12,7 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
     id: 'a',
     type: 'OFFER',
     status: 'OPEN',
+    sharedWithFriends: false,
     title: 'Workshop',
     description: 'Bring your own tools',
     category: 'Food',

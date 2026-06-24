@@ -25,7 +25,7 @@ import {
   createInviteMessage,
   setInviteMessageStatus,
 } from "./message.routes.js";
-import { postInclude, serializePost } from "./post.routes.js";
+import { postInclude, serializePost, getPostVisibilityFilter } from "./post.routes.js";
 import type { Prisma } from "@prisma/client";
 
 export const organizationRoutes = Router();
@@ -347,20 +347,11 @@ organizationRoutes.get(
 
     const where: Prisma.PostWhereInput = { organizationId: orgId };
 
-    // Hide community posts the viewer isn't a member of (site ADMINs see everything)
-    if (req.user!.role !== "ADMIN") {
-      const memberships = await prisma.communityMember.findMany({
-        where: { userId: req.user!.id },
-        select: { communityId: true },
-      });
-      const myCommunityIds = memberships.map((m) => m.communityId);
-      where.OR =
-        myCommunityIds.length > 0
-          ? [
-              { communities: { none: {} } },
-              { communities: { some: { communityId: { in: myCommunityIds } } } },
-            ]
-          : [{ communities: { none: {} } }];
+    // Enforce post visibility (PUBLIC / own / member-COMMUNITY / FRIENDS); site
+    // ADMINs see everything.
+    const visibilityFilter = await getPostVisibilityFilter(req.user!);
+    if (visibilityFilter) {
+      where.AND = [visibilityFilter];
     }
 
     const [data, total] = await Promise.all([

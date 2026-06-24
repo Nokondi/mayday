@@ -27,6 +27,11 @@ vi.mock('../../src/config/database.js', () => ({
     },
     communityMember: {
       findMany: vi.fn(),
+      findFirst: vi.fn(),
+    },
+    friendship: {
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
     },
     $transaction: vi.fn(),
   },
@@ -78,6 +83,7 @@ function dbPost(overrides: Partial<Record<string, unknown>> = {}) {
     id: 'p1',
     type: 'REQUEST',
     status: 'OPEN',
+    sharedWithFriends: false,
     title: 'Need help',
     description: 'Some description',
     category: 'Food',
@@ -106,6 +112,10 @@ function dbPost(overrides: Partial<Record<string, unknown>> = {}) {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  // getPostVisibilityFilter / getFriendIds run on most list endpoints; default
+  // to "no communities, no friends" so each test only sets what it asserts.
+  vi.mocked(prisma.communityMember.findMany).mockResolvedValue([] as never);
+  vi.mocked(prisma.friendship.findMany).mockResolvedValue([] as never);
 });
 
 afterEach(() => {
@@ -168,9 +178,12 @@ describe('GET /api/posts — community visibility', () => {
     expect(whereArg.communities).toEqual({ some: { communityId: COMMUNITY_ID_1 } });
   });
 
-  it('shows public posts plus the viewer\'s communities when no community filter is given', async () => {
+  it('enforces visibility (public / own / member-community / friends) when no community filter is given', async () => {
     vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([
       { communityId: COMMUNITY_ID_1 },
+    ] as never);
+    vi.mocked(prisma.friendship.findMany).mockResolvedValueOnce([
+      { userAId: USER_ID, userBId: OTHER_USER_ID },
     ] as never);
     mockedPost.findMany.mockResolvedValueOnce([] as never);
     mockedPost.count.mockResolvedValueOnce(0 as never);
@@ -182,10 +195,24 @@ describe('GET /api/posts — community visibility', () => {
     const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: { AND: unknown[] } }])[0].where;
     expect(whereArg.AND).toContainEqual({
       OR: [
-        { communities: { none: {} } },
+        { authorId: USER_ID },
+        { communities: { none: {} }, sharedWithFriends: false },
         { communities: { some: { communityId: { in: [COMMUNITY_ID_1] } } } },
+        { sharedWithFriends: true, authorId: { in: [OTHER_USER_ID] } },
       ],
     });
+  });
+
+  it('admins bypass the visibility filter entirely', async () => {
+    mockedPost.findMany.mockResolvedValueOnce([] as never);
+    mockedPost.count.mockResolvedValueOnce(0 as never);
+
+    await request(makeApp())
+      .get('/api/posts')
+      .set('Authorization', authHeader(adminPayload));
+
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: { AND?: unknown[] } }])[0].where;
+    expect(whereArg.AND).toBeUndefined();
   });
 
   it('flattens join rows into a communities array in the response', async () => {
@@ -272,6 +299,149 @@ describe('POST /api/posts — multiple communities', () => {
     expect(createArg.communities).toBeUndefined();
     // No membership lookup needed when there are no communities.
     expect(prisma.communityMember.findMany).not.toHaveBeenCalled();
+  });
+
+  it('creates a friends-shared post with sharedWithFriends=true and no communities', async () => {
+    mockedPost.create.mockResolvedValueOnce({ id: 'p1' } as never);
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({ sharedWithFriends: true }) as never,
+    );
+
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send({ ...validBody, sharedWithFriends: true });
+
+    expect(res.status).toBe(201);
+    const createArg = (mockedPost.create.mock.calls[0] as [{ data: Record<string, unknown> }])[0].data;
+    expect(createArg.sharedWithFriends).toBe(true);
+    expect(createArg.communities).toBeUndefined();
+    expect(prisma.communityMember.findMany).not.toHaveBeenCalled();
+  });
+
+  it('creates a post shared with friends AND a community (union audience)', async () => {
+    vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([
+      { communityId: COMMUNITY_ID_1 },
+    ] as never);
+    mockedPost.create.mockResolvedValueOnce({ id: 'p1' } as never);
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({
+        sharedWithFriends: true,
+        communities: [{ community: { id: COMMUNITY_ID_1, name: 'Neighbors' } }],
+      }) as never,
+    );
+
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send({ ...validBody, sharedWithFriends: true, communityIds: [COMMUNITY_ID_1] });
+
+    expect(res.status).toBe(201);
+    const createArg = (mockedPost.create.mock.calls[0] as [{ data: { sharedWithFriends: boolean; communities: unknown } }])[0].data;
+    expect(createArg.sharedWithFriends).toBe(true);
+    expect(createArg.communities).toEqual({ create: [{ communityId: COMMUNITY_ID_1 }] });
+  });
+
+  it('defaults sharedWithFriends to false for a plain public post', async () => {
+    mockedPost.create.mockResolvedValueOnce({ id: 'p1' } as never);
+    mockedPost.findUnique.mockResolvedValueOnce(dbPost() as never);
+
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send(validBody);
+
+    expect(res.status).toBe(201);
+    const createArg = (mockedPost.create.mock.calls[0] as [{ data: Record<string, unknown> }])[0].data;
+    expect(createArg.sharedWithFriends).toBe(false);
+  });
+});
+
+describe('GET /api/posts/:id — visibility', () => {
+  it('lets a friend view a friends-shared post', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({ sharedWithFriends: true, authorId: OTHER_USER_ID }) as never,
+    );
+    vi.mocked(prisma.friendship.findUnique).mockResolvedValueOnce({ id: 'f1' } as never);
+
+    const res = await request(makeApp())
+      .get('/api/posts/p1')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+  });
+
+  it('returns 403 on a friends-shared post when the viewer is not a friend', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({ sharedWithFriends: true, authorId: OTHER_USER_ID }) as never,
+    );
+    vi.mocked(prisma.friendship.findUnique).mockResolvedValueOnce(null as never);
+
+    const res = await request(makeApp())
+      .get('/api/posts/p1')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(403);
+  });
+
+  it('lets a community member view a post shared with friends AND that community', async () => {
+    // Viewer is not a friend, but is a member of the post's community.
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({
+        sharedWithFriends: true,
+        authorId: OTHER_USER_ID,
+        communities: [{ community: { id: COMMUNITY_ID_1, name: 'Neighbors' } }],
+      }) as never,
+    );
+    vi.mocked(prisma.communityMember.findFirst).mockResolvedValueOnce({ id: 'm1' } as never);
+
+    const res = await request(makeApp())
+      .get('/api/posts/p1')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+  });
+
+  it('lets the author view their own friends-shared post without a friendship lookup', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({ sharedWithFriends: true, authorId: USER_ID }) as never,
+    );
+
+    const res = await request(makeApp())
+      .get('/api/posts/p1')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+    expect(prisma.friendship.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 on a community post when the viewer is neither member nor friend', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({
+        authorId: OTHER_USER_ID,
+        communities: [{ community: { id: COMMUNITY_ID_1, name: 'Neighbors' } }],
+      }) as never,
+    );
+    vi.mocked(prisma.communityMember.findFirst).mockResolvedValueOnce(null as never);
+
+    const res = await request(makeApp())
+      .get('/api/posts/p1')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(403);
+  });
+
+  it('lets an admin view any restricted post', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({ sharedWithFriends: true, authorId: OTHER_USER_ID }) as never,
+    );
+
+    const res = await request(makeApp())
+      .get('/api/posts/p1')
+      .set('Authorization', authHeader(adminPayload));
+
+    expect(res.status).toBe(200);
+    expect(prisma.friendship.findUnique).not.toHaveBeenCalled();
   });
 });
 

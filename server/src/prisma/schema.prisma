@@ -63,6 +63,7 @@ enum InviteStatus {
   REVOKED
 }
 
+
 enum PendingInviteStatus {
   PENDING
   CLAIMED
@@ -120,6 +121,10 @@ model Post {
   id             String       @id @default(uuid())
   type           PostType
   status         PostStatus   @default(OPEN)
+  // Post audience is a union: visible to members of any community in the
+  // PostCommunity join table, plus the author's friends when sharedWithFriends
+  // is true. No communities and sharedWithFriends=false ⇒ public.
+  sharedWithFriends Boolean   @default(false)
   title          String
   description    String
   category       String

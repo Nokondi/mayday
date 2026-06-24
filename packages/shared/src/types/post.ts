@@ -27,6 +27,9 @@ export interface Post {
   id: string;
   type: PostType;
   status: PostStatus;
+  // Visible to members of any of its communities, plus the author's friends
+  // when true. No communities and false ⇒ public.
+  sharedWithFriends: boolean;
   title: string;
   description: string;
   category: Category;
