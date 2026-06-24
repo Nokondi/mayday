@@ -10,6 +10,7 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
     id: "p1",
     type: "REQUEST",
     status: "OPEN",
+    sharedWithFriends: false,
     title: "Need help",
     description: "Some description",
     category: "Food",
@@ -181,6 +182,29 @@ describe("PostCard — community badges", () => {
   it("does not render a community badge when the post has no communities", () => {
     renderCard(makePost({ communities: [] }));
     expect(screen.queryByText("Neighborhood Watch")).not.toBeInTheDocument();
+  });
+});
+
+describe("PostCard — friends badge", () => {
+  it('shows a "Friends" badge when the post is shared with friends', () => {
+    renderCard(makePost({ sharedWithFriends: true }));
+    expect(screen.getByText("Friends")).toBeInTheDocument();
+  });
+
+  it('shows both a Friends badge and community badges for a post shared with both', () => {
+    renderCard(
+      makePost({
+        sharedWithFriends: true,
+        communities: [{ id: "c1", name: "Neighborhood Watch" }],
+      }),
+    );
+    expect(screen.getByText("Friends")).toBeInTheDocument();
+    expect(screen.getByText("Neighborhood Watch")).toBeInTheDocument();
+  });
+
+  it("does not show the badge when the post is not shared with friends", () => {
+    renderCard(makePost({ sharedWithFriends: false }));
+    expect(screen.queryByText("Friends")).not.toBeInTheDocument();
   });
 });
 

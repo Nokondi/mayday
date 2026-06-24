@@ -14,7 +14,7 @@ import { deleteObjectByUrl } from '../config/storage.js';
 import { AppError } from '../middleware/error.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { publicUserSelect } from '../utils/prisma-selects.js';
-import { postInclude, serializePost } from './post.routes.js';
+import { postInclude, serializePost, getPostVisibilityFilter } from './post.routes.js';
 import { getFriendStatus } from '../services/friend.service.js';
 import type { Prisma } from '@prisma/client';
 
@@ -350,22 +350,14 @@ userRoutes.get('/:id/posts', requireAuth, asyncHandler(async (req: AuthRequest, 
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
 
-  // Hide community posts the viewer isn't a member of (site ADMINs see everything)
+  // Enforce post visibility (PUBLIC / own / member-COMMUNITY / FRIENDS); site
+  // ADMINs see everything.
   const where: Prisma.PostWhereInput = {
     authorId: req.params.id as string,
   };
-  if (req.user!.role !== 'ADMIN') {
-    const memberships = await prisma.communityMember.findMany({
-      where: { userId: req.user!.id },
-      select: { communityId: true },
-    });
-    const myCommunityIds = memberships.map((m) => m.communityId);
-    where.OR = myCommunityIds.length > 0
-      ? [
-          { communities: { none: {} } },
-          { communities: { some: { communityId: { in: myCommunityIds } } } },
-        ]
-      : [{ communities: { none: {} } }];
+  const visibilityFilter = await getPostVisibilityFilter(req.user!);
+  if (visibilityFilter) {
+    where.AND = [visibilityFilter];
   }
 
   const [data, total] = await Promise.all([

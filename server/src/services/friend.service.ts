@@ -13,6 +13,16 @@ export function orderedPair(
   return { userAId: userAId!, userBId: userBId! };
 }
 
+// All accepted friends of a user, as a flat list of the *other* user's ids.
+// Used to scope FRIENDS-visibility posts.
+export async function getFriendIds(userId: string): Promise<string[]> {
+  const friendships = await prisma.friendship.findMany({
+    where: { OR: [{ userAId: userId }, { userBId: userId }] },
+    select: { userAId: true, userBId: true },
+  });
+  return friendships.map((f) => (f.userAId === userId ? f.userBId : f.userAId));
+}
+
 export async function areFriends(
   userOneId: string,
   userTwoId: string,

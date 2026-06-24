@@ -108,6 +108,29 @@ async function main() {
     },
   });
 
+  // ---- Friendships ----
+  // The four regular users are all friends with one another (a complete graph),
+  // and the admin is friends with three of them. Every user ends up with 3 or 4
+  // friends. Friendship rows store the pair sorted by id (userAId < userBId),
+  // matching the app's convention.
+  async function makeFriends(a: { id: string }, b: { id: string }) {
+    const [userAId, userBId] = [a.id, b.id].sort();
+    await prisma.friendship.create({ data: { userAId, userBId } });
+  }
+  const friendPairs: [{ id: string }, { id: string }][] = [
+    [emma, peter],
+    [emma, david],
+    [emma, ursula],
+    [emma, admin],
+    [peter, david],
+    [peter, ursula],
+    [peter, admin],
+    [david, ursula],
+    [david, admin],
+  ];
+  for (const [a, b] of friendPairs) await makeFriends(a, b);
+  // Resulting friend counts — emma: 4, peter: 4, david: 4, ursula: 3, admin: 3.
+
   // ---- Organizations ----
 
   const littleRockMutualAid = await prisma.organization.create({
@@ -378,6 +401,7 @@ async function main() {
         longitude: neighborhoods.meadowbrook.lng,
         urgency: "HIGH",
         authorId: peter.id,
+        sharedWithFriends: true,
       },
       {
         type: "OFFER",
@@ -403,6 +427,7 @@ async function main() {
         longitude: neighborhoods.quapawQuarter.lng,
         urgency: "LOW",
         authorId: emma.id,
+        sharedWithFriends: true,
       },
       {
         type: "REQUEST",
@@ -482,6 +507,7 @@ async function main() {
         longitude: neighborhoods.midtown.lng,
         urgency: "LOW",
         authorId: david.id,
+        sharedWithFriends: true,
       },
       {
         type: "REQUEST",
@@ -519,6 +545,7 @@ async function main() {
         longitude: neighborhoods.downtown.lng,
         urgency: "LOW",
         authorId: ursula.id,
+        sharedWithFriends: true,
       },
       // Riverdale
       {
@@ -770,7 +797,12 @@ async function main() {
         longitude: neighborhoods.meadowbrook.lng,
         urgency: "LOW",
         authorId: emma.id,
-        communities: { create: { communityId: meadowbrookNeighbors.id } },
+        communities: {
+          create: [
+            { communityId: meadowbrookNeighbors.id },
+            { communityId: midtownNeighbors.id },
+          ],
+        },
       },
       {
         type: "OFFER",
@@ -810,7 +842,12 @@ async function main() {
         longitude: neighborhoods.quapawQuarter.lng,
         urgency: "LOW",
         authorId: david.id,
-        communities: { create: { communityId: quapawQuarterCommunity.id } },
+        communities: {
+          create: [
+            { communityId: quapawQuarterCommunity.id },
+            { communityId: downtownCommunity.id },
+          ],
+        },
       },
       // Baseline Community
       {
@@ -851,7 +888,12 @@ async function main() {
         longitude: neighborhoods.capitolView.lng,
         urgency: "MEDIUM",
         authorId: david.id,
-        communities: { create: { communityId: capitolViewNeighbors.id } },
+        communities: {
+          create: [
+            { communityId: capitolViewNeighbors.id },
+            { communityId: downtownCommunity.id },
+          ],
+        },
         startAt: nextWeekdayAt(6, 10, 0),
         endAt: nextWeekdayAt(6, 11, 0),
       },
@@ -938,7 +980,12 @@ async function main() {
         longitude: neighborhoods.riverdale.lng,
         urgency: "LOW",
         authorId: ursula.id,
-        communities: { create: { communityId: riverdaleCommunity.id } },
+        communities: {
+          create: [
+            { communityId: riverdaleCommunity.id },
+            { communityId: baselineCommunity.id },
+          ],
+        },
       },
       {
         type: "REQUEST",
@@ -969,8 +1016,9 @@ async function main() {
   console.log(
     `  Communities: ${meadowbrookNeighbors.name}, ${quapawQuarterCommunity.name}, ${baselineCommunity.name}, ${capitolViewNeighbors.name}, ${midtownNeighbors.name}, ${downtownCommunity.name}, ${riverdaleCommunity.name}`,
   );
+  console.log(`  Friendships: ${friendPairs.length} (each user has 3–4 friends)`);
   console.log(
-    "  14 public posts, 14 organization posts, 14 community posts created",
+    "  14 public posts (4 friends-only), 14 organization posts, 14 community posts (4 scoped to two communities, 10 to one)",
   );
 }
 

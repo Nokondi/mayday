@@ -61,9 +61,15 @@ const postFields = {
   longitude: z.number().min(-180).max(180).optional(),
   urgency: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).default('MEDIUM'),
   organizationId: z.string().uuid().optional().or(z.literal('').transform(() => undefined)),
-  // Communities the post is scoped to. Empty/omitted = public. Members of ANY
-  // listed community can see it. Accepts a single id (multipart sends one field
-  // as a string) or an array, and drops empties so a cleared selector is public.
+  // When true, the post is also visible to the author's friends. Combines with
+  // communityIds (union audience). Accepts a real boolean or the "true"/"false"
+  // strings multipart form-data sends.
+  sharedWithFriends: z
+    .preprocess((v) => (typeof v === 'string' ? v === 'true' : v), z.boolean())
+    .optional(),
+  // Communities the post is scoped to. Members of ANY listed community can see
+  // it. Accepts a single id (multipart sends one field as a string) or an array,
+  // and drops empties. No communities and sharedWithFriends=false ⇒ public.
   communityIds: z
     .preprocess(
       (v) => (v === '' || v == null ? undefined : Array.isArray(v) ? v : [v]),

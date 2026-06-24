@@ -148,47 +148,41 @@ describe('PostForm — organization and community selects', () => {
     expect(within(select).getByRole('option', { name: 'Yourself' })).toHaveValue('');
   });
 
-  it('does not render the visibility dropdown when the user has no communities', async () => {
+  it('always renders the audience dropdown with a Friends option, even with no communities', async () => {
     const { container } = renderForm();
     await waitFor(() => expect(mockedListMyCommunities).toHaveBeenCalled());
-    expect(container.querySelector('#post-community')).toBeNull();
+    const select = container.querySelector('#post-community') as HTMLSelectElement;
+    expect(select).not.toBeNull();
+    expect(within(select).getByRole('option', { name: 'Friends' })).toBeInTheDocument();
+    // Public by default until something is picked.
+    expect(screen.getByText(/public — visible to everyone/i)).toBeInTheDocument();
   });
 
-  it('renders the community dropdown with a Public hint when communities exist', async () => {
+  it('lists both Friends and the user\'s communities as options', async () => {
     mockedListMyCommunities.mockResolvedValue([
       { id: 'c1', name: 'Neighbors' } as never,
     ]);
     const { container } = renderForm();
     await waitFor(() => {
-      expect(container.querySelector('#post-community')).not.toBeNull();
+      const select = container.querySelector('#post-community') as HTMLSelectElement;
+      expect(within(select).queryByRole('option', { name: 'Neighbors' })).not.toBeNull();
     });
     const select = container.querySelector('#post-community') as HTMLSelectElement;
-    expect(
-      within(select).getByRole('option', { name: /add a community/i }),
-    ).toHaveValue('');
+    expect(within(select).getByRole('option', { name: 'Friends' })).toHaveValue('__friends__');
     expect(within(select).getByRole('option', { name: 'Neighbors' })).toHaveValue('c1');
-    expect(screen.getByText(/public — visible to everyone/i)).toBeInTheDocument();
   });
 
-  it('adds a chip on selection, removes the option from the dropdown, and submits the id', async () => {
+  it('selecting Friends adds a chip and submits sharedWithFriends=true', async () => {
     const user = userEvent.setup();
-    // Community ids must be UUIDs — the form validates communityIds via the
-    // shared createPostSchema, which rejects non-UUID values.
-    const NEIGHBORS_ID = '00000000-0000-4000-a000-000000000001';
-    mockedListMyCommunities.mockResolvedValue([
-      { id: NEIGHBORS_ID, name: 'Neighbors' } as never,
-      { id: '00000000-0000-4000-a000-000000000002', name: 'Garden Club' } as never,
-    ]);
     const { onSubmit, container } = renderForm();
-    await waitFor(() => {
-      expect(container.querySelector('#post-community')).not.toBeNull();
-    });
+    await waitFor(() => expect(mockedListMyCommunities).toHaveBeenCalled());
     const select = container.querySelector('#post-community') as HTMLSelectElement;
-    await user.selectOptions(select, NEIGHBORS_ID);
+    await user.selectOptions(select, '__friends__');
 
-    // A removable chip appears and the chosen community leaves the dropdown.
-    expect(screen.getByRole('button', { name: /remove neighbors/i })).toBeInTheDocument();
-    expect(within(select).queryByRole('option', { name: 'Neighbors' })).toBeNull();
+    expect(screen.getByRole('button', { name: /remove friends/i })).toBeInTheDocument();
+    expect(screen.getByText(/visible only to the friends and communities you select/i)).toBeInTheDocument();
+    // Friends can only be added once — the option leaves the dropdown.
+    expect(within(select).queryByRole('option', { name: 'Friends' })).toBeNull();
 
     await user.type(getField(container, 'title'), 'Need food');
     await user.type(getField(container, 'description'), 'Short on supplies today');
@@ -197,20 +191,51 @@ describe('PostForm — organization and community selects', () => {
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalled());
     const [data] = onSubmit.mock.calls[0];
+    expect(data.sharedWithFriends).toBe(true);
+  });
+
+  it('supports selecting Friends and a community together (union audience)', async () => {
+    const user = userEvent.setup();
+    const NEIGHBORS_ID = '00000000-0000-4000-a000-000000000001';
+    mockedListMyCommunities.mockResolvedValue([
+      { id: NEIGHBORS_ID, name: 'Neighbors' } as never,
+    ]);
+    const { onSubmit, container } = renderForm();
+    await waitFor(() => {
+      const select = container.querySelector('#post-community') as HTMLSelectElement;
+      expect(within(select).queryByRole('option', { name: 'Neighbors' })).not.toBeNull();
+    });
+    const select = container.querySelector('#post-community') as HTMLSelectElement;
+    await user.selectOptions(select, '__friends__');
+    await user.selectOptions(select, NEIGHBORS_ID);
+
+    expect(screen.getByRole('button', { name: /remove friends/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /remove neighbors/i })).toBeInTheDocument();
+
+    await user.type(getField(container, 'title'), 'Need food');
+    await user.type(getField(container, 'description'), 'Short on supplies today');
+    await user.selectOptions(getField<HTMLSelectElement>(container, 'category'), 'Food');
+    await user.click(screen.getByRole('button', { name: /create post/i }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    const [data] = onSubmit.mock.calls[0];
+    expect(data.sharedWithFriends).toBe(true);
     expect(data.communityIds).toEqual([NEIGHBORS_ID]);
   });
 
   it('removes a chip when its remove button is clicked', async () => {
     const user = userEvent.setup();
+    const NEIGHBORS_ID = '00000000-0000-4000-a000-000000000001';
     mockedListMyCommunities.mockResolvedValue([
-      { id: 'c1', name: 'Neighbors' } as never,
+      { id: NEIGHBORS_ID, name: 'Neighbors' } as never,
     ]);
     const { container } = renderForm();
     await waitFor(() => {
-      expect(container.querySelector('#post-community')).not.toBeNull();
+      const select = container.querySelector('#post-community') as HTMLSelectElement;
+      expect(within(select).queryByRole('option', { name: 'Neighbors' })).not.toBeNull();
     });
     const select = container.querySelector('#post-community') as HTMLSelectElement;
-    await user.selectOptions(select, 'c1');
+    await user.selectOptions(select, NEIGHBORS_ID);
 
     await user.click(screen.getByRole('button', { name: /remove neighbors/i }));
 

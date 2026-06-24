@@ -25,6 +25,8 @@ function makeApp() {
 
 const authHeader = () =>
   `Bearer ${signAccessToken({ id: 'u1', email: 'a@b.com', role: 'USER' })}`;
+const adminHeader = () =>
+  `Bearer ${signAccessToken({ id: 'admin1', email: 'admin@b.com', role: 'ADMIN' })}`;
 
 beforeEach(() => vi.clearAllMocks());
 afterEach(() => vi.restoreAllMocks());
@@ -108,6 +110,36 @@ describe('GET /api/search', () => {
     const [sql, ...params] = mockedQueryRaw.mock.calls[0];
     expect(String(sql)).toContain('"category"');
     expect(params).toContain('Food');
+  });
+
+  it('scopes results to posts the viewer may see and binds the viewer id', async () => {
+    mockedQueryRaw
+      .mockResolvedValueOnce([] as never)
+      .mockResolvedValueOnce([{ count: 0n }] as never);
+
+    await request(makeApp())
+      .get('/api/search?q=help')
+      .set('Authorization', authHeader());
+
+    const [sql, ...params] = mockedQueryRaw.mock.calls[0];
+    // Visibility predicate present, and the viewer id is bound (not interpolated).
+    expect(String(sql)).toContain('"sharedWithFriends"');
+    expect(String(sql)).toContain('"Friendship"');
+    expect(params).toContain('u1');
+  });
+
+  it('omits the visibility predicate for site admins', async () => {
+    mockedQueryRaw
+      .mockResolvedValueOnce([] as never)
+      .mockResolvedValueOnce([{ count: 0n }] as never);
+
+    await request(makeApp())
+      .get('/api/search?q=help')
+      .set('Authorization', adminHeader());
+
+    const [sql, ...params] = mockedQueryRaw.mock.calls[0];
+    expect(String(sql)).not.toContain('"sharedWithFriends"');
+    expect(params).not.toContain('admin1');
   });
 
   it('requires authentication', async () => {

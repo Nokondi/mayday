@@ -15,6 +15,7 @@ import { deleteObjectByUrl } from "../config/storage.js";
 import { AppError } from "../middleware/error.middleware.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { publicUserSelect } from "../utils/prisma-selects.js";
+import { getFriendIds, areFriends } from "../services/friend.service.js";
 import type { Prisma } from "@prisma/client";
 
 export const postInclude = {
@@ -51,6 +52,64 @@ async function getUserCommunityIds(userId: string): Promise<string[]> {
     select: { communityId: true },
   });
   return memberships.map((m) => m.communityId);
+}
+
+/**
+ * The visibility predicate for listing posts as `user`. A post is visible when
+ * it is PUBLIC, authored by the user, a COMMUNITY post in one of the user's
+ * communities, or a FRIENDS post by one of the user's friends. Returns
+ * `undefined` for site ADMINs (who bypass visibility entirely) — callers should
+ * skip adding a filter in that case.
+ *
+ * AND this into a query's `where` (don't assign it to `where.OR`, which would
+ * clobber other OR-based filters).
+ */
+export async function getPostVisibilityFilter(
+  user: { id: string; role: string },
+): Promise<Prisma.PostWhereInput | undefined> {
+  if (user.role === "ADMIN") return undefined;
+  const [communityIds, friendIds] = await Promise.all([
+    getUserCommunityIds(user.id),
+    getFriendIds(user.id),
+  ]);
+  return {
+    OR: [
+      { authorId: user.id },
+      // Public: no community scoping and not shared with friends.
+      { communities: { none: {} }, sharedWithFriends: false },
+      // Member of any of the post's communities.
+      { communities: { some: { communityId: { in: communityIds } } } },
+      // Shared with friends and authored by one of the viewer's friends.
+      { sharedWithFriends: true, authorId: { in: friendIds } },
+    ],
+  };
+}
+
+/**
+ * Whether `user` may view a single post. Mirrors getPostVisibilityFilter for
+ * the by-id endpoints. Site ADMINs and the author always can.
+ */
+async function canViewPost(
+  post: { authorId: string; sharedWithFriends: boolean },
+  communityIds: string[],
+  user: { id: string; role: string },
+): Promise<boolean> {
+  if (user.role === "ADMIN") return true;
+  if (post.authorId === user.id) return true;
+  // Public when neither audience restriction applies.
+  if (communityIds.length === 0 && !post.sharedWithFriends) return true;
+  // Member of any of the post's communities.
+  if (communityIds.length > 0) {
+    const membership = await prisma.communityMember.findFirst({
+      where: { userId: user.id, communityId: { in: communityIds } },
+    });
+    if (membership) return true;
+  }
+  // Friend of the author on a friends-shared post.
+  if (post.sharedWithFriends && (await areFriends(user.id, post.authorId))) {
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -159,22 +218,15 @@ postRoutes.get(
       ];
     }
 
-    // Community visibility: if filtering by a specific community, only show
-    // posts scoped to it. Otherwise show public posts (scoped to no community)
-    // plus posts scoped to any community the user belongs to.
+    // Optionally narrow to a specific community…
     if (typeof communityId === "string" && communityId) {
       where.communities = { some: { communityId } };
-    } else {
-      const myCommunityIds = await getUserCommunityIds(req.user!.id);
-      const visibilityFilter: Prisma.PostWhereInput =
-        myCommunityIds.length > 0
-          ? {
-              OR: [
-                { communities: { none: {} } },
-                { communities: { some: { communityId: { in: myCommunityIds } } } },
-              ],
-            }
-          : { communities: { none: {} } };
+    }
+    // …and always enforce visibility (PUBLIC / own / member-COMMUNITY / FRIENDS),
+    // except for site ADMINs who see everything. AND'd so it composes with the
+    // text-search OR above and the optional community narrowing.
+    const visibilityFilter = await getPostVisibilityFilter(req.user!);
+    if (visibilityFilter) {
       where.AND = [
         ...(Array.isArray(where.AND) ? where.AND : []),
         visibilityFilter,
@@ -242,22 +294,13 @@ postRoutes.get(
     });
     if (!post) throw new AppError(404, "Post not found");
 
-    // Check community visibility: a scoped post is visible to a member of any
-    // of its communities (or a site ADMIN). A public post (no communities) is
-    // visible to everyone.
-    if (post.communities.length > 0 && req.user!.role !== "ADMIN") {
-      const membership = await prisma.communityMember.findFirst({
-        where: {
-          userId: req.user!.id,
-          communityId: { in: post.communities.map((pc) => pc.community.id) },
-        },
-      });
-      if (!membership) {
-        throw new AppError(
-          403,
-          "This post is only visible to community members",
-        );
-      }
+    const canView = await canViewPost(
+      post,
+      post.communities.map((pc) => pc.community.id),
+      req.user!,
+    );
+    if (!canView) {
+      throw new AppError(403, "You don't have access to this post");
     }
 
     res.json(serializePost(post));
@@ -274,21 +317,14 @@ postRoutes.get(
     });
     if (!post) throw new AppError(404, "Post not found");
 
-    // If the source post is community-scoped, the viewer must be a member of at
-    // least one of its communities (or a site ADMIN).
-    if (post.communities.length > 0 && req.user!.role !== "ADMIN") {
-      const membership = await prisma.communityMember.findFirst({
-        where: {
-          userId: req.user!.id,
-          communityId: { in: post.communities.map((pc) => pc.communityId) },
-        },
-      });
-      if (!membership) {
-        throw new AppError(
-          403,
-          "This post is only visible to community members",
-        );
-      }
+    // The viewer must be able to see the source post.
+    const canView = await canViewPost(
+      post,
+      post.communities.map((pc) => pc.communityId),
+      req.user!,
+    );
+    if (!canView) {
+      throw new AppError(403, "You don't have access to this post");
     }
 
     const matchType = post.type === "REQUEST" ? "OFFER" : "REQUEST";
@@ -312,15 +348,14 @@ postRoutes.get(
       };
     }
 
-    // Hide community posts the viewer isn't a member of
-    const myCommunityIds = await getUserCommunityIds(req.user!.id);
-    where.OR =
-      myCommunityIds.length > 0
-        ? [
-            { communities: { none: {} } },
-            { communities: { some: { communityId: { in: myCommunityIds } } } },
-          ]
-        : [{ communities: { none: {} } }];
+    // Only surface matches the viewer is allowed to see.
+    const visibilityFilter = await getPostVisibilityFilter(req.user!);
+    if (visibilityFilter) {
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : []),
+        visibilityFilter,
+      ];
+    }
 
     const matches = await prisma.post.findMany({
       where,
@@ -368,15 +403,14 @@ postRoutes.post(
       }
     }
 
-    // If scoping to communities, verify membership in every one of them.
-    const { communityIds, startAt, endAt, ...postData } = parsed.data;
+    const { communityIds, sharedWithFriends, startAt, endAt, ...postData } =
+      parsed.data;
     const uniqueCommunityIds = [...new Set(communityIds ?? [])];
+
+    // If scoping to communities, the author must belong to every one of them.
     if (uniqueCommunityIds.length > 0) {
       const memberships = await prisma.communityMember.findMany({
-        where: {
-          userId: req.user!.id,
-          communityId: { in: uniqueCommunityIds },
-        },
+        where: { userId: req.user!.id, communityId: { in: uniqueCommunityIds } },
         select: { communityId: true },
       });
       const memberOf = new Set(memberships.map((m) => m.communityId));
@@ -388,6 +422,7 @@ postRoutes.post(
     const post = await prisma.post.create({
       data: {
         ...postData,
+        sharedWithFriends: sharedWithFriends ?? false,
         startAt: startAt ? new Date(startAt) : undefined,
         endAt: endAt ? new Date(endAt) : undefined,
         authorId: req.user!.id,
@@ -433,10 +468,12 @@ postRoutes.put(
       throw new AppError(403, "Not authorized");
     }
 
-    // Don't let editors change the org/community link via update
+    // Audience is fixed at creation: don't let an edit change the org/community
+    // link or the friends-sharing flag.
     const {
       organizationId: _ignoreOrg,
       communityIds: _ignoreCommunities,
+      sharedWithFriends: _ignoreSharedWithFriends,
       ...updateData
     } = req.body;
 

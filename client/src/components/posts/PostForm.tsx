@@ -7,7 +7,7 @@ import {
   CATEGORIES,
   type CreatePostRequest,
 } from "@mayday/shared";
-import { ImagePlus, X, MapPin, Loader2 } from "lucide-react";
+import { ImagePlus, X, MapPin, Loader2, Users } from "lucide-react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useDebounce } from "../../hooks/useDebounce.js";
 import { listMyOrganizations } from "../../api/organizations.js";
@@ -34,10 +34,12 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
     defaultValues: {
       type: "REQUEST",
       urgency: "MEDIUM",
+      sharedWithFriends: false,
     },
   });
 
   const recurrenceFreq = watch("recurrenceFreq");
+  const sharedWithFriends = watch("sharedWithFriends") ?? false;
   const selectedCommunityIds = watch("communityIds") ?? [];
 
   // Organizations the user can post on behalf of
@@ -277,98 +279,135 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         </div>
       )}
 
-      {myCommunities &&
-        myCommunities.length > 0 &&
-        (() => {
-          const selected = myCommunities.filter((c) =>
-            selectedCommunityIds.includes(c.id),
-          );
-          const available = myCommunities.filter(
-            (c) => !selectedCommunityIds.includes(c.id),
-          );
-          return (
-            <div>
-              <label
-                htmlFor="post-community"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                <FormattedMessage
-                  id="posts.form.visibilityLabel"
-                  defaultMessage="Visibility"
-                />
-              </label>
-              {selected.length > 0 && (
-                <ul className="flex flex-wrap gap-2 mb-2">
-                  {selected.map((c) => (
-                    <li key={c.id}>
-                      <span className="inline-flex items-center gap-1 text-sm bg-mayday-100 text-mayday-800 rounded-full pl-3 pr-1 py-1">
-                        {c.name}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setValue(
-                              "communityIds",
-                              selectedCommunityIds.filter((id) => id !== c.id),
-                            )
-                          }
-                          aria-label={intl.formatMessage(
-                            {
-                              id: "posts.form.removeCommunityAria",
-                              defaultMessage: "Remove {name}",
-                            },
-                            { name: c.name },
-                          )}
-                          className="text-mayday-600 hover:text-mayday-800 rounded-full p-0.5"
-                        >
-                          <X className="w-3.5 h-3.5" aria-hidden="true" />
-                        </button>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <select
-                id="post-community"
-                value=""
-                disabled={available.length === 0}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    setValue("communityIds", [
-                      ...selectedCommunityIds,
-                      e.target.value,
-                    ]);
-                  }
-                }}
-                className="w-full border border-mayday-300 rounded-lg px-3 py-2 bg-white disabled:bg-gray-100 disabled:text-gray-500"
-              >
-                <option value="">
-                  {intl.formatMessage({
-                    id: "posts.form.addCommunityPlaceholder",
-                    defaultMessage: "Add a community…",
-                  })}
-                </option>
-                {available.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-gray-500 mt-1">
-                {selected.length === 0 ? (
-                  <FormattedMessage
-                    id="posts.form.visibilityPublicHint"
-                    defaultMessage="Public — visible to everyone. Add communities to limit who can see this post."
-                  />
-                ) : (
-                  <FormattedMessage
-                    id="posts.form.visibilityCommunityHint"
-                    defaultMessage="Visible only to members of the selected communities."
-                  />
+      {(() => {
+        const communities = myCommunities ?? [];
+        const selectedCommunities = communities.filter((c) =>
+          selectedCommunityIds.includes(c.id),
+        );
+        const availableCommunities = communities.filter(
+          (c) => !selectedCommunityIds.includes(c.id),
+        );
+        // The dropdown offers a synthetic "Friends" entry alongside the user's
+        // communities; picking any combination unions the audience. Nothing
+        // selected ⇒ public.
+        const friendsLabel = intl.formatMessage({
+          id: "posts.form.friendsOption",
+          defaultMessage: "Friends",
+        });
+        const hasSelection = sharedWithFriends || selectedCommunities.length > 0;
+        // Disabled only when there's nothing left to add: friends already chosen
+        // and no remaining communities.
+        const dropdownDisabled =
+          sharedWithFriends && availableCommunities.length === 0;
+        return (
+          <div>
+            <label
+              htmlFor="post-community"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              <FormattedMessage
+                id="posts.form.visibilityLabel"
+                defaultMessage="Visibility"
+              />
+            </label>
+            {hasSelection && (
+              <ul className="flex flex-wrap gap-2 mb-2">
+                {sharedWithFriends && (
+                  <li>
+                    <span className="inline-flex items-center gap-1 text-sm bg-mayday-100 text-mayday-800 rounded-full pl-3 pr-1 py-1">
+                      <Users className="w-3.5 h-3.5" aria-hidden="true" />
+                      {friendsLabel}
+                      <button
+                        type="button"
+                        onClick={() => setValue("sharedWithFriends", false)}
+                        aria-label={intl.formatMessage(
+                          {
+                            id: "posts.form.removeAudienceAria",
+                            defaultMessage: "Remove {name}",
+                          },
+                          { name: friendsLabel },
+                        )}
+                        className="text-mayday-600 hover:text-mayday-800 rounded-full p-0.5"
+                      >
+                        <X className="w-3.5 h-3.5" aria-hidden="true" />
+                      </button>
+                    </span>
+                  </li>
                 )}
-              </p>
-            </div>
-          );
-        })()}
+                {selectedCommunities.map((c) => (
+                  <li key={c.id}>
+                    <span className="inline-flex items-center gap-1 text-sm bg-mayday-100 text-mayday-800 rounded-full pl-3 pr-1 py-1">
+                      {c.name}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setValue(
+                            "communityIds",
+                            selectedCommunityIds.filter((id) => id !== c.id),
+                          )
+                        }
+                        aria-label={intl.formatMessage(
+                          {
+                            id: "posts.form.removeAudienceAria",
+                            defaultMessage: "Remove {name}",
+                          },
+                          { name: c.name },
+                        )}
+                        className="text-mayday-600 hover:text-mayday-800 rounded-full p-0.5"
+                      >
+                        <X className="w-3.5 h-3.5" aria-hidden="true" />
+                      </button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <select
+              id="post-community"
+              value=""
+              disabled={dropdownDisabled}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (!val) return;
+                if (val === "__friends__") {
+                  setValue("sharedWithFriends", true);
+                } else {
+                  setValue("communityIds", [...selectedCommunityIds, val]);
+                }
+              }}
+              className="w-full border border-mayday-300 rounded-lg px-3 py-2 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+            >
+              <option value="">
+                {intl.formatMessage({
+                  id: "posts.form.addAudiencePlaceholder",
+                  defaultMessage: "Add friends or a community…",
+                })}
+              </option>
+              {!sharedWithFriends && (
+                <option value="__friends__">{friendsLabel}</option>
+              )}
+              {availableCommunities.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              {hasSelection ? (
+                <FormattedMessage
+                  id="posts.form.visibilityRestrictedHint"
+                  defaultMessage="Visible only to the friends and communities you select."
+                />
+              ) : (
+                <FormattedMessage
+                  id="posts.form.visibilityPublicHint"
+                  defaultMessage="Public — visible to everyone."
+                />
+              )}
+            </p>
+          </div>
+        );
+      })()}
 
       <FormField
         id="post-title"
