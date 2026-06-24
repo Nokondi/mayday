@@ -169,7 +169,7 @@ describe('PostFilters — community select', () => {
     expect(screen.queryByRole('option', { name: 'All Communities' })).toBeNull();
   });
 
-  it('does not render a community select when the communities list is empty', () => {
+  it('still renders the audience select (with a Friends option) when the communities list is empty', () => {
     render(
       <PostFilters
         type="" category="" urgency="" sort="recent"
@@ -179,7 +179,40 @@ describe('PostFilters — community select', () => {
         onCommunityChange={vi.fn()}
       />,
     );
-    expect(screen.queryByRole('option', { name: 'All Communities' })).toBeNull();
+    // Friends is always available as a filter, independent of community membership.
+    expect(screen.getByRole('option', { name: 'All Communities' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Friends' })).toHaveValue('friends');
+  });
+
+  it('renders a Friends option in the audience select alongside communities', () => {
+    render(
+      <PostFilters
+        type="" category="" urgency="" sort="recent"
+        community="" communities={communities}
+        onTypeChange={vi.fn()} onCategoryChange={vi.fn()}
+        onUrgencyChange={vi.fn()} onSortChange={vi.fn()}
+        onCommunityChange={vi.fn()}
+      />,
+    );
+    const communitySelect = selectByDefaultOption('All Communities');
+    expect(within(communitySelect).getByRole('option', { name: 'Friends' })).toHaveValue('friends');
+    expect(within(communitySelect).getByRole('option', { name: 'Meadowbrook Neighbors' })).toHaveValue('c1');
+  });
+
+  it('calls onCommunityChange with "friends" when Friends is selected', async () => {
+    const user = userEvent.setup();
+    const onCommunityChange = vi.fn();
+    render(
+      <PostFilters
+        type="" category="" urgency="" sort="recent"
+        community="" communities={communities}
+        onTypeChange={vi.fn()} onCategoryChange={vi.fn()}
+        onUrgencyChange={vi.fn()} onSortChange={vi.fn()}
+        onCommunityChange={onCommunityChange}
+      />,
+    );
+    await user.selectOptions(selectByDefaultOption('All Communities'), 'friends');
+    expect(onCommunityChange).toHaveBeenCalledWith('friends');
   });
 
   it('renders an option for each community plus "All Communities"', () => {

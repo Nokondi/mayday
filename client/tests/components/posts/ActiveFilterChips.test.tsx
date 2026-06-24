@@ -63,6 +63,11 @@ describe('ActiveFilterChips', () => {
     expect(screen.getByText('Most Urgent')).toBeInTheDocument();
   });
 
+  it('renders a "Friends" chip when the audience filter is set to friends', () => {
+    renderChips({ community: 'friends' });
+    expect(screen.getByText('Friends')).toBeInTheDocument();
+  });
+
   it('does not render a sort chip when sort is the default chronological order', () => {
     renderChips({ type: 'OFFER', sort: 'recent' });
     expect(screen.getByText('Offers')).toBeInTheDocument();

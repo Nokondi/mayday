@@ -1290,7 +1290,10 @@
     "defaultMessage": "Filter by category"
   },
   "posts.filters.communityAria": {
-    "defaultMessage": "Filter by community"
+    "defaultMessage": "Filter by community or friends"
+  },
+  "posts.filters.friends": {
+    "defaultMessage": "Friends"
   },
   "posts.filters.offers": {
     "defaultMessage": "Offers"

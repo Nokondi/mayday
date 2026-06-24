@@ -3615,7 +3615,13 @@
   "posts.filters.communityAria": [
     {
       "type": 0,
-      "value": "Filter by community"
+      "value": "Filter by community or friends"
+    }
+  ],
+  "posts.filters.friends": [
+    {
+      "type": 0,
+      "value": "Friends"
     }
   ],
   "posts.filters.offers": [

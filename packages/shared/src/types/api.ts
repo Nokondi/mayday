@@ -414,6 +414,8 @@ export interface PostQueryParams {
   swLat?: number;
   swLng?: number;
   communityId?: string;
+  // Narrow the feed to posts shared with the viewer by their friends.
+  friends?: boolean;
   scheduled?: boolean;
   page?: number;
   limit?: number;
