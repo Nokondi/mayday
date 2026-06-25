@@ -172,6 +172,34 @@ describe('PostDetailPage — fulfill button visibility', () => {
   });
 });
 
+describe('PostDetailPage — edit button', () => {
+  it('shows an Edit link to the edit page when the owner views the post', async () => {
+    setAuth({ id: 'u1', email: 'a@b.com', name: 'Alice', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    renderPage();
+
+    const editLink = await screen.findByRole('link', { name: /edit/i });
+    expect(editLink).toHaveAttribute('href', '/posts/p1/edit');
+  });
+
+  it('shows the Edit link for an admin viewing someone else\'s post', async () => {
+    setAuth({ id: 'admin1', email: 'admin@b.com', name: 'Admin', role: 'ADMIN', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    renderPage();
+
+    expect(await screen.findByRole('link', { name: /edit/i })).toBeInTheDocument();
+  });
+
+  it('does not show the Edit link for non-owner non-admin users', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    renderPage();
+
+    await screen.findByText('Need groceries');
+    expect(screen.queryByRole('link', { name: /edit/i })).not.toBeInTheDocument();
+  });
+});
+
 describe('PostDetailPage — fulfillment display', () => {
   it('shows "Fulfilled by" section with linked user names', async () => {
     setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });

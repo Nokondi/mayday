@@ -132,14 +132,41 @@ describe('posts api — createPost', () => {
 });
 
 describe('posts api — mutations', () => {
-  it('updatePost PUTs /posts/:id with the payload', async () => {
+  it('updatePost PUTs /posts/:id with FormData and the multipart header', async () => {
     const payload = { title: 'New title' } as never;
     mockedApi.put.mockResolvedValueOnce({ data: { id: 'p1', title: 'New title' } });
 
     const result = await updatePost('p1', payload);
 
-    expect(mockedApi.put).toHaveBeenCalledWith('/posts/p1', payload);
+    expect(mockedApi.put).toHaveBeenCalledTimes(1);
+    const [url, body, config] = mockedApi.put.mock.calls[0];
+    expect(url).toBe('/posts/p1');
+    expect(body).toBeInstanceOf(FormData);
+    expect((body as FormData).get('title')).toBe('New title');
+    expect(config).toEqual({ headers: { 'Content-Type': 'multipart/form-data' } });
     expect(result).toEqual({ id: 'p1', title: 'New title' });
+  });
+
+  it('updatePost appends new images and removeImageIds, one entry per key', async () => {
+    const payload = { title: 'New title' } as never;
+    const img = new File(['a'], 'a.png', { type: 'image/png' });
+    mockedApi.put.mockResolvedValueOnce({ data: { id: 'p1' } });
+
+    await updatePost('p1', payload, [img], ['img-1', 'img-2']);
+
+    const form = mockedApi.put.mock.calls[0][1] as FormData;
+    expect(form.getAll('removeImageIds')).toEqual(['img-1', 'img-2']);
+    const images = form.getAll('images');
+    expect(images).toHaveLength(1);
+    expect(images[0]).toBe(img);
+  });
+
+  it('updatePost omits images and removeImageIds keys when not supplied', async () => {
+    mockedApi.put.mockResolvedValueOnce({ data: { id: 'p1' } });
+    await updatePost('p1', { title: 't' } as never);
+    const form = mockedApi.put.mock.calls[0][1] as FormData;
+    expect(form.has('images')).toBe(false);
+    expect(form.has('removeImageIds')).toBe(false);
   });
 
   it('deletePost DELETEs /posts/:id', async () => {

@@ -464,17 +464,65 @@ postRoutes.post(
   }),
 );
 
+// Edit a post, with optional image add/remove (multipart/form-data). Text
+// fields and new image files arrive in the same request; `removeImageIds`
+// lists existing images to drop. Audience (org/community/friends) is fixed at
+// creation and cannot be changed here.
 postRoutes.put(
   "/:id",
   requireAuth,
-  validate(updatePostSchema),
+  uploadPostImages,
   asyncHandler(async (req: AuthRequest, res) => {
+    const files = (req.files as Express.MulterS3.File[]) || [];
+    // Clean up freshly-uploaded objects when we bail before persisting them.
+    const cleanupUploads = async () => {
+      for (const file of files) {
+        await deleteObjectByUrl(file.location).catch(() => {});
+      }
+    };
+
     const existing = await prisma.post.findUnique({
       where: { id: req.params.id as string },
+      include: { images: true },
     });
-    if (!existing) throw new AppError(404, "Post not found");
+    if (!existing) {
+      await cleanupUploads();
+      throw new AppError(404, "Post not found");
+    }
     if (!(await canModifyPost(existing, req.user!))) {
+      await cleanupUploads();
       throw new AppError(403, "Not authorized");
+    }
+
+    // Multipart sends every field as a string — parse the numeric ones so the
+    // schema (which expects real numbers) validates them.
+    const body = { ...req.body };
+    if (body.latitude) body.latitude = parseFloat(body.latitude);
+    if (body.longitude) body.longitude = parseFloat(body.longitude);
+
+    const parsed = updatePostSchema.safeParse(body);
+    if (!parsed.success) {
+      await cleanupUploads();
+      const message = parsed.error.errors.map((e) => e.message).join(", ");
+      throw new AppError(400, message);
+    }
+
+    // Images to remove — accept a single id or repeated fields, and keep only
+    // ids that actually belong to this post.
+    const rawRemove = req.body.removeImageIds;
+    const removeIds: string[] = Array.isArray(rawRemove)
+      ? rawRemove
+      : rawRemove
+        ? [rawRemove]
+        : [];
+    const removable = existing.images.filter((img) => removeIds.includes(img.id));
+
+    // Enforce the same 5-image cap as creation, counting images that survive
+    // this edit plus the new uploads.
+    const remainingCount = existing.images.length - removable.length;
+    if (remainingCount + files.length > 5) {
+      await cleanupUploads();
+      throw new AppError(400, "A post can have at most 5 images");
     }
 
     // Audience is fixed at creation: don't let an edit change the org/community
@@ -484,16 +532,48 @@ postRoutes.put(
       communityIds: _ignoreCommunities,
       sharedWithFriends: _ignoreSharedWithFriends,
       ...updateData
-    } = req.body;
+    } = parsed.data;
 
-    if (updateData.startAt) updateData.startAt = new Date(updateData.startAt);
-    if (updateData.endAt) updateData.endAt = new Date(updateData.endAt);
+    const data: Prisma.PostUpdateInput = { ...updateData };
+    if (updateData.startAt) data.startAt = new Date(updateData.startAt);
+    if (updateData.endAt) data.endAt = new Date(updateData.endAt);
 
-    const post = await prisma.post.update({
-      where: { id: req.params.id as string },
-      data: updateData,
-      include: postInclude,
+    // New images sort after whatever already exists.
+    const baseOrder = existing.images.reduce(
+      (max, img) => Math.max(max, img.order + 1),
+      0,
+    );
+
+    const post = await prisma.$transaction(async (tx) => {
+      if (removable.length > 0) {
+        await tx.postImage.deleteMany({
+          where: { id: { in: removable.map((img) => img.id) } },
+        });
+      }
+      await tx.post.update({
+        where: { id: req.params.id as string },
+        data,
+      });
+      if (files.length > 0) {
+        await tx.postImage.createMany({
+          data: files.map((file, index) => ({
+            postId: req.params.id as string,
+            url: file.location,
+            order: baseOrder + index,
+          })),
+        });
+      }
+      return tx.post.findUnique({
+        where: { id: req.params.id as string },
+        include: postInclude,
+      });
     });
+
+    // Delete removed image files from storage only after the DB commit.
+    for (const img of removable) {
+      await deleteObjectByUrl(img.url).catch(() => {});
+    }
+
     res.json(serializePost(post));
   }),
 );
