@@ -16,6 +16,10 @@ vi.mock('../../src/config/database.js', () => ({
       createMany: vi.fn(),
       deleteMany: vi.fn(),
     },
+    postImage: {
+      createMany: vi.fn(),
+      deleteMany: vi.fn(),
+    },
     user: {
       findMany: vi.fn(),
     },
@@ -46,11 +50,13 @@ vi.mock('../../src/middleware/upload.middleware.js', () => ({
 }));
 
 import { prisma } from '../../src/config/database.js';
+import { deleteObjectByUrl } from '../../src/config/storage.js';
 import { errorMiddleware } from '../../src/middleware/error.middleware.js';
 import { postRoutes } from '../../src/routes/post.routes.js';
 import { signAccessToken } from '../../src/utils/jwt.js';
 
 const mockedPost = vi.mocked(prisma.post);
+const mockedDeleteObjectByUrl = vi.mocked(deleteObjectByUrl);
 const mockedUser = vi.mocked(prisma.user);
 const mockedOrganization = vi.mocked(prisma.organization);
 const mockedTransaction = vi.mocked(prisma.$transaction);
@@ -116,6 +122,9 @@ beforeEach(() => {
   // to "no communities, no friends" so each test only sets what it asserts.
   vi.mocked(prisma.communityMember.findMany).mockResolvedValue([] as never);
   vi.mocked(prisma.friendship.findMany).mockResolvedValue([] as never);
+  // resetAllMocks clears the storage stub's resolved value; restore it so
+  // `deleteObjectByUrl(...).catch(...)` has a promise to chain off.
+  mockedDeleteObjectByUrl.mockResolvedValue(undefined as never);
 });
 
 afterEach(() => {
@@ -505,6 +514,167 @@ describe('GET /api/posts/fulfiller-search', () => {
   it('returns 401 when not authenticated', async () => {
     const res = await request(makeApp())
       .get('/api/posts/fulfiller-search?q=alice');
+
+    expect(res.status).toBe(401);
+  });
+});
+
+describe('PUT /api/posts/:id', () => {
+  // Mock the update transaction, capturing the tx spies the test asserts on.
+  function mockUpdateTransaction(
+    updated: ReturnType<typeof dbPost>,
+    spies: { update?: ReturnType<typeof vi.fn>; deleteMany?: ReturnType<typeof vi.fn>; createMany?: ReturnType<typeof vi.fn> } = {},
+  ) {
+    const update = spies.update ?? vi.fn();
+    const deleteMany = spies.deleteMany ?? vi.fn();
+    const createMany = spies.createMany ?? vi.fn();
+    mockedTransaction.mockImplementationOnce(async (fn: (tx: unknown) => Promise<unknown>) =>
+      fn({
+        post: { update, findUnique: vi.fn().mockResolvedValue(updated) },
+        postImage: { deleteMany, createMany },
+      }),
+    );
+  }
+
+  it('updates editable fields for the author', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(dbPost() as never);
+    mockUpdateTransaction(dbPost({ title: 'Updated title', urgency: 'HIGH' }));
+
+    const res = await request(makeApp())
+      .put('/api/posts/p1')
+      .set('Authorization', authHeader())
+      .send({ title: 'Updated title', description: 'A longer description', category: 'Food', urgency: 'HIGH' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.title).toBe('Updated title');
+    expect(res.body.urgency).toBe('HIGH');
+  });
+
+  it('does not let an edit change the audience (org / communities / friends)', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(dbPost() as never);
+    const update = vi.fn();
+    mockUpdateTransaction(dbPost(), { update });
+
+    await request(makeApp())
+      .put('/api/posts/p1')
+      .set('Authorization', authHeader())
+      .send({
+        title: 'Edited',
+        organizationId: ORG_ID,
+        sharedWithFriends: true,
+        communityIds: [COMMUNITY_ID_1],
+      });
+
+    const dataArg = (update.mock.calls[0] as [{ data: Record<string, unknown> }])[0].data;
+    expect(dataArg.title).toBe('Edited');
+    expect(dataArg.organizationId).toBeUndefined();
+    expect(dataArg.sharedWithFriends).toBeUndefined();
+    expect(dataArg.communityIds).toBeUndefined();
+  });
+
+  it('deletes only images that belong to the post (ignores foreign ids)', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({
+        images: [
+          { id: 'img-1', url: 'https://cdn.example/x/1.png', order: 0 },
+          { id: 'img-2', url: 'https://cdn.example/x/2.png', order: 1 },
+        ],
+      }) as never,
+    );
+    const deleteMany = vi.fn();
+    mockUpdateTransaction(dbPost(), { deleteMany });
+
+    const res = await request(makeApp())
+      .put('/api/posts/p1')
+      .set('Authorization', authHeader())
+      .send({ title: 'Edited', removeImageIds: ['img-1', 'not-this-posts-image'] });
+
+    expect(res.status).toBe(200);
+    // Only the image that actually belongs to the post is removed.
+    expect(deleteMany).toHaveBeenCalledWith({ where: { id: { in: ['img-1'] } } });
+    // Its file is cleaned up from storage after the commit.
+    expect(mockedDeleteObjectByUrl).toHaveBeenCalledWith('https://cdn.example/x/1.png');
+    expect(mockedDeleteObjectByUrl).not.toHaveBeenCalledWith('https://cdn.example/x/2.png');
+  });
+
+  it('ignores non-string entries in a tampered removeImageIds array', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({
+        images: [{ id: 'img-1', url: 'https://cdn.example/x/1.png', order: 0 }],
+      }) as never,
+    );
+    const deleteMany = vi.fn();
+    mockUpdateTransaction(dbPost(), { deleteMany });
+
+    const res = await request(makeApp())
+      .put('/api/posts/p1')
+      .set('Authorization', authHeader())
+      // A tampered body can make removeImageIds an array of non-strings.
+      .send({ title: 'Edited', removeImageIds: ['img-1', { evil: true }, ['nested']] });
+
+    expect(res.status).toBe(200);
+    // Only the well-formed string id is honored; non-strings are dropped.
+    expect(deleteMany).toHaveBeenCalledWith({ where: { id: { in: ['img-1'] } } });
+  });
+
+  it('returns 404 when the post does not exist', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(null as never);
+
+    const res = await request(makeApp())
+      .put('/api/posts/nonexistent')
+      .set('Authorization', authHeader())
+      .send({ title: 'Edited' });
+
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: 'Post not found' });
+  });
+
+  it('returns 403 when the user is not the author or admin', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({ authorId: OTHER_USER_ID }) as never,
+    );
+
+    const res = await request(makeApp())
+      .put('/api/posts/p1')
+      .set('Authorization', authHeader())
+      .send({ title: 'Edited' });
+
+    expect(res.status).toBe(403);
+    expect(res.body).toEqual({ error: 'Not authorized' });
+    expect(mockedTransaction).not.toHaveBeenCalled();
+  });
+
+  it('allows an admin to edit any post', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({ authorId: OTHER_USER_ID }) as never,
+    );
+    mockUpdateTransaction(dbPost({ authorId: OTHER_USER_ID, title: 'Admin edit' }));
+
+    const res = await request(makeApp())
+      .put('/api/posts/p1')
+      .set('Authorization', authHeader(adminPayload))
+      .send({ title: 'Admin edit' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.title).toBe('Admin edit');
+  });
+
+  it('returns 400 on invalid input', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(dbPost() as never);
+
+    const res = await request(makeApp())
+      .put('/api/posts/p1')
+      .set('Authorization', authHeader())
+      .send({ urgency: 'NOT_A_LEVEL' });
+
+    expect(res.status).toBe(400);
+    expect(mockedTransaction).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 when not authenticated', async () => {
+    const res = await request(makeApp())
+      .put('/api/posts/p1')
+      .send({ title: 'Edited' });
 
     expect(res.status).toBe(401);
   });

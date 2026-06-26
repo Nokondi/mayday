@@ -245,6 +245,76 @@ describe('PostForm — organization and community selects', () => {
   });
 });
 
+describe('PostForm — edit mode', () => {
+  function makePost(overrides: Record<string, unknown> = {}) {
+    return {
+      id: 'p1',
+      type: 'OFFER',
+      title: 'Existing title',
+      description: 'Existing description',
+      category: 'Food',
+      urgency: 'HIGH',
+      status: 'OPEN',
+      location: null,
+      latitude: null,
+      longitude: null,
+      startAt: null,
+      endAt: null,
+      recurrenceFreq: null,
+      recurrenceInterval: null,
+      sharedWithFriends: false,
+      images: [],
+      communities: [],
+      ...overrides,
+    };
+  }
+
+  it('prefills the fields from the post and shows a "Save Changes" button', () => {
+    const { container } = renderForm({ initialPost: makePost() as never });
+    expect(getField<HTMLInputElement>(container, 'title')).toHaveValue('Existing title');
+    expect(getField<HTMLTextAreaElement>(container, 'description')).toHaveValue('Existing description');
+    expect(getField<HTMLSelectElement>(container, 'category')).toHaveValue('Food');
+    expect(getField<HTMLSelectElement>(container, 'urgency')).toHaveValue('HIGH');
+    expect(screen.getByRole('radio', { name: /i can help/i })).toBeChecked();
+    expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
+  });
+
+  it('hides the audience controls (post-as and visibility) since they are fixed at creation', async () => {
+    mockedListMyOrganizations.mockResolvedValue([{ id: 'o1', name: 'Red Cross' } as never]);
+    mockedListMyCommunities.mockResolvedValue([{ id: 'c1', name: 'Neighbors' } as never]);
+    const { container } = renderForm({ initialPost: makePost() as never });
+    await waitFor(() => expect(mockedListMyCommunities).toHaveBeenCalled());
+    expect(container.querySelector('select[name="organizationId"]')).toBeNull();
+    expect(container.querySelector('#post-community')).toBeNull();
+  });
+
+  it('renders existing images and queues removed ones for deletion on submit', async () => {
+    const user = userEvent.setup();
+    const post = makePost({
+      images: [
+        { id: 'img-1', url: 'https://cdn.example/1.png', order: 0 },
+        { id: 'img-2', url: 'https://cdn.example/2.png', order: 1 },
+      ],
+    });
+    const { onSubmit } = renderForm({ initialPost: post as never });
+
+    expect(screen.getByAltText(/current image 1/i)).toHaveAttribute('src', 'https://cdn.example/1.png');
+    expect(screen.getByAltText(/current image 2/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /remove image 1/i }));
+    // One image remains; positions re-index, so the survivor is now "image 1".
+    expect(screen.queryByAltText(/current image 2/i)).not.toBeInTheDocument();
+    expect(screen.getByAltText(/current image 1/i)).toHaveAttribute('src', 'https://cdn.example/2.png');
+
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    const [, images, removeImageIds] = onSubmit.mock.calls[0];
+    expect(images).toEqual([]);
+    expect(removeImageIds).toEqual(['img-1']);
+  });
+});
+
 describe('PostForm — validation', () => {
   it('does not call onSubmit when required fields are missing', async () => {
     const user = userEvent.setup();

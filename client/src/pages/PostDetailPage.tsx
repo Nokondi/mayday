@@ -8,6 +8,7 @@ import {
   User,
   MessageSquare,
   Flag,
+  Pencil,
   Trash2,
   Building2,
   Lock,
@@ -474,6 +475,25 @@ export function PostDetailPage() {
                 />
               </span>
             </button>
+          )}
+          {(isOwner || isAdmin) && (
+            <Link
+              to={`/posts/${post.id}/edit`}
+              aria-label={intl.formatMessage({
+                id: "posts.actions.edit",
+                defaultMessage: "Edit",
+              })}
+              title={intl.formatMessage({
+                id: "posts.actions.edit",
+                defaultMessage: "Edit",
+              })}
+              className="flex items-center gap-2 border border-mayday-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50"
+            >
+              <Pencil className="w-4 h-4" />
+              <span className="hidden sm:inline">
+                <FormattedMessage id="posts.actions.edit" defaultMessage="Edit" />
+              </span>
+            </Link>
           )}
           {(isOwner || isAdmin) &&
             post.status === "OPEN" &&

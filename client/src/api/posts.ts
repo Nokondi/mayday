@@ -43,8 +43,38 @@ export async function createPost(data: CreatePostRequest, images?: File[]): Prom
   return res.data;
 }
 
-export async function updatePost(id: string, data: UpdatePostRequest): Promise<PostWithAuthor> {
-  const res = await api.put(`/posts/${id}`, data);
+export async function updatePost(
+  id: string,
+  data: UpdatePostRequest,
+  images?: File[],
+  removeImageIds?: string[],
+): Promise<PostWithAuthor> {
+  const formData = new FormData();
+
+  // Append all post fields. Arrays are appended one entry per key so the
+  // server receives a real list, not a stringified "a,b".
+  for (const [key, value] of Object.entries(data)) {
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) {
+      for (const item of value) formData.append(key, String(item));
+    } else {
+      formData.append(key, String(value));
+    }
+  }
+
+  // Existing images to drop, one id per key.
+  if (removeImageIds) {
+    for (const imageId of removeImageIds) formData.append('removeImageIds', imageId);
+  }
+
+  // New image files to add.
+  if (images) {
+    for (const file of images) formData.append('images', file);
+  }
+
+  const res = await api.put(`/posts/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return res.data;
 }
 

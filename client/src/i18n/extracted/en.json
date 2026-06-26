@@ -1196,6 +1196,9 @@
   "posts.actions.delete": {
     "defaultMessage": "Delete"
   },
+  "posts.actions.edit": {
+    "defaultMessage": "Edit"
+  },
   "posts.actions.markAsFulfilled": {
     "defaultMessage": "Mark as Fulfilled"
   },
@@ -1274,6 +1277,15 @@
   "posts.detailPage.reportDialogTitle": {
     "defaultMessage": "Report this post?"
   },
+  "posts.editPage.failureToast": {
+    "defaultMessage": "Failed to update post"
+  },
+  "posts.editPage.successToast": {
+    "defaultMessage": "Post updated"
+  },
+  "posts.editPage.title": {
+    "defaultMessage": "Edit Post"
+  },
   "posts.filters.allCategories": {
     "defaultMessage": "All Categories"
   },
@@ -1334,6 +1346,9 @@
   "posts.form.endsLabel": {
     "defaultMessage": "Ends"
   },
+  "posts.form.existingImageAlt": {
+    "defaultMessage": "Current image {n}"
+  },
   "posts.form.friendsOption": {
     "defaultMessage": "Friends"
   },
@@ -1393,6 +1408,12 @@
   },
   "posts.form.requestRadioLabel": {
     "defaultMessage": "I need help (Request)"
+  },
+  "posts.form.saveButton": {
+    "defaultMessage": "Save Changes"
+  },
+  "posts.form.savingButton": {
+    "defaultMessage": "Saving..."
   },
   "posts.form.selectCategoryPlaceholder": {
     "defaultMessage": "Select a category"

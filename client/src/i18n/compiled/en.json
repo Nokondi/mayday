@@ -3384,6 +3384,12 @@
       "value": "Delete"
     }
   ],
+  "posts.actions.edit": [
+    {
+      "type": 0,
+      "value": "Edit"
+    }
+  ],
   "posts.actions.markAsFulfilled": [
     {
       "type": 0,
@@ -3582,6 +3588,24 @@
       "value": "Report this post?"
     }
   ],
+  "posts.editPage.failureToast": [
+    {
+      "type": 0,
+      "value": "Failed to update post"
+    }
+  ],
+  "posts.editPage.successToast": [
+    {
+      "type": 0,
+      "value": "Post updated"
+    }
+  ],
+  "posts.editPage.title": [
+    {
+      "type": 0,
+      "value": "Edit Post"
+    }
+  ],
   "posts.filters.allCategories": [
     {
       "type": 0,
@@ -3700,6 +3724,16 @@
     {
       "type": 0,
       "value": "Ends"
+    }
+  ],
+  "posts.form.existingImageAlt": [
+    {
+      "type": 0,
+      "value": "Current image "
+    },
+    {
+      "type": 1,
+      "value": "n"
     }
   ],
   "posts.form.friendsOption": [
@@ -3832,6 +3866,18 @@
     {
       "type": 0,
       "value": "I need help (Request)"
+    }
+  ],
+  "posts.form.saveButton": [
+    {
+      "type": 0,
+      "value": "Save Changes"
+    }
+  ],
+  "posts.form.savingButton": [
+    {
+      "type": 0,
+      "value": "Saving..."
     }
   ],
   "posts.form.selectCategoryPlaceholder": [

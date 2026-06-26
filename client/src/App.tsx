@@ -24,6 +24,9 @@ const PostDetailPage = lazy(() =>
 const CreatePostPage = lazy(() =>
   import("./pages/CreatePostPage.js").then((m) => ({ default: m.CreatePostPage })),
 );
+const EditPostPage = lazy(() =>
+  import("./pages/EditPostPage.js").then((m) => ({ default: m.EditPostPage })),
+);
 const MapPage = lazy(() =>
   import("./pages/MapPage.js").then((m) => ({ default: m.MapPage })),
 );
@@ -105,6 +108,14 @@ export function App() {
             element={
               <ProtectedRoute>
                 <CreatePostPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/posts/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EditPostPage />
               </ProtectedRoute>
             }
           />

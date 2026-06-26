@@ -6,8 +6,10 @@ import {
   createPostSchema,
   CATEGORIES,
   type CreatePostRequest,
+  type PostWithAuthor,
 } from "@mayday/shared";
 import { ImagePlus, X, MapPin, Loader2, Users } from "lucide-react";
+import { format } from "date-fns";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useDebounce } from "../../hooks/useDebounce.js";
 import { listMyOrganizations } from "../../api/organizations.js";
@@ -16,13 +18,29 @@ import { useAuth } from "../../context/AuthContext.js";
 import { FormField } from "../common/FormField.js";
 
 interface PostFormProps {
-  onSubmit: (data: CreatePostRequest, images: File[]) => Promise<void>;
+  onSubmit: (
+    data: CreatePostRequest,
+    images: File[],
+    removeImageIds: string[],
+  ) => Promise<void>;
   isSubmitting: boolean;
+  /** When provided, the form edits this post instead of creating a new one. */
+  initialPost?: PostWithAuthor;
 }
 
-export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
+/** Format an ISO timestamp for a `datetime-local` input, or undefined. */
+function toDateTimeLocal(iso: string | null | undefined): string | undefined {
+  return iso ? format(new Date(iso), "yyyy-MM-dd'T'HH:mm") : undefined;
+}
+
+export function PostForm({
+  onSubmit,
+  isSubmitting,
+  initialPost,
+}: PostFormProps) {
   const intl = useIntl();
   const { user } = useAuth();
+  const isEdit = !!initialPost;
   const {
     register,
     handleSubmit,
@@ -31,11 +49,26 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
     formState: { errors },
   } = useForm<CreatePostRequest>({
     resolver: zodResolver(createPostSchema),
-    defaultValues: {
-      type: "REQUEST",
-      urgency: "MEDIUM",
-      sharedWithFriends: false,
-    },
+    defaultValues: initialPost
+      ? {
+          type: initialPost.type,
+          title: initialPost.title,
+          description: initialPost.description,
+          category: initialPost.category,
+          urgency: initialPost.urgency,
+          location: initialPost.location ?? undefined,
+          latitude: initialPost.latitude ?? undefined,
+          longitude: initialPost.longitude ?? undefined,
+          startAt: toDateTimeLocal(initialPost.startAt),
+          endAt: toDateTimeLocal(initialPost.endAt),
+          recurrenceFreq: initialPost.recurrenceFreq ?? undefined,
+          recurrenceInterval: initialPost.recurrenceInterval ?? undefined,
+        }
+      : {
+          type: "REQUEST",
+          urgency: "MEDIUM",
+          sharedWithFriends: false,
+        },
   });
 
   const recurrenceFreq = watch("recurrenceFreq");
@@ -56,7 +89,20 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  // Images already attached to the post (edit mode). Removing one here queues
+  // its id for deletion on save; new uploads in `images` are appended.
+  const [existingImages, setExistingImages] = useState<
+    { id: string; url: string }[]
+  >(initialPost?.images ?? []);
+  const [removedImageIds, setRemovedImageIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const removeExistingImage = (imageId: string) => {
+    setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
+    setRemovedImageIds((prev) => [...prev, imageId]);
+  };
+
+  const totalImageCount = existingImages.length + images.length;
 
   // Geocoding state
   interface GeoResult {
@@ -75,7 +121,13 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
     };
     formatted?: string;
   }
-  const [locationQuery, setLocationQuery] = useState("");
+  const hasInitialLocation =
+    !!initialPost?.location &&
+    initialPost.latitude != null &&
+    initialPost.longitude != null;
+  const [locationQuery, setLocationQuery] = useState(
+    initialPost?.location ?? "",
+  );
   const [geocodeResults, setGeocodeResults] = useState<GeoResult[]>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [activeOptionIndex, setActiveOptionIndex] = useState(-1);
@@ -83,7 +135,15 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
     name: string;
     lat: number;
     lng: number;
-  } | null>(null);
+  } | null>(
+    hasInitialLocation
+      ? {
+          name: initialPost!.location!,
+          lat: initialPost!.latitude!,
+          lng: initialPost!.longitude!,
+        }
+      : null,
+  );
   const debouncedLocation = useDebounce(locationQuery, 500);
 
   function formatAddress(result: GeoResult): string {
@@ -173,7 +233,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const remaining = 5 - images.length;
+    const remaining = 5 - totalImageCount;
     const toAdd = files.slice(0, remaining);
 
     setImages((prev) => [...prev, ...toAdd]);
@@ -203,7 +263,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
       cleaned.recurrenceFreq = undefined;
       cleaned.recurrenceInterval = undefined;
     }
-    return onSubmit(cleaned, images);
+    return onSubmit(cleaned, images, removedImageIds);
   };
 
   return (
@@ -247,7 +307,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         </div>
       </fieldset>
 
-      {myOrgs && myOrgs.length > 0 && (
+      {!isEdit && myOrgs && myOrgs.length > 0 && (
         <div>
           <label
             htmlFor="post-organization"
@@ -279,7 +339,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         </div>
       )}
 
-      {(() => {
+      {!isEdit && (() => {
         const communities = myCommunities ?? [];
         const selectedCommunities = communities.filter((c) =>
           selectedCommunityIds.includes(c.id),
@@ -456,6 +516,43 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           </span>
         </label>
 
+        {existingImages.length > 0 && (
+          <div className="flex flex-wrap gap-3 mb-3">
+            {existingImages.map((img, i) => (
+              <div
+                key={img.id}
+                className="relative w-24 h-24 rounded-lg overflow-hidden border border-mayday-200 group"
+              >
+                <img
+                  src={img.url}
+                  alt={intl.formatMessage(
+                    {
+                      id: "posts.form.existingImageAlt",
+                      defaultMessage: "Current image {n}",
+                    },
+                    { n: i + 1 },
+                  )}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeExistingImage(img.id)}
+                  aria-label={intl.formatMessage(
+                    {
+                      id: "posts.form.removeImageAria",
+                      defaultMessage: "Remove image {n}",
+                    },
+                    { n: i + 1 },
+                  )}
+                  className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                >
+                  <X className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         {previews.length > 0 && (
           <div className="flex flex-wrap gap-3 mb-3">
             {previews.map((src, i) => (
@@ -493,7 +590,7 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
           </div>
         )}
 
-        {images.length < 5 && (
+        {totalImageCount < 5 && (
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -821,9 +918,21 @@ export function PostForm({ onSubmit, isSubmitting }: PostFormProps) {
         className="w-full bg-mayday-700 text-white py-3 rounded-lg font-medium hover:bg-mayday-800 disabled:opacity-50"
       >
         {isSubmitting ? (
+          isEdit ? (
+            <FormattedMessage
+              id="posts.form.savingButton"
+              defaultMessage="Saving..."
+            />
+          ) : (
+            <FormattedMessage
+              id="posts.form.submittingButton"
+              defaultMessage="Creating..."
+            />
+          )
+        ) : isEdit ? (
           <FormattedMessage
-            id="posts.form.submittingButton"
-            defaultMessage="Creating..."
+            id="posts.form.saveButton"
+            defaultMessage="Save Changes"
           />
         ) : (
           <FormattedMessage
