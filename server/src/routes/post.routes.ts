@@ -443,7 +443,11 @@ postRoutes.post(
     });
 
     // Create PostImage records for uploaded files
-    const files = (req.files as Express.MulterS3.File[]) || [];
+    // `req.files` is an array here (multer `.array()`), but its static type also
+    // admits a string / field-map shape, so guard at runtime before using it.
+    const files: Express.MulterS3.File[] = Array.isArray(req.files)
+      ? (req.files as Express.MulterS3.File[])
+      : [];
     if (files.length > 0) {
       await prisma.postImage.createMany({
         data: files.map((file, index) => ({
@@ -473,7 +477,11 @@ postRoutes.put(
   requireAuth,
   uploadPostImages,
   asyncHandler(async (req: AuthRequest, res) => {
-    const files = (req.files as Express.MulterS3.File[]) || [];
+    // `req.files` is an array here (multer `.array()`), but its static type also
+    // admits a string / field-map shape, so guard at runtime before using it.
+    const files: Express.MulterS3.File[] = Array.isArray(req.files)
+      ? (req.files as Express.MulterS3.File[])
+      : [];
     // Clean up freshly-uploaded objects when we bail before persisting them.
     const cleanupUploads = async () => {
       for (const file of files) {
