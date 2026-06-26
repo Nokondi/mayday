@@ -507,14 +507,14 @@ postRoutes.put(
       throw new AppError(400, message);
     }
 
-    // Images to remove — accept a single id or repeated fields, and keep only
-    // ids that actually belong to this post.
-    const rawRemove = req.body.removeImageIds;
-    const removeIds: string[] = Array.isArray(rawRemove)
-      ? rawRemove
-      : rawRemove
-        ? [rawRemove]
-        : [];
+    // Images to remove — accept a single id or repeated fields. Body params can
+    // be tampered into arrays (or arrays of non-strings), so normalize to a
+    // plain string[] before using them, and keep only ids that belong to this
+    // post.
+    const rawRemove: unknown = req.body.removeImageIds;
+    const removeIds: string[] = (
+      Array.isArray(rawRemove) ? rawRemove : rawRemove != null ? [rawRemove] : []
+    ).filter((id): id is string => typeof id === "string");
     const removable = existing.images.filter((img) => removeIds.includes(img.id));
 
     // Enforce the same 5-image cap as creation, counting images that survive

@@ -597,6 +597,26 @@ describe('PUT /api/posts/:id', () => {
     expect(mockedDeleteObjectByUrl).not.toHaveBeenCalledWith('https://cdn.example/x/2.png');
   });
 
+  it('ignores non-string entries in a tampered removeImageIds array', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({
+        images: [{ id: 'img-1', url: 'https://cdn.example/x/1.png', order: 0 }],
+      }) as never,
+    );
+    const deleteMany = vi.fn();
+    mockUpdateTransaction(dbPost(), { deleteMany });
+
+    const res = await request(makeApp())
+      .put('/api/posts/p1')
+      .set('Authorization', authHeader())
+      // A tampered body can make removeImageIds an array of non-strings.
+      .send({ title: 'Edited', removeImageIds: ['img-1', { evil: true }, ['nested']] });
+
+    expect(res.status).toBe(200);
+    // Only the well-formed string id is honored; non-strings are dropped.
+    expect(deleteMany).toHaveBeenCalledWith({ where: { id: { in: ['img-1'] } } });
+  });
+
   it('returns 404 when the post does not exist', async () => {
     mockedPost.findUnique.mockResolvedValueOnce(null as never);
 
