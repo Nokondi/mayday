@@ -40,6 +40,7 @@ import { UrgencyBadge } from "../components/common/UrgencyBadge.js";
 import { PostCard } from "../components/posts/PostCard.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { FulfillModal } from "../components/posts/FulfillModal.js";
+import { CommentsSection } from "../components/posts/CommentsSection.js";
 
 function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
   const intl = useIntl();
@@ -143,6 +144,9 @@ export function PostDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showFulfillModal, setShowFulfillModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<"comments" | "related">(
+    "comments",
+  );
   const [showReportConfirm, setShowReportConfirm] = useState(false);
   const [reportDetails, setReportDetails] = useState("");
   const reportDialogRef = useRef<HTMLDialogElement>(null);
@@ -572,9 +576,43 @@ export function PostDetailPage() {
         </div>
       </div>
 
-      {matches && matches.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
+      <div className="mt-8">
+        <div
+          role="tablist"
+          aria-label={intl.formatMessage({
+            id: "posts.detailPage.tabsAria",
+            defaultMessage: "Comments and related posts",
+          })}
+          className="flex gap-1 border-b border-mayday-200 mb-4"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "comments"}
+            onClick={() => setActiveTab("comments")}
+            className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
+              activeTab === "comments"
+                ? "border-mayday-700 text-mayday-700"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <FormattedMessage
+              id="posts.detailPage.commentsTab"
+              defaultMessage="Comments ({count})"
+              values={{ count: post.commentCount }}
+            />
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "related"}
+            onClick={() => setActiveTab("related")}
+            className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
+              activeTab === "related"
+                ? "border-mayday-700 text-mayday-700"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}
+          >
             {post.type === "REQUEST" ? (
               <FormattedMessage
                 id="posts.detailPage.matchingOffers"
@@ -586,14 +624,33 @@ export function PostDetailPage() {
                 defaultMessage="Matching Requests"
               />
             )}
-          </h2>
+          </button>
+        </div>
+
+        {activeTab === "comments" ? (
+          <CommentsSection postId={post.id} canModerate={isAdmin} />
+        ) : matches && matches.length > 0 ? (
           <div className="space-y-3">
             {matches.map((match) => (
               <PostCard key={match.id} post={match} />
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-center py-8 text-gray-500 text-sm">
+            {post.type === "REQUEST" ? (
+              <FormattedMessage
+                id="posts.detailPage.noMatchingOffers"
+                defaultMessage="No matching offers yet."
+              />
+            ) : (
+              <FormattedMessage
+                id="posts.detailPage.noMatchingRequests"
+                defaultMessage="No matching requests yet."
+              />
+            )}
+          </p>
+        )}
+      </div>
 
       <FulfillModal
         postId={id!}

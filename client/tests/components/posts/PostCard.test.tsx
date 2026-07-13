@@ -26,6 +26,7 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
     recurrenceInterval: null,
     images: [],
     fulfillments: [],
+    commentCount: 0,
     createdAt: "2020-01-01T00:00:00Z",
     updatedAt: "2020-01-01T00:00:00Z",
     author: {
@@ -81,6 +82,20 @@ describe("PostCard — basic rendering", () => {
   it('shows a relative-time line ending in "ago"', () => {
     renderCard(makePost());
     expect(screen.getByText(/ago$/)).toBeInTheDocument();
+  });
+
+  it("shows the comment count with an accessible label", () => {
+    renderCard(makePost({ commentCount: 3 }));
+    expect(
+      screen.getByLabelText("3 comments", { selector: "span" }),
+    ).toHaveTextContent("3");
+  });
+
+  it("renders a zero comment count for a post with no comments", () => {
+    renderCard(makePost({ commentCount: 0 }));
+    expect(
+      screen.getByLabelText("0 comments", { selector: "span" }),
+    ).toBeInTheDocument();
   });
 });
 

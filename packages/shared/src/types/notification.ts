@@ -38,6 +38,13 @@ export type NotificationEvent =
       inviterName: string;
     }
   | {
+      type: 'NEW_COMMENT';
+      postId: string;
+      postTitle: string;
+      commenterId: string;
+      commenterName: string;
+    }
+  | {
       type: 'FRIEND_REQUEST';
       senderId: string;
       senderName: string;
