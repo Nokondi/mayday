@@ -16,12 +16,20 @@ vi.mock('../../src/config/database.js', () => ({
       createMany: vi.fn(),
       deleteMany: vi.fn(),
     },
+    comment: {
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
     postImage: {
       createMany: vi.fn(),
       deleteMany: vi.fn(),
     },
     user: {
       findMany: vi.fn(),
+      findUnique: vi.fn(),
     },
     organization: {
       findMany: vi.fn(),
@@ -49,11 +57,21 @@ vi.mock('../../src/middleware/upload.middleware.js', () => ({
   uploadPostImages: (_req: unknown, _res: unknown, next: () => void) => next(),
 }));
 
+// The comment endpoints fan out notifications via notifyMany. Stub the whole
+// service so no email/push side effects fire and we can assert recipients.
+vi.mock('../../src/services/notification.service.js', () => ({
+  notifyMany: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { prisma } from '../../src/config/database.js';
 import { deleteObjectByUrl } from '../../src/config/storage.js';
 import { errorMiddleware } from '../../src/middleware/error.middleware.js';
 import { postRoutes } from '../../src/routes/post.routes.js';
 import { signAccessToken } from '../../src/utils/jwt.js';
+import { notifyMany } from '../../src/services/notification.service.js';
+
+const mockedComment = vi.mocked(prisma.comment);
+const mockedNotifyMany = vi.mocked(notifyMany);
 
 const mockedPost = vi.mocked(prisma.post);
 const mockedDeleteObjectByUrl = vi.mocked(deleteObjectByUrl);
@@ -122,6 +140,8 @@ beforeEach(() => {
   // to "no communities, no friends" so each test only sets what it asserts.
   vi.mocked(prisma.communityMember.findMany).mockResolvedValue([] as never);
   vi.mocked(prisma.friendship.findMany).mockResolvedValue([] as never);
+  // rejectBanned (on comment writes) looks the actor up — default to not banned.
+  vi.mocked(prisma.user.findUnique).mockResolvedValue({ isBanned: false } as never);
   // resetAllMocks clears the storage stub's resolved value; restore it so
   // `deleteObjectByUrl(...).catch(...)` has a promise to chain off.
   mockedDeleteObjectByUrl.mockResolvedValue(undefined as never);
@@ -952,5 +972,239 @@ describe('POST /api/posts/:id/reopen', () => {
       .post('/api/posts/p1/reopen');
 
     expect(res.status).toBe(401);
+  });
+});
+
+const THIRD_USER_ID = '00000000-0000-4000-a000-000000000003';
+
+function dbComment(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    id: 'c1',
+    postId: 'p1',
+    authorId: USER_ID,
+    body: 'Nice post',
+    editedAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    author: { id: USER_ID, name: 'Alice', bio: null, location: null, skills: [], avatarUrl: null, createdAt: new Date() },
+    ...overrides,
+  };
+}
+
+describe('GET /api/posts/:id/comments', () => {
+  it('returns 200 with the comments when the viewer can see the post', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce({
+      authorId: USER_ID, title: 'Need help', sharedWithFriends: false, communities: [],
+    } as never);
+    mockedComment.findMany.mockResolvedValueOnce([dbComment()] as never);
+
+    const res = await request(makeApp())
+      .get('/api/posts/p1/comments')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].body).toBe('Nice post');
+  });
+
+  it('returns 403 when the viewer cannot access the post', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce({
+      authorId: OTHER_USER_ID, title: 'Private', sharedWithFriends: false,
+      communities: [{ communityId: COMMUNITY_ID_1 }],
+    } as never);
+    vi.mocked(prisma.communityMember.findFirst).mockResolvedValueOnce(null as never);
+
+    const res = await request(makeApp())
+      .get('/api/posts/p1/comments')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(403);
+    expect(mockedComment.findMany).not.toHaveBeenCalled();
+  });
+
+  it('returns 404 when the post does not exist', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(null as never);
+
+    const res = await request(makeApp())
+      .get('/api/posts/missing/comments')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(404);
+  });
+
+  it('returns 401 without auth', async () => {
+    const res = await request(makeApp()).get('/api/posts/p1/comments');
+    expect(res.status).toBe(401);
+  });
+});
+
+describe('POST /api/posts/:id/comments', () => {
+  it('creates a comment and notifies the post author plus prior commenters, excluding the commenter', async () => {
+    mockedPost.findUnique.mockResolvedValue({
+      authorId: OTHER_USER_ID, title: 'Need help', sharedWithFriends: false, communities: [],
+    } as never);
+    mockedComment.create.mockResolvedValueOnce(dbComment({ body: 'Hello' }) as never);
+    mockedComment.findMany.mockResolvedValueOnce([
+      { authorId: THIRD_USER_ID }, { authorId: USER_ID },
+    ] as never);
+
+    const res = await request(makeApp())
+      .post('/api/posts/p1/comments')
+      .set('Authorization', authHeader())
+      .send({ body: 'Hello' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.body).toBe('Hello');
+
+    await vi.waitFor(() => expect(mockedNotifyMany).toHaveBeenCalledTimes(1));
+    const [recipients, event] = mockedNotifyMany.mock.calls[0] as [string[], { type: string; postId: string; commenterId: string }];
+    expect(recipients.sort()).toEqual([OTHER_USER_ID, THIRD_USER_ID].sort());
+    expect(recipients).not.toContain(USER_ID);
+    expect(event.type).toBe('NEW_COMMENT');
+    expect(event.commenterId).toBe(USER_ID);
+  });
+
+  it('returns 400 when the body is empty', async () => {
+    mockedPost.findUnique.mockResolvedValue({
+      authorId: USER_ID, title: 'Need help', sharedWithFriends: false, communities: [],
+    } as never);
+
+    const res = await request(makeApp())
+      .post('/api/posts/p1/comments')
+      .set('Authorization', authHeader())
+      .send({ body: '' });
+
+    expect(res.status).toBe(400);
+    expect(mockedComment.create).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 when the viewer cannot access the post', async () => {
+    mockedPost.findUnique.mockResolvedValue({
+      authorId: OTHER_USER_ID, title: 'Private', sharedWithFriends: false,
+      communities: [{ communityId: COMMUNITY_ID_1 }],
+    } as never);
+    vi.mocked(prisma.communityMember.findFirst).mockResolvedValueOnce(null as never);
+
+    const res = await request(makeApp())
+      .post('/api/posts/p1/comments')
+      .set('Authorization', authHeader())
+      .send({ body: 'Hello' });
+
+    expect(res.status).toBe(403);
+    expect(mockedComment.create).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 without auth', async () => {
+    const res = await request(makeApp())
+      .post('/api/posts/p1/comments')
+      .send({ body: 'Hello' });
+    expect(res.status).toBe(401);
+  });
+});
+
+describe('PUT /api/posts/:id/comments/:commentId', () => {
+  it('lets the comment author edit and stamps editedAt', async () => {
+    mockedComment.findUnique.mockResolvedValueOnce({ authorId: USER_ID, postId: 'p1' } as never);
+    mockedComment.update.mockResolvedValueOnce(dbComment({ body: 'Edited', editedAt: new Date() }) as never);
+
+    const res = await request(makeApp())
+      .put('/api/posts/p1/comments/c1')
+      .set('Authorization', authHeader())
+      .send({ body: 'Edited' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.body).toBe('Edited');
+    expect(res.body.editedAt).not.toBeNull();
+    const updateArg = mockedComment.update.mock.calls[0][0] as { data: { editedAt: unknown } };
+    expect(updateArg.data.editedAt).toBeInstanceOf(Date);
+  });
+
+  it('returns 403 when a non-author tries to edit', async () => {
+    mockedComment.findUnique.mockResolvedValueOnce({ authorId: OTHER_USER_ID, postId: 'p1' } as never);
+
+    const res = await request(makeApp())
+      .put('/api/posts/p1/comments/c1')
+      .set('Authorization', authHeader())
+      .send({ body: 'Hijack' });
+
+    expect(res.status).toBe(403);
+    expect(mockedComment.update).not.toHaveBeenCalled();
+  });
+
+  it('returns 404 when the comment belongs to a different post', async () => {
+    mockedComment.findUnique.mockResolvedValueOnce({ authorId: USER_ID, postId: 'other-post' } as never);
+
+    const res = await request(makeApp())
+      .put('/api/posts/p1/comments/c1')
+      .set('Authorization', authHeader())
+      .send({ body: 'Edited' });
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('DELETE /api/posts/:id/comments/:commentId', () => {
+  it('lets the comment author delete their own comment', async () => {
+    mockedComment.findUnique.mockResolvedValueOnce({
+      authorId: USER_ID, postId: 'p1',
+    } as never);
+    mockedComment.delete.mockResolvedValueOnce({} as never);
+
+    const res = await request(makeApp())
+      .delete('/api/posts/p1/comments/c1')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+    expect(mockedComment.delete).toHaveBeenCalled();
+  });
+
+  it('does NOT let the post owner delete a comment from another user', async () => {
+    // The actor (USER_ID) owns the post but is not the comment author or an admin.
+    mockedComment.findUnique.mockResolvedValueOnce({
+      authorId: OTHER_USER_ID, postId: 'p1',
+    } as never);
+
+    const res = await request(makeApp())
+      .delete('/api/posts/p1/comments/c1')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(403);
+    expect(mockedComment.delete).not.toHaveBeenCalled();
+  });
+
+  it('lets a site admin delete any comment', async () => {
+    mockedComment.findUnique.mockResolvedValueOnce({
+      authorId: OTHER_USER_ID, postId: 'p1',
+    } as never);
+    mockedComment.delete.mockResolvedValueOnce({} as never);
+
+    const res = await request(makeApp())
+      .delete('/api/posts/p1/comments/c1')
+      .set('Authorization', authHeader(adminPayload));
+
+    expect(res.status).toBe(200);
+  });
+
+  it('returns 403 when a non-author, non-admin tries to delete', async () => {
+    mockedComment.findUnique.mockResolvedValueOnce({
+      authorId: OTHER_USER_ID, postId: 'p1',
+    } as never);
+
+    const res = await request(makeApp())
+      .delete('/api/posts/p1/comments/c1')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(403);
+    expect(mockedComment.delete).not.toHaveBeenCalled();
+  });
+
+  it('returns 404 when the comment does not exist', async () => {
+    mockedComment.findUnique.mockResolvedValueOnce(null as never);
+
+    const res = await request(makeApp())
+      .delete('/api/posts/p1/comments/missing')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(404);
   });
 });

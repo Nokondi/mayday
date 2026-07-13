@@ -130,6 +130,15 @@ export type CreatePostRequest = z.infer<typeof createPostSchema>;
 export type UpdatePostRequest = z.infer<typeof updatePostSchema>;
 export type FulfillPostRequest = z.infer<typeof fulfillPostSchema>;
 
+// Comments — create and edit share the same body-only shape.
+export const createCommentSchema = z.object({
+  body: z.string().min(1, 'Comment cannot be empty').max(2000),
+});
+export const updateCommentSchema = createCommentSchema;
+
+export type CreateCommentRequest = z.infer<typeof createCommentSchema>;
+export type UpdateCommentRequest = z.infer<typeof updateCommentSchema>;
+
 // Profile links — shared by users, organizations, and communities.
 // Stored as a JSON array column. An empty array is normalized to undefined by callers.
 export const profileLinkSchema = z.object({

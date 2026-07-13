@@ -23,6 +23,7 @@ function makePost(overrides: Partial<PostWithAuthor>): PostWithAuthor {
     recurrenceInterval: null,
     images: [],
     fulfillments: [],
+    commentCount: 0,
     createdAt: '2026-04-01T00:00:00Z',
     updatedAt: '2026-04-01T00:00:00Z',
     author: {

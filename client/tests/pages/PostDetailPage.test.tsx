@@ -30,7 +30,15 @@ vi.mock('../../src/api/users.js', () => ({
   createReport: vi.fn(),
 }));
 
+vi.mock('../../src/api/comments.js', () => ({
+  getComments: vi.fn(),
+  createComment: vi.fn(),
+  updateComment: vi.fn(),
+  deleteComment: vi.fn(),
+}));
+
 import { useAuth } from '../../src/context/AuthContext.js';
+import { getComments } from '../../src/api/comments.js';
 import { getPost, getPostMatches, reopenPost } from '../../src/api/posts.js';
 import { startConversation } from '../../src/api/messages.js';
 import { createReport } from '../../src/api/users.js';
@@ -74,6 +82,7 @@ function makePost(overrides: Record<string, unknown> = {}) {
     recurrenceInterval: null,
     images: [],
     fulfillments: [],
+    commentCount: 0,
     createdAt: '2020-01-01T00:00:00Z',
     updatedAt: '2020-01-01T00:00:00Z',
     author: {
@@ -131,9 +140,12 @@ function renderPage() {
   );
 }
 
+const mockedGetComments = vi.mocked(getComments);
+
 beforeEach(() => {
   vi.clearAllMocks();
   mockedGetPostMatches.mockResolvedValue([]);
+  mockedGetComments.mockResolvedValue([]);
 });
 
 describe('PostDetailPage — fulfill button visibility', () => {
@@ -169,6 +181,69 @@ describe('PostDetailPage — fulfill button visibility', () => {
 
     await screen.findByText('Need groceries');
     expect(screen.queryByRole('button', { name: /mark as fulfilled/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('PostDetailPage — comments / related tabs', () => {
+  it('defaults to the Comments tab and shows the comment count in its label', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1', commentCount: 2 }) as never);
+    renderPage();
+
+    expect(await screen.findByRole('tab', { name: /comments \(2\)/i })).toBeInTheDocument();
+    // The comments tab is selected by default, so its composer is present.
+    expect(await screen.findByPlaceholderText(/add a comment/i)).toBeInTheDocument();
+  });
+
+  it('does not offer a moderator delete on another user\'s comment to a post owner who is not an admin', async () => {
+    // u1 owns the post but is a plain USER; the comment is by u2.
+    setAuth({ id: 'u1', email: 'a@b.com', name: 'Alice', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1', commentCount: 1 }) as never);
+    mockedGetComments.mockResolvedValue([
+      {
+        id: 'c1', postId: 'p1', authorId: 'u2', body: 'u2 comment',
+        editedAt: null, createdAt: '2020-01-01T00:00:00Z', updatedAt: '2020-01-01T00:00:00Z',
+        author: { id: 'u2', name: 'Bob', bio: null, location: null, skills: [], avatarUrl: null, links: null, createdAt: '2020-01-01T00:00:00Z' },
+      },
+    ] as never);
+    renderPage();
+
+    const commentRoot = (await screen.findByText('u2 comment')).closest('div')!;
+    expect(within(commentRoot).queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
+    expect(within(commentRoot).queryByRole('button', { name: /edit/i })).not.toBeInTheDocument();
+  });
+
+  it('offers a moderator delete on another user\'s comment to a site admin', async () => {
+    setAuth({ id: 'admin1', email: 'admin@b.com', name: 'Admin', role: 'ADMIN', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1', commentCount: 1 }) as never);
+    mockedGetComments.mockResolvedValue([
+      {
+        id: 'c1', postId: 'p1', authorId: 'u2', body: 'u2 comment',
+        editedAt: null, createdAt: '2020-01-01T00:00:00Z', updatedAt: '2020-01-01T00:00:00Z',
+        author: { id: 'u2', name: 'Bob', bio: null, location: null, skills: [], avatarUrl: null, links: null, createdAt: '2020-01-01T00:00:00Z' },
+      },
+    ] as never);
+    renderPage();
+
+    const commentRoot = (await screen.findByText('u2 comment')).closest('div')!;
+    expect(within(commentRoot).getByRole('button', { name: /delete/i })).toBeInTheDocument();
+  });
+
+  it('switches to the related-posts tab and renders matches', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ type: 'REQUEST', authorId: 'u1' }) as never);
+    mockedGetPostMatches.mockResolvedValue([
+      makePost({ id: 'm1', type: 'OFFER', title: 'I can help' }) as never,
+    ]);
+    renderPage();
+
+    await screen.findByText('Need groceries');
+    await user.click(screen.getByRole('tab', { name: /matching offers/i }));
+
+    expect(await screen.findByText('I can help')).toBeInTheDocument();
+    // The composer from the comments tab is no longer shown.
+    expect(screen.queryByPlaceholderText(/add a comment/i)).not.toBeInTheDocument();
   });
 });
 

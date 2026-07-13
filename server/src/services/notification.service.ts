@@ -2,6 +2,7 @@ import type { NotificationEvent, PushPayload } from '@mayday/shared';
 import { prisma } from '../config/database.js';
 import {
   sendNewMessageEmail,
+  sendNewCommentEmail,
   sendCommunityJoinRequestEmail,
   sendCommunityJoinRequestApprovedEmail,
   sendCommunityInviteEmail,
@@ -63,6 +64,13 @@ function buildPushPayload(event: NotificationEvent): PushPayload {
         tag: `msg:${event.conversationId}`,
       };
     }
+    case 'NEW_COMMENT':
+      return {
+        title: `${event.commenterName} commented on "${event.postTitle}"`,
+        body: 'Tap to view the discussion.',
+        url: `/posts/${event.postId}`,
+        tag: `comment:${event.postId}`,
+      };
     case 'COMMUNITY_JOIN_REQUEST':
       return {
         title: `${event.requesterName} wants to join ${event.communityName}`,
@@ -154,6 +162,13 @@ function sendEmailFor(
         user.email,
         event.senderName,
         event.isEncrypted ? null : event.content,
+      );
+    case 'NEW_COMMENT':
+      return sendNewCommentEmail(
+        user.email,
+        event.commenterName,
+        event.postTitle,
+        event.postId,
       );
     case 'COMMUNITY_JOIN_REQUEST':
       return sendCommunityJoinRequestEmail(

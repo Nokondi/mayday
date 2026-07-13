@@ -143,6 +143,39 @@ export async function sendNewMessageEmail(
   });
 }
 
+export async function sendNewCommentEmail(
+  to: string,
+  commenterName: string,
+  postTitle: string,
+  postId: string,
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(
+      `[mail] SMTP not configured; skipping new-comment email to ${to}`,
+    );
+    return;
+  }
+
+  const postUrl = `${env.CLIENT_URL}/posts/${postId}`;
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escape = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escapedCommenter = escape(commenterName);
+  const escapedTitle = escape(postTitle);
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `${commenterName} commented on "${postTitle}"`,
+    text: `${commenterName} commented on the post "${postTitle}" on Mayday.\n\nView the discussion: ${postUrl}`,
+    html: `
+      <p><strong>${escapedCommenter}</strong> commented on the post <strong>"${escapedTitle}"</strong> on Mayday.</p>
+      <p><a href="${postUrl}">View the discussion</a></p>
+    `,
+  });
+}
+
 export async function sendCommunityJoinRequestEmail(
   to: string,
   requesterName: string,

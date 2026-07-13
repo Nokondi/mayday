@@ -9,6 +9,7 @@ import {
   CheckCircle,
   Calendar,
   Repeat,
+  MessageSquare,
 } from "lucide-react";
 import { formatDistanceToNow, format, isSameDay } from "date-fns";
 import {
@@ -206,6 +207,20 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
               {formatDistanceToNow(new Date(post.createdAt), {
                 addSuffix: true,
               })}
+            </span>
+            <span
+              className="flex items-center gap-1"
+              aria-label={intl.formatMessage(
+                {
+                  id: "posts.card.commentCountAria",
+                  defaultMessage:
+                    "{count, plural, one {# comment} other {# comments}}",
+                },
+                { count: post.commentCount },
+              )}
+            >
+              <MessageSquare className="w-3 h-3" aria-hidden="true" />
+              {post.commentCount}
             </span>
           </div>
         </div>
