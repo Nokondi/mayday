@@ -4,6 +4,7 @@ import type { NotificationEvent } from '@mayday/shared';
 vi.mock('dotenv', () => ({ default: { config: vi.fn() }, config: vi.fn() }));
 
 const sendNewMessageEmail = vi.fn().mockResolvedValue(undefined);
+const sendNewCommentEmail = vi.fn().mockResolvedValue(undefined);
 const sendCommunityJoinRequestEmail = vi.fn().mockResolvedValue(undefined);
 const sendCommunityJoinRequestApprovedEmail = vi.fn().mockResolvedValue(undefined);
 const sendCommunityInviteEmail = vi.fn().mockResolvedValue(undefined);
@@ -14,6 +15,7 @@ const sendUserReportAdminEmail = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('../../src/services/mail.service.js', () => ({
   sendNewMessageEmail,
+  sendNewCommentEmail,
   sendCommunityJoinRequestEmail,
   sendCommunityJoinRequestApprovedEmail,
   sendCommunityInviteEmail,
@@ -71,6 +73,14 @@ const NEW_MESSAGE_EVENT: NotificationEvent = {
   senderId: 'user-2',
   conversationId: 'conv-1',
   content: 'Hello there',
+};
+
+const NEW_COMMENT_EVENT: NotificationEvent = {
+  type: 'NEW_COMMENT',
+  postId: 'post-1',
+  postTitle: 'Need help moving',
+  commenterId: 'user-2',
+  commenterName: 'Bob',
 };
 
 beforeEach(() => {
@@ -204,6 +214,17 @@ describe('notify — per-event email arguments', () => {
     for (const args of calls) {
       expect(args[2]).not.toBe('should-never-be-emailed');
     }
+  });
+
+  it('NEW_COMMENT → sendNewCommentEmail(email, commenterName, postTitle, postId)', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', NEW_COMMENT_EVENT);
+    expect(sendNewCommentEmail).toHaveBeenCalledWith(
+      'alice@example.com',
+      'Bob',
+      'Need help moving',
+      'post-1',
+    );
   });
 
   it('COMMUNITY_JOIN_REQUEST → sendCommunityJoinRequestEmail with all fields', async () => {
@@ -360,6 +381,15 @@ describe('notify — per-event push payloads', () => {
     // truncated rather than suppressed would still leak the first 200 chars.
     const serialized = JSON.stringify(p);
     expect(serialized).not.toContain('should-never-appear-in-push');
+  });
+
+  it('NEW_COMMENT — title names commenter and post, url=/posts/:id, tag namespaced by post', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', NEW_COMMENT_EVENT);
+    const p = payloadOf();
+    expect(p.title).toBe('Bob commented on "Need help moving"');
+    expect(p.url).toBe('/posts/post-1');
+    expect(p.tag).toBe('comment:post-1');
   });
 
   it('COMMUNITY_JOIN_REQUEST — url goes to /manage and body falls back when no message', async () => {

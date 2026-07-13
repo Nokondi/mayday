@@ -1189,6 +1189,54 @@
       "value": "Wed"
     }
   ],
+  "comments.createFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to post comment"
+    }
+  ],
+  "comments.deleteFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to delete comment"
+    }
+  ],
+  "comments.deleteSuccessToast": [
+    {
+      "type": 0,
+      "value": "Comment deleted"
+    }
+  ],
+  "comments.editFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to save comment"
+    }
+  ],
+  "comments.editedTag": [
+    {
+      "type": 0,
+      "value": "(edited)"
+    }
+  ],
+  "comments.empty": [
+    {
+      "type": 0,
+      "value": "No comments yet. Be the first to comment."
+    }
+  ],
+  "comments.form.placeholder": [
+    {
+      "type": 0,
+      "value": "Add a comment…"
+    }
+  ],
+  "comments.form.submit": [
+    {
+      "type": 0,
+      "value": "Comment"
+    }
+  ],
   "common.actions.cancel": [
     {
       "type": 0,
@@ -1201,10 +1249,28 @@
       "value": "Close"
     }
   ],
+  "common.actions.delete": [
+    {
+      "type": 0,
+      "value": "Delete"
+    }
+  ],
+  "common.actions.edit": [
+    {
+      "type": 0,
+      "value": "Edit"
+    }
+  ],
   "common.actions.login": [
     {
       "type": 0,
       "value": "Log in"
+    }
+  ],
+  "common.actions.save": [
+    {
+      "type": 0,
+      "value": "Save"
     }
   ],
   "common.announcementBanner.dismissAriaLabel": [
@@ -3478,6 +3544,38 @@
       "value": "Search & filters"
     }
   ],
+  "posts.card.commentCountAria": [
+    {
+      "offset": 0,
+      "options": {
+        "one": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " comment"
+            }
+          ]
+        },
+        "other": {
+          "value": [
+            {
+              "type": 7
+            },
+            {
+              "type": 0,
+              "value": " comments"
+            }
+          ]
+        }
+      },
+      "pluralType": "cardinal",
+      "type": 6,
+      "value": "count"
+    }
+  ],
   "posts.card.friendsBadge": [
     {
       "type": 0,
@@ -3500,6 +3598,20 @@
     {
       "type": 0,
       "value": "Create a Post"
+    }
+  ],
+  "posts.detailPage.commentsTab": [
+    {
+      "type": 0,
+      "value": "Comments ("
+    },
+    {
+      "type": 1,
+      "value": "count"
+    },
+    {
+      "type": 0,
+      "value": ")"
     }
   ],
   "posts.detailPage.contactFailedToast": [
@@ -3540,6 +3652,18 @@
     {
       "type": 1,
       "value": "title"
+    }
+  ],
+  "posts.detailPage.noMatchingOffers": [
+    {
+      "type": 0,
+      "value": "No matching offers yet."
+    }
+  ],
+  "posts.detailPage.noMatchingRequests": [
+    {
+      "type": 0,
+      "value": "No matching requests yet."
     }
   ],
   "posts.detailPage.notFound": [
@@ -3586,6 +3710,12 @@
     {
       "type": 0,
       "value": "Report this post?"
+    }
+  ],
+  "posts.detailPage.tabsAria": [
+    {
+      "type": 0,
+      "value": "Comments and related posts"
     }
   ],
   "posts.editPage.failureToast": [

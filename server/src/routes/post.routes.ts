@@ -7,8 +7,11 @@ import {
 import { validate } from "../middleware/validate.middleware.js";
 import {
   requireAuth,
+  rejectBanned,
   type AuthRequest,
 } from "../middleware/auth.middleware.js";
+import { createCommentSchema, updateCommentSchema } from "@mayday/shared";
+import { notifyMany } from "../services/notification.service.js";
 import { uploadPostImages } from "../middleware/upload.middleware.js";
 import { prisma } from "../config/database.js";
 import { deleteObjectByUrl } from "../config/storage.js";
@@ -42,6 +45,9 @@ export const postInclude = {
       createdAt: true,
     },
     orderBy: { createdAt: "asc" as const },
+  },
+  _count: {
+    select: { comments: true },
   },
 };
 
@@ -118,10 +124,18 @@ async function canViewPost(
  * (e.g. a missing findUnique result) passes straight through.
  */
 export function serializePost<
-  T extends { communities: { community: { id: string; name: string } }[] },
+  T extends {
+    communities: { community: { id: string; name: string } }[];
+    _count?: { comments: number };
+  },
 >(post: T | null) {
   if (!post) return null;
-  return { ...post, communities: post.communities.map((pc) => pc.community) };
+  const { _count, ...rest } = post;
+  return {
+    ...rest,
+    communities: post.communities.map((pc) => pc.community),
+    commentCount: _count?.comments ?? 0,
+  };
 }
 
 /**
@@ -374,6 +388,187 @@ postRoutes.get(
     });
 
     res.json(matches.map(serializePost));
+  }),
+);
+
+const commentInclude = {
+  author: { select: publicUserSelect },
+};
+
+/**
+ * Load a post for a comment operation and assert the caller may see it. Throws
+ * 404 if missing, 403 if the caller can't view it. Returns the post's authorId
+ * (the comment-thread owner who is always notified).
+ */
+async function loadViewablePost(
+  postId: string,
+  user: { id: string; role: string },
+): Promise<{ authorId: string; title: string }> {
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: {
+      authorId: true,
+      title: true,
+      sharedWithFriends: true,
+      communities: { select: { communityId: true } },
+    },
+  });
+  if (!post) throw new AppError(404, "Post not found");
+  const canView = await canViewPost(
+    post,
+    post.communities.map((pc) => pc.communityId),
+    user,
+  );
+  if (!canView) throw new AppError(403, "You don't have access to this post");
+  return { authorId: post.authorId, title: post.title };
+}
+
+/**
+ * Notify everyone subscribed to a post's comment thread about a new comment.
+ * Subscribers are *derived*, not stored: the post author plus every distinct
+ * prior commenter, minus the person who just commented. Fire-and-forget — a
+ * notification failure must never fail the comment write.
+ */
+async function notifyCommentSubscribers(params: {
+  postId: string;
+  postTitle: string;
+  commenterId: string;
+  commenterName: string;
+}): Promise<void> {
+  try {
+    const post = await prisma.post.findUnique({
+      where: { id: params.postId },
+      select: { authorId: true },
+    });
+    if (!post) return;
+
+    const priorCommenters = await prisma.comment.findMany({
+      where: { postId: params.postId },
+      select: { authorId: true },
+      distinct: ["authorId"],
+    });
+
+    const recipientIds = [
+      ...new Set([post.authorId, ...priorCommenters.map((c) => c.authorId)]),
+    ].filter((id) => id !== params.commenterId);
+
+    if (recipientIds.length === 0) return;
+
+    await notifyMany(recipientIds, {
+      type: "NEW_COMMENT",
+      postId: params.postId,
+      postTitle: params.postTitle,
+      commenterId: params.commenterId,
+      commenterName: params.commenterName,
+    });
+  } catch (err) {
+    console.error("[notify] failed to deliver new-comment notification", err);
+  }
+}
+
+// List a post's comments, oldest first. Visible to anyone who can view the post.
+postRoutes.get(
+  "/:id/comments",
+  requireAuth,
+  asyncHandler(async (req: AuthRequest, res) => {
+    await loadViewablePost(req.params.id as string, req.user!);
+
+    const comments = await prisma.comment.findMany({
+      where: { postId: req.params.id as string },
+      include: commentInclude,
+      orderBy: { createdAt: "asc" },
+    });
+
+    res.json(comments);
+  }),
+);
+
+// Add a comment. Anyone who can view the post may comment. Notifies the post
+// author and all prior commenters (see notifyCommentSubscribers).
+postRoutes.post(
+  "/:id/comments",
+  requireAuth,
+  rejectBanned,
+  validate(createCommentSchema),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { title } = await loadViewablePost(
+      req.params.id as string,
+      req.user!,
+    );
+
+    const comment = await prisma.comment.create({
+      data: {
+        postId: req.params.id as string,
+        authorId: req.user!.id,
+        body: req.body.body,
+      },
+      include: commentInclude,
+    });
+
+    void notifyCommentSubscribers({
+      postId: req.params.id as string,
+      postTitle: title,
+      commenterId: req.user!.id,
+      commenterName: comment.author.name,
+    });
+
+    res.status(201).json(comment);
+  }),
+);
+
+// Edit a comment's body. Author only — editing another person's words is not a
+// moderator action. Sets editedAt, which drives the "edited" tag in the UI.
+postRoutes.put(
+  "/:id/comments/:commentId",
+  requireAuth,
+  rejectBanned,
+  validate(updateCommentSchema),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const existing = await prisma.comment.findUnique({
+      where: { id: req.params.commentId as string },
+      select: { authorId: true, postId: true },
+    });
+    if (!existing || existing.postId !== req.params.id) {
+      throw new AppError(404, "Comment not found");
+    }
+    if (existing.authorId !== req.user!.id) {
+      throw new AppError(403, "Not authorized");
+    }
+
+    const comment = await prisma.comment.update({
+      where: { id: req.params.commentId as string },
+      data: { body: req.body.body, editedAt: new Date() },
+      include: commentInclude,
+    });
+
+    res.json(comment);
+  }),
+);
+
+// Delete a comment (hard delete). Allowed for the comment author or a site
+// admin only — post owners cannot delete comments on their own posts.
+postRoutes.delete(
+  "/:id/comments/:commentId",
+  requireAuth,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const existing = await prisma.comment.findUnique({
+      where: { id: req.params.commentId as string },
+      select: { authorId: true, postId: true },
+    });
+    if (!existing || existing.postId !== req.params.id) {
+      throw new AppError(404, "Comment not found");
+    }
+
+    const isCommentAuthor = existing.authorId === req.user!.id;
+    const isAdmin = req.user!.role === "ADMIN";
+    if (!isCommentAuthor && !isAdmin) {
+      throw new AppError(403, "Not authorized");
+    }
+
+    await prisma.comment.delete({
+      where: { id: req.params.commentId as string },
+    });
+    res.json({ message: "Comment deleted" });
   }),
 );
 

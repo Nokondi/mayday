@@ -308,6 +308,55 @@ describe('sendNewMessageEmail', () => {
   });
 });
 
+describe('sendNewCommentEmail', () => {
+  it('sends with the commenter, post title, and a link to /posts/:id', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendNewCommentEmail } = await import('../../src/services/mail.service.js');
+    await sendNewCommentEmail('to@example.com', 'Bob', 'Need help moving', 'post-1');
+
+    const mail = sendMailMock.mock.calls[0][0] as {
+      subject: string; text: string; html: string;
+    };
+    expect(mail.subject).toBe('Bob commented on "Need help moving"');
+    expect(mail.text).toContain('Need help moving');
+    expect(mail.html).toContain('https://mayday.test/posts/post-1');
+  });
+
+  it('escapes HTML in the commenter name and post title to prevent injection', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendNewCommentEmail } = await import('../../src/services/mail.service.js');
+    await sendNewCommentEmail(
+      'to@example.com',
+      '<img src=x onerror=alert(1)>',
+      '<script>alert(2)</script>',
+      'post-1',
+    );
+
+    const mail = sendMailMock.mock.calls[0][0] as { html: string };
+    expect(mail.html).not.toContain('<img src=x');
+    expect(mail.html).not.toContain('<script>');
+    expect(mail.html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(mail.html).toContain('&lt;script&gt;alert(2)&lt;/script&gt;');
+  });
+
+  it('no-ops when SMTP is not configured', async () => {
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { sendNewCommentEmail } = await import('../../src/services/mail.service.js');
+    await sendNewCommentEmail('to@example.com', 'Bob', 'Title', 'post-1');
+
+    expect(sendMailMock).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/SMTP not configured/));
+    warn.mockRestore();
+  });
+});
+
 describe('sendRegistrationCollisionEmail', () => {
   it('no-ops when SMTP credentials are not configured', async () => {
     delete process.env.SMTP_USER;

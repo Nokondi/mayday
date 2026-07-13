@@ -452,14 +452,47 @@
   "calendar.weekday.wed": {
     "defaultMessage": "Wed"
   },
+  "comments.createFailedToast": {
+    "defaultMessage": "Failed to post comment"
+  },
+  "comments.deleteFailedToast": {
+    "defaultMessage": "Failed to delete comment"
+  },
+  "comments.deleteSuccessToast": {
+    "defaultMessage": "Comment deleted"
+  },
+  "comments.editFailedToast": {
+    "defaultMessage": "Failed to save comment"
+  },
+  "comments.editedTag": {
+    "defaultMessage": "(edited)"
+  },
+  "comments.empty": {
+    "defaultMessage": "No comments yet. Be the first to comment."
+  },
+  "comments.form.placeholder": {
+    "defaultMessage": "Add a comment…"
+  },
+  "comments.form.submit": {
+    "defaultMessage": "Comment"
+  },
   "common.actions.cancel": {
     "defaultMessage": "Cancel"
   },
   "common.actions.close": {
     "defaultMessage": "Close"
   },
+  "common.actions.delete": {
+    "defaultMessage": "Delete"
+  },
+  "common.actions.edit": {
+    "defaultMessage": "Edit"
+  },
   "common.actions.login": {
     "defaultMessage": "Log in"
+  },
+  "common.actions.save": {
+    "defaultMessage": "Save"
   },
   "common.announcementBanner.dismissAriaLabel": {
     "defaultMessage": "Dismiss announcement"
@@ -1226,6 +1259,9 @@
   "posts.browsePage.toggleFilters": {
     "defaultMessage": "Search & filters"
   },
+  "posts.card.commentCountAria": {
+    "defaultMessage": "{count, plural, one {# comment} other {# comments}}"
+  },
   "posts.card.friendsBadge": {
     "defaultMessage": "Friends"
   },
@@ -1237,6 +1273,9 @@
   },
   "posts.createPage.title": {
     "defaultMessage": "Create a Post"
+  },
+  "posts.detailPage.commentsTab": {
+    "defaultMessage": "Comments ({count})"
   },
   "posts.detailPage.contactFailedToast": {
     "defaultMessage": "Failed to start conversation"
@@ -1255,6 +1294,12 @@
   },
   "posts.detailPage.messageDraftPrefix": {
     "defaultMessage": "Re: {title}"
+  },
+  "posts.detailPage.noMatchingOffers": {
+    "defaultMessage": "No matching offers yet."
+  },
+  "posts.detailPage.noMatchingRequests": {
+    "defaultMessage": "No matching requests yet."
   },
   "posts.detailPage.notFound": {
     "defaultMessage": "Post not found"
@@ -1276,6 +1321,9 @@
   },
   "posts.detailPage.reportDialogTitle": {
     "defaultMessage": "Report this post?"
+  },
+  "posts.detailPage.tabsAria": {
+    "defaultMessage": "Comments and related posts"
   },
   "posts.editPage.failureToast": {
     "defaultMessage": "Failed to update post"

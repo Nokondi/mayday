@@ -45,6 +45,9 @@ export interface Post {
   recurrenceInterval: number | null;
   images: PostImage[];
   fulfillments: PostFulfillment[];
+  // Number of comments on the post (live count; comments are hard-deleted so
+  // there are no tombstones to exclude). Drives the PostCard comment counter.
+  commentCount: number;
   createdAt: string;
   updatedAt: string;
 }

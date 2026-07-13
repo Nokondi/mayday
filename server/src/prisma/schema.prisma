@@ -106,6 +106,7 @@ model User {
   communityInvitesSent  CommunityInvite[]     @relation("communityInviteSender")
   communityJoinRequests CommunityJoinRequest[]
   fulfillments          PostFulfillment[]
+  comments              Comment[]
   bugReports            BugReport[]
   pendingCommunityInvitesSent    PendingCommunityInvite[]    @relation("pendingCommunityInviteSender")
   pendingOrganizationInvitesSent PendingOrganizationInvite[] @relation("pendingOrganizationInviteSender")
@@ -147,6 +148,7 @@ model Post {
   reports      Report[]
   images       PostImage[]
   fulfillments PostFulfillment[]
+  comments     Comment[]
 
   @@index([category])
   @@index([type])
@@ -197,6 +199,26 @@ model PostFulfillment {
   @@index([postId])
   @@index([userId])
   @@index([organizationId])
+}
+
+// A flat (non-nested) comment on a post. Every comment is a direct child of the
+// post; there is no parent-comment FK. editedAt is set when the body is changed
+// after creation and drives the "edited" tag in the UI. Deletes are hard — the
+// row is removed entirely (no tombstone), and cascade-removed with the post.
+model Comment {
+  id        String    @id @default(uuid())
+  postId    String
+  authorId  String
+  body      String
+  editedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+
+  @@index([postId, createdAt])
+  @@index([authorId])
 }
 
 model Conversation {
