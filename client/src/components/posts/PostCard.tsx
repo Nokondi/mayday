@@ -101,19 +101,19 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
               />
               {intl.formatMessage(typeLabels[post.type])}
             </span>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-start gap-2">
               {post.author.avatarUrl ? (
                 <img
                   src={post.author.avatarUrl}
                   alt=""
-                  className="w-8 h-8 rounded-full object-cover shrink-0"
+                  className="w-8 h-8 rounded-full object-cover shrink-0 mt-1"
                 />
               ) : (
-                <div className="w-8 h-8 bg-mayday-100 rounded-full flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 bg-mayday-100 rounded-full flex items-center justify-center shrink-0 mt-1">
                   <User className="w-4 h-4 text-mayday-600" aria-hidden="true" />
                 </div>
               )}
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-gray-900 truncate">
                   {post.author.name}
                 </span>
@@ -123,24 +123,22 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
                     {post.organization.name}
                   </span>
                 )}
+                <h3 className="font-semibold text-gray-900 truncate">
+                  {post.title}
+                </h3>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-1">
               {post.images?.length > 0 && (
                 <img
                   src={post.images[0].url}
                   alt={post.title}
-                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0 mt-1"
+                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
                 />
               )}
-              <div className="flex flex-col min-w-0 flex-1">
-                <h3 className="font-semibold text-gray-900 truncate">
-                  {post.title}
-                </h3>
-                <p className="text-sm text-gray-600 line-clamp-3 break-words">
-                  {post.description}
-                </p>
-              </div>
+              <p className="text-sm text-gray-600 line-clamp-3 break-words min-w-0 flex-1">
+                {post.description}
+              </p>
             </div>
           </div>
           <div className="flex flew-row flex-wrap items-center gap-2 mt-2">

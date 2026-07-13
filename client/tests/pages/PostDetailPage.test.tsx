@@ -171,7 +171,7 @@ describe('PostDetailPage — fulfill button visibility', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ status: 'OPEN', authorId: 'u1' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByRole('button', { name: /mark as fulfilled/i })).not.toBeInTheDocument();
   });
 
@@ -180,7 +180,7 @@ describe('PostDetailPage — fulfill button visibility', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ status: 'FULFILLED', authorId: 'u1' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByRole('button', { name: /mark as fulfilled/i })).not.toBeInTheDocument();
   });
 });
@@ -239,7 +239,7 @@ describe('PostDetailPage — comments / related tabs', () => {
     ]);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     await user.click(screen.getByRole('tab', { name: /matching offers/i }));
 
     expect(await screen.findByText('I can help')).toBeInTheDocument();
@@ -271,8 +271,33 @@ describe('PostDetailPage — edit button', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByRole('link', { name: /edit/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('PostDetailPage — type chip', () => {
+  it('shows an orange "Request" chip below a plain title for request posts', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ type: 'REQUEST' }) as never);
+    renderPage();
+
+    // The heading is the bare title again.
+    expect(
+      await screen.findByRole('heading', { name: 'Need groceries' }),
+    ).toBeInTheDocument();
+    const chip = screen.getByText('Request');
+    expect(chip).toHaveClass('rounded-full', 'bg-orange-100', 'text-orange-700');
+  });
+
+  it('shows a green "Offer" chip for offer posts', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ type: 'OFFER' }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: 'Need groceries' });
+    const chip = screen.getByText('Offer');
+    expect(chip).toHaveClass('rounded-full', 'bg-green-100', 'text-green-700');
   });
 });
 
@@ -369,7 +394,7 @@ describe('PostDetailPage — icon-only edit and delete controls', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
   });
 });
@@ -447,7 +472,7 @@ describe('PostDetailPage — fulfillment display', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ status: 'OPEN' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByText('Fulfilled by')).not.toBeInTheDocument();
   });
 });
@@ -466,7 +491,7 @@ describe('PostDetailPage — reopen button', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ status: 'FULFILLED', authorId: 'u1' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByRole('button', { name: /reopen/i })).not.toBeInTheDocument();
   });
 
@@ -475,7 +500,7 @@ describe('PostDetailPage — reopen button', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ status: 'OPEN', authorId: 'u1' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByRole('button', { name: /reopen/i })).not.toBeInTheDocument();
   });
 

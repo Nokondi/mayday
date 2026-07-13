@@ -282,12 +282,12 @@ export function PostDetailPage() {
             <Flag className="w-4 h-4" aria-hidden="true" />
           </button>
         )}
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-start gap-3 mb-3">
           <Link
             to={`/profile/${post.author.id}`}
             tabIndex={-1}
             aria-hidden="true"
-            className="shrink-0"
+            className="shrink-0 mt-1"
           >
             {post.author.avatarUrl ? (
               <img
@@ -317,22 +317,26 @@ export function PostDetailPage() {
                 {post.organization.name}
               </Link>
             )}
+            <h1 className="text-2xl font-bold text-gray-900">{post.title}</h1>
           </div>
         </div>
-        <span
-          className={`text-sm font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-700" : "text-green-700"}`}
-        >
-          <span className="sr-only">
-            <FormattedMessage
-              id="posts.typeAriaPrefix"
-              defaultMessage="Post type: "
-            />
-          </span>
-          {intl.formatMessage(typeLabels[post.type])}
-        </span>
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">{post.title}</h1>
         <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 mb-3">
           <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full ${
+                post.type === "REQUEST"
+                  ? "bg-orange-100 text-orange-700"
+                  : "bg-green-100 text-green-700"
+              }`}
+            >
+              <span className="sr-only">
+                <FormattedMessage
+                  id="posts.typeAriaPrefix"
+                  defaultMessage="Post type: "
+                />
+              </span>
+              {intl.formatMessage(typeLabels[post.type])}
+            </span>
             <CategoryBadge category={post.category} />
             <UrgencyBadge urgency={post.urgency} />
             <span
