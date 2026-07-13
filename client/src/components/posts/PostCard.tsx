@@ -93,17 +93,37 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex flex-col">
-            <span
-              className={`text-s font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-700" : "text-green-700"}`}
-            >
-              <span className="sr-only">
-                <FormattedMessage
-                  id="posts.typeAriaPrefix"
-                  defaultMessage="Post type: "
-                />
-              </span>
+            <span className="sr-only">
+              <FormattedMessage
+                id="posts.typeAriaPrefix"
+                defaultMessage="Post type: "
+              />
               {intl.formatMessage(typeLabels[post.type])}
             </span>
+            <div className="flex items-center gap-2 mb-2">
+              {post.author.avatarUrl ? (
+                <img
+                  src={post.author.avatarUrl}
+                  alt=""
+                  className="w-8 h-8 rounded-full object-cover shrink-0"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-mayday-100 rounded-full flex items-center justify-center shrink-0">
+                  <User className="w-4 h-4 text-mayday-600" aria-hidden="true" />
+                </div>
+              )}
+              <div className="min-w-0">
+                <span className="block text-sm font-semibold text-gray-900 truncate">
+                  {post.author.name}
+                </span>
+                {post.organization && (
+                  <span className="flex items-center gap-1 text-xs text-gray-500">
+                    <Building2 className="w-3 h-3" aria-hidden="true" />
+                    {post.organization.name}
+                  </span>
+                )}
+              </div>
+            </div>
             <div className="flex gap-2">
               {post.images?.length > 0 && (
                 <img
@@ -156,17 +176,6 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             ))}
           </div>
           <div className="flex items-center gap-x-3 flex-wrap mt-1 text-xs text-gray-500">
-            {post.organization ? (
-              <span className="flex items-center gap-1">
-                <Building2 className="w-3 h-3" aria-hidden="true" />
-                {post.organization.name}
-              </span>
-            ) : (
-              <span className="flex items-center gap-1">
-                <User className="w-3 h-3" aria-hidden="true" />
-                {post.author.name}
-              </span>
-            )}
             {post.location && post.latitude && post.longitude && (
               <span className="flex items-center gap-1">
                 <MapPin className="w-3 h-3" aria-hidden="true" />

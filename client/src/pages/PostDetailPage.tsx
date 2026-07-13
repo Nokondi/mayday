@@ -278,6 +278,43 @@ export function PostDetailPage() {
             <Flag className="w-4 h-4" aria-hidden="true" />
           </button>
         )}
+        <div className="flex items-center gap-3 mb-4">
+          <Link
+            to={`/profile/${post.author.id}`}
+            tabIndex={-1}
+            aria-hidden="true"
+            className="shrink-0"
+          >
+            {post.author.avatarUrl ? (
+              <img
+                src={post.author.avatarUrl}
+                alt=""
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-mayday-100 rounded-full flex items-center justify-center">
+                <User className="w-6 h-6 text-mayday-600" aria-hidden="true" />
+              </div>
+            )}
+          </Link>
+          <div className="min-w-0">
+            <Link
+              to={`/profile/${post.author.id}`}
+              className="block font-semibold text-gray-900 hover:text-mayday-700 truncate"
+            >
+              {post.author.name}
+            </Link>
+            {post.organization && (
+              <Link
+                to={`/organizations/${post.organization.id}`}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-mayday-600"
+              >
+                <Building2 className="w-3.5 h-3.5" aria-hidden="true" />
+                {post.organization.name}
+              </Link>
+            )}
+          </div>
+        </div>
         <span
           className={`text-sm font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-700" : "text-green-700"}`}
         >
@@ -362,30 +399,6 @@ export function PostDetailPage() {
         )}
 
         <div className="flex items-center gap-x-6 gap-y-2 text-sm leading-none text-gray-500 mb-6 flex-wrap sm:gap-1">
-          {post.organization ? (
-            <Link
-              to={`/organizations/${post.organization.id}`}
-              className="flex items-center gap-1 hover:text-mayday-600"
-            >
-              <Building2 className="w-4 h-4" />
-              {post.organization.name}
-              <span className="text-gray-500 ml-1">
-                <FormattedMessage
-                  id="posts.detailPage.organizationByLine"
-                  defaultMessage="· by {name}"
-                  values={{ name: post.author.name }}
-                />
-              </span>
-            </Link>
-          ) : (
-            <Link
-              to={`/profile/${post.author.id}`}
-              className="flex items-center gap-1 hover:text-mayday-600"
-            >
-              <User className="w-4 h-4" />
-              {post.author.name}
-            </Link>
-          )}
           {post.location && post.latitude && post.longitude && (
             <Link
               to={`/map?lat=${post.latitude}&lng=${post.longitude}&zoom=15`}
@@ -476,25 +489,6 @@ export function PostDetailPage() {
               </span>
             </button>
           )}
-          {(isOwner || isAdmin) && (
-            <Link
-              to={`/posts/${post.id}/edit`}
-              aria-label={intl.formatMessage({
-                id: "posts.actions.edit",
-                defaultMessage: "Edit",
-              })}
-              title={intl.formatMessage({
-                id: "posts.actions.edit",
-                defaultMessage: "Edit",
-              })}
-              className="flex items-center gap-2 border border-mayday-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50"
-            >
-              <Pencil className="w-4 h-4" />
-              <span className="hidden sm:inline">
-                <FormattedMessage id="posts.actions.edit" defaultMessage="Edit" />
-              </span>
-            </Link>
-          )}
           {(isOwner || isAdmin) &&
             post.status === "OPEN" &&
             post.type === "REQUEST" && (
@@ -508,7 +502,7 @@ export function PostDetailPage() {
                   id: "posts.actions.markAsFulfilled",
                   defaultMessage: "Mark as Fulfilled",
                 })}
-                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                className="flex items-center gap-1.5 text-sm text-green-700 border border-green-300 px-3 py-1.5 rounded-lg hover:bg-green-50"
               >
                 <CheckCircle className="w-4 h-4" />
                 <span className="hidden sm:inline">
@@ -543,27 +537,37 @@ export function PostDetailPage() {
             </button>
           )}
           {(isOwner || isAdmin) && (
-            <button
-              onClick={() => deleteMutation.mutate()}
-              disabled={deleteMutation.isPending}
-              aria-label={intl.formatMessage({
-                id: "posts.actions.delete",
-                defaultMessage: "Delete",
-              })}
-              title={intl.formatMessage({
-                id: "posts.actions.delete",
-                defaultMessage: "Delete",
-              })}
-              className="flex items-center gap-2 border border-red-300 text-red-600 px-4 py-2 rounded-lg hover:bg-red-50"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span className="hidden sm:inline">
-                <FormattedMessage
-                  id="posts.actions.delete"
-                  defaultMessage="Delete"
-                />
-              </span>
-            </button>
+            <div className="ml-auto self-end flex items-center gap-1">
+              <Link
+                to={`/posts/${post.id}/edit`}
+                aria-label={intl.formatMessage({
+                  id: "posts.actions.edit",
+                  defaultMessage: "Edit",
+                })}
+                title={intl.formatMessage({
+                  id: "posts.actions.edit",
+                  defaultMessage: "Edit",
+                })}
+                className="p-2 text-gray-600 hover:bg-gray-100 rounded"
+              >
+                <Pencil className="w-4 h-4" aria-hidden="true" />
+              </Link>
+              <button
+                onClick={() => deleteMutation.mutate()}
+                disabled={deleteMutation.isPending}
+                aria-label={intl.formatMessage({
+                  id: "posts.actions.delete",
+                  defaultMessage: "Delete",
+                })}
+                title={intl.formatMessage({
+                  id: "posts.actions.delete",
+                  defaultMessage: "Delete",
+                })}
+                className="p-2 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
+              >
+                <Trash2 className="w-4 h-4" aria-hidden="true" />
+              </button>
+            </div>
           )}
         </div>
       </div>
