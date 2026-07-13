@@ -11,6 +11,9 @@ server/src/prisma/migrations/**/migration_lock.toml
 # Uploads
 server/uploads/
 
+# TypeScript build artifacts
+*.tsbuildinfo
+
 # Vite
 client/dist/
 
