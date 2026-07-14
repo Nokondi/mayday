@@ -18,6 +18,7 @@ import {
   Repeat,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { formatDistanceToNow, format, isSameDay } from "date-fns";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -45,8 +46,26 @@ import { CommentsSection } from "../components/posts/CommentsSection.js";
 function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
   const intl = useIntl();
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const lightboxRef = useRef<HTMLDialogElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    const dialog = lightboxRef.current;
+    if (!dialog) return;
+    if (lightboxIndex !== null && !dialog.open) dialog.showModal();
+    else if (lightboxIndex === null && dialog.open) dialog.close();
+  }, [lightboxIndex]);
+
+  // Keep state in sync when the dialog closes on its own (e.g. Escape).
+  useEffect(() => {
+    const dialog = lightboxRef.current;
+    if (!dialog) return;
+    const handleClose = () => setLightboxIndex(null);
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, []);
 
   const updateScrollState = () => {
     const el = scrollerRef.current;
@@ -67,6 +86,17 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
     };
   }, [images.length]);
 
+  const handleLightboxKeyDown = (e: React.KeyboardEvent<HTMLDialogElement>) => {
+    if (lightboxIndex === null) return;
+    if (e.key === "ArrowLeft" && lightboxIndex > 0) {
+      e.preventDefault();
+      setLightboxIndex(lightboxIndex - 1);
+    } else if (e.key === "ArrowRight" && lightboxIndex < images.length - 1) {
+      e.preventDefault();
+      setLightboxIndex(lightboxIndex + 1);
+    }
+  };
+
   const scrollByCard = (direction: 1 | -1) => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -84,11 +114,10 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
         className="flex flex-nowrap gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-1 -mx-1 px-1"
       >
         {images.map((img, i) => (
-          <a
+          <button
             key={img.id}
-            href={img.url}
-            target="_blank"
-            rel="noopener noreferrer"
+            type="button"
+            onClick={() => setLightboxIndex(i)}
             data-carousel-item
             className="snap-start shrink-0 block rounded-lg overflow-hidden border border-mayday-200 hover:shadow-md transition-shadow"
           >
@@ -97,14 +126,13 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
               alt={intl.formatMessage(
                 {
                   id: "posts.imageCarousel.imageAlt",
-                  defaultMessage:
-                    "Attachment {n} of {total} (opens in new tab)",
+                  defaultMessage: "Attachment {n} of {total}",
                 },
                 { n: i + 1, total: images.length },
               )}
               className="w-40 h-40 object-cover"
             />
-          </a>
+          </button>
         ))}
       </div>
       {showArrows && canScrollLeft && (
@@ -133,6 +161,73 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
           <ChevronRight className="w-4 h-4 text-gray-700" />
         </button>
       )}
+      <dialog
+        ref={lightboxRef}
+        onKeyDown={handleLightboxKeyDown}
+        aria-label={
+          lightboxIndex !== null
+            ? intl.formatMessage(
+                {
+                  id: "posts.imageCarousel.imageAlt",
+                  defaultMessage: "Attachment {n} of {total}",
+                },
+                { n: lightboxIndex + 1, total: images.length },
+              )
+            : undefined
+        }
+        className="rounded-lg p-0 backdrop:bg-black/70"
+      >
+        {lightboxIndex !== null && (
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setLightboxIndex(null)}
+              aria-label={intl.formatMessage({
+                id: "common.actions.close",
+                defaultMessage: "Close",
+              })}
+              title={intl.formatMessage({
+                id: "common.actions.close",
+                defaultMessage: "Close",
+              })}
+              className="absolute top-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow"
+            >
+              <X className="w-5 h-5 text-gray-700" aria-hidden="true" />
+            </button>
+            {images.length > 1 && lightboxIndex > 0 && (
+              <button
+                type="button"
+                onClick={() => setLightboxIndex(lightboxIndex - 1)}
+                aria-label={intl.formatMessage({
+                  id: "posts.imageCarousel.previousAria",
+                  defaultMessage: "Previous image",
+                })}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
+              >
+                <ChevronLeft className="w-5 h-5 text-gray-700" aria-hidden="true" />
+              </button>
+            )}
+            {images.length > 1 && lightboxIndex < images.length - 1 && (
+              <button
+                type="button"
+                onClick={() => setLightboxIndex(lightboxIndex + 1)}
+                aria-label={intl.formatMessage({
+                  id: "posts.imageCarousel.nextAria",
+                  defaultMessage: "Next image",
+                })}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
+              >
+                <ChevronRight className="w-5 h-5 text-gray-700" aria-hidden="true" />
+              </button>
+            )}
+            <img
+              src={images[lightboxIndex].url}
+              alt=""
+              className="max-w-[90vw] max-h-[85vh] object-contain"
+            />
+          </div>
+        )}
+      </dialog>
     </div>
   );
 }

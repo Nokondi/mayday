@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { IntlProvider } from 'react-intl';
@@ -298,6 +298,128 @@ describe('PostDetailPage — type chip', () => {
     await screen.findByRole('heading', { name: 'Need groceries' });
     const chip = screen.getByText('Offer');
     expect(chip).toHaveClass('rounded-full', 'bg-green-100', 'text-green-700');
+  });
+});
+
+describe('PostDetailPage — image lightbox', () => {
+  it('opens an enlarged overlay instead of navigating when an image is clicked', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      images: [{ id: 'i1', url: 'https://example.com/a.jpg', order: 0 }],
+    }) as never);
+    const { container } = renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    // Thumbnails are buttons now — no link to the raw image URL.
+    expect(
+      container.querySelector('a[href="https://example.com/a.jpg"]'),
+    ).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Attachment 1 of 1' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Attachment 1 of 1' });
+    expect(
+      dialog.querySelector('img[src="https://example.com/a.jpg"]'),
+    ).toBeInTheDocument();
+    // A single image gets no navigation arrows.
+    expect(
+      within(dialog).queryByRole('button', { name: 'Previous image' }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(dialog).queryByRole('button', { name: 'Next image' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('navigates between images with the arrow buttons when there are multiple images', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      images: [
+        { id: 'i1', url: 'https://example.com/a.jpg', order: 0 },
+        { id: 'i2', url: 'https://example.com/b.jpg', order: 1 },
+      ],
+    }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    await user.click(screen.getByRole('button', { name: 'Attachment 1 of 2' }));
+
+    let dialog = await screen.findByRole('dialog', { name: 'Attachment 1 of 2' });
+    // On the first image only the next arrow is shown.
+    expect(
+      within(dialog).queryByRole('button', { name: 'Previous image' }),
+    ).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Next image' }));
+
+    dialog = await screen.findByRole('dialog', { name: 'Attachment 2 of 2' });
+    expect(
+      dialog.querySelector('img[src="https://example.com/b.jpg"]'),
+    ).toBeInTheDocument();
+    // On the last image only the previous arrow is shown.
+    expect(
+      within(dialog).queryByRole('button', { name: 'Next image' }),
+    ).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Previous image' }));
+
+    expect(
+      await screen.findByRole('dialog', { name: 'Attachment 1 of 2' }),
+    ).toBeInTheDocument();
+  });
+
+  it('navigates between images with the left and right arrow keys', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      images: [
+        { id: 'i1', url: 'https://example.com/a.jpg', order: 0 },
+        { id: 'i2', url: 'https://example.com/b.jpg', order: 1 },
+      ],
+    }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    await user.click(screen.getByRole('button', { name: 'Attachment 1 of 2' }));
+
+    let dialog = await screen.findByRole('dialog', { name: 'Attachment 1 of 2' });
+    fireEvent.keyDown(dialog, { key: 'ArrowRight' });
+
+    dialog = await screen.findByRole('dialog', { name: 'Attachment 2 of 2' });
+    expect(
+      dialog.querySelector('img[src="https://example.com/b.jpg"]'),
+    ).toBeInTheDocument();
+
+    // Clamped at the last image — ArrowRight does nothing.
+    fireEvent.keyDown(dialog, { key: 'ArrowRight' });
+    expect(
+      screen.getByRole('dialog', { name: 'Attachment 2 of 2' }),
+    ).toBeInTheDocument();
+
+    fireEvent.keyDown(dialog, { key: 'ArrowLeft' });
+    expect(
+      await screen.findByRole('dialog', { name: 'Attachment 1 of 2' }),
+    ).toBeInTheDocument();
+  });
+
+  it('closes the overlay when the X button is clicked', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      images: [{ id: 'i1', url: 'https://example.com/a.jpg', order: 0 }],
+    }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    await user.click(screen.getByRole('button', { name: 'Attachment 1 of 1' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Attachment 1 of 1' });
+    await user.click(within(dialog).getByRole('button', { name: /close/i }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('dialog', { name: 'Attachment 1 of 1' }),
+      ).not.toBeInTheDocument(),
+    );
   });
 });
 
