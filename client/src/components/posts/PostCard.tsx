@@ -94,13 +94,6 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex flex-col">
-            <span className="sr-only">
-              <FormattedMessage
-                id="posts.typeAriaPrefix"
-                defaultMessage="Post type: "
-              />
-              {intl.formatMessage(typeLabels[post.type])}
-            </span>
             <div className="flex items-start gap-2">
               {post.author.avatarUrl ? (
                 <img
@@ -142,6 +135,21 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             </div>
           </div>
           <div className="flex flew-row flex-wrap items-center gap-2 mt-2">
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full ${
+                post.type === "REQUEST"
+                  ? "bg-orange-100 text-orange-700"
+                  : "bg-green-100 text-green-700"
+              }`}
+            >
+              <span className="sr-only">
+                <FormattedMessage
+                  id="posts.typeAriaPrefix"
+                  defaultMessage="Post type: "
+                />
+              </span>
+              {intl.formatMessage(typeLabels[post.type])}
+            </span>
             <CategoryBadge category={post.category} />
             <UrgencyBadge urgency={post.urgency} />
             {post.status === "FULFILLED" && (

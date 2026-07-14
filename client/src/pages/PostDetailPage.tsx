@@ -486,7 +486,7 @@ export function PostDetailPage() {
                 id: "posts.actions.contact",
                 defaultMessage: "Contact",
               })}
-              className="flex items-center gap-2 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800"
+              className="flex items-center gap-1.5 text-sm text-mayday-700 border border-mayday-300 px-3 py-1.5 rounded-lg hover:bg-mayday-50 disabled:opacity-50"
             >
               <MessageSquare className="w-4 h-4" />
               <span className="hidden sm:inline">

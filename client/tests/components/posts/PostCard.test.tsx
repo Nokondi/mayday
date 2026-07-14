@@ -100,20 +100,19 @@ describe("PostCard — basic rendering", () => {
 });
 
 describe("PostCard — type label and styling", () => {
-  it("marks request posts with an orange border and a screen-reader-only type label", () => {
+  it('marks request posts with an orange border and an orange "Request" chip', () => {
     const { container } = renderCard(makePost({ type: "REQUEST" }));
-    // The type is announced to screen readers but no longer shown as visible text.
-    const srLabel = container.querySelector(".sr-only");
-    expect(srLabel).toHaveTextContent(/post type:\s*request/i);
+    const chip = screen.getByText("Request");
+    expect(chip).toHaveClass("rounded-full", "bg-orange-100", "text-orange-700");
     // The outer link carries the left-border color.
     const card = container.querySelector("a");
     expect(card).toHaveClass("border-l-orange-700");
   });
 
-  it("marks offer posts with a green border and a screen-reader-only type label", () => {
+  it('marks offer posts with a green border and a green "Offer" chip', () => {
     const { container } = renderCard(makePost({ type: "OFFER" }));
-    const srLabel = container.querySelector(".sr-only");
-    expect(srLabel).toHaveTextContent(/post type:\s*offer/i);
+    const chip = screen.getByText("Offer");
+    expect(chip).toHaveClass("rounded-full", "bg-green-100", "text-green-700");
     const card = container.querySelector("a");
     expect(card).toHaveClass("border-l-green-700");
   });
