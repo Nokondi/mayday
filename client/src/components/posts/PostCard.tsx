@@ -103,7 +103,10 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
                 />
               ) : (
                 <div className="w-8 h-8 bg-mayday-100 rounded-full flex items-center justify-center shrink-0 mt-1">
-                  <User className="w-4 h-4 text-mayday-600" aria-hidden="true" />
+                  <User
+                    className="w-4 h-4 text-mayday-600"
+                    aria-hidden="true"
+                  />
                 </div>
               )}
               <div className="min-w-0 flex-1">
@@ -121,7 +124,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
                 </h3>
               </div>
             </div>
-            <div className="flex gap-2 mt-1">
+            <div className="flex items-start gap-2 mt-1">
               {post.images?.length > 0 && (
                 <img
                   src={post.images[0].url}
@@ -129,7 +132,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
                   className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
                 />
               )}
-              <p className="text-sm text-gray-600 line-clamp-3 break-words min-w-0 flex-1">
+              <p className="text-sm text-gray-600 line-clamp-4 break-words min-w-0 flex-1">
                 {post.description}
               </p>
             </div>
