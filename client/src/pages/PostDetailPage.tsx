@@ -360,24 +360,63 @@ export function PostDetailPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="relative bg-white rounded-lg border border-mayday-200 p-6">
-        {user && !isOwner && (
-          <button
-            type="button"
-            onClick={() => setShowReportConfirm(true)}
-            aria-label={intl.formatMessage({
-              id: "posts.actions.reportPost",
-              defaultMessage: "Report post",
-            })}
-            title={intl.formatMessage({
-              id: "posts.actions.reportPost",
-              defaultMessage: "Report post",
-            })}
-            className="absolute top-3 right-3 p-1.5 text-red-600 hover:bg-red-50 rounded"
-          >
-            <Flag className="w-4 h-4" aria-hidden="true" />
-          </button>
+        {user && (
+          <div className="absolute top-3 right-3 flex items-center gap-1">
+            {!isOwner && (
+              <button
+                type="button"
+                onClick={() => setShowReportConfirm(true)}
+                aria-label={intl.formatMessage({
+                  id: "posts.actions.reportPost",
+                  defaultMessage: "Report post",
+                })}
+                title={intl.formatMessage({
+                  id: "posts.actions.reportPost",
+                  defaultMessage: "Report post",
+                })}
+                className="p-1.5 text-red-600 hover:bg-red-50 rounded"
+              >
+                <Flag className="w-4 h-4" aria-hidden="true" />
+              </button>
+            )}
+            {(isOwner || isAdmin) && (
+              <>
+                <Link
+                  to={`/posts/${post.id}/edit`}
+                  aria-label={intl.formatMessage({
+                    id: "posts.actions.edit",
+                    defaultMessage: "Edit",
+                  })}
+                  title={intl.formatMessage({
+                    id: "posts.actions.edit",
+                    defaultMessage: "Edit",
+                  })}
+                  className="p-1.5 text-gray-600 hover:bg-gray-100 rounded"
+                >
+                  <Pencil className="w-4 h-4" aria-hidden="true" />
+                </Link>
+                <button
+                  onClick={() => deleteMutation.mutate()}
+                  disabled={deleteMutation.isPending}
+                  aria-label={intl.formatMessage({
+                    id: "posts.actions.delete",
+                    defaultMessage: "Delete",
+                  })}
+                  title={intl.formatMessage({
+                    id: "posts.actions.delete",
+                    defaultMessage: "Delete",
+                  })}
+                  className="p-1.5 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
+                >
+                  <Trash2 className="w-4 h-4" aria-hidden="true" />
+                </button>
+              </>
+            )}
+          </div>
         )}
-        <div className="flex items-start gap-3 mb-3">
+        <div
+          className={`flex items-start gap-3 mb-3 ${user ? "pr-28" : ""}`}
+        >
           <Link
             to={`/profile/${post.author.id}`}
             tabIndex={-1}
@@ -638,39 +677,6 @@ export function PostDetailPage() {
                 />
               </span>
             </button>
-          )}
-          {(isOwner || isAdmin) && (
-            <div className="ml-auto self-end flex items-center gap-1">
-              <Link
-                to={`/posts/${post.id}/edit`}
-                aria-label={intl.formatMessage({
-                  id: "posts.actions.edit",
-                  defaultMessage: "Edit",
-                })}
-                title={intl.formatMessage({
-                  id: "posts.actions.edit",
-                  defaultMessage: "Edit",
-                })}
-                className="p-2 text-gray-600 hover:bg-gray-100 rounded"
-              >
-                <Pencil className="w-4 h-4" aria-hidden="true" />
-              </Link>
-              <button
-                onClick={() => deleteMutation.mutate()}
-                disabled={deleteMutation.isPending}
-                aria-label={intl.formatMessage({
-                  id: "posts.actions.delete",
-                  defaultMessage: "Delete",
-                })}
-                title={intl.formatMessage({
-                  id: "posts.actions.delete",
-                  defaultMessage: "Delete",
-                })}
-                className="p-2 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
-              >
-                <Trash2 className="w-4 h-4" aria-hidden="true" />
-              </button>
-            </div>
           )}
         </div>
       </div>
