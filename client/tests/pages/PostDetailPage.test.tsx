@@ -411,6 +411,64 @@ describe('PostDetailPage — image lightbox', () => {
     ).toBeInTheDocument();
   });
 
+  it('switches the inline image with the side arrows without opening the lightbox', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      images: [
+        { id: 'i1', url: 'https://example.com/a.jpg', order: 0 },
+        { id: 'i2', url: 'https://example.com/b.jpg', order: 1 },
+      ],
+    }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    expect(
+      screen.getByRole('button', { name: 'Attachment 1 of 2' }),
+    ).toBeInTheDocument();
+    // Only the next arrow shows on the first image.
+    expect(
+      screen.queryByRole('button', { name: 'Previous image' }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+
+    // The inline image advanced, and no overlay opened.
+    const inline = screen.getByRole('button', { name: 'Attachment 2 of 2' });
+    expect(
+      inline.querySelector('img[src="https://example.com/b.jpg"]'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('dialog', { name: /attachment/i }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Previous image' }));
+    expect(
+      screen.getByRole('button', { name: 'Attachment 1 of 2' }),
+    ).toBeInTheDocument();
+  });
+
+  it('opens the lightbox at the currently displayed image', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      images: [
+        { id: 'i1', url: 'https://example.com/a.jpg', order: 0 },
+        { id: 'i2', url: 'https://example.com/b.jpg', order: 1 },
+      ],
+    }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    await user.click(screen.getByRole('button', { name: 'Attachment 2 of 2' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Attachment 2 of 2' });
+    expect(
+      dialog.querySelector('img[src="https://example.com/b.jpg"]'),
+    ).toBeInTheDocument();
+  });
+
   it('closes the overlay when the X button is clicked', async () => {
     const user = userEvent.setup();
     setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });

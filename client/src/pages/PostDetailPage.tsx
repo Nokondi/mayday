@@ -46,77 +46,109 @@ import { CommentsSection } from "../components/posts/CommentsSection.js";
 function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
   const intl = useIntl();
   const lightboxRef = useRef<HTMLDialogElement>(null);
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  // One index drives both the inline image and the lightbox, so opening the
+  // lightbox shows the image being viewed and navigation stays in sync.
+  const [index, setIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     const dialog = lightboxRef.current;
     if (!dialog) return;
-    if (lightboxIndex !== null && !dialog.open) dialog.showModal();
-    else if (lightboxIndex === null && dialog.open) dialog.close();
-  }, [lightboxIndex]);
+    if (lightboxOpen && !dialog.open) dialog.showModal();
+    else if (!lightboxOpen && dialog.open) dialog.close();
+  }, [lightboxOpen]);
 
   // Keep state in sync when the dialog closes on its own (e.g. Escape).
   useEffect(() => {
     const dialog = lightboxRef.current;
     if (!dialog) return;
-    const handleClose = () => setLightboxIndex(null);
+    const handleClose = () => setLightboxOpen(false);
     dialog.addEventListener("close", handleClose);
     return () => dialog.removeEventListener("close", handleClose);
   }, []);
 
   const handleLightboxKeyDown = (e: React.KeyboardEvent<HTMLDialogElement>) => {
-    if (lightboxIndex === null) return;
-    if (e.key === "ArrowLeft" && lightboxIndex > 0) {
+    if (!lightboxOpen) return;
+    if (e.key === "ArrowLeft" && index > 0) {
       e.preventDefault();
-      setLightboxIndex(lightboxIndex - 1);
-    } else if (e.key === "ArrowRight" && lightboxIndex < images.length - 1) {
+      setIndex(index - 1);
+    } else if (e.key === "ArrowRight" && index < images.length - 1) {
       e.preventDefault();
-      setLightboxIndex(lightboxIndex + 1);
+      setIndex(index + 1);
     }
   };
+
+  const showArrows = images.length > 1;
+  const imageLabel = intl.formatMessage(
+    {
+      id: "posts.imageCarousel.imageAlt",
+      defaultMessage: "Attachment {n} of {total}",
+    },
+    { n: index + 1, total: images.length },
+  );
+  const prevLabel = intl.formatMessage({
+    id: "posts.imageCarousel.previousAria",
+    defaultMessage: "Previous image",
+  });
+  const nextLabel = intl.formatMessage({
+    id: "posts.imageCarousel.nextAria",
+    defaultMessage: "Next image",
+  });
 
   return (
     <div className="mb-4">
       <div className="flex justify-center">
-        <button
-          type="button"
-          onClick={() => setLightboxIndex(0)}
-          className="block rounded-lg overflow-hidden border border-mayday-200 hover:shadow-md transition-shadow"
-        >
-          <img
-            src={images[0].url}
-            alt={intl.formatMessage(
-              {
-                id: "posts.imageCarousel.imageAlt",
-                defaultMessage: "Attachment {n} of {total}",
-              },
-              { n: 1, total: images.length },
-            )}
-            className="max-h-96 max-w-full object-contain"
-          />
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(true)}
+            className="block rounded-lg overflow-hidden border border-mayday-200 hover:shadow-md transition-shadow"
+          >
+            <img
+              src={images[index].url}
+              alt={imageLabel}
+              className="w-96 max-w-full aspect-square object-cover"
+            />
+          </button>
+          {showArrows && index > 0 && (
+            <button
+              type="button"
+              onClick={() => setIndex(index - 1)}
+              aria-label={prevLabel}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
+            >
+              <ChevronLeft
+                className="w-5 h-5 text-gray-700"
+                aria-hidden="true"
+              />
+            </button>
+          )}
+          {showArrows && index < images.length - 1 && (
+            <button
+              type="button"
+              onClick={() => setIndex(index + 1)}
+              aria-label={nextLabel}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
+            >
+              <ChevronRight
+                className="w-5 h-5 text-gray-700"
+                aria-hidden="true"
+              />
+            </button>
+          )}
+        </div>
       </div>
       <dialog
         ref={lightboxRef}
         onKeyDown={handleLightboxKeyDown}
-        aria-label={
-          lightboxIndex !== null
-            ? intl.formatMessage(
-                {
-                  id: "posts.imageCarousel.imageAlt",
-                  defaultMessage: "Attachment {n} of {total}",
-                },
-                { n: lightboxIndex + 1, total: images.length },
-              )
-            : undefined
-        }
+        aria-label={lightboxOpen ? imageLabel : undefined}
         className="rounded-lg p-0 backdrop:bg-black/70"
       >
-        {lightboxIndex !== null && (
+        {lightboxOpen && (
           <div className="relative">
             <button
               type="button"
-              onClick={() => setLightboxIndex(null)}
+              onClick={() => setLightboxOpen(false)}
               aria-label={intl.formatMessage({
                 id: "common.actions.close",
                 defaultMessage: "Close",
@@ -129,14 +161,11 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
             >
               <X className="w-5 h-5 text-gray-700" aria-hidden="true" />
             </button>
-            {images.length > 1 && lightboxIndex > 0 && (
+            {showArrows && index > 0 && (
               <button
                 type="button"
-                onClick={() => setLightboxIndex(lightboxIndex - 1)}
-                aria-label={intl.formatMessage({
-                  id: "posts.imageCarousel.previousAria",
-                  defaultMessage: "Previous image",
-                })}
+                onClick={() => setIndex(index - 1)}
+                aria-label={prevLabel}
                 className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
               >
                 <ChevronLeft
@@ -145,14 +174,11 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
                 />
               </button>
             )}
-            {images.length > 1 && lightboxIndex < images.length - 1 && (
+            {showArrows && index < images.length - 1 && (
               <button
                 type="button"
-                onClick={() => setLightboxIndex(lightboxIndex + 1)}
-                aria-label={intl.formatMessage({
-                  id: "posts.imageCarousel.nextAria",
-                  defaultMessage: "Next image",
-                })}
+                onClick={() => setIndex(index + 1)}
+                aria-label={nextLabel}
                 className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
               >
                 <ChevronRight
@@ -162,7 +188,7 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
               </button>
             )}
             <img
-              src={images[lightboxIndex].url}
+              src={images[index].url}
               alt=""
               className="max-w-[90vw] max-h-[85vh] object-contain"
             />
