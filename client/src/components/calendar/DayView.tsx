@@ -100,7 +100,7 @@ export function DayView({
               <div
                 key={h}
                 style={{ top: i * HOUR_PX }}
-                className="absolute right-2 -translate-y-1/2 text-xs text-gray-400"
+                className="absolute right-2 -translate-y-1/2 text-xs text-gray-500"
               >
                 {format(addHours(base, h), 'h a')}
               </div>

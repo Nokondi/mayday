@@ -18,6 +18,7 @@ import {
   Repeat,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { formatDistanceToNow, format, isSameDay } from "date-fns";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -44,95 +45,156 @@ import { CommentsSection } from "../components/posts/CommentsSection.js";
 
 function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
   const intl = useIntl();
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const updateScrollState = () => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 0);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
-  };
+  const lightboxRef = useRef<HTMLDialogElement>(null);
+  // One index drives both the inline image and the lightbox, so opening the
+  // lightbox shows the image being viewed and navigation stays in sync.
+  const [index, setIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
-    updateScrollState();
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.addEventListener("scroll", updateScrollState, { passive: true });
-    window.addEventListener("resize", updateScrollState);
-    return () => {
-      el.removeEventListener("scroll", updateScrollState);
-      window.removeEventListener("resize", updateScrollState);
-    };
-  }, [images.length]);
+    const dialog = lightboxRef.current;
+    if (!dialog) return;
+    if (lightboxOpen && !dialog.open) dialog.showModal();
+    else if (!lightboxOpen && dialog.open) dialog.close();
+  }, [lightboxOpen]);
 
-  const scrollByCard = (direction: 1 | -1) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const card = el.querySelector<HTMLElement>("[data-carousel-item]");
-    const step = card ? card.offsetWidth + 12 : el.clientWidth;
-    el.scrollBy({ left: step * direction, behavior: "smooth" });
+  // Keep state in sync when the dialog closes on its own (e.g. Escape).
+  useEffect(() => {
+    const dialog = lightboxRef.current;
+    if (!dialog) return;
+    const handleClose = () => setLightboxOpen(false);
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, []);
+
+  const handleLightboxKeyDown = (e: React.KeyboardEvent<HTMLDialogElement>) => {
+    if (!lightboxOpen) return;
+    if (e.key === "ArrowLeft" && index > 0) {
+      e.preventDefault();
+      setIndex(index - 1);
+    } else if (e.key === "ArrowRight" && index < images.length - 1) {
+      e.preventDefault();
+      setIndex(index + 1);
+    }
   };
 
   const showArrows = images.length > 1;
+  const imageLabel = intl.formatMessage(
+    {
+      id: "posts.imageCarousel.imageAlt",
+      defaultMessage: "Attachment {n} of {total}",
+    },
+    { n: index + 1, total: images.length },
+  );
+  const prevLabel = intl.formatMessage({
+    id: "posts.imageCarousel.previousAria",
+    defaultMessage: "Previous image",
+  });
+  const nextLabel = intl.formatMessage({
+    id: "posts.imageCarousel.nextAria",
+    defaultMessage: "Next image",
+  });
 
   return (
-    <div className="relative mb-4">
-      <div
-        ref={scrollerRef}
-        className="flex flex-nowrap gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-1 -mx-1 px-1"
-      >
-        {images.map((img, i) => (
-          <a
-            key={img.id}
-            href={img.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-carousel-item
-            className="snap-start shrink-0 block rounded-lg overflow-hidden border border-mayday-200 hover:shadow-md transition-shadow"
+    <div className="mb-4">
+      <div className="flex justify-center">
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(true)}
+            className="block rounded-lg overflow-hidden border border-mayday-200 hover:shadow-md transition-shadow"
           >
             <img
-              src={img.url}
-              alt={intl.formatMessage(
-                {
-                  id: "posts.imageCarousel.imageAlt",
-                  defaultMessage:
-                    "Attachment {n} of {total} (opens in new tab)",
-                },
-                { n: i + 1, total: images.length },
-              )}
-              className="w-40 h-40 object-cover"
+              src={images[index].url}
+              alt={imageLabel}
+              className="w-96 max-w-full aspect-square object-cover"
             />
-          </a>
-        ))}
+          </button>
+          {showArrows && index > 0 && (
+            <button
+              type="button"
+              onClick={() => setIndex(index - 1)}
+              aria-label={prevLabel}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
+            >
+              <ChevronLeft
+                className="w-5 h-5 text-gray-700"
+                aria-hidden="true"
+              />
+            </button>
+          )}
+          {showArrows && index < images.length - 1 && (
+            <button
+              type="button"
+              onClick={() => setIndex(index + 1)}
+              aria-label={nextLabel}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
+            >
+              <ChevronRight
+                className="w-5 h-5 text-gray-700"
+                aria-hidden="true"
+              />
+            </button>
+          )}
+        </div>
       </div>
-      {showArrows && canScrollLeft && (
-        <button
-          type="button"
-          onClick={() => scrollByCard(-1)}
-          aria-label={intl.formatMessage({
-            id: "posts.imageCarousel.previousAria",
-            defaultMessage: "Previous image",
-          })}
-          className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
-        >
-          <ChevronLeft className="w-4 h-4 text-gray-700" />
-        </button>
-      )}
-      {showArrows && canScrollRight && (
-        <button
-          type="button"
-          onClick={() => scrollByCard(1)}
-          aria-label={intl.formatMessage({
-            id: "posts.imageCarousel.nextAria",
-            defaultMessage: "Next image",
-          })}
-          className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
-        >
-          <ChevronRight className="w-4 h-4 text-gray-700" />
-        </button>
-      )}
+      <dialog
+        ref={lightboxRef}
+        onKeyDown={handleLightboxKeyDown}
+        aria-label={lightboxOpen ? imageLabel : undefined}
+        className="rounded-lg p-0 backdrop:bg-black/70"
+      >
+        {lightboxOpen && (
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(false)}
+              aria-label={intl.formatMessage({
+                id: "common.actions.close",
+                defaultMessage: "Close",
+              })}
+              title={intl.formatMessage({
+                id: "common.actions.close",
+                defaultMessage: "Close",
+              })}
+              className="absolute top-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow"
+            >
+              <X className="w-5 h-5 text-gray-700" aria-hidden="true" />
+            </button>
+            {showArrows && index > 0 && (
+              <button
+                type="button"
+                onClick={() => setIndex(index - 1)}
+                aria-label={prevLabel}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
+              >
+                <ChevronLeft
+                  className="w-5 h-5 text-gray-700"
+                  aria-hidden="true"
+                />
+              </button>
+            )}
+            {showArrows && index < images.length - 1 && (
+              <button
+                type="button"
+                onClick={() => setIndex(index + 1)}
+                aria-label={nextLabel}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
+              >
+                <ChevronRight
+                  className="w-5 h-5 text-gray-700"
+                  aria-hidden="true"
+                />
+              </button>
+            )}
+            <img
+              src={images[index].url}
+              alt=""
+              className="max-w-[90vw] max-h-[85vh] object-contain"
+            />
+          </div>
+        )}
+      </dialog>
     </div>
   );
 }
@@ -251,7 +313,7 @@ export function PostDetailPage() {
   if (isLoading) return <LoadingSpinner className="py-20" />;
   if (!post)
     return (
-      <div className="text-center py-20 text-gray-500">
+      <div className="text-center py-20 text-gray-600">
         <FormattedMessage
           id="posts.detailPage.notFound"
           defaultMessage="Post not found"
@@ -265,41 +327,125 @@ export function PostDetailPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="relative bg-white rounded-lg border border-mayday-200 p-6">
-        {user && !isOwner && (
-          <button
-            type="button"
-            onClick={() => setShowReportConfirm(true)}
-            aria-label={intl.formatMessage({
-              id: "posts.actions.reportPost",
-              defaultMessage: "Report post",
-            })}
-            title={intl.formatMessage({
-              id: "posts.actions.reportPost",
-              defaultMessage: "Report post",
-            })}
-            className="absolute top-3 right-3 p-1.5 text-red-600 hover:bg-red-50 rounded"
-          >
-            <Flag className="w-4 h-4" aria-hidden="true" />
-          </button>
+        {user && (
+          <div className="absolute top-3 right-3 flex items-center gap-1">
+            {!isOwner && (
+              <button
+                type="button"
+                onClick={() => setShowReportConfirm(true)}
+                aria-label={intl.formatMessage({
+                  id: "posts.actions.reportPost",
+                  defaultMessage: "Report post",
+                })}
+                title={intl.formatMessage({
+                  id: "posts.actions.reportPost",
+                  defaultMessage: "Report post",
+                })}
+                className="p-1.5 text-red-600 hover:bg-red-50 rounded"
+              >
+                <Flag className="w-4 h-4" aria-hidden="true" />
+              </button>
+            )}
+            {(isOwner || isAdmin) && (
+              <>
+                <Link
+                  to={`/posts/${post.id}/edit`}
+                  aria-label={intl.formatMessage({
+                    id: "posts.actions.edit",
+                    defaultMessage: "Edit",
+                  })}
+                  title={intl.formatMessage({
+                    id: "posts.actions.edit",
+                    defaultMessage: "Edit",
+                  })}
+                  className="p-1.5 text-gray-600 hover:bg-gray-100 rounded"
+                >
+                  <Pencil className="w-4 h-4" aria-hidden="true" />
+                </Link>
+                <button
+                  onClick={() => deleteMutation.mutate()}
+                  disabled={deleteMutation.isPending}
+                  aria-label={intl.formatMessage({
+                    id: "posts.actions.delete",
+                    defaultMessage: "Delete",
+                  })}
+                  title={intl.formatMessage({
+                    id: "posts.actions.delete",
+                    defaultMessage: "Delete",
+                  })}
+                  className="p-1.5 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
+                >
+                  <Trash2 className="w-4 h-4" aria-hidden="true" />
+                </button>
+              </>
+            )}
+          </div>
         )}
-        <span
-          className={`text-sm font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-700" : "text-green-700"}`}
-        >
-          <span className="sr-only">
-            <FormattedMessage
-              id="posts.typeAriaPrefix"
-              defaultMessage="Post type: "
-            />
-          </span>
-          {intl.formatMessage(typeLabels[post.type])}
-        </span>
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">{post.title}</h1>
-        <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 mb-3">
+        <div className={`flex items-start gap-3 mb-3 ${user ? "pr-28" : ""}`}>
+          <Link
+            to={`/profile/${post.author.id}`}
+            tabIndex={-1}
+            aria-hidden="true"
+            className="shrink-0 mt-1"
+          >
+            {post.author.avatarUrl ? (
+              <img
+                src={post.author.avatarUrl}
+                alt=""
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-mayday-100 rounded-full flex items-center justify-center">
+                <User className="w-6 h-6 text-mayday-600" aria-hidden="true" />
+              </div>
+            )}
+          </Link>
+          <div className="min-w-0">
+            <Link
+              to={`/profile/${post.author.id}`}
+              className="block font-semibold text-gray-900 hover:text-mayday-700 truncate"
+            >
+              {post.author.name}
+            </Link>
+            {post.organization && (
+              <Link
+                to={`/organizations/${post.organization.id}`}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-mayday-600"
+              >
+                <Building2 className="w-3.5 h-3.5" aria-hidden="true" />
+                {post.organization.name}
+              </Link>
+            )}
+            <h1 className="text-2xl font-bold text-gray-900">{post.title}</h1>
+          </div>
+        </div>
+        {post.images?.length > 0 && <ImageCarousel images={post.images} />}
+
+        <p className="text-gray-700 whitespace-pre-wrap mb-3">
+          {post.description}
+        </p>
+
+        <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 mb-6">
           <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                post.type === "REQUEST"
+                  ? "bg-orange-100 text-orange-700"
+                  : "bg-green-100 text-green-700"
+              }`}
+            >
+              <span className="sr-only">
+                <FormattedMessage
+                  id="posts.typeAriaPrefix"
+                  defaultMessage="Post type: "
+                />
+              </span>
+              {intl.formatMessage(typeLabels[post.type])}
+            </span>
             <CategoryBadge category={post.category} />
             <UrgencyBadge urgency={post.urgency} />
             <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
+              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                 post.status === "OPEN"
                   ? "bg-green-100 text-green-700"
                   : post.status === "FULFILLED"
@@ -314,19 +460,13 @@ export function PostDetailPage() {
             <Link
               key={community.id}
               to={`/communities/${community.id}`}
-              className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-100"
+              className="flex items-center gap-1 text-xs font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-100"
             >
               <Lock className="w-3 h-3" />
               {community.name}
             </Link>
           ))}
         </div>
-
-        {post.images?.length > 0 && <ImageCarousel images={post.images} />}
-
-        <p className="text-gray-700 whitespace-pre-wrap mb-6">
-          {post.description}
-        </p>
 
         {post.status === "FULFILLED" && post.fulfillments?.length > 0 && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -366,30 +506,6 @@ export function PostDetailPage() {
         )}
 
         <div className="flex items-center gap-x-6 gap-y-2 text-sm leading-none text-gray-500 mb-6 flex-wrap sm:gap-1">
-          {post.organization ? (
-            <Link
-              to={`/organizations/${post.organization.id}`}
-              className="flex items-center gap-1 hover:text-mayday-600"
-            >
-              <Building2 className="w-4 h-4" />
-              {post.organization.name}
-              <span className="text-gray-500 ml-1">
-                <FormattedMessage
-                  id="posts.detailPage.organizationByLine"
-                  defaultMessage="· by {name}"
-                  values={{ name: post.author.name }}
-                />
-              </span>
-            </Link>
-          ) : (
-            <Link
-              to={`/profile/${post.author.id}`}
-              className="flex items-center gap-1 hover:text-mayday-600"
-            >
-              <User className="w-4 h-4" />
-              {post.author.name}
-            </Link>
-          )}
           {post.location && post.latitude && post.longitude && (
             <Link
               to={`/map?lat=${post.latitude}&lng=${post.longitude}&zoom=15`}
@@ -469,7 +585,7 @@ export function PostDetailPage() {
                 id: "posts.actions.contact",
                 defaultMessage: "Contact",
               })}
-              className="flex items-center gap-2 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800"
+              className="flex items-center gap-1.5 text-sm text-mayday-700 border border-mayday-300 px-3 py-1.5 rounded-lg hover:bg-mayday-50 disabled:opacity-50"
             >
               <MessageSquare className="w-4 h-4" />
               <span className="hidden sm:inline">
@@ -479,25 +595,6 @@ export function PostDetailPage() {
                 />
               </span>
             </button>
-          )}
-          {(isOwner || isAdmin) && (
-            <Link
-              to={`/posts/${post.id}/edit`}
-              aria-label={intl.formatMessage({
-                id: "posts.actions.edit",
-                defaultMessage: "Edit",
-              })}
-              title={intl.formatMessage({
-                id: "posts.actions.edit",
-                defaultMessage: "Edit",
-              })}
-              className="flex items-center gap-2 border border-mayday-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50"
-            >
-              <Pencil className="w-4 h-4" />
-              <span className="hidden sm:inline">
-                <FormattedMessage id="posts.actions.edit" defaultMessage="Edit" />
-              </span>
-            </Link>
           )}
           {(isOwner || isAdmin) &&
             post.status === "OPEN" &&
@@ -512,7 +609,7 @@ export function PostDetailPage() {
                   id: "posts.actions.markAsFulfilled",
                   defaultMessage: "Mark as Fulfilled",
                 })}
-                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                className="flex items-center gap-1.5 text-sm text-green-700 border border-green-300 px-3 py-1.5 rounded-lg hover:bg-green-50"
               >
                 <CheckCircle className="w-4 h-4" />
                 <span className="hidden sm:inline">
@@ -546,29 +643,6 @@ export function PostDetailPage() {
               </span>
             </button>
           )}
-          {(isOwner || isAdmin) && (
-            <button
-              onClick={() => deleteMutation.mutate()}
-              disabled={deleteMutation.isPending}
-              aria-label={intl.formatMessage({
-                id: "posts.actions.delete",
-                defaultMessage: "Delete",
-              })}
-              title={intl.formatMessage({
-                id: "posts.actions.delete",
-                defaultMessage: "Delete",
-              })}
-              className="flex items-center gap-2 border border-red-300 text-red-600 px-4 py-2 rounded-lg hover:bg-red-50"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span className="hidden sm:inline">
-                <FormattedMessage
-                  id="posts.actions.delete"
-                  defaultMessage="Delete"
-                />
-              </span>
-            </button>
-          )}
         </div>
       </div>
 
@@ -588,8 +662,8 @@ export function PostDetailPage() {
             onClick={() => setActiveTab("comments")}
             className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
               activeTab === "comments"
-                ? "border-mayday-700 text-mayday-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "border-mayday-800 text-mayday-800"
+                : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           >
             <FormattedMessage
@@ -605,8 +679,8 @@ export function PostDetailPage() {
             onClick={() => setActiveTab("related")}
             className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
               activeTab === "related"
-                ? "border-mayday-700 text-mayday-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "border-mayday-800 text-mayday-800"
+                : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           >
             {post.type === "REQUEST" ? (
@@ -632,7 +706,7 @@ export function PostDetailPage() {
             ))}
           </div>
         ) : (
-          <p className="text-center py-8 text-gray-500 text-sm">
+          <p className="text-center py-8 text-gray-600 text-sm">
             {post.type === "REQUEST" ? (
               <FormattedMessage
                 id="posts.detailPage.noMatchingOffers"

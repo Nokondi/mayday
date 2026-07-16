@@ -18,7 +18,7 @@ export function ConversationList({
 
   if (conversations.length === 0) {
     return (
-      <div className="p-4 text-center text-gray-500 text-sm">
+      <div className="p-4 text-center text-gray-600 text-sm">
         <FormattedMessage
           id="messages.list.emptyState"
           defaultMessage="No conversations yet. Contact someone from a post to start chatting."

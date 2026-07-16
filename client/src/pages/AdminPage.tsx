@@ -377,7 +377,7 @@ export function AdminPage() {
           className="space-y-3"
         >
           {reports?.data.length === 0 && (
-            <p className="text-center py-8 text-gray-500">
+            <p className="text-center py-8 text-gray-600">
               <FormattedMessage
                 id="admin.reports.empty"
                 defaultMessage="No pending reports"
@@ -547,7 +547,7 @@ export function AdminPage() {
           </div>
           <div className="space-y-3">
             {bugReports?.data.length === 0 && (
-              <p className="text-center py-8 text-gray-500">
+              <p className="text-center py-8 text-gray-600">
                 <FormattedMessage
                   id="admin.bugs.empty"
                   defaultMessage="No bug reports"
@@ -762,7 +762,7 @@ export function AdminPage() {
                         {u.name}
                       </Link>
                       {u.role === "ADMIN" && (
-                        <span className="text-xs bg-mayday-100 text-mayday-700 px-1.5 py-0.5 rounded">
+                        <span className="text-xs bg-mayday-100 text-mayday-800 px-1.5 py-0.5 rounded">
                           <FormattedMessage
                             id="admin.users.adminBadge"
                             defaultMessage="Admin"
@@ -819,7 +819,7 @@ export function AdminPage() {
 
           {users && users.totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 text-sm">
-              <p className="text-gray-500">
+              <p className="text-gray-600">
                 <FormattedMessage
                   id="admin.users.pageOfWithCount"
                   defaultMessage="Page {page} of {totalPages} ({total, plural, one {# user} other {# users}})"
@@ -932,7 +932,7 @@ export function AdminPage() {
               />
             </h2>
             {announcements?.length === 0 && (
-              <p className="text-center py-8 text-gray-500">
+              <p className="text-center py-8 text-gray-600">
                 <FormattedMessage
                   id="admin.announcements.empty"
                   defaultMessage="No announcements yet"
@@ -950,7 +950,7 @@ export function AdminPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       {a.active ? (
-                        <span className="text-xs bg-mayday-100 text-mayday-700 px-1.5 py-0.5 rounded">
+                        <span className="text-xs bg-mayday-100 text-mayday-800 px-1.5 py-0.5 rounded">
                           <FormattedMessage
                             id="admin.announcements.activeBadge"
                             defaultMessage="Active"

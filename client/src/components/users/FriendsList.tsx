@@ -26,7 +26,7 @@ export function FriendsList({ userId }: { userId: string }) {
         />
       </h2>
       {friends.length === 0 ? (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-600">
           <FormattedMessage
             id="profile.friends.empty"
             defaultMessage="No friends yet."

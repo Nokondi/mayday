@@ -239,7 +239,7 @@ export function ProfilePage() {
   if (isLoading) return <LoadingSpinner className="py-20" />;
   if (!profile)
     return (
-      <div className="text-center py-20 text-gray-500">
+      <div className="text-center py-20 text-gray-600">
         <FormattedMessage
           id="profile.notFound"
           defaultMessage="User not found"

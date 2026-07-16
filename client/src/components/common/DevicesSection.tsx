@@ -183,7 +183,7 @@ export function DevicesSection() {
                     {labelOrFallback}
                   </span>
                   {isCurrent && (
-                    <span className="text-xs bg-mayday-100 text-mayday-700 px-1.5 py-0.5 rounded">
+                    <span className="text-xs bg-mayday-100 text-mayday-800 px-1.5 py-0.5 rounded">
                       <FormattedMessage
                         id="common.devicesSection.thisDeviceBadge"
                         defaultMessage="This device"
@@ -192,7 +192,7 @@ export function DevicesSection() {
                   )}
                 </div>
                 <div className="text-xs text-gray-500 mt-0.5 font-mono">{d.fingerprint}</div>
-                <div className="text-xs text-gray-400 mt-0.5">
+                <div className="text-xs text-gray-500 mt-0.5">
                   <FormattedMessage
                     id="common.devicesSection.addedDate"
                     defaultMessage="Added {date}"

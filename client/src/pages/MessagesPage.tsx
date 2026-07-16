@@ -456,7 +456,7 @@ export function MessagesPage() {
             <MessageInput onSend={handleSend} initialContent={initialDraft} />
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
+          <div className="flex-1 flex items-center justify-center text-gray-600">
             <div className="text-center">
               <MessageSquare className="w-12 h-12 mx-auto mb-3" />
               <p>

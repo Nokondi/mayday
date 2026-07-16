@@ -112,7 +112,7 @@ export function CommunitiesPage() {
                   />
                 )}
               </h2>
-              <p className="text-sm text-gray-500 mb-3">
+              <p className="text-sm text-gray-600 mb-3">
                 <FormattedMessage
                   id="communities.browsePage.resultCount"
                   defaultMessage="{count, plural, one {# community found} other {# communities found}}"

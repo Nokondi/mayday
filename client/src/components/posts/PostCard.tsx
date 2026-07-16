@@ -94,8 +94,56 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex flex-col">
+            <div className="flex items-start gap-2">
+              {post.author.avatarUrl ? (
+                <img
+                  src={post.author.avatarUrl}
+                  alt=""
+                  className="w-8 h-8 rounded-full object-cover shrink-0 mt-1"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-mayday-100 rounded-full flex items-center justify-center shrink-0 mt-1">
+                  <User
+                    className="w-4 h-4 text-mayday-600"
+                    aria-hidden="true"
+                  />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <h2 className="block text-sm font-semibold text-gray-900 truncate">
+                  {post.author.name}
+                </h2>
+                {post.organization && (
+                  <span className="flex items-center gap-1 text-xs text-gray-500">
+                    <Building2 className="w-3 h-3" aria-hidden="true" />
+                    {post.organization.name}
+                  </span>
+                )}
+                <h3 className="font-semibold text-gray-900 truncate">
+                  {post.title}
+                </h3>
+              </div>
+            </div>
+            <div className="flex items-start gap-2 mt-1">
+              {post.images?.length > 0 && (
+                <img
+                  src={post.images[0].url}
+                  alt={post.title}
+                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                />
+              )}
+              <p className="text-sm text-gray-600 line-clamp-4 break-words min-w-0 flex-1">
+                {post.description}
+              </p>
+            </div>
+          </div>
+          <div className="flex flew-row flex-wrap items-center gap-2 mt-2">
             <span
-              className={`text-s font-semibold uppercase ${post.type === "REQUEST" ? "text-orange-700" : "text-green-700"}`}
+              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                post.type === "REQUEST"
+                  ? "bg-orange-100 text-orange-700"
+                  : "bg-green-100 text-green-700"
+              }`}
             >
               <span className="sr-only">
                 <FormattedMessage
@@ -105,40 +153,21 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
               </span>
               {intl.formatMessage(typeLabels[post.type])}
             </span>
-            <div className="flex gap-2">
-              {post.images?.length > 0 && (
-                <img
-                  src={post.images[0].url}
-                  alt={post.title}
-                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0 mt-1"
-                />
-              )}
-              <div className="flex flex-col min-w-0 flex-1">
-                <h3 className="font-semibold text-gray-900 truncate">
-                  {post.title}
-                </h3>
-                <p className="text-sm text-gray-600 line-clamp-3 break-words">
-                  {post.description}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex flew-row flex-wrap items-center gap-2 mt-2">
             <CategoryBadge category={post.category} />
             <UrgencyBadge urgency={post.urgency} />
             {post.status === "FULFILLED" && (
-              <span className="flex items-center gap-0.5 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+              <span className="flex items-center gap-0.5 text-xs font-medium bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
                 <CheckCircle className="w-3 h-3" aria-hidden="true" />
                 {intl.formatMessage(statusLabels.FULFILLED)}
               </span>
             )}
             {post.status === "CLOSED" && (
-              <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+              <span className="text-xs font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
                 {intl.formatMessage(statusLabels.CLOSED)}
               </span>
             )}
             {post.sharedWithFriends && (
-              <span className="flex items-center gap-1 text-xs bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
+              <span className="flex items-center gap-1 text-xs font-medium bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
                 <Users className="w-3 h-3" aria-hidden="true" />
                 {intl.formatMessage({
                   id: "posts.card.friendsBadge",
@@ -149,7 +178,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             {post.communities.map((community) => (
               <span
                 key={community.id}
-                className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded"
+                className="flex items-center gap-1 text-xs font-medium bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded"
               >
                 <Lock className="w-3 h-3" aria-hidden="true" />
                 {community.name}
@@ -157,17 +186,6 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             ))}
           </div>
           <div className="flex items-center gap-x-3 flex-wrap mt-1 text-xs text-gray-500">
-            {post.organization ? (
-              <span className="flex items-center gap-1">
-                <Building2 className="w-3 h-3" aria-hidden="true" />
-                {post.organization.name}
-              </span>
-            ) : (
-              <span className="flex items-center gap-1">
-                <User className="w-3 h-3" aria-hidden="true" />
-                {post.author.name}
-              </span>
-            )}
             {post.location && post.latitude && post.longitude && (
               <span className="flex items-center gap-1">
                 <MapPin className="w-3 h-3" aria-hidden="true" />

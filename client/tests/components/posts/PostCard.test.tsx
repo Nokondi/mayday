@@ -100,19 +100,43 @@ describe("PostCard — basic rendering", () => {
 });
 
 describe("PostCard — type label and styling", () => {
-  it('labels request posts as "Request" with orange accents', () => {
+  it('marks request posts with an orange border and an orange "Request" chip', () => {
     const { container } = renderCard(makePost({ type: "REQUEST" }));
-    expect(screen.getByText("Request")).toBeInTheDocument();
+    const chip = screen.getByText("Request");
+    expect(chip).toHaveClass(
+      "rounded-full",
+      "bg-orange-100",
+      "text-orange-700",
+      "font-medium",
+    );
     // The outer link carries the left-border color.
     const card = container.querySelector("a");
     expect(card).toHaveClass("border-l-orange-700");
   });
 
-  it('labels offer posts as "Offer" with green accents', () => {
+  it('marks offer posts with a green border and a green "Offer" chip', () => {
     const { container } = renderCard(makePost({ type: "OFFER" }));
-    expect(screen.getByText("Offer")).toBeInTheDocument();
+    const chip = screen.getByText("Offer");
+    expect(chip).toHaveClass(
+      "rounded-full",
+      "bg-green-100",
+      "text-green-700",
+      "font-medium",
+    );
     const card = container.querySelector("a");
     expect(card).toHaveClass("border-l-green-700");
+  });
+});
+
+describe("PostCard — heading structure", () => {
+  it("exposes the author name as an h2 and the title as an h3, so cards nest under a page h1 without skipping levels", () => {
+    renderCard(makePost({ title: "Need help" }));
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Alice" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 3, name: "Need help" }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -152,6 +176,36 @@ describe("PostCard — author vs organization attribution", () => {
       }),
     );
     expect(screen.getByText("Red Cross")).toBeInTheDocument();
+    // The author still appears in the header above the org line.
+    expect(screen.getByText("Alice")).toBeInTheDocument();
+  });
+});
+
+describe("PostCard — author avatar", () => {
+  it("renders the author avatar image when one is set", () => {
+    const { container } = renderCard(
+      makePost({
+        author: {
+          id: "u1",
+          name: "Alice",
+          bio: null,
+          location: null,
+          skills: [],
+          avatarUrl: "https://cdn.example.com/alice.png",
+          links: null,
+          createdAt: "2020-01-01T00:00:00Z",
+        },
+      }),
+    );
+    expect(
+      container.querySelector('img[src="https://cdn.example.com/alice.png"]'),
+    ).toBeInTheDocument();
+  });
+
+  it("renders a placeholder instead of an image when the author has no avatar", () => {
+    const { container } = renderCard(makePost());
+    // No post images and no avatar → no <img> anywhere in the card.
+    expect(container.querySelector("img")).toBeNull();
   });
 });
 

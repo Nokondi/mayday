@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { IntlProvider } from 'react-intl';
@@ -39,7 +39,7 @@ vi.mock('../../src/api/comments.js', () => ({
 
 import { useAuth } from '../../src/context/AuthContext.js';
 import { getComments } from '../../src/api/comments.js';
-import { getPost, getPostMatches, reopenPost } from '../../src/api/posts.js';
+import { getPost, getPostMatches, reopenPost, deletePost } from '../../src/api/posts.js';
 import { startConversation } from '../../src/api/messages.js';
 import { createReport } from '../../src/api/users.js';
 import { PostDetailPage } from '../../src/pages/PostDetailPage.js';
@@ -48,6 +48,7 @@ const mockedUseAuth = vi.mocked(useAuth);
 const mockedGetPost = vi.mocked(getPost);
 const mockedGetPostMatches = vi.mocked(getPostMatches);
 const mockedReopenPost = vi.mocked(reopenPost);
+const mockedDeletePost = vi.mocked(deletePost);
 const mockedCreateReport = vi.mocked(createReport);
 const mockedStartConversation = vi.mocked(startConversation);
 
@@ -170,7 +171,7 @@ describe('PostDetailPage — fulfill button visibility', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ status: 'OPEN', authorId: 'u1' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByRole('button', { name: /mark as fulfilled/i })).not.toBeInTheDocument();
   });
 
@@ -179,7 +180,7 @@ describe('PostDetailPage — fulfill button visibility', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ status: 'FULFILLED', authorId: 'u1' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByRole('button', { name: /mark as fulfilled/i })).not.toBeInTheDocument();
   });
 });
@@ -238,7 +239,7 @@ describe('PostDetailPage — comments / related tabs', () => {
     ]);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     await user.click(screen.getByRole('tab', { name: /matching offers/i }));
 
     expect(await screen.findByText('I can help')).toBeInTheDocument();
@@ -270,8 +271,321 @@ describe('PostDetailPage — edit button', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByRole('link', { name: /edit/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('PostDetailPage — type chip', () => {
+  it('shows an orange "Request" chip below a plain title for request posts', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ type: 'REQUEST' }) as never);
+    renderPage();
+
+    // The heading is the bare title again.
+    expect(
+      await screen.findByRole('heading', { name: 'Need groceries' }),
+    ).toBeInTheDocument();
+    const chip = screen.getByText('Request');
+    expect(chip).toHaveClass(
+      'rounded-full',
+      'bg-orange-100',
+      'text-orange-700',
+      'font-medium',
+    );
+  });
+
+  it('shows a green "Offer" chip for offer posts', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ type: 'OFFER' }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: 'Need groceries' });
+    const chip = screen.getByText('Offer');
+    expect(chip).toHaveClass(
+      'rounded-full',
+      'bg-green-100',
+      'text-green-700',
+      'font-medium',
+    );
+  });
+});
+
+describe('PostDetailPage — image lightbox', () => {
+  it('opens an enlarged overlay instead of navigating when an image is clicked', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      images: [{ id: 'i1', url: 'https://example.com/a.jpg', order: 0 }],
+    }) as never);
+    const { container } = renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    // Thumbnails are buttons now — no link to the raw image URL.
+    expect(
+      container.querySelector('a[href="https://example.com/a.jpg"]'),
+    ).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Attachment 1 of 1' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Attachment 1 of 1' });
+    expect(
+      dialog.querySelector('img[src="https://example.com/a.jpg"]'),
+    ).toBeInTheDocument();
+    // A single image gets no navigation arrows.
+    expect(
+      within(dialog).queryByRole('button', { name: 'Previous image' }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(dialog).queryByRole('button', { name: 'Next image' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('navigates between images with the arrow buttons when there are multiple images', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      images: [
+        { id: 'i1', url: 'https://example.com/a.jpg', order: 0 },
+        { id: 'i2', url: 'https://example.com/b.jpg', order: 1 },
+      ],
+    }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    await user.click(screen.getByRole('button', { name: 'Attachment 1 of 2' }));
+
+    let dialog = await screen.findByRole('dialog', { name: 'Attachment 1 of 2' });
+    // On the first image only the next arrow is shown.
+    expect(
+      within(dialog).queryByRole('button', { name: 'Previous image' }),
+    ).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Next image' }));
+
+    dialog = await screen.findByRole('dialog', { name: 'Attachment 2 of 2' });
+    expect(
+      dialog.querySelector('img[src="https://example.com/b.jpg"]'),
+    ).toBeInTheDocument();
+    // On the last image only the previous arrow is shown.
+    expect(
+      within(dialog).queryByRole('button', { name: 'Next image' }),
+    ).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Previous image' }));
+
+    expect(
+      await screen.findByRole('dialog', { name: 'Attachment 1 of 2' }),
+    ).toBeInTheDocument();
+  });
+
+  it('navigates between images with the left and right arrow keys', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      images: [
+        { id: 'i1', url: 'https://example.com/a.jpg', order: 0 },
+        { id: 'i2', url: 'https://example.com/b.jpg', order: 1 },
+      ],
+    }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    await user.click(screen.getByRole('button', { name: 'Attachment 1 of 2' }));
+
+    let dialog = await screen.findByRole('dialog', { name: 'Attachment 1 of 2' });
+    fireEvent.keyDown(dialog, { key: 'ArrowRight' });
+
+    dialog = await screen.findByRole('dialog', { name: 'Attachment 2 of 2' });
+    expect(
+      dialog.querySelector('img[src="https://example.com/b.jpg"]'),
+    ).toBeInTheDocument();
+
+    // Clamped at the last image — ArrowRight does nothing.
+    fireEvent.keyDown(dialog, { key: 'ArrowRight' });
+    expect(
+      screen.getByRole('dialog', { name: 'Attachment 2 of 2' }),
+    ).toBeInTheDocument();
+
+    fireEvent.keyDown(dialog, { key: 'ArrowLeft' });
+    expect(
+      await screen.findByRole('dialog', { name: 'Attachment 1 of 2' }),
+    ).toBeInTheDocument();
+  });
+
+  it('switches the inline image with the side arrows without opening the lightbox', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      images: [
+        { id: 'i1', url: 'https://example.com/a.jpg', order: 0 },
+        { id: 'i2', url: 'https://example.com/b.jpg', order: 1 },
+      ],
+    }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    expect(
+      screen.getByRole('button', { name: 'Attachment 1 of 2' }),
+    ).toBeInTheDocument();
+    // Only the next arrow shows on the first image.
+    expect(
+      screen.queryByRole('button', { name: 'Previous image' }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+
+    // The inline image advanced, and no overlay opened.
+    const inline = screen.getByRole('button', { name: 'Attachment 2 of 2' });
+    expect(
+      inline.querySelector('img[src="https://example.com/b.jpg"]'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('dialog', { name: /attachment/i }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Previous image' }));
+    expect(
+      screen.getByRole('button', { name: 'Attachment 1 of 2' }),
+    ).toBeInTheDocument();
+  });
+
+  it('opens the lightbox at the currently displayed image', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      images: [
+        { id: 'i1', url: 'https://example.com/a.jpg', order: 0 },
+        { id: 'i2', url: 'https://example.com/b.jpg', order: 1 },
+      ],
+    }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    await user.click(screen.getByRole('button', { name: 'Attachment 2 of 2' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Attachment 2 of 2' });
+    expect(
+      dialog.querySelector('img[src="https://example.com/b.jpg"]'),
+    ).toBeInTheDocument();
+  });
+
+  it('closes the overlay when the X button is clicked', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      images: [{ id: 'i1', url: 'https://example.com/a.jpg', order: 0 }],
+    }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    await user.click(screen.getByRole('button', { name: 'Attachment 1 of 1' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Attachment 1 of 1' });
+    await user.click(within(dialog).getByRole('button', { name: /close/i }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('dialog', { name: 'Attachment 1 of 1' }),
+      ).not.toBeInTheDocument(),
+    );
+  });
+});
+
+describe('PostDetailPage — author header', () => {
+  it('shows the author name as a link to their profile', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    renderPage();
+
+    const authorLink = await screen.findByRole('link', { name: 'Alice' });
+    expect(authorLink).toHaveAttribute('href', '/profile/u1');
+  });
+
+  it('renders the author avatar image when one is set', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      authorId: 'u1',
+      author: {
+        id: 'u1',
+        name: 'Alice',
+        bio: null,
+        location: null,
+        skills: [],
+        avatarUrl: 'https://cdn.example.com/alice.png',
+        createdAt: '2020-01-01T00:00:00Z',
+      },
+    }) as never);
+    const { container } = renderPage();
+
+    await screen.findByRole('link', { name: 'Alice' });
+    expect(
+      container.querySelector('img[src="https://cdn.example.com/alice.png"]'),
+    ).toBeInTheDocument();
+  });
+
+  it('renders a placeholder instead of an image when the author has no avatar', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    const { container } = renderPage();
+
+    await screen.findByRole('link', { name: 'Alice' });
+    // No post images and no avatar → no <img> anywhere in the card.
+    expect(container.querySelector('img')).not.toBeInTheDocument();
+  });
+
+  it('shows the organization as a secondary link when the post is on behalf of one', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({
+      authorId: 'u1',
+      organizationId: 'o1',
+      organization: { id: 'o1', name: 'Red Cross', avatarUrl: null },
+    }) as never);
+    renderPage();
+
+    expect(await screen.findByRole('link', { name: 'Alice' })).toHaveAttribute(
+      'href',
+      '/profile/u1',
+    );
+    expect(screen.getByRole('link', { name: /red cross/i })).toHaveAttribute(
+      'href',
+      '/organizations/o1',
+    );
+  });
+});
+
+describe('PostDetailPage — icon-only edit and delete controls', () => {
+  it('renders Edit and Delete as icon-only controls named via aria-label, with no visible text', async () => {
+    setAuth({ id: 'u1', email: 'a@b.com', name: 'Alice', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    renderPage();
+
+    const editLink = await screen.findByRole('link', { name: /edit/i });
+    const deleteBtn = screen.getByRole('button', { name: /delete/i });
+    // The accessible name comes from aria-label; the controls contain only icons.
+    expect(editLink).toHaveTextContent('');
+    expect(deleteBtn).toHaveTextContent('');
+  });
+
+  it('calls deletePost and navigates home when the delete button is clicked', async () => {
+    const user = userEvent.setup();
+    setAuth({ id: 'u1', email: 'a@b.com', name: 'Alice', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    mockedDeletePost.mockResolvedValueOnce(undefined as never);
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: /delete/i }));
+
+    await waitFor(() => expect(mockedDeletePost).toHaveBeenCalledWith('p1'));
+    expect(await screen.findByText('POSTS LIST')).toBeInTheDocument();
+  });
+
+  it('does not show the Delete button for non-owner non-admin users', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(makePost({ authorId: 'u1' }) as never);
+    renderPage();
+
+    await screen.findByRole('heading', { name: /need groceries/i });
+    expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
   });
 });
 
@@ -348,7 +662,7 @@ describe('PostDetailPage — fulfillment display', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ status: 'OPEN' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByText('Fulfilled by')).not.toBeInTheDocument();
   });
 });
@@ -367,7 +681,7 @@ describe('PostDetailPage — reopen button', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ status: 'FULFILLED', authorId: 'u1' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByRole('button', { name: /reopen/i })).not.toBeInTheDocument();
   });
 
@@ -376,7 +690,7 @@ describe('PostDetailPage — reopen button', () => {
     mockedGetPost.mockResolvedValueOnce(makePost({ status: 'OPEN', authorId: 'u1' }) as never);
     renderPage();
 
-    await screen.findByText('Need groceries');
+    await screen.findByRole('heading', { name: /need groceries/i });
     expect(screen.queryByRole('button', { name: /reopen/i })).not.toBeInTheDocument();
   });
 

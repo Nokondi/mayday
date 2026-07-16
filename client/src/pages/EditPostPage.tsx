@@ -49,7 +49,7 @@ export function EditPostPage() {
   if (isLoading) return <LoadingSpinner className="py-20" />;
   if (!post)
     return (
-      <div className="text-center py-20 text-gray-500">
+      <div className="text-center py-20 text-gray-600">
         <FormattedMessage
           id="posts.detailPage.notFound"
           defaultMessage="Post not found"

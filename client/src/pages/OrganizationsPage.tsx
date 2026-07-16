@@ -61,7 +61,7 @@ export function OrganizationsPage() {
         <LoadingSpinner className="py-12" />
       ) : data ? (
         <>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-600 mb-4">
             <FormattedMessage
               id="orgs.browsePage.resultCount"
               defaultMessage="{count, plural, one {# organization found} other {# organizations found}}"
