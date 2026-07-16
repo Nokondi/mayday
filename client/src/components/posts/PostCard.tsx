@@ -110,9 +110,9 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-gray-900 truncate">
+                <h2 className="block text-sm font-semibold text-gray-900 truncate">
                   {post.author.name}
-                </span>
+                </h2>
                 {post.organization && (
                   <span className="flex items-center gap-1 text-xs text-gray-500">
                     <Building2 className="w-3 h-3" aria-hidden="true" />
@@ -139,7 +139,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
           </div>
           <div className="flex flew-row flex-wrap items-center gap-2 mt-2">
             <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
+              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                 post.type === "REQUEST"
                   ? "bg-orange-100 text-orange-700"
                   : "bg-green-100 text-green-700"
@@ -156,18 +156,18 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             <CategoryBadge category={post.category} />
             <UrgencyBadge urgency={post.urgency} />
             {post.status === "FULFILLED" && (
-              <span className="flex items-center gap-0.5 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+              <span className="flex items-center gap-0.5 text-xs font-medium bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
                 <CheckCircle className="w-3 h-3" aria-hidden="true" />
                 {intl.formatMessage(statusLabels.FULFILLED)}
               </span>
             )}
             {post.status === "CLOSED" && (
-              <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+              <span className="text-xs font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
                 {intl.formatMessage(statusLabels.CLOSED)}
               </span>
             )}
             {post.sharedWithFriends && (
-              <span className="flex items-center gap-1 text-xs bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
+              <span className="flex items-center gap-1 text-xs font-medium bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
                 <Users className="w-3 h-3" aria-hidden="true" />
                 {intl.formatMessage({
                   id: "posts.card.friendsBadge",
@@ -178,7 +178,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             {post.communities.map((community) => (
               <span
                 key={community.id}
-                className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded"
+                className="flex items-center gap-1 text-xs font-medium bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded"
               >
                 <Lock className="w-3 h-3" aria-hidden="true" />
                 {community.name}

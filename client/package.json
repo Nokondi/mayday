@@ -16,6 +16,7 @@
     "i18n:check": "npm run i18n && git diff --exit-code src/i18n"
   },
   "dependencies": {
+    "@fontsource-variable/atkinson-hyperlegible-next": "^5.2.6",
     "@hookform/resolvers": "^3.9.0",
     "@mayday/shared": "*",
     "@tanstack/react-query": "^5.62.0",
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "@formatjs/cli": "^5.1.13",
+    "@rolldown/plugin-babel": "^0.2.3",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -45,7 +47,6 @@
     "@types/libsodium-wrappers": "^0.7.14",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@rolldown/plugin-babel": "^0.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "autoprefixer": "^10.4.20",
     "babel-plugin-formatjs": "^10.5.0",

@@ -65,7 +65,10 @@ function CommentForm({
             disabled={pending}
             className="px-4 py-2 rounded-lg border border-mayday-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            <FormattedMessage id="common.actions.cancel" defaultMessage="Cancel" />
+            <FormattedMessage
+              id="common.actions.cancel"
+              defaultMessage="Cancel"
+            />
           </button>
         )}
         <button
@@ -146,7 +149,10 @@ function CommentItem({
           </span>
           {comment.editedAt && (
             <span className="italic">
-              <FormattedMessage id="comments.editedTag" defaultMessage="(edited)" />
+              <FormattedMessage
+                id="comments.editedTag"
+                defaultMessage="(edited)"
+              />
             </span>
           )}
         </div>
@@ -160,7 +166,10 @@ function CommentItem({
             onSubmit={(body) => editMutation.mutate(body)}
             onCancel={() => setEditing(false)}
             submitLabel={
-              <FormattedMessage id="common.actions.save" defaultMessage="Save" />
+              <FormattedMessage
+                id="common.actions.save"
+                defaultMessage="Save"
+              />
             }
           />
         </div>
@@ -179,7 +188,10 @@ function CommentItem({
               className="flex items-center gap-1 text-xs text-gray-500 hover:text-mayday-600"
             >
               <Pencil className="w-3 h-3" aria-hidden="true" />
-              <FormattedMessage id="common.actions.edit" defaultMessage="Edit" />
+              <FormattedMessage
+                id="common.actions.edit"
+                defaultMessage="Edit"
+              />
             </button>
           )}
           {canDelete && (
@@ -239,7 +251,10 @@ export function CommentsSection({
           pending={createMutation.isPending}
           onSubmit={(body) => createMutation.mutate(body)}
           submitLabel={
-            <FormattedMessage id="comments.form.submit" defaultMessage="Comment" />
+            <FormattedMessage
+              id="comments.form.submit"
+              defaultMessage="Comment"
+            />
           }
         />
       )}
@@ -258,7 +273,7 @@ export function CommentsSection({
           ))}
         </div>
       ) : (
-        <p className="text-center py-8 text-gray-500 text-sm">
+        <p className="text-center py-8 text-gray-600 text-sm">
           <FormattedMessage
             id="comments.empty"
             defaultMessage="No comments yet. Be the first to comment."

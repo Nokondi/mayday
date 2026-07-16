@@ -103,7 +103,12 @@ describe("PostCard — type label and styling", () => {
   it('marks request posts with an orange border and an orange "Request" chip', () => {
     const { container } = renderCard(makePost({ type: "REQUEST" }));
     const chip = screen.getByText("Request");
-    expect(chip).toHaveClass("rounded-full", "bg-orange-100", "text-orange-700");
+    expect(chip).toHaveClass(
+      "rounded-full",
+      "bg-orange-100",
+      "text-orange-700",
+      "font-medium",
+    );
     // The outer link carries the left-border color.
     const card = container.querySelector("a");
     expect(card).toHaveClass("border-l-orange-700");
@@ -112,9 +117,26 @@ describe("PostCard — type label and styling", () => {
   it('marks offer posts with a green border and a green "Offer" chip', () => {
     const { container } = renderCard(makePost({ type: "OFFER" }));
     const chip = screen.getByText("Offer");
-    expect(chip).toHaveClass("rounded-full", "bg-green-100", "text-green-700");
+    expect(chip).toHaveClass(
+      "rounded-full",
+      "bg-green-100",
+      "text-green-700",
+      "font-medium",
+    );
     const card = container.querySelector("a");
     expect(card).toHaveClass("border-l-green-700");
+  });
+});
+
+describe("PostCard — heading structure", () => {
+  it("exposes the author name as an h2 and the title as an h3, so cards nest under a page h1 without skipping levels", () => {
+    renderCard(makePost({ title: "Need help" }));
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Alice" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 3, name: "Need help" }),
+    ).toBeInTheDocument();
   });
 });
 

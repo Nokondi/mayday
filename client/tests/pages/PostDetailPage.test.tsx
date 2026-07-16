@@ -287,7 +287,12 @@ describe('PostDetailPage — type chip', () => {
       await screen.findByRole('heading', { name: 'Need groceries' }),
     ).toBeInTheDocument();
     const chip = screen.getByText('Request');
-    expect(chip).toHaveClass('rounded-full', 'bg-orange-100', 'text-orange-700');
+    expect(chip).toHaveClass(
+      'rounded-full',
+      'bg-orange-100',
+      'text-orange-700',
+      'font-medium',
+    );
   });
 
   it('shows a green "Offer" chip for offer posts', async () => {
@@ -297,7 +302,12 @@ describe('PostDetailPage — type chip', () => {
 
     await screen.findByRole('heading', { name: 'Need groceries' });
     const chip = screen.getByText('Offer');
-    expect(chip).toHaveClass('rounded-full', 'bg-green-100', 'text-green-700');
+    expect(chip).toHaveClass(
+      'rounded-full',
+      'bg-green-100',
+      'text-green-700',
+      'font-medium',
+    );
   });
 });
 

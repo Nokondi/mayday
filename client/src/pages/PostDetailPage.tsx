@@ -45,10 +45,7 @@ import { CommentsSection } from "../components/posts/CommentsSection.js";
 
 function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
   const intl = useIntl();
-  const scrollerRef = useRef<HTMLDivElement>(null);
   const lightboxRef = useRef<HTMLDialogElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -67,25 +64,6 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
     return () => dialog.removeEventListener("close", handleClose);
   }, []);
 
-  const updateScrollState = () => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 0);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
-  };
-
-  useEffect(() => {
-    updateScrollState();
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.addEventListener("scroll", updateScrollState, { passive: true });
-    window.addEventListener("resize", updateScrollState);
-    return () => {
-      el.removeEventListener("scroll", updateScrollState);
-      window.removeEventListener("resize", updateScrollState);
-    };
-  }, [images.length]);
-
   const handleLightboxKeyDown = (e: React.KeyboardEvent<HTMLDialogElement>) => {
     if (lightboxIndex === null) return;
     if (e.key === "ArrowLeft" && lightboxIndex > 0) {
@@ -97,70 +75,27 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
     }
   };
 
-  const scrollByCard = (direction: 1 | -1) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const card = el.querySelector<HTMLElement>("[data-carousel-item]");
-    const step = card ? card.offsetWidth + 12 : el.clientWidth;
-    el.scrollBy({ left: step * direction, behavior: "smooth" });
-  };
-
-  const showArrows = images.length > 1;
-
   return (
-    <div className="relative mb-4">
-      <div
-        ref={scrollerRef}
-        className="flex flex-nowrap gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-1 -mx-1 px-1"
-      >
-        {images.map((img, i) => (
-          <button
-            key={img.id}
-            type="button"
-            onClick={() => setLightboxIndex(i)}
-            data-carousel-item
-            className="snap-start shrink-0 block rounded-lg overflow-hidden border border-mayday-200 hover:shadow-md transition-shadow"
-          >
-            <img
-              src={img.url}
-              alt={intl.formatMessage(
-                {
-                  id: "posts.imageCarousel.imageAlt",
-                  defaultMessage: "Attachment {n} of {total}",
-                },
-                { n: i + 1, total: images.length },
-              )}
-              className="w-40 h-40 object-cover"
-            />
-          </button>
-        ))}
+    <div className="mb-4">
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={() => setLightboxIndex(0)}
+          className="block rounded-lg overflow-hidden border border-mayday-200 hover:shadow-md transition-shadow"
+        >
+          <img
+            src={images[0].url}
+            alt={intl.formatMessage(
+              {
+                id: "posts.imageCarousel.imageAlt",
+                defaultMessage: "Attachment {n} of {total}",
+              },
+              { n: 1, total: images.length },
+            )}
+            className="max-h-96 max-w-full object-contain"
+          />
+        </button>
       </div>
-      {showArrows && canScrollLeft && (
-        <button
-          type="button"
-          onClick={() => scrollByCard(-1)}
-          aria-label={intl.formatMessage({
-            id: "posts.imageCarousel.previousAria",
-            defaultMessage: "Previous image",
-          })}
-          className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
-        >
-          <ChevronLeft className="w-4 h-4 text-gray-700" />
-        </button>
-      )}
-      {showArrows && canScrollRight && (
-        <button
-          type="button"
-          onClick={() => scrollByCard(1)}
-          aria-label={intl.formatMessage({
-            id: "posts.imageCarousel.nextAria",
-            defaultMessage: "Next image",
-          })}
-          className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
-        >
-          <ChevronRight className="w-4 h-4 text-gray-700" />
-        </button>
-      )}
       <dialog
         ref={lightboxRef}
         onKeyDown={handleLightboxKeyDown}
@@ -204,7 +139,10 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
                 })}
                 className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
               >
-                <ChevronLeft className="w-5 h-5 text-gray-700" aria-hidden="true" />
+                <ChevronLeft
+                  className="w-5 h-5 text-gray-700"
+                  aria-hidden="true"
+                />
               </button>
             )}
             {images.length > 1 && lightboxIndex < images.length - 1 && (
@@ -217,7 +155,10 @@ function ImageCarousel({ images }: { images: { id: string; url: string }[] }) {
                 })}
                 className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-mayday-200 rounded-full p-1.5 shadow"
               >
-                <ChevronRight className="w-5 h-5 text-gray-700" aria-hidden="true" />
+                <ChevronRight
+                  className="w-5 h-5 text-gray-700"
+                  aria-hidden="true"
+                />
               </button>
             )}
             <img
@@ -346,7 +287,7 @@ export function PostDetailPage() {
   if (isLoading) return <LoadingSpinner className="py-20" />;
   if (!post)
     return (
-      <div className="text-center py-20 text-gray-500">
+      <div className="text-center py-20 text-gray-600">
         <FormattedMessage
           id="posts.detailPage.notFound"
           defaultMessage="Post not found"
@@ -414,9 +355,7 @@ export function PostDetailPage() {
             )}
           </div>
         )}
-        <div
-          className={`flex items-start gap-3 mb-3 ${user ? "pr-28" : ""}`}
-        >
+        <div className={`flex items-start gap-3 mb-3 ${user ? "pr-28" : ""}`}>
           <Link
             to={`/profile/${post.author.id}`}
             tabIndex={-1}
@@ -454,10 +393,16 @@ export function PostDetailPage() {
             <h1 className="text-2xl font-bold text-gray-900">{post.title}</h1>
           </div>
         </div>
-        <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 mb-3">
+        {post.images?.length > 0 && <ImageCarousel images={post.images} />}
+
+        <p className="text-gray-700 whitespace-pre-wrap mb-3">
+          {post.description}
+        </p>
+
+        <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 mb-6">
           <div className="flex flex-wrap items-center gap-2">
             <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
+              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                 post.type === "REQUEST"
                   ? "bg-orange-100 text-orange-700"
                   : "bg-green-100 text-green-700"
@@ -474,7 +419,7 @@ export function PostDetailPage() {
             <CategoryBadge category={post.category} />
             <UrgencyBadge urgency={post.urgency} />
             <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
+              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                 post.status === "OPEN"
                   ? "bg-green-100 text-green-700"
                   : post.status === "FULFILLED"
@@ -489,19 +434,13 @@ export function PostDetailPage() {
             <Link
               key={community.id}
               to={`/communities/${community.id}`}
-              className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-100"
+              className="flex items-center gap-1 text-xs font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-100"
             >
               <Lock className="w-3 h-3" />
               {community.name}
             </Link>
           ))}
         </div>
-
-        {post.images?.length > 0 && <ImageCarousel images={post.images} />}
-
-        <p className="text-gray-700 whitespace-pre-wrap mb-6">
-          {post.description}
-        </p>
 
         {post.status === "FULFILLED" && post.fulfillments?.length > 0 && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -697,8 +636,8 @@ export function PostDetailPage() {
             onClick={() => setActiveTab("comments")}
             className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
               activeTab === "comments"
-                ? "border-mayday-700 text-mayday-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "border-mayday-800 text-mayday-800"
+                : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           >
             <FormattedMessage
@@ -714,8 +653,8 @@ export function PostDetailPage() {
             onClick={() => setActiveTab("related")}
             className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
               activeTab === "related"
-                ? "border-mayday-700 text-mayday-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "border-mayday-800 text-mayday-800"
+                : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           >
             {post.type === "REQUEST" ? (
@@ -741,7 +680,7 @@ export function PostDetailPage() {
             ))}
           </div>
         ) : (
-          <p className="text-center py-8 text-gray-500 text-sm">
+          <p className="text-center py-8 text-gray-600 text-sm">
             {post.type === "REQUEST" ? (
               <FormattedMessage
                 id="posts.detailPage.noMatchingOffers"
