@@ -7,6 +7,7 @@ import {
 import { validate } from "../middleware/validate.middleware.js";
 import {
   requireAuth,
+  optionalAuth,
   rejectBanned,
   type AuthRequest,
 } from "../middleware/auth.middleware.js";
@@ -61,6 +62,15 @@ async function getUserCommunityIds(userId: string): Promise<string[]> {
 }
 
 /**
+ * A post is PUBLIC when it has no community scoping (no PostCommunity rows)
+ * and is not shared with friends. This is all an anonymous viewer may see.
+ */
+export const publicPostFilter: Prisma.PostWhereInput = {
+  communities: { none: {} },
+  sharedWithFriends: false,
+};
+
+/**
  * The visibility predicate for listing posts as `user`. A post is visible when
  * it is PUBLIC, authored by the user, a COMMUNITY post in one of the user's
  * communities, or a FRIENDS post by one of the user's friends. Returns
@@ -81,8 +91,7 @@ export async function getPostVisibilityFilter(
   return {
     OR: [
       { authorId: user.id },
-      // Public: no community scoping and not shared with friends.
-      { communities: { none: {} }, sharedWithFriends: false },
+      publicPostFilter,
       // Member of any of the post's communities.
       { communities: { some: { communityId: { in: communityIds } } } },
       // Shared with friends and authored by one of the viewer's friends.
@@ -171,9 +180,11 @@ async function canModifyPost(
 
 export const postRoutes = Router();
 
+// Anonymous browsing is allowed: without a valid token the route serves
+// public posts only (see the visibility filter below).
 postRoutes.get(
   "/",
-  requireAuth,
+  optionalAuth,
   asyncHandler(async (req: AuthRequest, res) => {
     const {
       type,
@@ -237,18 +248,22 @@ postRoutes.get(
     if (typeof communityId === "string" && communityId) {
       where.communities = { some: { communityId } };
     }
-    // …or narrow to posts friends have shared with the viewer.
-    if (friends === "true") {
-      const friendIds = await getFriendIds(req.user!.id);
+    // …or narrow to posts friends have shared with the viewer (meaningless
+    // without a viewer, so anonymous requests skip it).
+    if (friends === "true" && req.user) {
+      const friendIds = await getFriendIds(req.user.id);
       where.AND = [
         ...(Array.isArray(where.AND) ? where.AND : []),
         { sharedWithFriends: true, authorId: { in: friendIds } },
       ];
     }
     // …and always enforce visibility (PUBLIC / own / member-COMMUNITY / FRIENDS),
-    // except for site ADMINs who see everything. AND'd so it composes with the
-    // text-search OR above and the optional community/friends narrowing.
-    const visibilityFilter = await getPostVisibilityFilter(req.user!);
+    // except for site ADMINs who see everything. Anonymous viewers get public
+    // posts only. AND'd so it composes with the text-search OR above and the
+    // optional community/friends narrowing.
+    const visibilityFilter = req.user
+      ? await getPostVisibilityFilter(req.user)
+      : publicPostFilter;
     if (visibilityFilter) {
       where.AND = [
         ...(Array.isArray(where.AND) ? where.AND : []),

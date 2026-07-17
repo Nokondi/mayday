@@ -92,9 +92,15 @@ export function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={user ? <PostsPage /> : <AboutPage />} />
-          {/* Browsing now lives at the home route; keep /posts as a redirect
-              for old deep links. */}
-          <Route path="/posts" element={<Navigate to="/" replace />} />
+          {/* Browsing is public. Logged-in users browse at the home route
+              (/posts redirects there, covering old deep links); logged-out
+              visitors land on About and browse public posts at /posts.
+              Clicking through to a post detail sends them to /login via the
+              ProtectedRoute on /posts/:id. */}
+          <Route
+            path="/posts"
+            element={user ? <Navigate to="/" replace /> : <PostsPage />}
+          />
           <Route
             path="/posts/:id"
             element={

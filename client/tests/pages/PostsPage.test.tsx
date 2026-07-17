@@ -7,13 +7,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../src/api/posts.js', () => ({ getPosts: vi.fn() }));
 vi.mock('../../src/api/communities.js', () => ({ listMyCommunities: vi.fn() }));
+vi.mock('../../src/context/AuthContext.js', () => ({ useAuth: vi.fn() }));
 
 import { PostsPage } from '../../src/pages/PostsPage.js';
 import { getPosts } from '../../src/api/posts.js';
 import { listMyCommunities } from '../../src/api/communities.js';
+import { useAuth } from '../../src/context/AuthContext.js';
 
 const mockedGetPosts = vi.mocked(getPosts);
 const mockedListMyCommunities = vi.mocked(listMyCommunities);
+const mockedUseAuth = vi.mocked(useAuth);
+
+function authState(overrides: Record<string, unknown> = {}) {
+  return {
+    user: { id: 'u1', name: 'Alice' },
+    isLoading: false,
+    ...overrides,
+  } as never;
+}
 
 // Minimal paginated payload; the page reads data/total/page/totalPages.
 function postsResult(overrides: Record<string, unknown> = {}) {
@@ -55,6 +66,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockedGetPosts.mockResolvedValue(postsResult());
   mockedListMyCommunities.mockResolvedValue([] as never);
+  mockedUseAuth.mockReturnValue(authState());
 });
 
 describe('PostsPage — collapsible controls', () => {
@@ -117,5 +129,42 @@ describe('PostsPage — active filter chips', () => {
       expect(screen.queryByText('Requests')).not.toBeInTheDocument(),
     );
     expect(screen.getByTestId('search')).not.toHaveTextContent('type=REQUEST');
+  });
+});
+
+describe('PostsPage — anonymous browsing', () => {
+  it('fetches posts but not the viewer\'s communities when logged out', async () => {
+    mockedUseAuth.mockReturnValue(authState({ user: null }));
+    renderPage();
+    await waitFor(() => expect(mockedGetPosts).toHaveBeenCalled());
+    expect(mockedListMyCommunities).not.toHaveBeenCalled();
+  });
+
+  it('hides the community/friends filter when logged out', async () => {
+    mockedUseAuth.mockReturnValue(authState({ user: null }));
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole('button', { name: /search & filters/i }));
+    expect(screen.getByRole('combobox', { name: /filter by type/i })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('combobox', { name: /filter by community or friends/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows the community/friends filter when logged in', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole('button', { name: /search & filters/i }));
+    expect(
+      screen.getByRole('combobox', { name: /filter by community or friends/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('waits for the auth check before fetching posts', async () => {
+    mockedUseAuth.mockReturnValue(authState({ user: null, isLoading: true }));
+    renderPage();
+    // The query is disabled while auth is resolving, so nothing fires.
+    await waitFor(() => expect(screen.getByRole('status')).toBeInTheDocument());
+    expect(mockedGetPosts).not.toHaveBeenCalled();
   });
 });
