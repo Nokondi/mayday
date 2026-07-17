@@ -240,6 +240,15 @@ export function Header() {
               </>
             ) : (
               <>
+                <Link
+                  to="/posts"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <FormattedMessage
+                    id="layout.header.nav.browse"
+                    defaultMessage="Browse"
+                  />
+                </Link>
                 <Link to="/about" className="text-gray-600 hover:text-gray-900">
                   <FormattedMessage
                     id="layout.header.nav.about"
@@ -482,6 +491,16 @@ export function Header() {
               </>
             ) : (
               <>
+                <Link
+                  to="/posts"
+                  className="block px-3 py-2 rounded hover:bg-gray-100"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <FormattedMessage
+                    id="layout.header.nav.browse"
+                    defaultMessage="Browse"
+                  />
+                </Link>
                 <Link
                   to="/about"
                   className="block px-3 py-2 rounded hover:bg-gray-100"

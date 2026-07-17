@@ -105,9 +105,11 @@ describe('Header — logged-out state', () => {
     expect(brand).toHaveAttribute('href', '/');
   });
 
-  it('shows About, Log in, and Sign up links in the desktop nav', () => {
+  it('shows Browse, About, Log in, and Sign up links in the desktop nav', () => {
     renderHeader();
     const nav = getDesktopNav();
+    // Logged-out browsing lives at /posts (the home route stays the About landing).
+    expect(within(nav).getByRole('link', { name: /browse/i })).toHaveAttribute('href', '/posts');
     expect(within(nav).getByRole('link', { name: /about/i })).toHaveAttribute('href', '/about');
     expect(within(nav).getByRole('link', { name: /log in/i })).toHaveAttribute('href', '/login');
     expect(within(nav).getByRole('link', { name: /sign up/i })).toHaveAttribute('href', '/register');
@@ -116,7 +118,6 @@ describe('Header — logged-out state', () => {
   it('does not render the authenticated-only links', () => {
     renderHeader();
     const nav = getDesktopNav();
-    expect(within(nav).queryByRole('link', { name: /browse/i })).not.toBeInTheDocument();
     expect(within(nav).queryByRole('link', { name: /new post/i })).not.toBeInTheDocument();
     expect(within(nav).queryByRole('link', { name: /^messages$/i })).not.toBeInTheDocument();
     expect(within(nav).queryByRole('button', { name: /log out/i })).not.toBeInTheDocument();
@@ -258,9 +259,9 @@ describe('Header — mobile menu toggle', () => {
     const mobileNav = queryMobileNav();
     expect(mobileNav).not.toBeNull();
     const nav = mobileNav as HTMLElement;
+    expect(within(nav).getByRole('link', { name: /browse/i })).toHaveAttribute('href', '/posts');
     expect(within(nav).getByRole('link', { name: /log in/i })).toHaveAttribute('href', '/login');
     expect(within(nav).getByRole('link', { name: /sign up/i })).toHaveAttribute('href', '/register');
-    expect(within(nav).queryByRole('link', { name: /browse/i })).not.toBeInTheDocument();
   });
 
   it('collapses the mobile nav when a nav link inside it is clicked', async () => {

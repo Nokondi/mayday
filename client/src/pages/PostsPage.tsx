@@ -15,9 +15,11 @@ import { SearchBar } from "../components/common/SearchBar.js";
 import { Pagination } from "../components/common/Pagination.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { useDebounce } from "../hooks/useDebounce.js";
+import { useAuth } from "../context/AuthContext.js";
 
 export function PostsPage() {
   const intl = useIntl();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // URL search params are the single source of truth for the post query.
@@ -53,13 +55,23 @@ export function PostsPage() {
     if (debouncedSearch !== q) updateParam("q", debouncedSearch);
   }, [debouncedSearch]);
 
+  // The community/friends filter only exists for logged-in viewers.
   const { data: myCommunities } = useQuery({
     queryKey: ["my-communities"],
     queryFn: listMyCommunities,
+    enabled: !!user,
   });
 
+  // Wait for the auth check so the request carries the token when there is
+  // one (the server returns public posts only for anonymous requests), and
+  // key on the viewer so login/logout refetches rather than serving the
+  // other audience's cached page.
   const { data, isLoading } = useQuery({
-    queryKey: ["posts", { type, category, urgency, sort, community, q, page }],
+    queryKey: [
+      "posts",
+      { viewer: user?.id ?? null, type, category, urgency, sort, community, q, page },
+    ],
+    enabled: !isAuthLoading,
     queryFn: () =>
       getPosts({
         type: (type as any) || undefined,
@@ -130,7 +142,9 @@ export function PostsPage() {
             onCategoryChange={(v) => updateParam("category", v)}
             onUrgencyChange={(v) => updateParam("urgency", v)}
             onSortChange={(v) => updateParam("sort", v === "recent" ? "" : v)}
-            onCommunityChange={(v) => updateParam("community", v)}
+            onCommunityChange={
+              user ? (v) => updateParam("community", v) : undefined
+            }
           />
         </div>
       )}
@@ -146,7 +160,7 @@ export function PostsPage() {
         onClear={clearFilter}
       />
 
-      {isLoading ? (
+      {isLoading || isAuthLoading ? (
         <LoadingSpinner className="py-12" />
       ) : data ? (
         <>

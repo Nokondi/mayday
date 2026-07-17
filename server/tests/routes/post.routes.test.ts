@@ -262,6 +262,53 @@ describe('GET /api/posts — community visibility', () => {
     });
   });
 
+  it('serves public posts only to anonymous requests (no auth header)', async () => {
+    mockedPost.findMany.mockResolvedValueOnce([dbPost()] as never);
+    mockedPost.count.mockResolvedValueOnce(1 as never);
+
+    const res = await request(makeApp()).get('/api/posts');
+
+    expect(res.status).toBe(200);
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: { AND: unknown[] } }])[0].where;
+    expect(whereArg.AND).toContainEqual({
+      communities: { none: {} },
+      sharedWithFriends: false,
+    });
+    // No viewer → no community-membership or friendship lookups.
+    expect(prisma.communityMember.findMany).not.toHaveBeenCalled();
+    expect(prisma.friendship.findMany).not.toHaveBeenCalled();
+  });
+
+  it('treats an invalid token as anonymous and still serves public posts', async () => {
+    mockedPost.findMany.mockResolvedValueOnce([] as never);
+    mockedPost.count.mockResolvedValueOnce(0 as never);
+
+    const res = await request(makeApp())
+      .get('/api/posts')
+      .set('Authorization', 'Bearer not-a-real-token');
+
+    expect(res.status).toBe(200);
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: { AND: unknown[] } }])[0].where;
+    expect(whereArg.AND).toContainEqual({
+      communities: { none: {} },
+      sharedWithFriends: false,
+    });
+  });
+
+  it('ignores friends=true on anonymous requests', async () => {
+    mockedPost.findMany.mockResolvedValueOnce([] as never);
+    mockedPost.count.mockResolvedValueOnce(0 as never);
+
+    const res = await request(makeApp()).get('/api/posts?friends=true');
+
+    expect(res.status).toBe(200);
+    expect(prisma.friendship.findMany).not.toHaveBeenCalled();
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: { AND: unknown[] } }])[0].where;
+    expect(whereArg.AND).toEqual([
+      { communities: { none: {} }, sharedWithFriends: false },
+    ]);
+  });
+
   it('flattens join rows into a communities array in the response', async () => {
     vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([] as never);
     mockedPost.findMany.mockResolvedValueOnce([
