@@ -46,7 +46,7 @@
     "@types/supertest": "^7.2.0",
     "@types/web-push": "^3.6.4",
     "@types/ws": "^8.5.13",
-    "concurrently": "^10.0.3",
+    "concurrently": "^10.0.4",
     "cross-env": "^10.1.0",
     "dotenv-cli": "^11.0.0",
     "prisma": "^6.2.0",
