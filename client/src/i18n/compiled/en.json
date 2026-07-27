@@ -3762,6 +3762,12 @@
       "value": "Filter by community or friends"
     }
   ],
+  "posts.filters.events": [
+    {
+      "type": 0,
+      "value": "Events"
+    }
+  ],
   "posts.filters.friends": [
     {
       "type": 0,
@@ -3844,6 +3850,12 @@
     {
       "type": 0,
       "value": "Ends"
+    }
+  ],
+  "posts.form.eventRadioLabel": [
+    {
+      "type": 0,
+      "value": "I'm organizing (Event)"
     }
   ],
   "posts.form.existingImageAlt": [
@@ -4311,6 +4323,12 @@
     {
       "type": 0,
       "value": "Post type:"
+    }
+  ],
+  "posts.types.event": [
+    {
+      "type": 0,
+      "value": "Event"
     }
   ],
   "posts.types.offer": [

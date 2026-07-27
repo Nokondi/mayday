@@ -35,6 +35,20 @@ const offerIcon = new L.Icon({
   popupAnchor: [1, -34],
 });
 
+const eventIcon = new L.Icon({
+  iconUrl: '/markers/marker-icon-violet.png',
+  shadowUrl: '/markers/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+
+const iconsByType = {
+  REQUEST: requestIcon,
+  OFFER: offerIcon,
+  EVENT: eventIcon,
+} as const;
+
 // Round coordinates so a cluster's child markers can be matched back to the
 // posts sharing that spot, immune to float-string drift through Leaflet.
 const COORD_PRECISION = 6;
@@ -174,7 +188,7 @@ function ClusteredMarkers({
         <Marker
           key={post.id}
           position={[post.latitude!, post.longitude!]}
-          icon={post.type === 'REQUEST' ? requestIcon : offerIcon}
+          icon={iconsByType[post.type]}
           eventHandlers={{ click: () => onSelectPosts([post]) }}
         />
       ))}

@@ -84,6 +84,20 @@ describe('GET /api/search', () => {
     expect(params).toContain('REQUEST');
   });
 
+  it('accepts EVENT as a type filter', async () => {
+    mockedQueryRaw
+      .mockResolvedValueOnce([] as never)
+      .mockResolvedValueOnce([{ count: 0n }] as never);
+
+    await request(makeApp())
+      .get('/api/search?q=party&type=EVENT')
+      .set('Authorization', authHeader());
+
+    const [sql, ...params] = mockedQueryRaw.mock.calls[0];
+    expect(String(sql)).toContain('"type"');
+    expect(params).toContain('EVENT');
+  });
+
   it('ignores an invalid type value', async () => {
     mockedQueryRaw
       .mockResolvedValueOnce([] as never)

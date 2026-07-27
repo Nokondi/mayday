@@ -304,6 +304,20 @@ export function PostForm({
               />
             </span>
           </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              value="EVENT"
+              {...register("type")}
+              className="text-mayday-700"
+            />
+            <span>
+              <FormattedMessage
+                id="posts.form.eventRadioLabel"
+                defaultMessage="I'm organizing (Event)"
+              />
+            </span>
+          </label>
         </div>
       </fieldset>
 

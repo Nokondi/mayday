@@ -24,9 +24,9 @@ import { formatDistanceToNow, format, isSameDay } from "date-fns";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
   formatRecurrence,
-  typeLabels,
   statusLabels,
 } from "../components/posts/PostCard.js";
+import { PostTypeBadge } from "../components/common/PostTypeBadge.js";
 import {
   getPost,
   getPostMatches,
@@ -239,10 +239,12 @@ export function PostDetailPage() {
     enabled: !!id,
   });
 
+  // Wait for the post before fetching matches: events have no opposite type
+  // to match against, so the fetch is skipped for them entirely.
   const { data: matches } = useQuery({
     queryKey: ["postMatches", id],
     queryFn: () => getPostMatches(id!),
-    enabled: !!id && !!user,
+    enabled: !!id && !!user && !!post && post.type !== "EVENT",
   });
 
   const contactMutation = useToastMutation({
@@ -427,21 +429,7 @@ export function PostDetailPage() {
 
         <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 mb-6">
           <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                post.type === "REQUEST"
-                  ? "bg-orange-100 text-orange-700"
-                  : "bg-green-100 text-green-700"
-              }`}
-            >
-              <span className="sr-only">
-                <FormattedMessage
-                  id="posts.typeAriaPrefix"
-                  defaultMessage="Post type: "
-                />
-              </span>
-              {intl.formatMessage(typeLabels[post.type])}
-            </span>
+            <PostTypeBadge type={post.type} />
             <CategoryBadge category={post.category} />
             <UrgencyBadge urgency={post.urgency} />
             <span
@@ -672,29 +660,31 @@ export function PostDetailPage() {
               values={{ count: post.commentCount }}
             />
           </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "related"}
-            onClick={() => setActiveTab("related")}
-            className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
-              activeTab === "related"
-                ? "border-mayday-800 text-mayday-800"
-                : "border-transparent text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            {post.type === "REQUEST" ? (
-              <FormattedMessage
-                id="posts.detailPage.matchingOffers"
-                defaultMessage="Matching Offers"
-              />
-            ) : (
-              <FormattedMessage
-                id="posts.detailPage.matchingRequests"
-                defaultMessage="Matching Requests"
-              />
-            )}
-          </button>
+          {post.type !== "EVENT" && (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "related"}
+              onClick={() => setActiveTab("related")}
+              className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
+                activeTab === "related"
+                  ? "border-mayday-800 text-mayday-800"
+                  : "border-transparent text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              {post.type === "REQUEST" ? (
+                <FormattedMessage
+                  id="posts.detailPage.matchingOffers"
+                  defaultMessage="Matching Offers"
+                />
+              ) : (
+                <FormattedMessage
+                  id="posts.detailPage.matchingRequests"
+                  defaultMessage="Matching Requests"
+                />
+              )}
+            </button>
+          )}
         </div>
 
         {activeTab === "comments" ? (

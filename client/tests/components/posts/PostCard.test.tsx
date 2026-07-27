@@ -126,6 +126,19 @@ describe("PostCard — type label and styling", () => {
     const card = container.querySelector("a");
     expect(card).toHaveClass("border-l-green-700");
   });
+
+  it('marks event posts with a purple border and a purple "Event" chip', () => {
+    const { container } = renderCard(makePost({ type: "EVENT" }));
+    const chip = screen.getByText("Event");
+    expect(chip).toHaveClass(
+      "rounded-full",
+      "bg-purple-100",
+      "text-purple-700",
+      "font-medium",
+    );
+    const card = container.querySelector("a");
+    expect(card).toHaveClass("border-l-purple-700");
+  });
 });
 
 describe("PostCard — heading structure", () => {

@@ -15,6 +15,7 @@ enum Role {
 enum PostType {
   REQUEST
   OFFER
+  EVENT
 }
 
 enum PostStatus {

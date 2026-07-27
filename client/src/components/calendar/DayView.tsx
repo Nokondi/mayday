@@ -3,6 +3,7 @@ import { addHours, format, startOfDay } from 'date-fns';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { layoutDay } from '../../utils/dayLayout.js';
 import type { Occurrence } from '../../utils/recurrence.js';
+import { postTypeStyles } from '../common/PostTypeBadge.js';
 
 const HOUR_PX = 48;
 const DEFAULT_START_HOUR = 7;
@@ -124,10 +125,7 @@ export function DayView({
               />
             ))}
             {positioned.map((p, i) => {
-              const color =
-                p.occ.post.type === 'REQUEST'
-                  ? 'bg-orange-50 text-orange-800 border-orange-200 hover:bg-orange-100'
-                  : 'bg-green-50 text-green-800 border-green-200 hover:bg-green-100';
+              const color = postTypeStyles[p.occ.post.type].calendarChip;
               return (
                 <button
                   key={`${p.occ.post.id}-${i}`}

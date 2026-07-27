@@ -1349,6 +1349,9 @@
   "posts.filters.communityAria": {
     "defaultMessage": "Filter by community or friends"
   },
+  "posts.filters.events": {
+    "defaultMessage": "Events"
+  },
   "posts.filters.friends": {
     "defaultMessage": "Friends"
   },
@@ -1390,6 +1393,9 @@
   },
   "posts.form.endsLabel": {
     "defaultMessage": "Ends"
+  },
+  "posts.form.eventRadioLabel": {
+    "defaultMessage": "I'm organizing (Event)"
   },
   "posts.form.existingImageAlt": {
     "defaultMessage": "Current image {n}"
@@ -1552,6 +1558,9 @@
   },
   "posts.typeAriaPrefix": {
     "defaultMessage": "Post type:"
+  },
+  "posts.types.event": {
+    "defaultMessage": "Event"
   },
   "posts.types.offer": {
     "defaultMessage": "Offer"

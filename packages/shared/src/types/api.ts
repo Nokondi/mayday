@@ -52,7 +52,7 @@ const optionalDateTime = z
   .refine((v) => v === undefined || !Number.isNaN(Date.parse(v)), { message: 'Invalid date/time' });
 
 const postFields = {
-  type: z.enum(['REQUEST', 'OFFER']),
+  type: z.enum(['REQUEST', 'OFFER', 'EVENT']),
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().min(1, 'Description is required').max(5000),
   category: z.enum(CATEGORIES, { errorMap: () => ({ message: 'Select a category' }) }),
@@ -89,6 +89,7 @@ const postFields = {
 };
 
 type PostFieldsData = {
+  type?: 'REQUEST' | 'OFFER' | 'EVENT';
   startAt?: string;
   endAt?: string;
   recurrenceFreq?: 'DAY' | 'WEEK' | 'MONTH';
@@ -98,6 +99,12 @@ type PostFieldsData = {
 function checkPostFields(data: PostFieldsData, ctx: z.RefinementCtx) {
   if (data.startAt && data.endAt && new Date(data.endAt) < new Date(data.startAt)) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'End must be after start', path: ['endAt'] });
+  }
+  // Events must be schedulable — a start date is what makes them events. Only
+  // enforced when `type` is present so partial updates that don't touch the
+  // type stay valid.
+  if (data.type === 'EVENT' && !data.startAt) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Events need a start date', path: ['startAt'] });
   }
   if (data.recurrenceFreq && data.recurrenceInterval == null) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Interval is required for recurring posts', path: ['recurrenceInterval'] });
@@ -410,7 +417,7 @@ export interface PaginatedResponse<T> {
 
 // Post query params
 export interface PostQueryParams {
-  type?: 'REQUEST' | 'OFFER';
+  type?: 'REQUEST' | 'OFFER' | 'EVENT';
   category?: string;
   status?: 'OPEN' | 'FULFILLED' | 'CLOSED';
   urgency?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
