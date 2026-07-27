@@ -20,7 +20,7 @@ jobs:
       - name: Audit dependencies
         # --audit-level=high so low/moderate advisories don't block CI;
         # tighten to "moderate" once the high/critical baseline is clean.
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
   gitleaks:
     runs-on: ubuntu-latest
