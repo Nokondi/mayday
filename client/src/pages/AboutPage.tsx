@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Heart, Users, MapPin, HandHeart } from "lucide-react";
 import { FormattedMessage } from "react-intl";
 import { useAuth } from "../context/AuthContext.js";

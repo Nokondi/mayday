@@ -1,5 +1,5 @@
 import { screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { EntityCard } from '../../../src/components/common/EntityCard.js';

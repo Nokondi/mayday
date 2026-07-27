@@ -4,7 +4,7 @@ A web application for coordinating mutual aid between individuals, organizations
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) v20.19+ or v22.12+ (required by Vite 8)
+- [Node.js](https://nodejs.org/) v22.22+ (required by React Router 8; Vite 8 needs v20.19+/v22.12+)
 - [Docker](https://www.docker.com/products/docker-desktop/) (for PostgreSQL)
 
 ## Getting Started

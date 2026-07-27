@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import type { RenderableMessage } from "../../../src/crypto/render.js";
 import { MessageThread } from "../../../src/components/messages/MessageThread.js";
 import { renderWithIntl as render } from "../../helpers/renderWithIntl.js";

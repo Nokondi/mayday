@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router";
 import { WebSocketProvider } from "./context/WebSocketContext.js";
 import { Layout } from "./components/layout/Layout.js";
 import { RescueListener } from "./components/e2ee/RescueListener.js";

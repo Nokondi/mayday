@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { FormattedMessage } from "react-intl";
 import type { PostWithAuthor } from "@mayday/shared";

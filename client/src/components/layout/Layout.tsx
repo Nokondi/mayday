@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router';
 import { FormattedMessage } from 'react-intl';
 import { Header } from './Header.js';
 import { Footer } from './Footer.js';

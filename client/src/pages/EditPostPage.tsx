@@ -1,4 +1,4 @@
-import { useNavigate, useParams, Navigate } from 'react-router-dom';
+import { useNavigate, useParams, Navigate } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { getPost, updatePost } from '../api/posts.js';
