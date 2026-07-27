@@ -233,14 +233,9 @@ export function App() {
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route
-            path="/support"
-            element={
-              <ProtectedRoute>
-                <SupportPage />
-              </ProtectedRoute>
-            }
-          />
+          {/* Public: the FAQ content is useful pre-signup; the page itself
+              hides the bug report form from logged-out visitors. */}
+          <Route path="/support" element={<SupportPage />} />
           {user?.role === "ADMIN" && (
             <Route
               path="/admin"

@@ -54,11 +54,11 @@ cd ..
 This creates the following:
 
 - 1 admin account
-- 4 sample users
+- 4 sample users (each with 3–4 friendships)
 - 7 sample organizations
 - 7 sample communities
 - 14 public posts
-- 14 organization posts
+- 13 organization posts
 - 14 community posts
 
 ```sh

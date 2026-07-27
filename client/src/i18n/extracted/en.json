@@ -1304,9 +1304,6 @@
   "posts.detailPage.notFound": {
     "defaultMessage": "Post not found"
   },
-  "posts.detailPage.organizationByLine": {
-    "defaultMessage": "· by {name}"
-  },
   "posts.detailPage.reopenFailedToast": {
     "defaultMessage": "Failed to reopen post"
   },
@@ -1524,7 +1521,7 @@
     "defaultMessage": "Users"
   },
   "posts.imageCarousel.imageAlt": {
-    "defaultMessage": "Attachment {n} of {total} (opens in new tab)"
+    "defaultMessage": "Attachment {n} of {total}"
   },
   "posts.imageCarousel.nextAria": {
     "defaultMessage": "Next image"
@@ -1715,6 +1712,9 @@
   "support.page.bugReportIntro": {
     "defaultMessage": "Found something broken? Tell us what happened and we'll look into it."
   },
+  "support.page.bugReportLoginPrompt": {
+    "defaultMessage": "<login>Log in</login> to report a bug."
+  },
   "support.page.generalQuestionsHeading": {
     "defaultMessage": "General questions about MayDay"
   },
@@ -1803,13 +1803,13 @@
     "defaultMessage": "Why MayDay?"
   },
   "support.topics.tech.communitiesVsOrganizations.answer": {
-    "defaultMessage": "<strong>Communities</strong> are open groups people can either be invited to or request to join (e.g. a neighborhood). When you post a request or offer, you can choose to make it visible only to people within any of the communities you belong to. <strong>Organizations</strong> are invite-only groups that represent a real-world entity (e.g. a food bank). Owners and admins can invite members, approve join requests, and post on behalf of the group."
+    "defaultMessage": "<strong>Communities</strong> are open groups people can either be invited to or request to join (e.g. a neighborhood). When you post a request or offer, you can choose to make it visible only to people within any of the communities you belong to. <strong>Organizations</strong> are invite-only groups that represent a real-world entity (e.g. a food bank). Owners and admins can invite members and post on behalf of the group."
   },
   "support.topics.tech.communitiesVsOrganizations.question": {
     "defaultMessage": "What are Communities and Organizations, and how do they differ?"
   },
   "support.topics.tech.createPost.answer": {
-    "defaultMessage": "Click <strong>New Post</strong> in the header. Pick Request or Offer, give it a title and description, choose a category and urgency, and optionally attach photos, a location, and a start/end time. You can also scope a post to a community you belong to so it is only visible to those members, and if you are a member of an organization, you can choose to post on behalf of the organization."
+    "defaultMessage": "Click <strong>New Post</strong> in the header. Pick Request or Offer, give it a title and description, choose a category and urgency, and optionally attach photos, a location, and a start/end time. You can also limit a post's visibility to your friends or to one or more of the communities you belong to, and if you are a member of an organization, you can choose to post on behalf of the organization."
   },
   "support.topics.tech.createPost.question": {
     "defaultMessage": "How do I create a post?"
@@ -1869,7 +1869,7 @@
     "defaultMessage": "Follow the prompts to add MayDay to your home screen."
   },
   "support.topics.tech.forgotPassword.answer": {
-    "defaultMessage": "If you forgot your password, use <forgot>Forgot your password?</forgot> on the login page to get a reset link by email. If you never received your confirmation email, log in and click <strong>Resend confirmation email</strong>."
+    "defaultMessage": "If you forgot your password, use <forgot>Forgot your password?</forgot> on the login page to get a reset link by email. If you never received your confirmation email, try logging in — you'll be offered a <strong>Resend confirmation email</strong> button."
   },
   "support.topics.tech.forgotPassword.question": {
     "defaultMessage": "I forgot my password or never confirmed my email — what now?"
@@ -1881,10 +1881,10 @@
     "defaultMessage": "How do I manage email and push notifications?"
   },
   "support.topics.tech.markFulfilled.answer": {
-    "defaultMessage": "Open your post, click <icon></icon> <strong>Mark as Fulfilled</strong>, and add the people or organizations that helped. This closes the post, and (in a feature coming soon) gives points to helpers and tracks their impact over time."
+    "defaultMessage": "If you posted a request and someone helped you out, open it and click <icon></icon> <strong>Mark as Fulfilled</strong>, then add the people or organizations that helped. This closes the request, and (in a feature coming soon) gives points to helpers and tracks their impact over time."
   },
   "support.topics.tech.markFulfilled.question": {
-    "defaultMessage": "How do I mark a post as fulfilled?"
+    "defaultMessage": "How do I mark a request as fulfilled?"
   },
   "support.topics.tech.messageSomeone.answer": {
     "defaultMessage": "From any user profile or post, click <icon></icon> <strong>Message</strong>. All conversations live in the <messages>Messages</messages> tab; you'll see a badge in the header whenever you have a new message or someone replies to you."

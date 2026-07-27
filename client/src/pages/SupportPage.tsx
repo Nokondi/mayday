@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { BugReportForm } from "../components/support/BugReportForm.js";
+import { useAuth } from "../context/AuthContext.js";
 
 interface Topic {
   id: string;
@@ -40,6 +41,7 @@ const italicChunks = (chunks: React.ReactNode) => <i>{chunks}</i>;
 
 export function SupportPage() {
   const intl = useIntl();
+  const { user } = useAuth();
 
   const generalTopics: Topic[] = [
     {
@@ -204,7 +206,10 @@ export function SupportPage() {
             defaultMessage="Anything you post is either a <strong>Request</strong> (you need help) or an <strong>Offer</strong> (you have something to give). Both are browsable on the <browse>Browse</browse> page, visible on the <map>Map</map>, and — if they have a start time — listed on the <calendar>Calendar</calendar>."
             values={{
               strong,
-              browse: internalLink("/"),
+              // /posts works for every viewer: it redirects logged-in users
+              // to the home browse view and renders the public browse list
+              // for logged-out readers (this page is public).
+              browse: internalLink("/posts"),
               map: internalLink("/map"),
               calendar: internalLink("/calendar"),
             }}
@@ -222,7 +227,7 @@ export function SupportPage() {
         <p>
           <FormattedMessage
             id="support.topics.tech.createPost.answer"
-            defaultMessage="Click <strong>New Post</strong> in the header. Pick Request or Offer, give it a title and description, choose a category and urgency, and optionally attach photos, a location, and a start/end time. You can also scope a post to a community you belong to so it is only visible to those members, and if you are a member of an organization, you can choose to post on behalf of the organization."
+            defaultMessage="Click <strong>New Post</strong> in the header. Pick Request or Offer, give it a title and description, choose a category and urgency, and optionally attach photos, a location, and a start/end time. You can also limit a post's visibility to your friends or to one or more of the communities you belong to, and if you are a member of an organization, you can choose to post on behalf of the organization."
             values={{ strong }}
           />
         </p>
@@ -232,13 +237,13 @@ export function SupportPage() {
       id: "markFulfilled",
       question: intl.formatMessage({
         id: "support.topics.tech.markFulfilled.question",
-        defaultMessage: "How do I mark a post as fulfilled?",
+        defaultMessage: "How do I mark a request as fulfilled?",
       }),
       answer: (
         <p>
           <FormattedMessage
             id="support.topics.tech.markFulfilled.answer"
-            defaultMessage="Open your post, click <icon></icon> <strong>Mark as Fulfilled</strong>, and add the people or organizations that helped. This closes the post, and (in a feature coming soon) gives points to helpers and tracks their impact over time."
+            defaultMessage="If you posted a request and someone helped you out, open it and click <icon></icon> <strong>Mark as Fulfilled</strong>, then add the people or organizations that helped. This closes the request, and (in a feature coming soon) gives points to helpers and tracks their impact over time."
             values={{
               strong,
               icon: () => (
@@ -263,7 +268,7 @@ export function SupportPage() {
         <p>
           <FormattedMessage
             id="support.topics.tech.communitiesVsOrganizations.answer"
-            defaultMessage="<strong>Communities</strong> are open groups people can either be invited to or request to join (e.g. a neighborhood). When you post a request or offer, you can choose to make it visible only to people within any of the communities you belong to. <strong>Organizations</strong> are invite-only groups that represent a real-world entity (e.g. a food bank). Owners and admins can invite members, approve join requests, and post on behalf of the group."
+            defaultMessage="<strong>Communities</strong> are open groups people can either be invited to or request to join (e.g. a neighborhood). When you post a request or offer, you can choose to make it visible only to people within any of the communities you belong to. <strong>Organizations</strong> are invite-only groups that represent a real-world entity (e.g. a food bank). Owners and admins can invite members and post on behalf of the group."
             values={{ strong }}
           />
         </p>
@@ -328,7 +333,7 @@ export function SupportPage() {
         <p>
           <FormattedMessage
             id="support.topics.tech.forgotPassword.answer"
-            defaultMessage="If you forgot your password, use <forgot>Forgot your password?</forgot> on the login page to get a reset link by email. If you never received your confirmation email, log in and click <strong>Resend confirmation email</strong>."
+            defaultMessage="If you forgot your password, use <forgot>Forgot your password?</forgot> on the login page to get a reset link by email. If you never received your confirmation email, try logging in — you'll be offered a <strong>Resend confirmation email</strong> button."
             values={{
               strong,
               forgot: internalLink("/forgot-password"),
@@ -608,7 +613,17 @@ export function SupportPage() {
           />
         </p>
         <div className="bg-white rounded-lg border border-mayday-200 p-6">
-          <BugReportForm />
+          {user ? (
+            <BugReportForm />
+          ) : (
+            <p className="text-gray-700">
+              <FormattedMessage
+                id="support.page.bugReportLoginPrompt"
+                defaultMessage="<login>Log in</login> to report a bug."
+                values={{ login: internalLink("/login") }}
+              />
+            </p>
+          )}
         </div>
       </section>
     </div>
