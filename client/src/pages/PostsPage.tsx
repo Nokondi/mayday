@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ChevronDown, ChevronUp, SlidersHorizontal } from "lucide-react";
 import { getPosts } from "../api/posts.js";

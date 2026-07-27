@@ -5,7 +5,7 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import { useSearchParams, useLocation } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Lock, ChevronLeft } from "lucide-react";
 import { FormattedMessage, useIntl } from "react-intl";

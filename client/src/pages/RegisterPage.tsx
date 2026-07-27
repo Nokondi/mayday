@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { useAuth } from '../context/AuthContext.js';

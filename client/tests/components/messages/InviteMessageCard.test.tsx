@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import type { ReactElement } from "react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import type { InviteMessageMetadata } from "@mayday/shared";
 import { InviteMessageCard } from "../../../src/components/messages/InviteMessageCard.js";
 import { renderWithIntl } from "../../helpers/renderWithIntl.js";

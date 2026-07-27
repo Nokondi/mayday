@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { IntlProvider } from 'react-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -105,12 +105,13 @@ describe('Header — logged-out state', () => {
     expect(brand).toHaveAttribute('href', '/');
   });
 
-  it('shows Browse, About, Log in, and Sign up links in the desktop nav', () => {
+  it('shows Browse, About, Support, Log in, and Sign up links in the desktop nav', () => {
     renderHeader();
     const nav = getDesktopNav();
     // Logged-out browsing lives at /posts (the home route stays the About landing).
     expect(within(nav).getByRole('link', { name: /browse/i })).toHaveAttribute('href', '/posts');
     expect(within(nav).getByRole('link', { name: /about/i })).toHaveAttribute('href', '/about');
+    expect(within(nav).getByRole('link', { name: /support/i })).toHaveAttribute('href', '/support');
     expect(within(nav).getByRole('link', { name: /log in/i })).toHaveAttribute('href', '/login');
     expect(within(nav).getByRole('link', { name: /sign up/i })).toHaveAttribute('href', '/register');
   });
@@ -260,6 +261,7 @@ describe('Header — mobile menu toggle', () => {
     expect(mobileNav).not.toBeNull();
     const nav = mobileNav as HTMLElement;
     expect(within(nav).getByRole('link', { name: /browse/i })).toHaveAttribute('href', '/posts');
+    expect(within(nav).getByRole('link', { name: /support/i })).toHaveAttribute('href', '/support');
     expect(within(nav).getByRole('link', { name: /log in/i })).toHaveAttribute('href', '/login');
     expect(within(nav).getByRole('link', { name: /sign up/i })).toHaveAttribute('href', '/register');
   });

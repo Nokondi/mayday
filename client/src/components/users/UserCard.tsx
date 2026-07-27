@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { User, MapPin } from 'lucide-react';
 import type { UserPublicProfile } from '@mayday/shared';
 

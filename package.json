@@ -21,6 +21,11 @@
     "test": "npm run test:run --workspace=client && npm run test:run --workspace=server"
   },
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": ">=22.22.0"
+  },
+  "overrides": {
+    "eslint-plugin-jsx-a11y": {
+      "eslint": "^10.8.0"
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { FormattedMessage } from "react-intl";
 
 // HTTP status code — not translatable.

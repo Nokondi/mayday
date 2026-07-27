@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { IntlProvider } from 'react-intl';
 import type { PostWithAuthor } from '@mayday/shared';
 import { PostList } from '../../../src/components/posts/PostList.js';

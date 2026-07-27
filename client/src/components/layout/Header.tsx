@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router";
 import {
   Menu,
   X,
@@ -255,6 +255,15 @@ export function Header() {
                     defaultMessage="About"
                   />
                 </Link>
+                <Link
+                  to="/support"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <FormattedMessage
+                    id="layout.header.nav.support"
+                    defaultMessage="Support"
+                  />
+                </Link>
                 <Link to="/login" className="text-gray-600 hover:text-gray-900">
                   <FormattedMessage
                     id="common.actions.login"
@@ -509,6 +518,16 @@ export function Header() {
                   <FormattedMessage
                     id="layout.header.nav.about"
                     defaultMessage="About"
+                  />
+                </Link>
+                <Link
+                  to="/support"
+                  className="block px-3 py-2 rounded hover:bg-gray-100"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <FormattedMessage
+                    id="layout.header.nav.support"
+                    defaultMessage="Support"
                   />
                 </Link>
                 <Link

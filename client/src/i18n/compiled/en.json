@@ -3672,16 +3672,6 @@
       "value": "Post not found"
     }
   ],
-  "posts.detailPage.organizationByLine": [
-    {
-      "type": 0,
-      "value": "· by "
-    },
-    {
-      "type": 1,
-      "value": "name"
-    }
-  ],
   "posts.detailPage.reopenFailedToast": [
     {
       "type": 0,
@@ -4150,10 +4140,6 @@
     {
       "type": 1,
       "value": "total"
-    },
-    {
-      "type": 0,
-      "value": " (opens in new tab)"
     }
   ],
   "posts.imageCarousel.nextAria": [
@@ -4677,6 +4663,22 @@
       "value": "Found something broken? Tell us what happened and we'll look into it."
     }
   ],
+  "support.page.bugReportLoginPrompt": [
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Log in"
+        }
+      ],
+      "type": 8,
+      "value": "login"
+    },
+    {
+      "type": 0,
+      "value": " to report a bug."
+    }
+  ],
   "support.page.generalQuestionsHeading": [
     {
       "type": 0,
@@ -4960,7 +4962,7 @@
     },
     {
       "type": 0,
-      "value": " are invite-only groups that represent a real-world entity (e.g. a food bank). Owners and admins can invite members, approve join requests, and post on behalf of the group."
+      "value": " are invite-only groups that represent a real-world entity (e.g. a food bank). Owners and admins can invite members and post on behalf of the group."
     }
   ],
   "support.topics.tech.communitiesVsOrganizations.question": [
@@ -4986,7 +4988,7 @@
     },
     {
       "type": 0,
-      "value": " in the header. Pick Request or Offer, give it a title and description, choose a category and urgency, and optionally attach photos, a location, and a start/end time. You can also scope a post to a community you belong to so it is only visible to those members, and if you are a member of an organization, you can choose to post on behalf of the organization."
+      "value": " in the header. Pick Request or Offer, give it a title and description, choose a category and urgency, and optionally attach photos, a location, and a start/end time. You can also limit a post's visibility to your friends or to one or more of the communities you belong to, and if you are a member of an organization, you can choose to post on behalf of the organization."
     }
   ],
   "support.topics.tech.createPost.question": [
@@ -5150,7 +5152,7 @@
     },
     {
       "type": 0,
-      "value": " on the login page to get a reset link by email. If you never received your confirmation email, log in and click "
+      "value": " on the login page to get a reset link by email. If you never received your confirmation email, try logging in — you'll be offered a "
     },
     {
       "children": [
@@ -5164,7 +5166,7 @@
     },
     {
       "type": 0,
-      "value": "."
+      "value": " button."
     }
   ],
   "support.topics.tech.forgotPassword.question": [
@@ -5212,7 +5214,7 @@
   "support.topics.tech.markFulfilled.answer": [
     {
       "type": 0,
-      "value": "Open your post, click "
+      "value": "If you posted a request and someone helped you out, open it and click "
     },
     {
       "children": [
@@ -5236,13 +5238,13 @@
     },
     {
       "type": 0,
-      "value": ", and add the people or organizations that helped. This closes the post, and (in a feature coming soon) gives points to helpers and tracks their impact over time."
+      "value": ", then add the people or organizations that helped. This closes the request, and (in a feature coming soon) gives points to helpers and tracks their impact over time."
     }
   ],
   "support.topics.tech.markFulfilled.question": [
     {
       "type": 0,
-      "value": "How do I mark a post as fulfilled?"
+      "value": "How do I mark a request as fulfilled?"
     }
   ],
   "support.topics.tech.messageSomeone.answer": [

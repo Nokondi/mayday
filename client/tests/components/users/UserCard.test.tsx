@@ -1,5 +1,5 @@
 import { render, screen, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import type { UserPublicProfile } from '@mayday/shared';
 import { UserCard } from '../../../src/components/users/UserCard.js';
 

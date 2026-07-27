@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { FormattedMessage } from "react-intl";
 import { Check, X, Building2, Users, UserPlus } from "lucide-react";
 import type { InviteMessageMetadata } from "@mayday/shared";
