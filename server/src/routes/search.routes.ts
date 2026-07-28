@@ -3,7 +3,7 @@ import { requireAuth, type AuthRequest } from '../middleware/auth.middleware.js'
 import { prisma } from '../config/database.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
-const VALID_TYPES = ['REQUEST', 'OFFER'];
+const VALID_TYPES = ['REQUEST', 'OFFER', 'EVENT'];
 const VALID_CATEGORIES = [
   'Food', 'Housing', 'Transportation', 'Healthcare', 'Legal Aid',
   'Childcare', 'Education', 'Employment', 'Clothing', 'Household Items',

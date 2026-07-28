@@ -193,6 +193,101 @@ describe('GET /api/posts — scheduled filter', () => {
   });
 });
 
+describe('GET /api/posts — type filter', () => {
+  it('passes type=EVENT through to the prisma where clause', async () => {
+    mockedPost.findMany.mockResolvedValueOnce([] as never);
+    mockedPost.count.mockResolvedValueOnce(0 as never);
+
+    await request(makeApp())
+      .get('/api/posts?type=EVENT')
+      .set('Authorization', authHeader());
+
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: Record<string, unknown> }])[0].where;
+    expect(whereArg.type).toBe('EVENT');
+  });
+
+  it('ignores an unknown type value', async () => {
+    mockedPost.findMany.mockResolvedValueOnce([] as never);
+    mockedPost.count.mockResolvedValueOnce(0 as never);
+
+    await request(makeApp())
+      .get('/api/posts?type=PARTY')
+      .set('Authorization', authHeader());
+
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: Record<string, unknown> }])[0].where;
+    expect(whereArg.type).toBeUndefined();
+  });
+});
+
+describe('POST /api/posts — events', () => {
+  const eventBody = {
+    type: 'EVENT',
+    title: 'Community potluck',
+    description: 'Bring a dish to share',
+    category: 'Food',
+    urgency: 'LOW',
+  };
+
+  it('returns 400 when an event has no start date', async () => {
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send(eventBody);
+
+    expect(res.status).toBe(400);
+    expect(JSON.stringify(res.body)).toMatch(/start date/i);
+    expect(mockedPost.create).not.toHaveBeenCalled();
+  });
+
+  it('creates an event when a start date is provided', async () => {
+    mockedPost.create.mockResolvedValueOnce({ id: 'p1' } as never);
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({ type: 'EVENT', startAt: new Date('2026-08-01T17:00:00Z') }) as never,
+    );
+
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send({ ...eventBody, startAt: '2026-08-01T17:00:00Z' });
+
+    expect(res.status).toBe(201);
+    const createArg = (mockedPost.create.mock.calls[0] as [{ data: { type: string; startAt: unknown } }])[0].data;
+    expect(createArg.type).toBe('EVENT');
+    expect(createArg.startAt).toBeTruthy();
+  });
+});
+
+describe('GET /api/posts/:id/matches', () => {
+  it('queries for the opposite type when the post is a request', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(dbPost({ type: 'REQUEST' }) as never);
+    mockedPost.findMany.mockResolvedValueOnce([
+      dbPost({ id: 'm1', type: 'OFFER', authorId: OTHER_USER_ID }),
+    ] as never);
+
+    const res = await request(makeApp())
+      .get('/api/posts/p1/matches')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: Record<string, unknown> }])[0].where;
+    expect(whereArg.type).toBe('OFFER');
+  });
+
+  it('returns an empty list for an event without querying for matches', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({ type: 'EVENT', startAt: new Date('2026-08-01T17:00:00Z') }) as never,
+    );
+
+    const res = await request(makeApp())
+      .get('/api/posts/p1/matches')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+    expect(mockedPost.findMany).not.toHaveBeenCalled();
+  });
+});
+
 describe('GET /api/posts — community visibility', () => {
   it('filters to a single community via communities.some when communityId is given', async () => {
     vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([] as never);

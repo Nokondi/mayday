@@ -3762,6 +3762,12 @@
       "value": "Filter by community or friends"
     }
   ],
+  "posts.filters.events": [
+    {
+      "type": 0,
+      "value": "Events"
+    }
+  ],
   "posts.filters.friends": [
     {
       "type": 0,
@@ -3837,13 +3843,19 @@
   "posts.form.descriptionPlaceholder": [
     {
       "type": 0,
-      "value": "Provide details about your request or offer..."
+      "value": "Provide details about your request, offer, or event..."
     }
   ],
   "posts.form.endsLabel": [
     {
       "type": 0,
       "value": "Ends"
+    }
+  ],
+  "posts.form.eventRadioLabel": [
+    {
+      "type": 0,
+      "value": "I'm organizing (Event)"
     }
   ],
   "posts.form.existingImageAlt": [
@@ -4033,7 +4045,7 @@
   "posts.form.titlePlaceholder": [
     {
       "type": 0,
-      "value": "Brief description of what you need or can offer"
+      "value": "Brief description of what you need, can offer, or are organizing"
     }
   ],
   "posts.form.typeLegend": [
@@ -4311,6 +4323,12 @@
     {
       "type": 0,
       "value": "Post type:"
+    }
+  ],
+  "posts.types.event": [
+    {
+      "type": 0,
+      "value": "Event"
     }
   ],
   "posts.types.offer": [

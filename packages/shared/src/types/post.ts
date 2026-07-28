@@ -3,7 +3,7 @@ import type { UserPublicProfile } from './user.js';
 import type { Organization } from './organization.js';
 import type { Community } from './community.js';
 
-export type PostType = 'REQUEST' | 'OFFER';
+export type PostType = 'REQUEST' | 'OFFER' | 'EVENT';
 export type PostStatus = 'OPEN' | 'FULFILLED' | 'CLOSED';
 export type UrgencyLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type RecurrenceFrequency = 'DAY' | 'WEEK' | 'MONTH';

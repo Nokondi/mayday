@@ -268,44 +268,38 @@ export function PostForm({
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      <fieldset className="border-0 p-0 m-0">
-        <legend className="block text-sm font-medium text-gray-700 mb-2">
-          <FormattedMessage
-            id="posts.form.typeLegend"
-            defaultMessage="Type"
-          />
-        </legend>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              value="REQUEST"
-              {...register("type")}
-              className="text-mayday-700"
-            />
-            <span>
-              <FormattedMessage
-                id="posts.form.requestRadioLabel"
-                defaultMessage="I need help (Request)"
-              />
-            </span>
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              value="OFFER"
-              {...register("type")}
-              className="text-mayday-700"
-            />
-            <span>
-              <FormattedMessage
-                id="posts.form.offerRadioLabel"
-                defaultMessage="I can help (Offer)"
-              />
-            </span>
-          </label>
-        </div>
-      </fieldset>
+      <div>
+        <label
+          htmlFor="post-type"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          <FormattedMessage id="posts.form.typeLegend" defaultMessage="Type" />
+        </label>
+        <select
+          id="post-type"
+          {...register("type")}
+          className="w-full border border-mayday-300 rounded-lg px-3 py-2 bg-white"
+        >
+          <option value="REQUEST">
+            {intl.formatMessage({
+              id: "posts.form.requestRadioLabel",
+              defaultMessage: "I need help (Request)",
+            })}
+          </option>
+          <option value="OFFER">
+            {intl.formatMessage({
+              id: "posts.form.offerRadioLabel",
+              defaultMessage: "I can help (Offer)",
+            })}
+          </option>
+          <option value="EVENT">
+            {intl.formatMessage({
+              id: "posts.form.eventRadioLabel",
+              defaultMessage: "I'm organizing (Event)",
+            })}
+          </option>
+        </select>
+      </div>
 
       {!isEdit && myOrgs && myOrgs.length > 0 && (
         <div>
@@ -478,7 +472,8 @@ export function PostForm({
         error={errors.title?.message}
         placeholder={intl.formatMessage({
           id: "posts.form.titlePlaceholder",
-          defaultMessage: "Brief description of what you need or can offer",
+          defaultMessage:
+            "Brief description of what you need, can offer, or are organizing",
         })}
         {...register("title")}
       />
@@ -494,7 +489,7 @@ export function PostForm({
         rows={4}
         placeholder={intl.formatMessage({
           id: "posts.form.descriptionPlaceholder",
-          defaultMessage: "Provide details about your request or offer...",
+          defaultMessage: "Provide details about your request, offer, or event...",
         })}
         {...register("description")}
       />

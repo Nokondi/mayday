@@ -1005,6 +1005,78 @@ async function main() {
     await prisma.post.create({ data });
   }
 
+  // ---- Event Posts ----
+  // Events always have a startAt (enforced by createPostSchema); mix of public,
+  // recurring, organization-hosted, and community-scoped for testing.
+
+  await prisma.post.createMany({
+    data: [
+      {
+        type: "EVENT",
+        title: "Community potluck in Quapaw Quarter Park",
+        description:
+          "Bring a dish to share and meet your neighbors! We’ll have tables, plates, and utensils set up by the pavilion. Kids and dogs welcome.",
+        category: "Food",
+        location: neighborhoods.quapawQuarter.location,
+        latitude: neighborhoods.quapawQuarter.lat,
+        longitude: neighborhoods.quapawQuarter.lng,
+        urgency: "LOW",
+        authorId: ursula.id,
+        startAt: nextWeekdayAt(6, 17, 0),
+        endAt: nextWeekdayAt(6, 20, 0),
+      },
+      {
+        type: "EVENT",
+        title: "Community garden workday",
+        description:
+          "Join us every Sunday morning to weed, water, and plant at the Riverdale community garden. Tools provided — just bring gloves and a water bottle.",
+        category: "Other",
+        location: neighborhoods.riverdale.location,
+        latitude: neighborhoods.riverdale.lat,
+        longitude: neighborhoods.riverdale.lng,
+        urgency: "LOW",
+        authorId: david.id,
+        startAt: nextWeekdayAt(0, 9, 0),
+        endAt: nextWeekdayAt(0, 11, 0),
+        recurrenceFreq: "WEEK",
+        recurrenceInterval: 1,
+      },
+      {
+        type: "EVENT",
+        title: "Neighborhood cleanup day",
+        description:
+          "Little Rock Mutual Aid is organizing a downtown cleanup. Trash bags, grabbers, and safety vests provided. Meet at the community center at 9am — lunch is on us afterward.",
+        category: "Other",
+        location: neighborhoods.downtown.location,
+        latitude: neighborhoods.downtown.lat,
+        longitude: neighborhoods.downtown.lng,
+        urgency: "MEDIUM",
+        authorId: emma.id,
+        organizationId: littleRockMutualAid.id,
+        startAt: nextWeekdayAt(6, 9, 0),
+        endAt: nextWeekdayAt(6, 13, 0),
+      },
+    ],
+  });
+
+  await prisma.post.create({
+    data: {
+      type: "EVENT",
+      title: "Meadowbrook block party",
+      description:
+        "Annual block party on Maple Street! Live music, a grill going all afternoon, and a bounce house for the kids. Neighbors only — see you there.",
+      category: "Other",
+      location: neighborhoods.meadowbrook.location,
+      latitude: neighborhoods.meadowbrook.lat,
+      longitude: neighborhoods.meadowbrook.lng,
+      urgency: "LOW",
+      authorId: peter.id,
+      communities: { create: { communityId: meadowbrookNeighbors.id } },
+      startAt: nextWeekdayAt(6, 14, 0),
+      endAt: nextWeekdayAt(6, 21, 0),
+    },
+  });
+
   console.log("Seed data created:");
   console.log(`  Admin: ${admin.email}`);
   console.log(
@@ -1018,7 +1090,7 @@ async function main() {
   );
   console.log(`  Friendships: ${friendPairs.length} (each user has 3–4 friends)`);
   console.log(
-    "  14 public posts (4 friends-only), 14 organization posts, 14 community posts (4 scoped to two communities, 10 to one)",
+    "  14 public posts (4 friends-only), 14 organization posts, 14 community posts (4 scoped to two communities, 10 to one), 4 events (2 public, 1 organization, 1 community-scoped)",
   );
 }
 

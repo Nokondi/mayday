@@ -246,6 +246,20 @@ describe('PostDetailPage — comments / related tabs', () => {
     // The composer from the comments tab is no longer shown.
     expect(screen.queryByPlaceholderText(/add a comment/i)).not.toBeInTheDocument();
   });
+
+  it('does not show a matching tab for events and never fetches matches', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(
+      makePost({ type: 'EVENT', title: 'Block party', startAt: '2026-08-01T17:00:00Z' }) as never,
+    );
+    renderPage();
+
+    await screen.findByRole('heading', { name: /block party/i });
+    // Only the Comments tab remains; events have nothing to match against.
+    expect(screen.getAllByRole('tab')).toHaveLength(1);
+    expect(screen.queryByRole('tab', { name: /matching/i })).not.toBeInTheDocument();
+    expect(mockedGetPostMatches).not.toHaveBeenCalled();
+  });
 });
 
 describe('PostDetailPage — edit button', () => {

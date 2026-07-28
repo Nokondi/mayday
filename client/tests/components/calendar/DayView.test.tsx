@@ -50,7 +50,7 @@ function occ(
   id: string,
   title: string,
   startHour: number,
-  type: 'REQUEST' | 'OFFER' = 'OFFER',
+  type: 'REQUEST' | 'OFFER' | 'EVENT' = 'OFFER',
 ): Occurrence {
   const start = new Date(2026, 3, 20, startHour, 0, 0, 0);
   return {
@@ -83,6 +83,17 @@ describe('DayView', () => {
     expect(
       screen.queryByLabelText(/hourly schedule/i),
     ).not.toBeInTheDocument();
+  });
+
+  it('colors occurrences by post type (orange request, green offer, purple event)', () => {
+    renderDayView([
+      occ('r1', 'Ride needed', 9, 'REQUEST'),
+      occ('o1', 'Free meals', 11, 'OFFER'),
+      occ('e1', 'Block party', 14, 'EVENT'),
+    ]);
+    expect(screen.getByRole('button', { name: /ride needed/i })).toHaveClass('bg-orange-50');
+    expect(screen.getByRole('button', { name: /free meals/i })).toHaveClass('bg-green-50');
+    expect(screen.getByRole('button', { name: /block party/i })).toHaveClass('bg-purple-50');
   });
 
   it('renders each occurrence as a button that previews the post when clicked', async () => {

@@ -33,6 +33,7 @@ import {
   type FilterKey,
 } from "../components/posts/ActiveFilterChips.js";
 import { SearchBar } from "../components/common/SearchBar.js";
+import { postTypeStyles } from "../components/common/PostTypeBadge.js";
 import { useDebounce } from "../hooks/useDebounce.js";
 import { expandOccurrences, type Occurrence } from "../utils/recurrence.js";
 
@@ -108,7 +109,7 @@ export function CalendarPage() {
         scheduled: true,
         status: "OPEN",
         limit: 200,
-        type: (type as "REQUEST" | "OFFER") || undefined,
+        type: (type as "REQUEST" | "OFFER" | "EVENT") || undefined,
         category: category || undefined,
         urgency:
           (urgency as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL") || undefined,
@@ -331,10 +332,7 @@ export function CalendarPage() {
                     </div>
                     <div className="space-y-0.5">
                       {visible.map((occ, i) => {
-                        const color =
-                          occ.post.type === "REQUEST"
-                            ? "bg-orange-50 text-orange-800 border-orange-200 hover:bg-orange-100"
-                            : "bg-green-50 text-green-800 border-green-200 hover:bg-green-100";
+                        const color = postTypeStyles[occ.post.type].calendarChip;
                         return (
                           <button
                             key={`${occ.post.id}-${i}`}

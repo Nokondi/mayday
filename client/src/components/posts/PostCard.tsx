@@ -12,20 +12,11 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { formatDistanceToNow, format, isSameDay } from "date-fns";
-import {
-  defineMessages,
-  FormattedMessage,
-  useIntl,
-  type IntlShape,
-} from "react-intl";
+import { defineMessages, useIntl, type IntlShape } from "react-intl";
 import type { PostWithAuthor, RecurrenceFrequency } from "@mayday/shared";
 import { CategoryBadge } from "../common/CategoryBadge.js";
 import { UrgencyBadge } from "../common/UrgencyBadge.js";
-
-const typeLabels = defineMessages({
-  REQUEST: { id: "posts.types.request", defaultMessage: "Request" },
-  OFFER: { id: "posts.types.offer", defaultMessage: "Offer" },
-});
+import { PostTypeBadge, postTypeStyles } from "../common/PostTypeBadge.js";
 
 const statusLabels = defineMessages({
   OPEN: { id: "posts.statuses.open", defaultMessage: "Open" },
@@ -83,8 +74,7 @@ export function formatRecurrence(
 
 export function PostCard({ post }: { post: PostWithAuthor }) {
   const intl = useIntl();
-  const typeColor =
-    post.type === "REQUEST" ? "border-l-orange-700" : "border-l-green-700";
+  const typeColor = postTypeStyles[post.type].cardBorder;
 
   return (
     <Link
@@ -138,21 +128,7 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
             </div>
           </div>
           <div className="flex flew-row flex-wrap items-center gap-2 mt-2">
-            <span
-              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                post.type === "REQUEST"
-                  ? "bg-orange-100 text-orange-700"
-                  : "bg-green-100 text-green-700"
-              }`}
-            >
-              <span className="sr-only">
-                <FormattedMessage
-                  id="posts.typeAriaPrefix"
-                  defaultMessage="Post type: "
-                />
-              </span>
-              {intl.formatMessage(typeLabels[post.type])}
-            </span>
+            <PostTypeBadge type={post.type} />
             <CategoryBadge category={post.category} />
             <UrgencyBadge urgency={post.urgency} />
             {post.status === "FULFILLED" && (
@@ -247,4 +223,4 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
   );
 }
 
-export { typeLabels, statusLabels };
+export { statusLabels };
