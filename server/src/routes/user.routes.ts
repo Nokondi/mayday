@@ -5,6 +5,7 @@ import {
   deleteAccountSchema,
   type OwnedGroupsResponse,
   type OwnedGroupSummary,
+  type UpdateUserSettingsRequest,
 } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, optionalAuth, type AuthRequest } from '../middleware/auth.middleware.js';
@@ -95,14 +96,27 @@ userRoutes.get('/me/owned-groups', requireAuth, asyncHandler(async (req: AuthReq
 
 // PUT /api/users/me/settings — update private settings for the current user
 userRoutes.put('/me/settings', requireAuth, validate(updateUserSettingsSchema), asyncHandler(async (req: AuthRequest, res) => {
-  const { emailNotificationsEnabled, pushNotificationsEnabled } = req.body as {
-    emailNotificationsEnabled?: boolean;
-    pushNotificationsEnabled?: boolean;
-  };
+  const {
+    emailNotificationsEnabled,
+    pushNotificationsEnabled,
+    notifyFriendPosts,
+    minPostNotificationUrgency,
+  } = req.body as UpdateUserSettingsRequest;
   const user = await prisma.user.update({
     where: { id: req.user!.id },
-    data: { emailNotificationsEnabled, pushNotificationsEnabled },
-    select: { id: true, emailNotificationsEnabled: true, pushNotificationsEnabled: true },
+    data: {
+      emailNotificationsEnabled,
+      pushNotificationsEnabled,
+      notifyFriendPosts,
+      minPostNotificationUrgency,
+    },
+    select: {
+      id: true,
+      emailNotificationsEnabled: true,
+      pushNotificationsEnabled: true,
+      notifyFriendPosts: true,
+      minPostNotificationUrgency: true,
+    },
   });
   res.json(user);
 }));

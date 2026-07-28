@@ -174,6 +174,8 @@ export type UpdateProfileRequest = z.infer<typeof updateProfileSchema>;
 export const updateUserSettingsSchema = z.object({
   emailNotificationsEnabled: z.boolean().optional(),
   pushNotificationsEnabled: z.boolean().optional(),
+  notifyFriendPosts: z.boolean().optional(),
+  minPostNotificationUrgency: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
 });
 
 export type UpdateUserSettingsRequest = z.infer<typeof updateUserSettingsSchema>;
@@ -401,10 +403,17 @@ export const communityJoinRequestSchema = z.object({
   message: z.string().max(500).optional(),
 });
 
+// Per-community new-post notification opt-out (updates the caller's own
+// membership row).
+export const updateCommunityNotificationsSchema = z.object({
+  notifyNewPosts: z.boolean(),
+});
+
 export type CreateCommunityRequest = z.infer<typeof createCommunitySchema>;
 export type UpdateCommunityRequest = z.infer<typeof updateCommunitySchema>;
 export type InviteToCommunityRequest = z.infer<typeof inviteToCommunitySchema>;
 export type CommunityJoinRequestInput = z.infer<typeof communityJoinRequestSchema>;
+export type UpdateCommunityNotificationsRequest = z.infer<typeof updateCommunityNotificationsSchema>;
 
 // Pagination
 export interface PaginatedResponse<T> {

@@ -5,6 +5,7 @@ vi.mock('dotenv', () => ({ default: { config: vi.fn() }, config: vi.fn() }));
 
 const sendNewMessageEmail = vi.fn().mockResolvedValue(undefined);
 const sendNewCommentEmail = vi.fn().mockResolvedValue(undefined);
+const sendNewPostEmail = vi.fn().mockResolvedValue(undefined);
 const sendCommunityJoinRequestEmail = vi.fn().mockResolvedValue(undefined);
 const sendCommunityJoinRequestApprovedEmail = vi.fn().mockResolvedValue(undefined);
 const sendCommunityInviteEmail = vi.fn().mockResolvedValue(undefined);
@@ -16,6 +17,7 @@ const sendUserReportAdminEmail = vi.fn().mockResolvedValue(undefined);
 vi.mock('../../src/services/mail.service.js', () => ({
   sendNewMessageEmail,
   sendNewCommentEmail,
+  sendNewPostEmail,
   sendCommunityJoinRequestEmail,
   sendCommunityJoinRequestApprovedEmail,
   sendCommunityInviteEmail,
@@ -227,6 +229,46 @@ describe('notify — per-event email arguments', () => {
     );
   });
 
+  it('NEW_POST (friend) → sendNewPostEmail with null communityName', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'NEW_POST',
+      postId: 'post-1',
+      postTitle: 'Need help moving',
+      authorId: 'user-2',
+      authorName: 'Bob',
+      audience: 'friend',
+    });
+    expect(sendNewPostEmail).toHaveBeenCalledWith(
+      'alice@example.com',
+      'Bob',
+      'Need help moving',
+      'post-1',
+      null,
+    );
+  });
+
+  it('NEW_POST (community) → sendNewPostEmail with the community name', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'NEW_POST',
+      postId: 'post-1',
+      postTitle: 'Need help moving',
+      authorId: 'user-2',
+      authorName: 'Bob',
+      audience: 'community',
+      communityId: 'c-1',
+      communityName: 'Coders',
+    });
+    expect(sendNewPostEmail).toHaveBeenCalledWith(
+      'alice@example.com',
+      'Bob',
+      'Need help moving',
+      'post-1',
+      'Coders',
+    );
+  });
+
   it('COMMUNITY_JOIN_REQUEST → sendCommunityJoinRequestEmail with all fields', async () => {
     const { notify } = await import('../../src/services/notification.service.js');
     await notify('user-1', {
@@ -390,6 +432,42 @@ describe('notify — per-event push payloads', () => {
     expect(p.title).toBe('Bob commented on "Need help moving"');
     expect(p.url).toBe('/posts/post-1');
     expect(p.tag).toBe('comment:post-1');
+  });
+
+  it('NEW_POST (friend) — title names the author, body is the post title, deep links to the post', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'NEW_POST',
+      postId: 'post-1',
+      postTitle: 'Need help moving',
+      authorId: 'user-2',
+      authorName: 'Bob',
+      audience: 'friend',
+    });
+    const p = payloadOf();
+    expect(p.title).toBe('Bob shared a new post');
+    expect(p.body).toBe('Need help moving');
+    expect(p.url).toBe('/posts/post-1');
+    expect(p.tag).toBe('post:post-1');
+  });
+
+  it('NEW_POST (community) — title names the community, body names the author', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'NEW_POST',
+      postId: 'post-1',
+      postTitle: 'Need help moving',
+      authorId: 'user-2',
+      authorName: 'Bob',
+      audience: 'community',
+      communityId: 'c-1',
+      communityName: 'Coders',
+    });
+    const p = payloadOf();
+    expect(p.title).toBe('New post in Coders');
+    expect(p.body).toBe('Bob: Need help moving');
+    expect(p.url).toBe('/posts/post-1');
+    expect(p.tag).toBe('post:post-1');
   });
 
   it('COMMUNITY_JOIN_REQUEST — url goes to /manage and body falls back when no message', async () => {

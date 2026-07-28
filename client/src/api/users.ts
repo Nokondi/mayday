@@ -6,6 +6,7 @@ import type {
   OwnedGroupsResponse,
   PaginatedResponse,
   PostWithAuthor,
+  UrgencyLevel,
 } from '@mayday/shared';
 import { api } from './client.js';
 
@@ -54,7 +55,13 @@ export async function getOwnedGroups(): Promise<OwnedGroupsResponse> {
 
 export async function updateUserSettings(
   data: UpdateUserSettingsRequest,
-): Promise<{ id: string; emailNotificationsEnabled: boolean; pushNotificationsEnabled: boolean }> {
+): Promise<{
+  id: string;
+  emailNotificationsEnabled: boolean;
+  pushNotificationsEnabled: boolean;
+  notifyFriendPosts: boolean;
+  minPostNotificationUrgency: UrgencyLevel;
+}> {
   const res = await api.put('/users/me/settings', data);
   return res.data;
 }

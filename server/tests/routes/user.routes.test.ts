@@ -538,6 +538,56 @@ describe('DELETE /api/users/:id', () => {
   });
 });
 
+describe('PUT /api/users/me/settings', () => {
+  it('updates notification prefs including post-notification fields', async () => {
+    mockedUser.update.mockResolvedValueOnce({
+      id: USER_ID,
+      emailNotificationsEnabled: true,
+      pushNotificationsEnabled: true,
+      notifyFriendPosts: false,
+      minPostNotificationUrgency: 'HIGH',
+    } as never);
+
+    const res = await request(makeApp())
+      .put('/api/users/me/settings')
+      .set('Authorization', authHeader())
+      .send({ notifyFriendPosts: false, minPostNotificationUrgency: 'HIGH' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.notifyFriendPosts).toBe(false);
+    expect(res.body.minPostNotificationUrgency).toBe('HIGH');
+    expect(mockedUser.update).toHaveBeenCalledWith({
+      where: { id: USER_ID },
+      data: expect.objectContaining({
+        notifyFriendPosts: false,
+        minPostNotificationUrgency: 'HIGH',
+      }),
+      select: expect.objectContaining({
+        notifyFriendPosts: true,
+        minPostNotificationUrgency: true,
+      }),
+    });
+  });
+
+  it('returns 400 for an invalid urgency level', async () => {
+    const res = await request(makeApp())
+      .put('/api/users/me/settings')
+      .set('Authorization', authHeader())
+      .send({ minPostNotificationUrgency: 'EXTREME' });
+
+    expect(res.status).toBe(400);
+    expect(mockedUser.update).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 without auth', async () => {
+    const res = await request(makeApp())
+      .put('/api/users/me/settings')
+      .send({ notifyFriendPosts: false });
+
+    expect(res.status).toBe(401);
+  });
+});
+
 describe('GET /api/users/me/owned-groups', () => {
   const mockedCommunityMember = vi.mocked(prisma.communityMember);
   const mockedOrganizationMember = vi.mocked(prisma.organizationMember);

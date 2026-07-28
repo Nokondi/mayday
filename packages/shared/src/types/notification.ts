@@ -56,6 +56,19 @@ export type NotificationEvent =
       accepterName: string;
     }
   | {
+      type: 'NEW_POST';
+      postId: string;
+      postTitle: string;
+      authorId: string;
+      authorName: string;
+      // Why this recipient is being notified: a friend's post, or a new post
+      // in one of their communities. Community notifications carry the
+      // community's name for the message copy.
+      audience: 'friend' | 'community';
+      communityId?: string;
+      communityName?: string;
+    }
+  | {
       type: 'ANNOUNCEMENT';
       message: string;
     }

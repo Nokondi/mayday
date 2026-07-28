@@ -19,6 +19,7 @@ import {
   getUserPosts,
   reportUser,
   updateProfile,
+  updateUserSettings,
   uploadUserAvatar,
 } from '../../src/api/users.js';
 
@@ -150,6 +151,30 @@ describe('users api', () => {
       await deleteProfile('u1', body);
 
       expect(mockedApi.delete).toHaveBeenCalledWith('/users/u1', { data: body });
+    });
+  });
+
+  describe('updateUserSettings', () => {
+    it('PUTs /users/me/settings with post-notification prefs and returns the body', async () => {
+      const response = {
+        id: 'u1',
+        emailNotificationsEnabled: true,
+        pushNotificationsEnabled: true,
+        notifyFriendPosts: false,
+        minPostNotificationUrgency: 'HIGH',
+      };
+      mockedApi.put.mockResolvedValueOnce({ data: response });
+
+      const result = await updateUserSettings({
+        notifyFriendPosts: false,
+        minPostNotificationUrgency: 'HIGH',
+      });
+
+      expect(mockedApi.put).toHaveBeenCalledWith('/users/me/settings', {
+        notifyFriendPosts: false,
+        minPostNotificationUrgency: 'HIGH',
+      });
+      expect(result).toEqual(response);
     });
   });
 

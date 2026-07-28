@@ -108,6 +108,8 @@ beforeEach(() => {
     id: 'user-1',
     emailNotificationsEnabled: true,
     pushNotificationsEnabled: pushNotificationsEnabled ?? false,
+    notifyFriendPosts: true,
+    minPostNotificationUrgency: 'LOW',
   }));
 });
 

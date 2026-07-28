@@ -89,6 +89,11 @@ model User {
   emailVerified Boolean  @default(false)
   emailNotificationsEnabled Boolean @default(true)
   pushNotificationsEnabled  Boolean @default(true)
+  // New-post notification preferences. Friends' posts can be muted entirely;
+  // urgency below the minimum is filtered out for both friend and community
+  // post notifications (LOW = notify for everything).
+  notifyFriendPosts          Boolean      @default(true)
+  minPostNotificationUrgency UrgencyLevel @default(LOW)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -421,6 +426,8 @@ model CommunityMember {
   userId      String
   role        OrgRole  @default(MEMBER)
   joinedAt    DateTime @default(now())
+  // Per-community opt-out for new-post notifications.
+  notifyNewPosts Boolean @default(true)
 
   community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)

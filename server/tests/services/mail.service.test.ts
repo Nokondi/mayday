@@ -357,6 +357,74 @@ describe('sendNewCommentEmail', () => {
   });
 });
 
+describe('sendNewPostEmail', () => {
+  it('community variant: subject names the community and links to /posts/:id', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendNewPostEmail } = await import('../../src/services/mail.service.js');
+    await sendNewPostEmail('to@example.com', 'Alice', 'Need help moving', 'post-1', 'Coders');
+
+    const mail = sendMailMock.mock.calls[0][0] as {
+      subject: string; text: string; html: string;
+    };
+    expect(mail.subject).toBe('New post in Coders: "Need help moving"');
+    expect(mail.text).toContain('Alice');
+    expect(mail.text).toContain('Coders');
+    expect(mail.html).toContain('https://mayday.test/posts/post-1');
+  });
+
+  it('friend variant (null community): subject names the author', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendNewPostEmail } = await import('../../src/services/mail.service.js');
+    await sendNewPostEmail('to@example.com', 'Alice', 'Need help moving', 'post-1', null);
+
+    const mail = sendMailMock.mock.calls[0][0] as {
+      subject: string; text: string; html: string;
+    };
+    expect(mail.subject).toBe('Alice shared a new post: "Need help moving"');
+    expect(mail.text).toContain('Your friend Alice');
+    expect(mail.html).toContain('https://mayday.test/posts/post-1');
+  });
+
+  it('escapes HTML in the author, title, and community name', async () => {
+    process.env.SMTP_USER = 'bot@example.com';
+    process.env.SMTP_PASS = 'secret';
+
+    const { sendNewPostEmail } = await import('../../src/services/mail.service.js');
+    await sendNewPostEmail(
+      'to@example.com',
+      '<img src=x onerror=alert(1)>',
+      '<script>alert(2)</script>',
+      'post-1',
+      '<b>Coders</b>',
+    );
+
+    const mail = sendMailMock.mock.calls[0][0] as { html: string };
+    expect(mail.html).not.toContain('<img src=x');
+    expect(mail.html).not.toContain('<script>');
+    expect(mail.html).not.toContain('<b>Coders</b>');
+    expect(mail.html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(mail.html).toContain('&lt;script&gt;alert(2)&lt;/script&gt;');
+    expect(mail.html).toContain('&lt;b&gt;Coders&lt;/b&gt;');
+  });
+
+  it('no-ops when SMTP is not configured', async () => {
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { sendNewPostEmail } = await import('../../src/services/mail.service.js');
+    await sendNewPostEmail('to@example.com', 'Alice', 'Title', 'post-1', null);
+
+    expect(sendMailMock).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/SMTP not configured/));
+    warn.mockRestore();
+  });
+});
+
 describe('sendRegistrationCollisionEmail', () => {
   it('no-ops when SMTP credentials are not configured', async () => {
     delete process.env.SMTP_USER;

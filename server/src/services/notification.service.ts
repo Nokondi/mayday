@@ -3,6 +3,7 @@ import { prisma } from '../config/database.js';
 import {
   sendNewMessageEmail,
   sendNewCommentEmail,
+  sendNewPostEmail,
   sendCommunityJoinRequestEmail,
   sendCommunityJoinRequestApprovedEmail,
   sendCommunityInviteEmail,
@@ -70,6 +71,21 @@ function buildPushPayload(event: NotificationEvent): PushPayload {
         body: 'Tap to view the discussion.',
         url: `/posts/${event.postId}`,
         tag: `comment:${event.postId}`,
+      };
+    case 'NEW_POST':
+      if (event.audience === 'community') {
+        return {
+          title: `New post in ${event.communityName}`,
+          body: `${event.authorName}: ${event.postTitle}`,
+          url: `/posts/${event.postId}`,
+          tag: `post:${event.postId}`,
+        };
+      }
+      return {
+        title: `${event.authorName} shared a new post`,
+        body: event.postTitle,
+        url: `/posts/${event.postId}`,
+        tag: `post:${event.postId}`,
       };
     case 'COMMUNITY_JOIN_REQUEST':
       return {
@@ -169,6 +185,14 @@ function sendEmailFor(
         event.commenterName,
         event.postTitle,
         event.postId,
+      );
+    case 'NEW_POST':
+      return sendNewPostEmail(
+        user.email,
+        event.authorName,
+        event.postTitle,
+        event.postId,
+        event.audience === 'community' ? event.communityName ?? null : null,
       );
     case 'COMMUNITY_JOIN_REQUEST':
       return sendCommunityJoinRequestEmail(

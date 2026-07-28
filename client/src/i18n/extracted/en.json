@@ -698,6 +698,12 @@
   "common.settingsModal.closeAriaLabel": {
     "defaultMessage": "Close settings"
   },
+  "common.settingsModal.communityPostsDescription": {
+    "defaultMessage": "Choose which of your communities notify you about new posts."
+  },
+  "common.settingsModal.communityPostsLegend": {
+    "defaultMessage": "Communities"
+  },
   "common.settingsModal.doneButton": {
     "defaultMessage": "Done"
   },
@@ -710,8 +716,23 @@
   "common.settingsModal.emailToggleLabel": {
     "defaultMessage": "Email me about activity"
   },
+  "common.settingsModal.friendPostsToggleDescription": {
+    "defaultMessage": "Notify me when a friend shares a new post."
+  },
+  "common.settingsModal.friendPostsToggleLabel": {
+    "defaultMessage": "Friends' posts"
+  },
   "common.settingsModal.loadFailedToast": {
     "defaultMessage": "Failed to load settings"
+  },
+  "common.settingsModal.minUrgencyDescription": {
+    "defaultMessage": "Only notify me about posts at or above this urgency."
+  },
+  "common.settingsModal.minUrgencyLabel": {
+    "defaultMessage": "Minimum urgency"
+  },
+  "common.settingsModal.postNotificationsHeading": {
+    "defaultMessage": "Post notifications"
   },
   "common.settingsModal.savedToast": {
     "defaultMessage": "Settings saved"
@@ -721,6 +742,18 @@
   },
   "common.settingsModal.updateFailedToast": {
     "defaultMessage": "Failed to update settings"
+  },
+  "common.settingsModal.urgencyOption.critical": {
+    "defaultMessage": "Critical only"
+  },
+  "common.settingsModal.urgencyOption.high": {
+    "defaultMessage": "High and above"
+  },
+  "common.settingsModal.urgencyOption.low": {
+    "defaultMessage": "Low (all posts)"
+  },
+  "common.settingsModal.urgencyOption.medium": {
+    "defaultMessage": "Medium and above"
   },
   "common.status.sending": {
     "defaultMessage": "Sending…"

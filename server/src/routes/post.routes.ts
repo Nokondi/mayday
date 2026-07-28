@@ -13,6 +13,7 @@ import {
 } from "../middleware/auth.middleware.js";
 import { createCommentSchema, updateCommentSchema } from "@mayday/shared";
 import { notifyMany } from "../services/notification.service.js";
+import { notifyNewPost } from "../services/postNotification.service.js";
 import { uploadPostImages } from "../middleware/upload.middleware.js";
 import { prisma } from "../config/database.js";
 import { deleteObjectByUrl } from "../config/storage.js";
@@ -679,6 +680,21 @@ postRoutes.post(
       where: { id: post.id },
       include: postInclude,
     });
+
+    // Notify friends and community members about the new post (see
+    // notifyNewPost for audience rules). Fire-and-forget — a notification
+    // failure must never fail the post write.
+    if (fullPost) {
+      void notifyNewPost({
+        postId: fullPost.id,
+        postTitle: fullPost.title,
+        urgency: fullPost.urgency,
+        authorId: fullPost.authorId,
+        authorName: fullPost.author.name,
+        sharedWithFriends: fullPost.sharedWithFriends,
+        communityIds: uniqueCommunityIds,
+      });
+    }
 
     res.status(201).json(serializePost(fullPost));
   }),

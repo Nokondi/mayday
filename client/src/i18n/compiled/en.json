@@ -1797,6 +1797,18 @@
       "value": "Close settings"
     }
   ],
+  "common.settingsModal.communityPostsDescription": [
+    {
+      "type": 0,
+      "value": "Choose which of your communities notify you about new posts."
+    }
+  ],
+  "common.settingsModal.communityPostsLegend": [
+    {
+      "type": 0,
+      "value": "Communities"
+    }
+  ],
   "common.settingsModal.doneButton": [
     {
       "type": 0,
@@ -1821,10 +1833,40 @@
       "value": "Email me about activity"
     }
   ],
+  "common.settingsModal.friendPostsToggleDescription": [
+    {
+      "type": 0,
+      "value": "Notify me when a friend shares a new post."
+    }
+  ],
+  "common.settingsModal.friendPostsToggleLabel": [
+    {
+      "type": 0,
+      "value": "Friends' posts"
+    }
+  ],
   "common.settingsModal.loadFailedToast": [
     {
       "type": 0,
       "value": "Failed to load settings"
+    }
+  ],
+  "common.settingsModal.minUrgencyDescription": [
+    {
+      "type": 0,
+      "value": "Only notify me about posts at or above this urgency."
+    }
+  ],
+  "common.settingsModal.minUrgencyLabel": [
+    {
+      "type": 0,
+      "value": "Minimum urgency"
+    }
+  ],
+  "common.settingsModal.postNotificationsHeading": [
+    {
+      "type": 0,
+      "value": "Post notifications"
     }
   ],
   "common.settingsModal.savedToast": [
@@ -1843,6 +1885,30 @@
     {
       "type": 0,
       "value": "Failed to update settings"
+    }
+  ],
+  "common.settingsModal.urgencyOption.critical": [
+    {
+      "type": 0,
+      "value": "Critical only"
+    }
+  ],
+  "common.settingsModal.urgencyOption.high": [
+    {
+      "type": 0,
+      "value": "High and above"
+    }
+  ],
+  "common.settingsModal.urgencyOption.low": [
+    {
+      "type": 0,
+      "value": "Low (all posts)"
+    }
+  ],
+  "common.settingsModal.urgencyOption.medium": [
+    {
+      "type": 0,
+      "value": "Medium and above"
     }
   ],
   "common.status.sending": [
