@@ -93,19 +93,26 @@ describe('PostForm — basic rendering & defaults', () => {
     expect(screen.getByRole('button', { name: /create post/i })).toBeInTheDocument();
   });
 
-  it('defaults the type radio to "REQUEST"', () => {
-    renderForm();
-    const requestRadio = screen.getByRole('radio', { name: /i need help/i });
-    const offerRadio = screen.getByRole('radio', { name: /i can help/i });
-    const eventRadio = screen.getByRole('radio', { name: /i'm organizing/i });
-    expect(requestRadio).toBeChecked();
-    expect(offerRadio).not.toBeChecked();
-    expect(eventRadio).not.toBeChecked();
+  it('defaults the type select to "REQUEST"', () => {
+    const { container } = renderForm();
+    const typeSelect = getField<HTMLSelectElement>(container, 'type');
+    expect(typeSelect).toHaveValue('REQUEST');
+    // All three types are offered as options.
+    expect(within(typeSelect).getByRole('option', { name: /i need help/i })).toHaveValue('REQUEST');
+    expect(within(typeSelect).getByRole('option', { name: /i can help/i })).toHaveValue('OFFER');
+    expect(within(typeSelect).getByRole('option', { name: /i'm organizing/i })).toHaveValue('EVENT');
   });
 
   it('defaults the urgency select to MEDIUM', () => {
     const { container } = renderForm();
     expect(getField(container, 'urgency')).toHaveValue('MEDIUM');
+  });
+
+  it('title and description placeholders reference events alongside requests/offers', () => {
+    renderForm();
+    // Placeholders should not imply only two post types now that events exist.
+    expect(screen.getByPlaceholderText(/are organizing/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/request, offer, or event/i)).toBeInTheDocument();
   });
 
   it('disables the submit button when isSubmitting is true', () => {
@@ -277,7 +284,7 @@ describe('PostForm — edit mode', () => {
     expect(getField<HTMLTextAreaElement>(container, 'description')).toHaveValue('Existing description');
     expect(getField<HTMLSelectElement>(container, 'category')).toHaveValue('Food');
     expect(getField<HTMLSelectElement>(container, 'urgency')).toHaveValue('HIGH');
-    expect(screen.getByRole('radio', { name: /i can help/i })).toBeChecked();
+    expect(getField<HTMLSelectElement>(container, 'type')).toHaveValue('OFFER');
     expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
   });
 
@@ -358,7 +365,7 @@ describe('PostForm — validation', () => {
     const user = userEvent.setup();
     const { onSubmit, container } = renderForm();
 
-    await user.click(screen.getByRole('radio', { name: /i'm organizing/i }));
+    await user.selectOptions(getField<HTMLSelectElement>(container, 'type'), 'EVENT');
     await user.type(getField(container, 'title'), 'Community potluck');
     await user.type(getField(container, 'description'), 'Bring a dish to share');
     await user.selectOptions(getField<HTMLSelectElement>(container, 'category'), 'Food');
@@ -373,7 +380,7 @@ describe('PostForm — validation', () => {
     const user = userEvent.setup();
     const { onSubmit, container } = renderForm();
 
-    await user.click(screen.getByRole('radio', { name: /i'm organizing/i }));
+    await user.selectOptions(getField<HTMLSelectElement>(container, 'type'), 'EVENT');
     await user.type(getField(container, 'title'), 'Community potluck');
     await user.type(getField(container, 'description'), 'Bring a dish to share');
     await user.selectOptions(getField<HTMLSelectElement>(container, 'category'), 'Food');

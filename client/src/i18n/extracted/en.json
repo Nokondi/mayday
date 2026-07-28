@@ -1389,7 +1389,7 @@
     "defaultMessage": "Clear location"
   },
   "posts.form.descriptionPlaceholder": {
-    "defaultMessage": "Provide details about your request or offer..."
+    "defaultMessage": "Provide details about your request, offer, or event..."
   },
   "posts.form.endsLabel": {
     "defaultMessage": "Ends"
@@ -1482,7 +1482,7 @@
     "defaultMessage": "Title"
   },
   "posts.form.titlePlaceholder": {
-    "defaultMessage": "Brief description of what you need or can offer"
+    "defaultMessage": "Brief description of what you need, can offer, or are organizing"
   },
   "posts.form.typeLegend": {
     "defaultMessage": "Type"

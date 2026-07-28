@@ -3843,7 +3843,7 @@
   "posts.form.descriptionPlaceholder": [
     {
       "type": 0,
-      "value": "Provide details about your request or offer..."
+      "value": "Provide details about your request, offer, or event..."
     }
   ],
   "posts.form.endsLabel": [
@@ -4045,7 +4045,7 @@
   "posts.form.titlePlaceholder": [
     {
       "type": 0,
-      "value": "Brief description of what you need or can offer"
+      "value": "Brief description of what you need, can offer, or are organizing"
     }
   ],
   "posts.form.typeLegend": [
