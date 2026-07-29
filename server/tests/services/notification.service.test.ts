@@ -11,6 +11,8 @@ const sendCommunityJoinRequestEmail = vi.fn().mockResolvedValue(undefined);
 const sendCommunityJoinRequestApprovedEmail = vi.fn().mockResolvedValue(undefined);
 const sendCommunityInviteEmail = vi.fn().mockResolvedValue(undefined);
 const sendOrganizationInviteEmail = vi.fn().mockResolvedValue(undefined);
+const sendFriendRequestEmail = vi.fn().mockResolvedValue(undefined);
+const sendFriendRequestAcceptedEmail = vi.fn().mockResolvedValue(undefined);
 const sendAnnouncementEmail = vi.fn().mockResolvedValue(undefined);
 const sendBugReportAdminEmail = vi.fn().mockResolvedValue(undefined);
 const sendUserReportAdminEmail = vi.fn().mockResolvedValue(undefined);
@@ -24,6 +26,8 @@ vi.mock('../../src/services/mail.service.js', () => ({
   sendCommunityJoinRequestApprovedEmail,
   sendCommunityInviteEmail,
   sendOrganizationInviteEmail,
+  sendFriendRequestEmail,
+  sendFriendRequestAcceptedEmail,
   sendAnnouncementEmail,
   sendBugReportAdminEmail,
   sendUserReportAdminEmail,
@@ -711,6 +715,47 @@ describe('notify — per-event push payloads', () => {
     const contentPayload = payloadOf();
     expect(contentPayload.title).toBe('New content report from Carol');
   });
+});
+
+describe('notify — push send options (urgency/TTL)', () => {
+  beforeEach(() => {
+    findUniqueMock.mockResolvedValue(makeUser());
+  });
+
+  function optionsOf() {
+    return sendPushToUser.mock.calls[0]?.[2] as { urgency: string; TTL: number };
+  }
+
+  it('NEW_MESSAGE — high urgency with a short 4h TTL', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', NEW_MESSAGE_EVENT);
+    expect(optionsOf()).toEqual({ urgency: 'high', TTL: 4 * 60 * 60 });
+  });
+
+  it('POST_DIGEST — the one batchable push: normal urgency, 1-day TTL', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'POST_DIGEST',
+      count: 1,
+      posts: [{ id: 'p1', title: 'T', authorName: 'Bob', communityName: null }],
+    });
+    expect(optionsOf()).toEqual({ urgency: 'normal', TTL: 24 * 60 * 60 });
+  });
+
+  it.each([
+    ['NEW_COMMENT', NEW_COMMENT_EVENT],
+    ['NEW_POST', { type: 'NEW_POST', postId: 'p1', postTitle: 'T', authorId: 'u2', authorName: 'Bob', audience: 'friend' }],
+    ['FRIEND_REQUEST', { type: 'FRIEND_REQUEST', senderId: 'u2', senderName: 'Bob' }],
+    ['COMMUNITY_INVITE', { type: 'COMMUNITY_INVITE', communityId: 'c1', communityName: 'Coders', inviterName: 'Bob' }],
+    ['ANNOUNCEMENT', { type: 'ANNOUNCEMENT', message: 'Hi' }],
+  ] as Array<[string, NotificationEvent]>)(
+    '%s — high urgency so push services deliver immediately, 1-day TTL',
+    async (_name, event) => {
+      const { notify } = await import('../../src/services/notification.service.js');
+      await notify('user-1', event);
+      expect(optionsOf()).toEqual({ urgency: 'high', TTL: 24 * 60 * 60 });
+    },
+  );
 });
 
 describe('notifyAdmins', () => {

@@ -197,15 +197,25 @@ function buildPushPayload(event: NotificationEvent): PushPayload {
   }
 }
 
-// Time-sensitive events get high urgency so push services wake the device
-// immediately instead of batching for power efficiency, plus a short TTL so
-// stale messages aren't surfaced after the user is back in-app. Everything
-// else uses library defaults (normal urgency, ~4-week TTL).
-function buildPushOptions(event: NotificationEvent): PushSendOptions | undefined {
-  if (event.type === 'NEW_MESSAGE') {
-    return { urgency: 'high', TTL: 4 * 60 * 60 };
+const HOUR = 60 * 60;
+const DAY = 24 * HOUR;
+
+// Every user-facing event is something a person is actively waiting on, so
+// they all get high urgency — push services (FCM/Mozilla) treat the default
+// 'normal' as batchable and can hold delivery until the device next wakes,
+// which reads as "delayed or missing" notifications. TTLs cap staleness:
+// a message push is pointless hours later; everything else keeps for a day.
+// The weekly digest is the one genuinely non-urgent push — let the service
+// batch it for power efficiency.
+function buildPushOptions(event: NotificationEvent): PushSendOptions {
+  switch (event.type) {
+    case 'NEW_MESSAGE':
+      return { urgency: 'high', TTL: 4 * HOUR };
+    case 'POST_DIGEST':
+      return { urgency: 'normal', TTL: DAY };
+    default:
+      return { urgency: 'high', TTL: DAY };
   }
-  return undefined;
 }
 
 function sendEmailFor(

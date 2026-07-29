@@ -196,12 +196,21 @@ export const pushSubscribeSchema = z.object({
   userAgent: z.string().max(512).optional(),
 });
 
+// Subscription rotation from the service worker's pushsubscriptionchange
+// handler. No JWT is available in that context — possession of the old
+// endpoint (an unguessable capability URL) is the credential.
+export const pushResubscribeSchema = z.object({
+  oldEndpoint: z.string().url().max(2048),
+  subscription: pushSubscribeSchema,
+});
+
 export const pushUnsubscribeSchema = z.object({
   endpoint: z.string().url().max(2048),
 });
 
 export type PushSubscribeRequest = z.infer<typeof pushSubscribeSchema>;
 export type PushUnsubscribeRequest = z.infer<typeof pushUnsubscribeSchema>;
+export type PushResubscribeRequest = z.infer<typeof pushResubscribeSchema>;
 
 // E2EE devices — keys are base64-encoded raw bytes. The 44-char length cap
 // fits a base64-encoded 32-byte key (Ed25519/X25519 public keys); the signature

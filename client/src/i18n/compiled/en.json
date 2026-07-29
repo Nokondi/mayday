@@ -1719,6 +1719,30 @@
       "value": "Show password"
     }
   ],
+  "common.pushBootstrap.enableFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to enable push notifications"
+    }
+  ],
+  "common.pushBootstrap.enabledToast": [
+    {
+      "type": 0,
+      "value": "Push notifications enabled"
+    }
+  ],
+  "common.pushBootstrap.installPromptEnableButton": [
+    {
+      "type": 0,
+      "value": "Enable"
+    }
+  ],
+  "common.pushBootstrap.installPromptMessage": [
+    {
+      "type": 0,
+      "value": "Turn on notifications to hear about new activity?"
+    }
+  ],
   "common.pushNotificationsToggle.blockedError": [
     {
       "type": 0,

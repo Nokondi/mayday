@@ -659,6 +659,18 @@
   "common.passwordField.showAriaLabel": {
     "defaultMessage": "Show password"
   },
+  "common.pushBootstrap.enableFailedToast": {
+    "defaultMessage": "Failed to enable push notifications"
+  },
+  "common.pushBootstrap.enabledToast": {
+    "defaultMessage": "Push notifications enabled"
+  },
+  "common.pushBootstrap.installPromptEnableButton": {
+    "defaultMessage": "Enable"
+  },
+  "common.pushBootstrap.installPromptMessage": {
+    "defaultMessage": "Turn on notifications to hear about new activity?"
+  },
   "common.pushNotificationsToggle.blockedError": {
     "defaultMessage": "Notifications are blocked in your browser."
   },

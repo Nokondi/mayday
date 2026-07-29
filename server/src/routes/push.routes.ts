@@ -1,8 +1,14 @@
 import { Router } from 'express';
-import { pushSubscribeSchema, pushUnsubscribeSchema } from '@mayday/shared';
+import {
+  pushSubscribeSchema,
+  pushUnsubscribeSchema,
+  pushResubscribeSchema,
+  type PushResubscribeRequest,
+} from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.middleware.js';
 import { prisma } from '../config/database.js';
+import { AppError } from '../middleware/error.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { env } from '../config/env.js';
 
@@ -43,6 +49,51 @@ pushRoutes.post(
         userAgent: userAgent ?? null,
       },
     });
+
+    res.status(204).end();
+  }),
+);
+
+// POST /api/push/resubscribe — rotate a subscription in place when the push
+// service invalidates it (the service worker's pushsubscriptionchange event).
+// Deliberately unauthenticated by JWT: the service worker has no access token.
+// Possession of the old endpoint is the credential — push endpoints are long,
+// unguessable capability URLs known only to the browser that owns them, and
+// the rotated row keeps its existing userId, so a caller can only redirect
+// pushes for a subscription it already held.
+pushRoutes.post(
+  '/resubscribe',
+  validate(pushResubscribeSchema),
+  asyncHandler(async (req, res) => {
+    const { oldEndpoint, subscription } = req.body as PushResubscribeRequest;
+
+    const existing = await prisma.pushSubscription.findUnique({
+      where: { endpoint: oldEndpoint },
+      select: { userId: true },
+    });
+    if (!existing) throw new AppError(404, 'Unknown subscription');
+
+    // Delete-then-upsert (rather than update) so a retried rotation, where the
+    // new endpoint row already exists, stays idempotent instead of tripping
+    // the unique constraint.
+    await prisma.$transaction([
+      prisma.pushSubscription.deleteMany({ where: { endpoint: oldEndpoint } }),
+      prisma.pushSubscription.upsert({
+        where: { endpoint: subscription.endpoint },
+        create: {
+          userId: existing.userId,
+          endpoint: subscription.endpoint,
+          p256dh: subscription.keys.p256dh,
+          auth: subscription.keys.auth,
+          userAgent: subscription.userAgent ?? null,
+        },
+        update: {
+          userId: existing.userId,
+          p256dh: subscription.keys.p256dh,
+          auth: subscription.keys.auth,
+        },
+      }),
+    ]);
 
     res.status(204).end();
   }),
