@@ -542,7 +542,6 @@ describe('PUT /api/users/me/settings', () => {
   it('updates notification prefs including post-notification fields', async () => {
     mockedUser.update.mockResolvedValueOnce({
       id: USER_ID,
-      emailNotificationsEnabled: true,
       pushNotificationsEnabled: true,
       notifyFriendPosts: false,
       minPostNotificationUrgency: 'HIGH',
@@ -567,6 +566,144 @@ describe('PUT /api/users/me/settings', () => {
         minPostNotificationUrgency: true,
       }),
     });
+  });
+
+  it('replaces the muted categories for a channel, deduplicated', async () => {
+    mockedUser.update.mockResolvedValueOnce({
+      id: USER_ID,
+      mutedEmailCategories: ['MESSAGES', 'INVITES'],
+      mutedPushCategories: [],
+    } as never);
+
+    const res = await request(makeApp())
+      .put('/api/users/me/settings')
+      .set('Authorization', authHeader())
+      .send({ mutedEmailCategories: ['MESSAGES', 'INVITES', 'MESSAGES'] });
+
+    expect(res.status).toBe(200);
+    expect(res.body.mutedEmailCategories).toEqual(['MESSAGES', 'INVITES']);
+    expect(mockedUser.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          mutedEmailCategories: { set: ['MESSAGES', 'INVITES'] },
+          mutedPushCategories: undefined,
+        }),
+      }),
+    );
+  });
+
+  it('an empty array unmutes everything on that channel', async () => {
+    mockedUser.update.mockResolvedValueOnce({
+      id: USER_ID,
+      mutedPushCategories: [],
+    } as never);
+
+    const res = await request(makeApp())
+      .put('/api/users/me/settings')
+      .set('Authorization', authHeader())
+      .send({ mutedPushCategories: [] });
+
+    expect(res.status).toBe(200);
+    expect(mockedUser.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ mutedPushCategories: { set: [] } }),
+      }),
+    );
+  });
+
+  it('returns 400 for an unknown notification category', async () => {
+    const res = await request(makeApp())
+      .put('/api/users/me/settings')
+      .set('Authorization', authHeader())
+      .send({ mutedEmailCategories: ['SPAM_CALLS'] });
+
+    expect(res.status).toBe(400);
+    expect(mockedUser.update).not.toHaveBeenCalled();
+  });
+
+  it('updates the community master toggle', async () => {
+    mockedUser.update.mockResolvedValueOnce({
+      id: USER_ID,
+      notifyCommunityPosts: false,
+    } as never);
+
+    const res = await request(makeApp())
+      .put('/api/users/me/settings')
+      .set('Authorization', authHeader())
+      .send({ notifyCommunityPosts: false });
+
+    expect(res.status).toBe(200);
+    expect(mockedUser.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ notifyCommunityPosts: false }),
+      }),
+    );
+  });
+
+  it('switching to WEEKLY stamps a fresh digest window', async () => {
+    mockedUser.findUnique.mockResolvedValueOnce({
+      postNotificationFrequency: 'IMMEDIATE',
+    } as never);
+    mockedUser.update.mockResolvedValueOnce({
+      id: USER_ID,
+      postNotificationFrequency: 'WEEKLY',
+    } as never);
+
+    const res = await request(makeApp())
+      .put('/api/users/me/settings')
+      .set('Authorization', authHeader())
+      .send({ postNotificationFrequency: 'WEEKLY' });
+
+    expect(res.status).toBe(200);
+    const data = (mockedUser.update.mock.calls[0] as [{ data: Record<string, unknown> }])[0].data;
+    expect(data.postNotificationFrequency).toBe('WEEKLY');
+    expect(data.lastPostDigestAt).toBeInstanceOf(Date);
+  });
+
+  it('re-submitting WEEKLY does not reset the digest window', async () => {
+    mockedUser.findUnique.mockResolvedValueOnce({
+      postNotificationFrequency: 'WEEKLY',
+    } as never);
+    mockedUser.update.mockResolvedValueOnce({
+      id: USER_ID,
+      postNotificationFrequency: 'WEEKLY',
+    } as never);
+
+    const res = await request(makeApp())
+      .put('/api/users/me/settings')
+      .set('Authorization', authHeader())
+      .send({ postNotificationFrequency: 'WEEKLY' });
+
+    expect(res.status).toBe(200);
+    const data = (mockedUser.update.mock.calls[0] as [{ data: Record<string, unknown> }])[0].data;
+    expect(data.lastPostDigestAt).toBeUndefined();
+  });
+
+  it('switching back to IMMEDIATE leaves the digest window untouched', async () => {
+    mockedUser.update.mockResolvedValueOnce({
+      id: USER_ID,
+      postNotificationFrequency: 'IMMEDIATE',
+    } as never);
+
+    const res = await request(makeApp())
+      .put('/api/users/me/settings')
+      .set('Authorization', authHeader())
+      .send({ postNotificationFrequency: 'IMMEDIATE' });
+
+    expect(res.status).toBe(200);
+    expect(mockedUser.findUnique).not.toHaveBeenCalled();
+    const data = (mockedUser.update.mock.calls[0] as [{ data: Record<string, unknown> }])[0].data;
+    expect(data.lastPostDigestAt).toBeUndefined();
+  });
+
+  it('returns 400 for an invalid frequency', async () => {
+    const res = await request(makeApp())
+      .put('/api/users/me/settings')
+      .set('Authorization', authHeader())
+      .send({ postNotificationFrequency: 'DAILY' });
+
+    expect(res.status).toBe(400);
+    expect(mockedUser.update).not.toHaveBeenCalled();
   });
 
   it('returns 400 for an invalid urgency level', async () => {

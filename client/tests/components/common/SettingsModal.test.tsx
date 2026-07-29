@@ -59,10 +59,13 @@ function wrapper({ children }: { children: ReactNode }) {
 function me(overrides: Record<string, unknown> = {}) {
   return {
     id: 'u1',
-    emailNotificationsEnabled: true,
     pushNotificationsEnabled: true,
+    mutedEmailCategories: [],
+    mutedPushCategories: [],
     notifyFriendPosts: true,
+    notifyCommunityPosts: true,
     minPostNotificationUrgency: 'LOW',
+    postNotificationFrequency: 'IMMEDIATE',
     ...overrides,
   };
 }
@@ -101,6 +104,78 @@ beforeEach(() => {
   });
 });
 
+describe('SettingsModal — notification category matrix', () => {
+  it('renders a row per category with email and push checkboxes reflecting the muted lists', async () => {
+    mockedGetMe.mockResolvedValue(
+      me({ mutedEmailCategories: ['MESSAGES'], mutedPushCategories: ['INVITES'] }) as never,
+    );
+    renderModal();
+
+    expect(await screen.findByRole('checkbox', { name: /email notifications for messages/i }))
+      .not.toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /push notifications for messages/i }))
+      .toBeChecked();
+    expect(
+      screen.getByRole('checkbox', { name: /push notifications for community & organization invites/i }),
+    ).not.toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /email notifications for new posts/i }))
+      .toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /email notifications for friend requests/i }))
+      .toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /email notifications for announcements/i }))
+      .toBeChecked();
+  });
+
+  it('unchecking an email checkbox saves the category into mutedEmailCategories', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    const commentsEmail = await screen.findByRole('checkbox', {
+      name: /email notifications for comments on posts/i,
+    });
+    await user.click(commentsEmail);
+
+    await waitFor(() =>
+      expect(mockedUpdateSettings).toHaveBeenCalledWith({
+        mutedEmailCategories: ['COMMENTS'],
+      }),
+    );
+  });
+
+  it('re-checking a push checkbox removes the category from mutedPushCategories', async () => {
+    mockedGetMe.mockResolvedValue(
+      me({ mutedPushCategories: ['JOIN_REQUESTS', 'MESSAGES'] }) as never,
+    );
+    const user = userEvent.setup();
+    renderModal();
+
+    const joinRequestsPush = await screen.findByRole('checkbox', {
+      name: /push notifications for join requests/i,
+    });
+    expect(joinRequestsPush).not.toBeChecked();
+    await user.click(joinRequestsPush);
+
+    await waitFor(() =>
+      expect(mockedUpdateSettings).toHaveBeenCalledWith({
+        mutedPushCategories: ['MESSAGES'],
+      }),
+    );
+  });
+
+  it('reverts the checkbox when the save fails', async () => {
+    mockedUpdateSettings.mockRejectedValueOnce(new Error('network'));
+    const user = userEvent.setup();
+    renderModal();
+
+    const messagesEmail = await screen.findByRole('checkbox', {
+      name: /email notifications for messages/i,
+    });
+    await user.click(messagesEmail);
+
+    await waitFor(() => expect(messagesEmail).toBeChecked());
+  });
+});
+
 describe('SettingsModal — post notifications', () => {
   it('renders the friends toggle, urgency select, and per-community checkboxes from loaded settings', async () => {
     renderModal();
@@ -112,6 +187,57 @@ describe('SettingsModal — post notifications', () => {
 
     expect(screen.getByRole('checkbox', { name: /coders/i })).toBeChecked();
     expect(screen.getByRole('checkbox', { name: /gardeners/i })).not.toBeChecked();
+  });
+
+  it('toggling community posts off saves the preference and hides the per-community list', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    const masterToggle = await screen.findByRole('checkbox', { name: /community posts/i });
+    expect(masterToggle).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /coders/i })).toBeInTheDocument();
+
+    await user.click(masterToggle);
+
+    await waitFor(() =>
+      expect(mockedUpdateSettings).toHaveBeenCalledWith({ notifyCommunityPosts: false }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole('checkbox', { name: /coders/i })).not.toBeInTheDocument(),
+    );
+  });
+
+  it('selecting the weekly summary saves the frequency', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    const immediate = await screen.findByRole('radio', { name: /every new post/i });
+    const weekly = screen.getByRole('radio', { name: /weekly summary/i });
+    expect(immediate).toBeChecked();
+    expect(weekly).not.toBeChecked();
+
+    await user.click(weekly);
+
+    await waitFor(() =>
+      expect(mockedUpdateSettings).toHaveBeenCalledWith({
+        postNotificationFrequency: 'WEEKLY',
+      }),
+    );
+    expect(weekly).toBeChecked();
+  });
+
+  it('reverts the frequency when the save fails', async () => {
+    mockedUpdateSettings.mockRejectedValueOnce(new Error('network'));
+    const user = userEvent.setup();
+    renderModal();
+
+    const weekly = await screen.findByRole('radio', { name: /weekly summary/i });
+    await user.click(weekly);
+
+    await waitFor(() =>
+      expect(screen.getByRole('radio', { name: /every new post/i })).toBeChecked(),
+    );
+    expect(weekly).not.toBeChecked();
   });
 
   it("toggling friends' posts saves the preference", async () => {

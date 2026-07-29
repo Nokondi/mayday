@@ -3,7 +3,7 @@ import { prisma } from '../config/database.js';
 import { getFriendIds } from './friend.service.js';
 import { notifyMany } from './notification.service.js';
 
-const URGENCY_ORDER: UrgencyLevel[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+export const URGENCY_ORDER: UrgencyLevel[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 
 /**
  * The set of minimum-urgency preferences a post at `urgency` satisfies — i.e.
@@ -34,8 +34,11 @@ interface NewPostParams {
  *
  * Both sets are filtered by each recipient's minimum-urgency preference and
  * deduped — someone who qualifies as both friend and community member gets the
- * friend notification only. Fire-and-forget: failures are logged, never
- * thrown, so they can't break the post creation.
+ * friend notification only. Recipients on a WEEKLY frequency are skipped here;
+ * they pick the post up in their next digest (postDigest.service). Community
+ * recipients also require the notifyCommunityPosts master toggle.
+ * Fire-and-forget: failures are logged, never thrown, so they can't break the
+ * post creation.
  */
 export async function notifyNewPost(params: NewPostParams): Promise<void> {
   try {
@@ -57,6 +60,7 @@ export async function notifyNewPost(params: NewPostParams): Promise<void> {
             id: { in: friendIds },
             notifyFriendPosts: true,
             minPostNotificationUrgency: { in: allowedMinLevels },
+            postNotificationFrequency: 'IMMEDIATE',
           },
           select: { id: true },
         });
@@ -89,7 +93,11 @@ export async function notifyNewPost(params: NewPostParams): Promise<void> {
           communityId: { in: params.communityIds },
           userId: { not: params.authorId },
           notifyNewPosts: true,
-          user: { minPostNotificationUrgency: { in: allowedMinLevels } },
+          user: {
+            notifyCommunityPosts: true,
+            minPostNotificationUrgency: { in: allowedMinLevels },
+            postNotificationFrequency: 'IMMEDIATE',
+          },
         },
         select: { userId: true, communityId: true },
       }),

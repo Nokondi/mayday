@@ -4,6 +4,7 @@ import type {
   UpdateUserSettingsRequest,
   DeleteAccountRequest,
   OwnedGroupsResponse,
+  NotificationCategory,
   PaginatedResponse,
   PostWithAuthor,
   UrgencyLevel,
@@ -57,10 +58,13 @@ export async function updateUserSettings(
   data: UpdateUserSettingsRequest,
 ): Promise<{
   id: string;
-  emailNotificationsEnabled: boolean;
   pushNotificationsEnabled: boolean;
+  mutedEmailCategories: NotificationCategory[];
+  mutedPushCategories: NotificationCategory[];
   notifyFriendPosts: boolean;
+  notifyCommunityPosts: boolean;
   minPostNotificationUrgency: UrgencyLevel;
+  postNotificationFrequency: 'IMMEDIATE' | 'WEEKLY';
 }> {
   const res = await api.put('/users/me/settings', data);
   return res.data;

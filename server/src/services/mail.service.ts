@@ -228,6 +228,64 @@ export async function sendNewPostEmail(
   });
 }
 
+// Weekly digest of new posts from the user's friends and communities.
+// `count` is the full total; `posts` may be capped by the caller.
+export async function sendPostDigestEmail(
+  to: string,
+  name: string,
+  count: number,
+  posts: Array<{
+    id: string;
+    title: string;
+    authorName: string;
+    communityName: string | null;
+  }>,
+): Promise<void> {
+  const t = getTransporter();
+  if (!t) {
+    console.warn(
+      `[mail] SMTP not configured; skipping post-digest email to ${to}`,
+    );
+    return;
+  }
+
+  const from = env.SMTP_FROM || env.SMTP_USER!;
+  const escape = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const postLabel = count === 1 ? "post" : "posts";
+  const textLines = posts.map((p) => {
+    const context = p.communityName ? ` in ${p.communityName}` : "";
+    return `- "${p.title}" by ${p.authorName}${context}: ${env.CLIENT_URL}/posts/${p.id}`;
+  });
+  const omitted = count - posts.length;
+  if (omitted > 0) textLines.push(`…and ${omitted} more.`);
+
+  const htmlItems = posts
+    .map((p) => {
+      const context = p.communityName
+        ? ` in <strong>${escape(p.communityName)}</strong>`
+        : "";
+      return `<li><a href="${env.CLIENT_URL}/posts/${p.id}">${escape(p.title)}</a> by ${escape(p.authorName)}${context}</li>`;
+    })
+    .join("\n");
+  const htmlOmitted =
+    omitted > 0 ? `<p>…and ${omitted} more on Mayday.</p>` : "";
+
+  await t.sendMail({
+    from,
+    to,
+    subject: `Your weekly Mayday digest: ${count} new ${postLabel}`,
+    text: `Hi ${name},\n\nHere's what's new from your friends and communities this week (${count} new ${postLabel}):\n\n${textLines.join("\n")}\n`,
+    html: `
+      <p>Hi ${escape(name)},</p>
+      <p>Here's what's new from your friends and communities this week (${count} new ${postLabel}):</p>
+      <ul>${htmlItems}</ul>
+      ${htmlOmitted}
+    `,
+  });
+}
+
 export async function sendCommunityJoinRequestEmail(
   to: string,
   requesterName: string,

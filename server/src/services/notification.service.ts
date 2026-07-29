@@ -1,9 +1,10 @@
-import type { NotificationEvent, PushPayload } from '@mayday/shared';
+import type { NotificationCategory, NotificationEvent, PushPayload } from '@mayday/shared';
 import { prisma } from '../config/database.js';
 import {
   sendNewMessageEmail,
   sendNewCommentEmail,
   sendNewPostEmail,
+  sendPostDigestEmail,
   sendCommunityJoinRequestEmail,
   sendCommunityJoinRequestApprovedEmail,
   sendCommunityInviteEmail,
@@ -22,8 +23,9 @@ interface RecipientPrefs {
   name: string;
   emailVerified: boolean;
   isBanned: boolean;
-  emailNotificationsEnabled: boolean;
   pushNotificationsEnabled: boolean;
+  mutedEmailCategories: NotificationCategory[];
+  mutedPushCategories: NotificationCategory[];
 }
 
 const RECIPIENT_SELECT = {
@@ -32,9 +34,40 @@ const RECIPIENT_SELECT = {
   name: true,
   emailVerified: true,
   isBanned: true,
-  emailNotificationsEnabled: true,
   pushNotificationsEnabled: true,
+  mutedEmailCategories: true,
+  mutedPushCategories: true,
 } as const;
+
+/**
+ * The muting category an event belongs to, or null for admin operational
+ * notifications (bug/user reports), which cannot be muted per-category.
+ */
+function categoryOf(event: NotificationEvent): NotificationCategory | null {
+  switch (event.type) {
+    case 'COMMUNITY_INVITE':
+    case 'ORGANIZATION_INVITE':
+      return 'INVITES';
+    case 'COMMUNITY_JOIN_REQUEST':
+    case 'COMMUNITY_JOIN_APPROVED':
+      return 'JOIN_REQUESTS';
+    case 'NEW_MESSAGE':
+      return 'MESSAGES';
+    case 'NEW_COMMENT':
+      return 'COMMENTS';
+    case 'NEW_POST':
+    case 'POST_DIGEST':
+      return 'NEW_POSTS';
+    case 'FRIEND_REQUEST':
+    case 'FRIEND_REQUEST_ACCEPTED':
+      return 'FRIEND_REQUESTS';
+    case 'ANNOUNCEMENT':
+      return 'ANNOUNCEMENTS';
+    case 'BUG_REPORT_SUBMITTED':
+    case 'USER_REPORT_SUBMITTED':
+      return null;
+  }
+}
 
 const NOTIFY_CONCURRENCY = 5;
 
@@ -87,6 +120,15 @@ function buildPushPayload(event: NotificationEvent): PushPayload {
         url: `/posts/${event.postId}`,
         tag: `post:${event.postId}`,
       };
+    case 'POST_DIGEST': {
+      const label = event.count === 1 ? 'post' : 'posts';
+      return {
+        title: 'Your weekly Mayday digest',
+        body: `${event.count} new ${label} from your friends and communities.`,
+        url: '/',
+        tag: 'post-digest',
+      };
+    }
     case 'COMMUNITY_JOIN_REQUEST':
       return {
         title: `${event.requesterName} wants to join ${event.communityName}`,
@@ -194,6 +236,13 @@ function sendEmailFor(
         event.postId,
         event.audience === 'community' ? event.communityName ?? null : null,
       );
+    case 'POST_DIGEST':
+      return sendPostDigestEmail(
+        user.email,
+        user.name,
+        event.count,
+        event.posts,
+      );
     case 'COMMUNITY_JOIN_REQUEST':
       return sendCommunityJoinRequestEmail(
         user.email,
@@ -249,11 +298,20 @@ async function dispatch(
   if (user.isBanned) return;
   if (!user.emailVerified) return;
 
+  // Per-category muting: a null category (admin ops) can't be muted. Push is
+  // additionally gated by the device-level master pref.
+  const category = categoryOf(event);
+  const emailAllowed =
+    category === null || !user.mutedEmailCategories.includes(category);
+  const pushAllowed =
+    user.pushNotificationsEnabled &&
+    (category === null || !user.mutedPushCategories.includes(category));
+
   const tasks: Array<{ channel: 'email' | 'push'; promise: Promise<unknown> }> = [];
-  if (user.emailNotificationsEnabled) {
+  if (emailAllowed) {
     tasks.push({ channel: 'email', promise: sendEmailFor(user, event) });
   }
-  if (user.pushNotificationsEnabled) {
+  if (pushAllowed) {
     tasks.push({
       channel: 'push',
       promise: sendPushToUser(

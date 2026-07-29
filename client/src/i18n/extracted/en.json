@@ -695,6 +695,27 @@
   "common.searchBar.defaultPlaceholder": {
     "defaultMessage": "Search..."
   },
+  "common.settingsModal.category.announcements": {
+    "defaultMessage": "Announcements"
+  },
+  "common.settingsModal.category.comments": {
+    "defaultMessage": "Comments on posts"
+  },
+  "common.settingsModal.category.friendRequests": {
+    "defaultMessage": "Friend requests"
+  },
+  "common.settingsModal.category.invites": {
+    "defaultMessage": "Community & organization invites"
+  },
+  "common.settingsModal.category.joinRequests": {
+    "defaultMessage": "Join requests"
+  },
+  "common.settingsModal.category.messages": {
+    "defaultMessage": "Messages"
+  },
+  "common.settingsModal.category.newPosts": {
+    "defaultMessage": "New posts"
+  },
   "common.settingsModal.closeAriaLabel": {
     "defaultMessage": "Close settings"
   },
@@ -704,17 +725,32 @@
   "common.settingsModal.communityPostsLegend": {
     "defaultMessage": "Communities"
   },
+  "common.settingsModal.communityPostsToggleDescription": {
+    "defaultMessage": "Notify me when a post is shared in my communities."
+  },
+  "common.settingsModal.communityPostsToggleLabel": {
+    "defaultMessage": "Community posts"
+  },
   "common.settingsModal.doneButton": {
     "defaultMessage": "Done"
   },
-  "common.settingsModal.emailNotificationsHeading": {
-    "defaultMessage": "Email notifications"
+  "common.settingsModal.emailCategoryAriaLabel": {
+    "defaultMessage": "Email notifications for {category}"
   },
-  "common.settingsModal.emailToggleDescription": {
-    "defaultMessage": "New messages from other users, and join requests for communities you administer."
+  "common.settingsModal.emailColumnHeader": {
+    "defaultMessage": "Email"
   },
-  "common.settingsModal.emailToggleLabel": {
-    "defaultMessage": "Email me about activity"
+  "common.settingsModal.frequencyDescription": {
+    "defaultMessage": "How often to send post notifications."
+  },
+  "common.settingsModal.frequencyImmediate": {
+    "defaultMessage": "Every new post"
+  },
+  "common.settingsModal.frequencyLegend": {
+    "defaultMessage": "Delivery"
+  },
+  "common.settingsModal.frequencyWeekly": {
+    "defaultMessage": "Weekly summary"
   },
   "common.settingsModal.friendPostsToggleDescription": {
     "defaultMessage": "Notify me when a friend shares a new post."
@@ -731,8 +767,20 @@
   "common.settingsModal.minUrgencyLabel": {
     "defaultMessage": "Minimum urgency"
   },
+  "common.settingsModal.notificationsDescription": {
+    "defaultMessage": "Choose how to be notified about each kind of activity. Push also requires push notifications to be enabled on this device below."
+  },
+  "common.settingsModal.notificationsHeading": {
+    "defaultMessage": "Notifications"
+  },
   "common.settingsModal.postNotificationsHeading": {
     "defaultMessage": "Post notifications"
+  },
+  "common.settingsModal.pushCategoryAriaLabel": {
+    "defaultMessage": "Push notifications for {category}"
+  },
+  "common.settingsModal.pushColumnHeader": {
+    "defaultMessage": "Push"
   },
   "common.settingsModal.savedToast": {
     "defaultMessage": "Settings saved"

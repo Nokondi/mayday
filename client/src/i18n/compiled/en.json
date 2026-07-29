@@ -1791,6 +1791,48 @@
       "value": "Search..."
     }
   ],
+  "common.settingsModal.category.announcements": [
+    {
+      "type": 0,
+      "value": "Announcements"
+    }
+  ],
+  "common.settingsModal.category.comments": [
+    {
+      "type": 0,
+      "value": "Comments on posts"
+    }
+  ],
+  "common.settingsModal.category.friendRequests": [
+    {
+      "type": 0,
+      "value": "Friend requests"
+    }
+  ],
+  "common.settingsModal.category.invites": [
+    {
+      "type": 0,
+      "value": "Community & organization invites"
+    }
+  ],
+  "common.settingsModal.category.joinRequests": [
+    {
+      "type": 0,
+      "value": "Join requests"
+    }
+  ],
+  "common.settingsModal.category.messages": [
+    {
+      "type": 0,
+      "value": "Messages"
+    }
+  ],
+  "common.settingsModal.category.newPosts": [
+    {
+      "type": 0,
+      "value": "New posts"
+    }
+  ],
   "common.settingsModal.closeAriaLabel": [
     {
       "type": 0,
@@ -1809,28 +1851,62 @@
       "value": "Communities"
     }
   ],
+  "common.settingsModal.communityPostsToggleDescription": [
+    {
+      "type": 0,
+      "value": "Notify me when a post is shared in my communities."
+    }
+  ],
+  "common.settingsModal.communityPostsToggleLabel": [
+    {
+      "type": 0,
+      "value": "Community posts"
+    }
+  ],
   "common.settingsModal.doneButton": [
     {
       "type": 0,
       "value": "Done"
     }
   ],
-  "common.settingsModal.emailNotificationsHeading": [
+  "common.settingsModal.emailCategoryAriaLabel": [
     {
       "type": 0,
-      "value": "Email notifications"
+      "value": "Email notifications for "
+    },
+    {
+      "type": 1,
+      "value": "category"
     }
   ],
-  "common.settingsModal.emailToggleDescription": [
+  "common.settingsModal.emailColumnHeader": [
     {
       "type": 0,
-      "value": "New messages from other users, and join requests for communities you administer."
+      "value": "Email"
     }
   ],
-  "common.settingsModal.emailToggleLabel": [
+  "common.settingsModal.frequencyDescription": [
     {
       "type": 0,
-      "value": "Email me about activity"
+      "value": "How often to send post notifications."
+    }
+  ],
+  "common.settingsModal.frequencyImmediate": [
+    {
+      "type": 0,
+      "value": "Every new post"
+    }
+  ],
+  "common.settingsModal.frequencyLegend": [
+    {
+      "type": 0,
+      "value": "Delivery"
+    }
+  ],
+  "common.settingsModal.frequencyWeekly": [
+    {
+      "type": 0,
+      "value": "Weekly summary"
     }
   ],
   "common.settingsModal.friendPostsToggleDescription": [
@@ -1863,10 +1939,38 @@
       "value": "Minimum urgency"
     }
   ],
+  "common.settingsModal.notificationsDescription": [
+    {
+      "type": 0,
+      "value": "Choose how to be notified about each kind of activity. Push also requires push notifications to be enabled on this device below."
+    }
+  ],
+  "common.settingsModal.notificationsHeading": [
+    {
+      "type": 0,
+      "value": "Notifications"
+    }
+  ],
   "common.settingsModal.postNotificationsHeading": [
     {
       "type": 0,
       "value": "Post notifications"
+    }
+  ],
+  "common.settingsModal.pushCategoryAriaLabel": [
+    {
+      "type": 0,
+      "value": "Push notifications for "
+    },
+    {
+      "type": 1,
+      "value": "category"
+    }
+  ],
+  "common.settingsModal.pushColumnHeader": [
+    {
+      "type": 0,
+      "value": "Push"
     }
   ],
   "common.settingsModal.savedToast": [

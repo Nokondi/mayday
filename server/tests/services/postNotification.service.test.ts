@@ -79,6 +79,7 @@ describe('notifyNewPost — friend audience', () => {
         id: { in: ['f1'] },
         notifyFriendPosts: true,
         minPostNotificationUrgency: { in: ['LOW', 'MEDIUM'] },
+        postNotificationFrequency: 'IMMEDIATE',
       },
       select: { id: true },
     });
@@ -143,7 +144,11 @@ describe('notifyNewPost — community audience', () => {
         communityId: { in: ['c1'] },
         userId: { not: AUTHOR_ID },
         notifyNewPosts: true,
-        user: { minPostNotificationUrgency: { in: ['LOW', 'MEDIUM'] } },
+        user: {
+          notifyCommunityPosts: true,
+          minPostNotificationUrgency: { in: ['LOW', 'MEDIUM'] },
+          postNotificationFrequency: 'IMMEDIATE',
+        },
       },
       select: { userId: true, communityId: true },
     });

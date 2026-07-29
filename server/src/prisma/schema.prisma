@@ -37,6 +37,23 @@ enum RecurrenceFrequency {
   MONTH
 }
 
+enum PostNotificationFrequency {
+  IMMEDIATE
+  WEEKLY
+}
+
+// User-facing notification groupings for per-category channel muting. Admin
+// operational notifications (bug/user reports) have no category and always send.
+enum NotificationCategory {
+  INVITES
+  JOIN_REQUESTS
+  MESSAGES
+  COMMENTS
+  NEW_POSTS
+  FRIEND_REQUESTS
+  ANNOUNCEMENTS
+}
+
 enum ReportStatus {
   PENDING
   REVIEWED
@@ -87,13 +104,26 @@ model User {
   role         Role     @default(USER)
   isBanned     Boolean  @default(false)
   emailVerified Boolean  @default(false)
-  emailNotificationsEnabled Boolean @default(true)
   pushNotificationsEnabled  Boolean @default(true)
+  // Per-category channel muting; empty = every category on. Email is gated by
+  // these alone; push additionally requires pushNotificationsEnabled (the
+  // device-level master tied to the browser subscription).
+  mutedEmailCategories NotificationCategory[] @default([])
+  mutedPushCategories  NotificationCategory[] @default([])
   // New-post notification preferences. Friends' posts can be muted entirely;
   // urgency below the minimum is filtered out for both friend and community
   // post notifications (LOW = notify for everything).
   notifyFriendPosts          Boolean      @default(true)
+  // Master toggle for community-post notifications; per-community muting
+  // lives on CommunityMember.notifyNewPosts.
+  notifyCommunityPosts       Boolean      @default(true)
   minPostNotificationUrgency UrgencyLevel @default(LOW)
+  // IMMEDIATE = notify on every post; WEEKLY = roll new posts into a digest.
+  postNotificationFrequency  PostNotificationFrequency @default(IMMEDIATE)
+  // When the last weekly digest was sent (also the start of the next digest
+  // window). Set when the user switches to WEEKLY so the first digest covers
+  // a full week, never the past.
+  lastPostDigestAt           DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

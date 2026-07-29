@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CATEGORIES } from './category.js';
+import { NOTIFICATION_CATEGORIES } from './notification.js';
 
 // Auth
 export const registerSchema = z.object({
@@ -172,10 +173,14 @@ export type UpdateProfileRequest = z.infer<typeof updateProfileSchema>;
 
 // User settings (private — not exposed via public profile)
 export const updateUserSettingsSchema = z.object({
-  emailNotificationsEnabled: z.boolean().optional(),
   pushNotificationsEnabled: z.boolean().optional(),
+  // Full-list semantics: each write replaces the muted set for that channel.
+  mutedEmailCategories: z.array(z.enum(NOTIFICATION_CATEGORIES)).max(NOTIFICATION_CATEGORIES.length).optional(),
+  mutedPushCategories: z.array(z.enum(NOTIFICATION_CATEGORIES)).max(NOTIFICATION_CATEGORIES.length).optional(),
   notifyFriendPosts: z.boolean().optional(),
+  notifyCommunityPosts: z.boolean().optional(),
   minPostNotificationUrgency: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
+  postNotificationFrequency: z.enum(['IMMEDIATE', 'WEEKLY']).optional(),
 });
 
 export type UpdateUserSettingsRequest = z.infer<typeof updateUserSettingsSchema>;

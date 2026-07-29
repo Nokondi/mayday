@@ -9,13 +9,19 @@ import { notifyMany } from '../services/notification.service.js';
 export const announcementRoutes = Router();
 
 async function broadcastAnnouncement(message: string): Promise<void> {
+  // Skip users who can't receive the announcement on any channel: email muted
+  // for ANNOUNCEMENTS, and push either disabled or muted for ANNOUNCEMENTS.
+  // (dispatch() re-checks per channel; this just avoids pointless loads.)
   const recipients = await prisma.user.findMany({
     where: {
       emailVerified: true,
       isBanned: false,
       OR: [
-        { emailNotificationsEnabled: true },
-        { pushNotificationsEnabled: true },
+        { NOT: { mutedEmailCategories: { has: 'ANNOUNCEMENTS' } } },
+        {
+          pushNotificationsEnabled: true,
+          NOT: { mutedPushCategories: { has: 'ANNOUNCEMENTS' } },
+        },
       ],
     },
     select: { id: true },

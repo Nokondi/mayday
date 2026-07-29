@@ -106,10 +106,13 @@ beforeEach(() => {
   mockedUnsubscribePush.mockResolvedValue();
   mockedUpdate.mockImplementation(async ({ pushNotificationsEnabled }) => ({
     id: 'user-1',
-    emailNotificationsEnabled: true,
     pushNotificationsEnabled: pushNotificationsEnabled ?? false,
+    mutedEmailCategories: [],
+    mutedPushCategories: [],
     notifyFriendPosts: true,
+    notifyCommunityPosts: true,
     minPostNotificationUrgency: 'LOW',
+    postNotificationFrequency: 'IMMEDIATE',
   }));
 });
 

@@ -158,8 +158,9 @@ describe('users api', () => {
     it('PUTs /users/me/settings with post-notification prefs and returns the body', async () => {
       const response = {
         id: 'u1',
-        emailNotificationsEnabled: true,
         pushNotificationsEnabled: true,
+        mutedEmailCategories: [],
+        mutedPushCategories: [],
         notifyFriendPosts: false,
         minPostNotificationUrgency: 'HIGH',
       };
@@ -175,6 +176,18 @@ describe('users api', () => {
         minPostNotificationUrgency: 'HIGH',
       });
       expect(result).toEqual(response);
+    });
+
+    it('PUTs muted category arrays through unchanged', async () => {
+      mockedApi.put.mockResolvedValueOnce({
+        data: { id: 'u1', mutedEmailCategories: ['MESSAGES'] },
+      });
+
+      await updateUserSettings({ mutedEmailCategories: ['MESSAGES'] });
+
+      expect(mockedApi.put).toHaveBeenCalledWith('/users/me/settings', {
+        mutedEmailCategories: ['MESSAGES'],
+      });
     });
   });
 
