@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CATEGORIES } from './category.js';
+import { NOTIFICATION_CATEGORIES } from './notification.js';
 
 // Auth
 export const registerSchema = z.object({
@@ -172,8 +173,12 @@ export type UpdateProfileRequest = z.infer<typeof updateProfileSchema>;
 
 // User settings (private — not exposed via public profile)
 export const updateUserSettingsSchema = z.object({
-  emailNotificationsEnabled: z.boolean().optional(),
   pushNotificationsEnabled: z.boolean().optional(),
+  // Full-list semantics: each write replaces the muted set for that channel.
+  mutedEmailCategories: z.array(z.enum(NOTIFICATION_CATEGORIES)).max(NOTIFICATION_CATEGORIES.length).optional(),
+  mutedPushCategories: z.array(z.enum(NOTIFICATION_CATEGORIES)).max(NOTIFICATION_CATEGORIES.length).optional(),
+  minPostNotificationUrgency: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
+  postNotificationFrequency: z.enum(['IMMEDIATE', 'WEEKLY']).optional(),
 });
 
 export type UpdateUserSettingsRequest = z.infer<typeof updateUserSettingsSchema>;
@@ -189,12 +194,21 @@ export const pushSubscribeSchema = z.object({
   userAgent: z.string().max(512).optional(),
 });
 
+// Subscription rotation from the service worker's pushsubscriptionchange
+// handler. No JWT is available in that context — possession of the old
+// endpoint (an unguessable capability URL) is the credential.
+export const pushResubscribeSchema = z.object({
+  oldEndpoint: z.string().url().max(2048),
+  subscription: pushSubscribeSchema,
+});
+
 export const pushUnsubscribeSchema = z.object({
   endpoint: z.string().url().max(2048),
 });
 
 export type PushSubscribeRequest = z.infer<typeof pushSubscribeSchema>;
 export type PushUnsubscribeRequest = z.infer<typeof pushUnsubscribeSchema>;
+export type PushResubscribeRequest = z.infer<typeof pushResubscribeSchema>;
 
 // E2EE devices — keys are base64-encoded raw bytes. The 44-char length cap
 // fits a base64-encoded 32-byte key (Ed25519/X25519 public keys); the signature
@@ -401,10 +415,17 @@ export const communityJoinRequestSchema = z.object({
   message: z.string().max(500).optional(),
 });
 
+// Per-community new-post notification opt-out (updates the caller's own
+// membership row).
+export const updateCommunityNotificationsSchema = z.object({
+  notifyNewPosts: z.boolean(),
+});
+
 export type CreateCommunityRequest = z.infer<typeof createCommunitySchema>;
 export type UpdateCommunityRequest = z.infer<typeof updateCommunitySchema>;
 export type InviteToCommunityRequest = z.infer<typeof inviteToCommunitySchema>;
 export type CommunityJoinRequestInput = z.infer<typeof communityJoinRequestSchema>;
+export type UpdateCommunityNotificationsRequest = z.infer<typeof updateCommunityNotificationsSchema>;
 
 // Pagination
 export interface PaginatedResponse<T> {

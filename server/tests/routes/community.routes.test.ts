@@ -178,6 +178,7 @@ describe('GET /api/communities/mine', () => {
     mockedMember.findMany.mockResolvedValueOnce([
       {
         role: 'OWNER',
+        notifyNewPosts: false,
         community: { ...dbCommunity(), _count: { members: 3 } },
       },
     ] as never);
@@ -187,7 +188,69 @@ describe('GET /api/communities/mine', () => {
       .set('Authorization', authHeader());
 
     expect(res.status).toBe(200);
-    expect(res.body[0]).toMatchObject({ id: COMMUNITY_ID, memberCount: 3, myRole: 'OWNER' });
+    expect(res.body[0]).toMatchObject({
+      id: COMMUNITY_ID,
+      memberCount: 3,
+      myRole: 'OWNER',
+      notifyNewPosts: false,
+    });
+  });
+});
+
+describe('PUT /api/communities/:id/notifications', () => {
+  it("updates the caller's own membership row", async () => {
+    mockedMember.findUnique.mockResolvedValueOnce({ id: 'member-1' } as never);
+    mockedMember.update.mockResolvedValueOnce({
+      communityId: COMMUNITY_ID,
+      notifyNewPosts: false,
+    } as never);
+
+    const res = await request(makeApp())
+      .put(`/api/communities/${COMMUNITY_ID}/notifications`)
+      .set('Authorization', authHeader())
+      .send({ notifyNewPosts: false });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ communityId: COMMUNITY_ID, notifyNewPosts: false });
+    expect(mockedMember.findUnique).toHaveBeenCalledWith({
+      where: { communityId_userId: { communityId: COMMUNITY_ID, userId: USER_ID } },
+      select: { id: true },
+    });
+    expect(mockedMember.update).toHaveBeenCalledWith({
+      where: { id: 'member-1' },
+      data: { notifyNewPosts: false },
+      select: { communityId: true, notifyNewPosts: true },
+    });
+  });
+
+  it('returns 404 when the caller is not a member', async () => {
+    mockedMember.findUnique.mockResolvedValueOnce(null as never);
+
+    const res = await request(makeApp())
+      .put(`/api/communities/${COMMUNITY_ID}/notifications`)
+      .set('Authorization', authHeader())
+      .send({ notifyNewPosts: false });
+
+    expect(res.status).toBe(404);
+    expect(mockedMember.update).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 when notifyNewPosts is missing or not a boolean', async () => {
+    const res = await request(makeApp())
+      .put(`/api/communities/${COMMUNITY_ID}/notifications`)
+      .set('Authorization', authHeader())
+      .send({ notifyNewPosts: 'yes' });
+
+    expect(res.status).toBe(400);
+    expect(mockedMember.update).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 without auth', async () => {
+    const res = await request(makeApp())
+      .put(`/api/communities/${COMMUNITY_ID}/notifications`)
+      .send({ notifyNewPosts: false });
+
+    expect(res.status).toBe(401);
   });
 });
 

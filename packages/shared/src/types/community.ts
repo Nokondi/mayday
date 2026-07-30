@@ -45,6 +45,8 @@ export interface CommunityWithMembership extends Community {
   memberCount: number;
   myRole: CommunityRole | null;
   myJoinRequestStatus: CommunityJoinRequestStatus | null;
+  /** Present on GET /communities/mine: whether the caller gets new-post notifications. */
+  notifyNewPosts?: boolean;
 }
 
 export interface CommunityDetail extends CommunityWithMembership {

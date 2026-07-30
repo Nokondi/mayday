@@ -1719,6 +1719,30 @@
       "value": "Show password"
     }
   ],
+  "common.pushBootstrap.enableFailedToast": [
+    {
+      "type": 0,
+      "value": "Failed to enable push notifications"
+    }
+  ],
+  "common.pushBootstrap.enabledToast": [
+    {
+      "type": 0,
+      "value": "Push notifications enabled"
+    }
+  ],
+  "common.pushBootstrap.installPromptEnableButton": [
+    {
+      "type": 0,
+      "value": "Enable"
+    }
+  ],
+  "common.pushBootstrap.installPromptMessage": [
+    {
+      "type": 0,
+      "value": "Turn on notifications to hear about new activity?"
+    }
+  ],
   "common.pushNotificationsToggle.blockedError": [
     {
       "type": 0,
@@ -1791,10 +1815,70 @@
       "value": "Search..."
     }
   ],
+  "common.settingsModal.category.announcements": [
+    {
+      "type": 0,
+      "value": "Announcements"
+    }
+  ],
+  "common.settingsModal.category.comments": [
+    {
+      "type": 0,
+      "value": "Comments on posts"
+    }
+  ],
+  "common.settingsModal.category.communityPosts": [
+    {
+      "type": 0,
+      "value": "Community posts"
+    }
+  ],
+  "common.settingsModal.category.friendPosts": [
+    {
+      "type": 0,
+      "value": "Friends' posts"
+    }
+  ],
+  "common.settingsModal.category.friendRequests": [
+    {
+      "type": 0,
+      "value": "Friend requests"
+    }
+  ],
+  "common.settingsModal.category.invites": [
+    {
+      "type": 0,
+      "value": "Community & organization invites"
+    }
+  ],
+  "common.settingsModal.category.joinRequests": [
+    {
+      "type": 0,
+      "value": "Join requests"
+    }
+  ],
+  "common.settingsModal.category.messages": [
+    {
+      "type": 0,
+      "value": "Messages"
+    }
+  ],
   "common.settingsModal.closeAriaLabel": [
     {
       "type": 0,
       "value": "Close settings"
+    }
+  ],
+  "common.settingsModal.communityPostsDescription": [
+    {
+      "type": 0,
+      "value": "Choose which of your communities notify you about new posts."
+    }
+  ],
+  "common.settingsModal.communityPostsLegend": [
+    {
+      "type": 0,
+      "value": "Communities"
     }
   ],
   "common.settingsModal.doneButton": [
@@ -1803,28 +1887,96 @@
       "value": "Done"
     }
   ],
-  "common.settingsModal.emailNotificationsHeading": [
+  "common.settingsModal.emailCategoryAriaLabel": [
     {
       "type": 0,
-      "value": "Email notifications"
+      "value": "Email notifications for "
+    },
+    {
+      "type": 1,
+      "value": "category"
     }
   ],
-  "common.settingsModal.emailToggleDescription": [
+  "common.settingsModal.emailColumnHeader": [
     {
       "type": 0,
-      "value": "New messages from other users, and join requests for communities you administer."
+      "value": "Email"
     }
   ],
-  "common.settingsModal.emailToggleLabel": [
+  "common.settingsModal.frequencyDescription": [
     {
       "type": 0,
-      "value": "Email me about activity"
+      "value": "How often to send post notifications."
+    }
+  ],
+  "common.settingsModal.frequencyImmediate": [
+    {
+      "type": 0,
+      "value": "Every new post"
+    }
+  ],
+  "common.settingsModal.frequencyLegend": [
+    {
+      "type": 0,
+      "value": "Delivery"
+    }
+  ],
+  "common.settingsModal.frequencyWeekly": [
+    {
+      "type": 0,
+      "value": "Weekly summary"
     }
   ],
   "common.settingsModal.loadFailedToast": [
     {
       "type": 0,
       "value": "Failed to load settings"
+    }
+  ],
+  "common.settingsModal.minUrgencyDescription": [
+    {
+      "type": 0,
+      "value": "Only notify me about posts at or above this urgency."
+    }
+  ],
+  "common.settingsModal.minUrgencyLabel": [
+    {
+      "type": 0,
+      "value": "Minimum urgency"
+    }
+  ],
+  "common.settingsModal.notificationsDescription": [
+    {
+      "type": 0,
+      "value": "Choose how to be notified about each kind of activity. Push requires push notifications to be enabled above."
+    }
+  ],
+  "common.settingsModal.notificationsHeading": [
+    {
+      "type": 0,
+      "value": "Notifications"
+    }
+  ],
+  "common.settingsModal.postNotificationsHeading": [
+    {
+      "type": 0,
+      "value": "Post notifications"
+    }
+  ],
+  "common.settingsModal.pushCategoryAriaLabel": [
+    {
+      "type": 0,
+      "value": "Push notifications for "
+    },
+    {
+      "type": 1,
+      "value": "category"
+    }
+  ],
+  "common.settingsModal.pushColumnHeader": [
+    {
+      "type": 0,
+      "value": "Push"
     }
   ],
   "common.settingsModal.savedToast": [
@@ -1843,6 +1995,30 @@
     {
       "type": 0,
       "value": "Failed to update settings"
+    }
+  ],
+  "common.settingsModal.urgencyOption.critical": [
+    {
+      "type": 0,
+      "value": "Critical only"
+    }
+  ],
+  "common.settingsModal.urgencyOption.high": [
+    {
+      "type": 0,
+      "value": "High and above"
+    }
+  ],
+  "common.settingsModal.urgencyOption.low": [
+    {
+      "type": 0,
+      "value": "Low (all posts)"
+    }
+  ],
+  "common.settingsModal.urgencyOption.medium": [
+    {
+      "type": 0,
+      "value": "Medium and above"
     }
   ],
   "common.status.sending": [

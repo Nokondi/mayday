@@ -32,6 +32,7 @@ import {
   transferCommunityOwnership,
   updateCommunity,
   updateCommunityMemberRole,
+  updateCommunityNotifications,
   uploadCommunityAvatar,
   withdrawJoinRequest,
 } from '../../src/api/communities.js';
@@ -71,6 +72,18 @@ describe('communities api — listing & detail', () => {
     const result = await listMyCommunities();
     expect(mockedApi.get).toHaveBeenCalledWith('/communities/mine');
     expect(result).toEqual([{ id: 'c1' }]);
+  });
+
+  it('updateCommunityNotifications PUTs /communities/:id/notifications', async () => {
+    const response = { communityId: 'c1', notifyNewPosts: false };
+    mockedApi.put.mockResolvedValueOnce({ data: response });
+
+    const result = await updateCommunityNotifications('c1', false);
+
+    expect(mockedApi.put).toHaveBeenCalledWith('/communities/c1/notifications', {
+      notifyNewPosts: false,
+    });
+    expect(result).toEqual(response);
   });
 
   it('getCommunity GETs /communities/:id', async () => {

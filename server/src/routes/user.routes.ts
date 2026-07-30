@@ -5,6 +5,7 @@ import {
   deleteAccountSchema,
   type OwnedGroupsResponse,
   type OwnedGroupSummary,
+  type UpdateUserSettingsRequest,
 } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, optionalAuth, type AuthRequest } from '../middleware/auth.middleware.js';
@@ -95,14 +96,50 @@ userRoutes.get('/me/owned-groups', requireAuth, asyncHandler(async (req: AuthReq
 
 // PUT /api/users/me/settings — update private settings for the current user
 userRoutes.put('/me/settings', requireAuth, validate(updateUserSettingsSchema), asyncHandler(async (req: AuthRequest, res) => {
-  const { emailNotificationsEnabled, pushNotificationsEnabled } = req.body as {
-    emailNotificationsEnabled?: boolean;
-    pushNotificationsEnabled?: boolean;
-  };
+  const {
+    pushNotificationsEnabled,
+    mutedEmailCategories,
+    mutedPushCategories,
+    minPostNotificationUrgency,
+    postNotificationFrequency,
+  } = req.body as UpdateUserSettingsRequest;
+
+  // Switching to WEEKLY starts a fresh digest window so the first digest
+  // covers the week ahead, not posts the user was already notified about.
+  let lastPostDigestAt: Date | undefined;
+  if (postNotificationFrequency === 'WEEKLY') {
+    const current = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      select: { postNotificationFrequency: true },
+    });
+    if (current?.postNotificationFrequency !== 'WEEKLY') {
+      lastPostDigestAt = new Date();
+    }
+  }
+
   const user = await prisma.user.update({
     where: { id: req.user!.id },
-    data: { emailNotificationsEnabled, pushNotificationsEnabled },
-    select: { id: true, emailNotificationsEnabled: true, pushNotificationsEnabled: true },
+    data: {
+      pushNotificationsEnabled,
+      // Full-list semantics: each write replaces the channel's muted set.
+      mutedEmailCategories: mutedEmailCategories
+        ? { set: [...new Set(mutedEmailCategories)] }
+        : undefined,
+      mutedPushCategories: mutedPushCategories
+        ? { set: [...new Set(mutedPushCategories)] }
+        : undefined,
+      minPostNotificationUrgency,
+      postNotificationFrequency,
+      lastPostDigestAt,
+    },
+    select: {
+      id: true,
+      pushNotificationsEnabled: true,
+      mutedEmailCategories: true,
+      mutedPushCategories: true,
+      minPostNotificationUrgency: true,
+      postNotificationFrequency: true,
+    },
   });
   res.json(user);
 }));

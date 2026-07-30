@@ -5,10 +5,14 @@ vi.mock('dotenv', () => ({ default: { config: vi.fn() }, config: vi.fn() }));
 
 const sendNewMessageEmail = vi.fn().mockResolvedValue(undefined);
 const sendNewCommentEmail = vi.fn().mockResolvedValue(undefined);
+const sendNewPostEmail = vi.fn().mockResolvedValue(undefined);
+const sendPostDigestEmail = vi.fn().mockResolvedValue(undefined);
 const sendCommunityJoinRequestEmail = vi.fn().mockResolvedValue(undefined);
 const sendCommunityJoinRequestApprovedEmail = vi.fn().mockResolvedValue(undefined);
 const sendCommunityInviteEmail = vi.fn().mockResolvedValue(undefined);
 const sendOrganizationInviteEmail = vi.fn().mockResolvedValue(undefined);
+const sendFriendRequestEmail = vi.fn().mockResolvedValue(undefined);
+const sendFriendRequestAcceptedEmail = vi.fn().mockResolvedValue(undefined);
 const sendAnnouncementEmail = vi.fn().mockResolvedValue(undefined);
 const sendBugReportAdminEmail = vi.fn().mockResolvedValue(undefined);
 const sendUserReportAdminEmail = vi.fn().mockResolvedValue(undefined);
@@ -16,10 +20,14 @@ const sendUserReportAdminEmail = vi.fn().mockResolvedValue(undefined);
 vi.mock('../../src/services/mail.service.js', () => ({
   sendNewMessageEmail,
   sendNewCommentEmail,
+  sendNewPostEmail,
+  sendPostDigestEmail,
   sendCommunityJoinRequestEmail,
   sendCommunityJoinRequestApprovedEmail,
   sendCommunityInviteEmail,
   sendOrganizationInviteEmail,
+  sendFriendRequestEmail,
+  sendFriendRequestAcceptedEmail,
   sendAnnouncementEmail,
   sendBugReportAdminEmail,
   sendUserReportAdminEmail,
@@ -50,8 +58,9 @@ interface UserOverrides {
   name?: string;
   emailVerified?: boolean;
   isBanned?: boolean;
-  emailNotificationsEnabled?: boolean;
   pushNotificationsEnabled?: boolean;
+  mutedEmailCategories?: string[];
+  mutedPushCategories?: string[];
 }
 
 function makeUser(overrides: UserOverrides = {}) {
@@ -61,8 +70,9 @@ function makeUser(overrides: UserOverrides = {}) {
     name: 'Alice',
     emailVerified: true,
     isBanned: false,
-    emailNotificationsEnabled: true,
     pushNotificationsEnabled: true,
+    mutedEmailCategories: [],
+    mutedPushCategories: [],
     ...overrides,
   };
 }
@@ -114,7 +124,7 @@ describe('notify — recipient gating', () => {
 });
 
 describe('notify — channel gating', () => {
-  it('dispatches both channels when both prefs are on', async () => {
+  it('dispatches both channels when nothing is muted', async () => {
     findUniqueMock.mockResolvedValue(makeUser());
     const { notify } = await import('../../src/services/notification.service.js');
     await notify('user-1', NEW_MESSAGE_EVENT);
@@ -122,7 +132,7 @@ describe('notify — channel gating', () => {
     expect(sendPushToUser).toHaveBeenCalledTimes(1);
   });
 
-  it('dispatches only email when push pref is off', async () => {
+  it('dispatches only email when the push master pref is off', async () => {
     findUniqueMock.mockResolvedValue(makeUser({ pushNotificationsEnabled: false }));
     const { notify } = await import('../../src/services/notification.service.js');
     await notify('user-1', NEW_MESSAGE_EVENT);
@@ -130,22 +140,37 @@ describe('notify — channel gating', () => {
     expect(sendPushToUser).not.toHaveBeenCalled();
   });
 
-  it('dispatches only push when email pref is off', async () => {
-    findUniqueMock.mockResolvedValue(makeUser({ emailNotificationsEnabled: false }));
+  it("dispatches only push when the event's category is email-muted", async () => {
+    findUniqueMock.mockResolvedValue(makeUser({ mutedEmailCategories: ['MESSAGES'] }));
     const { notify } = await import('../../src/services/notification.service.js');
     await notify('user-1', NEW_MESSAGE_EVENT);
     expect(sendPushToUser).toHaveBeenCalledTimes(1);
     expect(sendNewMessageEmail).not.toHaveBeenCalled();
   });
 
-  it('dispatches neither channel when both prefs are off', async () => {
+  it("dispatches only email when the event's category is push-muted", async () => {
+    findUniqueMock.mockResolvedValue(makeUser({ mutedPushCategories: ['MESSAGES'] }));
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', NEW_MESSAGE_EVENT);
+    expect(sendNewMessageEmail).toHaveBeenCalledTimes(1);
+    expect(sendPushToUser).not.toHaveBeenCalled();
+  });
+
+  it('dispatches neither channel when the category is muted on both', async () => {
     findUniqueMock.mockResolvedValue(
-      makeUser({ emailNotificationsEnabled: false, pushNotificationsEnabled: false }),
+      makeUser({ mutedEmailCategories: ['MESSAGES'], mutedPushCategories: ['MESSAGES'] }),
     );
     const { notify } = await import('../../src/services/notification.service.js');
     await notify('user-1', NEW_MESSAGE_EVENT);
     expect(sendNewMessageEmail).not.toHaveBeenCalled();
     expect(sendPushToUser).not.toHaveBeenCalled();
+  });
+
+  it('muting one category does not affect another', async () => {
+    findUniqueMock.mockResolvedValue(makeUser({ mutedEmailCategories: ['MESSAGES'] }));
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', NEW_COMMENT_EVENT);
+    expect(sendNewCommentEmail).toHaveBeenCalledTimes(1);
   });
 
   it('runs channels independently — email failure does not skip push', async () => {
@@ -178,6 +203,114 @@ describe('notify — channel gating', () => {
       expect.any(Error),
     );
     errSpy.mockRestore();
+  });
+});
+
+describe('notify — event-to-category mapping', () => {
+  const ALL_CATEGORIES = [
+    'INVITES', 'JOIN_REQUESTS', 'MESSAGES', 'COMMENTS', 'FRIEND_REQUESTS', 'ANNOUNCEMENTS', 'FRIEND_POSTS', 'COMMUNITY_POSTS',
+  ];
+
+  const CASES: Array<{ category: string; event: NotificationEvent }> = [
+    {
+      category: 'INVITES',
+      event: { type: 'COMMUNITY_INVITE', communityId: 'c-1', communityName: 'Coders', inviterName: 'Bob' },
+    },
+    {
+      category: 'INVITES',
+      event: { type: 'ORGANIZATION_INVITE', organizationId: 'o-1', organizationName: 'Acme', inviterName: 'Bob' },
+    },
+    {
+      category: 'JOIN_REQUESTS',
+      event: { type: 'COMMUNITY_JOIN_REQUEST', communityId: 'c-1', communityName: 'Coders', requesterName: 'Bob', message: null },
+    },
+    {
+      category: 'JOIN_REQUESTS',
+      event: { type: 'COMMUNITY_JOIN_APPROVED', communityId: 'c-1', communityName: 'Coders' },
+    },
+    { category: 'MESSAGES', event: NEW_MESSAGE_EVENT },
+    { category: 'COMMENTS', event: NEW_COMMENT_EVENT },
+    {
+      category: 'FRIEND_POSTS',
+      event: { type: 'NEW_POST', postId: 'p-1', postTitle: 'T', authorId: 'user-2', authorName: 'Bob', audience: 'friend' },
+    },
+    {
+      category: 'COMMUNITY_POSTS',
+      event: { type: 'NEW_POST', postId: 'p-1', postTitle: 'T', authorId: 'user-2', authorName: 'Bob', audience: 'community', communityId: 'c-1', communityName: 'Coders' },
+    },
+    { category: 'FRIEND_REQUESTS', event: { type: 'FRIEND_REQUEST', senderId: 'user-2', senderName: 'Bob' } },
+    { category: 'FRIEND_REQUESTS', event: { type: 'FRIEND_REQUEST_ACCEPTED', accepterId: 'user-2', accepterName: 'Bob' } },
+    { category: 'ANNOUNCEMENTS', event: { type: 'ANNOUNCEMENT', message: 'Hi' } },
+  ];
+
+  it.each(CASES)('$event.type is muted by the $category category', async ({ category, event }) => {
+    findUniqueMock.mockResolvedValue(
+      makeUser({ mutedEmailCategories: [category], mutedPushCategories: [category] }),
+    );
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', event);
+    expect(sendPushToUser).not.toHaveBeenCalled();
+  });
+
+  const DIGEST_EVENT: NotificationEvent = {
+    type: 'POST_DIGEST',
+    count: 1,
+    posts: [{ id: 'p-1', title: 'T', authorName: 'Bob', communityName: null }],
+  };
+
+  it('POST_DIGEST spans both post audiences — suppressed only when both are muted', async () => {
+    findUniqueMock.mockResolvedValue(
+      makeUser({
+        mutedEmailCategories: ['FRIEND_POSTS', 'COMMUNITY_POSTS'],
+        mutedPushCategories: ['FRIEND_POSTS', 'COMMUNITY_POSTS'],
+      }),
+    );
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', DIGEST_EVENT);
+    expect(sendPushToUser).not.toHaveBeenCalled();
+    expect(sendPostDigestEmail).not.toHaveBeenCalled();
+  });
+
+  it('POST_DIGEST still delivers on a channel while either post audience is unmuted there', async () => {
+    findUniqueMock.mockResolvedValue(
+      makeUser({
+        mutedEmailCategories: ['FRIEND_POSTS'],
+        mutedPushCategories: ['FRIEND_POSTS', 'COMMUNITY_POSTS'],
+      }),
+    );
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', DIGEST_EVENT);
+    expect(sendPostDigestEmail).toHaveBeenCalledTimes(1);
+    expect(sendPushToUser).not.toHaveBeenCalled();
+  });
+
+  it('admin operational events ignore category muting entirely', async () => {
+    findUniqueMock.mockResolvedValue(
+      makeUser({ mutedEmailCategories: ALL_CATEGORIES, mutedPushCategories: ALL_CATEGORIES }),
+    );
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'BUG_REPORT_SUBMITTED',
+      reportId: 'b1',
+      reporterName: 'Carol',
+      title: 'Crash on load',
+    });
+    expect(sendBugReportAdminEmail).toHaveBeenCalledTimes(1);
+    expect(sendPushToUser).toHaveBeenCalledTimes(1);
+  });
+
+  it('admin operational push still respects the push master pref', async () => {
+    findUniqueMock.mockResolvedValue(makeUser({ pushNotificationsEnabled: false }));
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'USER_REPORT_SUBMITTED',
+      reportId: 'r1',
+      reporterName: 'Carol',
+      reason: 'Spam',
+      targetKind: 'user',
+    });
+    expect(sendUserReportAdminEmail).toHaveBeenCalledTimes(1);
+    expect(sendPushToUser).not.toHaveBeenCalled();
   });
 });
 
@@ -224,6 +357,61 @@ describe('notify — per-event email arguments', () => {
       'Bob',
       'Need help moving',
       'post-1',
+    );
+  });
+
+  it('NEW_POST (friend) → sendNewPostEmail with null communityName', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'NEW_POST',
+      postId: 'post-1',
+      postTitle: 'Need help moving',
+      authorId: 'user-2',
+      authorName: 'Bob',
+      audience: 'friend',
+    });
+    expect(sendNewPostEmail).toHaveBeenCalledWith(
+      'alice@example.com',
+      'Bob',
+      'Need help moving',
+      'post-1',
+      null,
+    );
+  });
+
+  it('NEW_POST (community) → sendNewPostEmail with the community name', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'NEW_POST',
+      postId: 'post-1',
+      postTitle: 'Need help moving',
+      authorId: 'user-2',
+      authorName: 'Bob',
+      audience: 'community',
+      communityId: 'c-1',
+      communityName: 'Coders',
+    });
+    expect(sendNewPostEmail).toHaveBeenCalledWith(
+      'alice@example.com',
+      'Bob',
+      'Need help moving',
+      'post-1',
+      'Coders',
+    );
+  });
+
+  it('POST_DIGEST → sendPostDigestEmail with the user’s name, count, and posts', async () => {
+    const posts = [
+      { id: 'p1', title: 'Need help moving', authorName: 'Bob', communityName: 'Coders' },
+      { id: 'p2', title: 'Free sofa', authorName: 'Carol', communityName: null },
+    ];
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', { type: 'POST_DIGEST', count: 2, posts });
+    expect(sendPostDigestEmail).toHaveBeenCalledWith(
+      'alice@example.com',
+      'Alice',
+      2,
+      posts,
     );
   });
 
@@ -392,6 +580,67 @@ describe('notify — per-event push payloads', () => {
     expect(p.tag).toBe('comment:post-1');
   });
 
+  it('NEW_POST (friend) — title names the author, body is the post title, deep links to the post', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'NEW_POST',
+      postId: 'post-1',
+      postTitle: 'Need help moving',
+      authorId: 'user-2',
+      authorName: 'Bob',
+      audience: 'friend',
+    });
+    const p = payloadOf();
+    expect(p.title).toBe('Bob shared a new post');
+    expect(p.body).toBe('Need help moving');
+    expect(p.url).toBe('/posts/post-1');
+    expect(p.tag).toBe('post:post-1');
+  });
+
+  it('NEW_POST (community) — title names the community, body names the author', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'NEW_POST',
+      postId: 'post-1',
+      postTitle: 'Need help moving',
+      authorId: 'user-2',
+      authorName: 'Bob',
+      audience: 'community',
+      communityId: 'c-1',
+      communityName: 'Coders',
+    });
+    const p = payloadOf();
+    expect(p.title).toBe('New post in Coders');
+    expect(p.body).toBe('Bob: Need help moving');
+    expect(p.url).toBe('/posts/post-1');
+    expect(p.tag).toBe('post:post-1');
+  });
+
+  it('POST_DIGEST — generic title, count in the body, url=/, stable tag', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'POST_DIGEST',
+      count: 3,
+      posts: [{ id: 'p1', title: 'T', authorName: 'Bob', communityName: null }],
+    });
+    const p = payloadOf();
+    expect(p.title).toBe('Your weekly Mayday digest');
+    expect(p.body).toBe('3 new posts from your friends and communities.');
+    expect(p.url).toBe('/');
+    expect(p.tag).toBe('post-digest');
+  });
+
+  it('POST_DIGEST — singular body for a single post', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'POST_DIGEST',
+      count: 1,
+      posts: [{ id: 'p1', title: 'T', authorName: 'Bob', communityName: null }],
+    });
+    const p = payloadOf();
+    expect(p.body).toBe('1 new post from your friends and communities.');
+  });
+
   it('COMMUNITY_JOIN_REQUEST — url goes to /manage and body falls back when no message', async () => {
     const { notify } = await import('../../src/services/notification.service.js');
     await notify('user-1', {
@@ -498,6 +747,47 @@ describe('notify — per-event push payloads', () => {
     const contentPayload = payloadOf();
     expect(contentPayload.title).toBe('New content report from Carol');
   });
+});
+
+describe('notify — push send options (urgency/TTL)', () => {
+  beforeEach(() => {
+    findUniqueMock.mockResolvedValue(makeUser());
+  });
+
+  function optionsOf() {
+    return sendPushToUser.mock.calls[0]?.[2] as { urgency: string; TTL: number };
+  }
+
+  it('NEW_MESSAGE — high urgency with a short 4h TTL', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', NEW_MESSAGE_EVENT);
+    expect(optionsOf()).toEqual({ urgency: 'high', TTL: 4 * 60 * 60 });
+  });
+
+  it('POST_DIGEST — the one batchable push: normal urgency, 1-day TTL', async () => {
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', {
+      type: 'POST_DIGEST',
+      count: 1,
+      posts: [{ id: 'p1', title: 'T', authorName: 'Bob', communityName: null }],
+    });
+    expect(optionsOf()).toEqual({ urgency: 'normal', TTL: 24 * 60 * 60 });
+  });
+
+  it.each([
+    ['NEW_COMMENT', NEW_COMMENT_EVENT],
+    ['NEW_POST', { type: 'NEW_POST', postId: 'p1', postTitle: 'T', authorId: 'u2', authorName: 'Bob', audience: 'friend' }],
+    ['FRIEND_REQUEST', { type: 'FRIEND_REQUEST', senderId: 'u2', senderName: 'Bob' }],
+    ['COMMUNITY_INVITE', { type: 'COMMUNITY_INVITE', communityId: 'c1', communityName: 'Coders', inviterName: 'Bob' }],
+    ['ANNOUNCEMENT', { type: 'ANNOUNCEMENT', message: 'Hi' }],
+  ] as Array<[string, NotificationEvent]>)(
+    '%s — high urgency so push services deliver immediately, 1-day TTL',
+    async (_name, event) => {
+      const { notify } = await import('../../src/services/notification.service.js');
+      await notify('user-1', event);
+      expect(optionsOf()).toEqual({ urgency: 'high', TTL: 24 * 60 * 60 });
+    },
+  );
 });
 
 describe('notifyAdmins', () => {

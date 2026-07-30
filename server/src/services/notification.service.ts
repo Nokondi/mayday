@@ -1,8 +1,10 @@
-import type { NotificationEvent, PushPayload } from '@mayday/shared';
+import type { NotificationCategory, NotificationEvent, PushPayload } from '@mayday/shared';
 import { prisma } from '../config/database.js';
 import {
   sendNewMessageEmail,
   sendNewCommentEmail,
+  sendNewPostEmail,
+  sendPostDigestEmail,
   sendCommunityJoinRequestEmail,
   sendCommunityJoinRequestApprovedEmail,
   sendCommunityInviteEmail,
@@ -21,8 +23,9 @@ interface RecipientPrefs {
   name: string;
   emailVerified: boolean;
   isBanned: boolean;
-  emailNotificationsEnabled: boolean;
   pushNotificationsEnabled: boolean;
+  mutedEmailCategories: NotificationCategory[];
+  mutedPushCategories: NotificationCategory[];
 }
 
 const RECIPIENT_SELECT = {
@@ -31,9 +34,45 @@ const RECIPIENT_SELECT = {
   name: true,
   emailVerified: true,
   isBanned: true,
-  emailNotificationsEnabled: true,
   pushNotificationsEnabled: true,
+  mutedEmailCategories: true,
+  mutedPushCategories: true,
 } as const;
+
+/**
+ * The muting categories an event belongs to, or null for admin operational
+ * notifications (bug/user reports), which cannot be muted per-category.
+ * Most events map to exactly one category; the weekly digest spans both post
+ * audiences, so it delivers on a channel while EITHER audience is unmuted
+ * there (a fully-muted audience is already excluded from the digest's
+ * contents by postDigest.service).
+ */
+function categoriesOf(event: NotificationEvent): NotificationCategory[] | null {
+  switch (event.type) {
+    case 'COMMUNITY_INVITE':
+    case 'ORGANIZATION_INVITE':
+      return ['INVITES'];
+    case 'COMMUNITY_JOIN_REQUEST':
+    case 'COMMUNITY_JOIN_APPROVED':
+      return ['JOIN_REQUESTS'];
+    case 'NEW_MESSAGE':
+      return ['MESSAGES'];
+    case 'NEW_COMMENT':
+      return ['COMMENTS'];
+    case 'NEW_POST':
+      return event.audience === 'community' ? ['COMMUNITY_POSTS'] : ['FRIEND_POSTS'];
+    case 'POST_DIGEST':
+      return ['FRIEND_POSTS', 'COMMUNITY_POSTS'];
+    case 'FRIEND_REQUEST':
+    case 'FRIEND_REQUEST_ACCEPTED':
+      return ['FRIEND_REQUESTS'];
+    case 'ANNOUNCEMENT':
+      return ['ANNOUNCEMENTS'];
+    case 'BUG_REPORT_SUBMITTED':
+    case 'USER_REPORT_SUBMITTED':
+      return null;
+  }
+}
 
 const NOTIFY_CONCURRENCY = 5;
 
@@ -71,6 +110,30 @@ function buildPushPayload(event: NotificationEvent): PushPayload {
         url: `/posts/${event.postId}`,
         tag: `comment:${event.postId}`,
       };
+    case 'NEW_POST':
+      if (event.audience === 'community') {
+        return {
+          title: `New post in ${event.communityName}`,
+          body: `${event.authorName}: ${event.postTitle}`,
+          url: `/posts/${event.postId}`,
+          tag: `post:${event.postId}`,
+        };
+      }
+      return {
+        title: `${event.authorName} shared a new post`,
+        body: event.postTitle,
+        url: `/posts/${event.postId}`,
+        tag: `post:${event.postId}`,
+      };
+    case 'POST_DIGEST': {
+      const label = event.count === 1 ? 'post' : 'posts';
+      return {
+        title: 'Your weekly Mayday digest',
+        body: `${event.count} new ${label} from your friends and communities.`,
+        url: '/',
+        tag: 'post-digest',
+      };
+    }
     case 'COMMUNITY_JOIN_REQUEST':
       return {
         title: `${event.requesterName} wants to join ${event.communityName}`,
@@ -139,15 +202,25 @@ function buildPushPayload(event: NotificationEvent): PushPayload {
   }
 }
 
-// Time-sensitive events get high urgency so push services wake the device
-// immediately instead of batching for power efficiency, plus a short TTL so
-// stale messages aren't surfaced after the user is back in-app. Everything
-// else uses library defaults (normal urgency, ~4-week TTL).
-function buildPushOptions(event: NotificationEvent): PushSendOptions | undefined {
-  if (event.type === 'NEW_MESSAGE') {
-    return { urgency: 'high', TTL: 4 * 60 * 60 };
+const HOUR = 60 * 60;
+const DAY = 24 * HOUR;
+
+// Every user-facing event is something a person is actively waiting on, so
+// they all get high urgency — push services (FCM/Mozilla) treat the default
+// 'normal' as batchable and can hold delivery until the device next wakes,
+// which reads as "delayed or missing" notifications. TTLs cap staleness:
+// a message push is pointless hours later; everything else keeps for a day.
+// The weekly digest is the one genuinely non-urgent push — let the service
+// batch it for power efficiency.
+function buildPushOptions(event: NotificationEvent): PushSendOptions {
+  switch (event.type) {
+    case 'NEW_MESSAGE':
+      return { urgency: 'high', TTL: 4 * HOUR };
+    case 'POST_DIGEST':
+      return { urgency: 'normal', TTL: DAY };
+    default:
+      return { urgency: 'high', TTL: DAY };
   }
-  return undefined;
 }
 
 function sendEmailFor(
@@ -169,6 +242,21 @@ function sendEmailFor(
         event.commenterName,
         event.postTitle,
         event.postId,
+      );
+    case 'NEW_POST':
+      return sendNewPostEmail(
+        user.email,
+        event.authorName,
+        event.postTitle,
+        event.postId,
+        event.audience === 'community' ? event.communityName ?? null : null,
+      );
+    case 'POST_DIGEST':
+      return sendPostDigestEmail(
+        user.email,
+        user.name,
+        event.count,
+        event.posts,
       );
     case 'COMMUNITY_JOIN_REQUEST':
       return sendCommunityJoinRequestEmail(
@@ -225,11 +313,23 @@ async function dispatch(
   if (user.isBanned) return;
   if (!user.emailVerified) return;
 
+  // Per-category muting: null categories (admin ops) can't be muted; a
+  // channel is allowed while ANY of the event's categories is unmuted there.
+  // Push is additionally gated by the device-level master pref.
+  const categories = categoriesOf(event);
+  const emailAllowed =
+    categories === null ||
+    categories.some((c) => !user.mutedEmailCategories.includes(c));
+  const pushAllowed =
+    user.pushNotificationsEnabled &&
+    (categories === null ||
+      categories.some((c) => !user.mutedPushCategories.includes(c)));
+
   const tasks: Array<{ channel: 'email' | 'push'; promise: Promise<unknown> }> = [];
-  if (user.emailNotificationsEnabled) {
+  if (emailAllowed) {
     tasks.push({ channel: 'email', promise: sendEmailFor(user, event) });
   }
-  if (user.pushNotificationsEnabled) {
+  if (pushAllowed) {
     tasks.push({
       channel: 'push',
       promise: sendPushToUser(

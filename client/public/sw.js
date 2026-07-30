@@ -20,6 +20,64 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(focusOrOpen(targetUrl || '/'));
 });
 
+// Push services rotate or expire subscriptions (browser updates, key
+// rotation). Without this handler the old endpoint dies silently and the
+// device stops receiving pushes until the user re-toggles them. Resubscribe
+// with the same VAPID key and tell the server to swap the endpoint in place.
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil(handleSubscriptionChange(event));
+});
+
+async function handleSubscriptionChange(event) {
+  const oldSub = event.oldSubscription || null;
+  try {
+    let key =
+      oldSub && oldSub.options && oldSub.options.applicationServerKey;
+    if (!key) {
+      const res = await fetch('/api/push/public-key');
+      const data = await res.json();
+      if (!data.publicKey) return;
+      key = urlBase64ToBuffer(data.publicKey);
+    }
+
+    const newSub =
+      event.newSubscription ||
+      (await self.registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: key,
+      }));
+
+    // Without the old endpoint there's nothing to rotate server-side; the
+    // app re-registers the subscription on its next launch (PushBootstrap).
+    if (!oldSub || !oldSub.endpoint) return;
+
+    await fetch('/api/push/resubscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        oldEndpoint: oldSub.endpoint,
+        subscription: newSub.toJSON(),
+      }),
+    });
+  } catch (_err) {
+    // Best effort — the next app launch repairs the subscription.
+  }
+}
+
+// Same helper as client/src/utils/push.ts — the SW bundle is standalone, so
+// it keeps its own copy.
+function urlBase64ToBuffer(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  const buffer = new ArrayBuffer(raw.length);
+  const view = new Uint8Array(buffer);
+  for (let i = 0; i < raw.length; i++) {
+    view[i] = raw.charCodeAt(i);
+  }
+  return buffer;
+}
+
 async function handlePush(event) {
   if (!event.data) return;
 

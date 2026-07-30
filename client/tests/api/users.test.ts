@@ -19,6 +19,7 @@ import {
   getUserPosts,
   reportUser,
   updateProfile,
+  updateUserSettings,
   uploadUserAvatar,
 } from '../../src/api/users.js';
 
@@ -150,6 +151,40 @@ describe('users api', () => {
       await deleteProfile('u1', body);
 
       expect(mockedApi.delete).toHaveBeenCalledWith('/users/u1', { data: body });
+    });
+  });
+
+  describe('updateUserSettings', () => {
+    it('PUTs /users/me/settings with post-notification prefs and returns the body', async () => {
+      const response = {
+        id: 'u1',
+        pushNotificationsEnabled: true,
+        mutedEmailCategories: [],
+        mutedPushCategories: [],
+        minPostNotificationUrgency: 'HIGH',
+      };
+      mockedApi.put.mockResolvedValueOnce({ data: response });
+
+      const result = await updateUserSettings({
+        minPostNotificationUrgency: 'HIGH',
+      });
+
+      expect(mockedApi.put).toHaveBeenCalledWith('/users/me/settings', {
+        minPostNotificationUrgency: 'HIGH',
+      });
+      expect(result).toEqual(response);
+    });
+
+    it('PUTs muted category arrays through unchanged', async () => {
+      mockedApi.put.mockResolvedValueOnce({
+        data: { id: 'u1', mutedEmailCategories: ['MESSAGES'] },
+      });
+
+      await updateUserSettings({ mutedEmailCategories: ['MESSAGES'] });
+
+      expect(mockedApi.put).toHaveBeenCalledWith('/users/me/settings', {
+        mutedEmailCategories: ['MESSAGES'],
+      });
     });
   });
 

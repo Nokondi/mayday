@@ -7,6 +7,7 @@ import {
   updateMemberRoleSchema,
   communityJoinRequestSchema,
   transferOwnershipSchema,
+  updateCommunityNotificationsSchema,
 } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.middleware.js';
@@ -121,8 +122,29 @@ communityRoutes.get('/mine', asyncHandler(async (req: AuthRequest, res) => {
     memberCount: m.community._count.members,
     myRole: m.role,
     myJoinRequestStatus: null,
+    notifyNewPosts: m.notifyNewPosts,
   }));
   res.json(data);
+}));
+
+// PUT /api/communities/:id/notifications — toggle new-post notifications for
+// the caller's own membership in this community.
+communityRoutes.put('/:id/notifications', validate(updateCommunityNotificationsSchema), asyncHandler(async (req: AuthRequest, res) => {
+  const communityId = req.params.id as string;
+  const { notifyNewPosts } = req.body as { notifyNewPosts: boolean };
+
+  const membership = await prisma.communityMember.findUnique({
+    where: { communityId_userId: { communityId, userId: req.user!.id } },
+    select: { id: true },
+  });
+  if (!membership) throw new AppError(404, 'You are not a member of this community');
+
+  const updated = await prisma.communityMember.update({
+    where: { id: membership.id },
+    data: { notifyNewPosts },
+    select: { communityId: true, notifyNewPosts: true },
+  });
+  res.json(updated);
 }));
 
 // GET /api/communities/me/invites

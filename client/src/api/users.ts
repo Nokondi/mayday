@@ -4,8 +4,10 @@ import type {
   UpdateUserSettingsRequest,
   DeleteAccountRequest,
   OwnedGroupsResponse,
+  NotificationCategory,
   PaginatedResponse,
   PostWithAuthor,
+  UrgencyLevel,
 } from '@mayday/shared';
 import { api } from './client.js';
 
@@ -54,7 +56,14 @@ export async function getOwnedGroups(): Promise<OwnedGroupsResponse> {
 
 export async function updateUserSettings(
   data: UpdateUserSettingsRequest,
-): Promise<{ id: string; emailNotificationsEnabled: boolean; pushNotificationsEnabled: boolean }> {
+): Promise<{
+  id: string;
+  pushNotificationsEnabled: boolean;
+  mutedEmailCategories: NotificationCategory[];
+  mutedPushCategories: NotificationCategory[];
+  minPostNotificationUrgency: UrgencyLevel;
+  postNotificationFrequency: 'IMMEDIATE' | 'WEEKLY';
+}> {
   const res = await api.put('/users/me/settings', data);
   return res.data;
 }

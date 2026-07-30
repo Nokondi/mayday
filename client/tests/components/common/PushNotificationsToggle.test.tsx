@@ -106,8 +106,11 @@ beforeEach(() => {
   mockedUnsubscribePush.mockResolvedValue();
   mockedUpdate.mockImplementation(async ({ pushNotificationsEnabled }) => ({
     id: 'user-1',
-    emailNotificationsEnabled: true,
     pushNotificationsEnabled: pushNotificationsEnabled ?? false,
+    mutedEmailCategories: [],
+    mutedPushCategories: [],
+    minPostNotificationUrgency: 'LOW',
+    postNotificationFrequency: 'IMMEDIATE',
   }));
 });
 
@@ -373,5 +376,45 @@ describe('PushNotificationsToggle — permission re-checks', () => {
     await waitFor(() => {
       expect(screen.getByRole('checkbox')).toBeDisabled();
     });
+  });
+});
+
+describe('PushNotificationsToggle — onEffectiveEnabledChange', () => {
+  it('reports true on mount when the pref is on and permission is granted', () => {
+    const onChange = vi.fn();
+    render(
+      <PushNotificationsToggle initialEnabled={true} onEffectiveEnabledChange={onChange} />,
+      { wrapper },
+    );
+    expect(onChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('reports false when the browser blocked notifications, even with the pref on', () => {
+    stubNotification({
+      permission: 'denied',
+      requestPermission: vi.fn(),
+    });
+    const onChange = vi.fn();
+    render(
+      <PushNotificationsToggle initialEnabled={true} onEffectiveEnabledChange={onChange} />,
+      { wrapper },
+    );
+    expect(onChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('reports false after the user toggles push off', async () => {
+    // No registration → disablePush returns early, then the pref saves false.
+    stubServiceWorker(vi.fn().mockResolvedValue(undefined));
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <PushNotificationsToggle initialEnabled={true} onEffectiveEnabledChange={onChange} />,
+      { wrapper },
+    );
+    expect(onChange).toHaveBeenLastCalledWith(true);
+
+    await user.click(screen.getByRole('checkbox'));
+
+    await waitFor(() => expect(onChange).toHaveBeenLastCalledWith(false));
   });
 });

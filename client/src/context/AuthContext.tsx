@@ -11,6 +11,9 @@ interface AuthUser {
   name: string;
   role: string;
   avatarUrl: string | null;
+  // Present when the user came from GET /auth/me (PushBootstrap reads it);
+  // may be absent on the login response.
+  pushNotificationsEnabled?: boolean;
 }
 
 interface AuthContextType {

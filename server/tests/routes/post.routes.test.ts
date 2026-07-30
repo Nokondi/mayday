@@ -63,15 +63,23 @@ vi.mock('../../src/services/notification.service.js', () => ({
   notifyMany: vi.fn().mockResolvedValue(undefined),
 }));
 
+// Post creation fans out NEW_POST notifications fire-and-forget. Stub the
+// service so no fan-out queries run and we can assert the derived params.
+vi.mock('../../src/services/postNotification.service.js', () => ({
+  notifyNewPost: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { prisma } from '../../src/config/database.js';
 import { deleteObjectByUrl } from '../../src/config/storage.js';
 import { errorMiddleware } from '../../src/middleware/error.middleware.js';
 import { postRoutes } from '../../src/routes/post.routes.js';
 import { signAccessToken } from '../../src/utils/jwt.js';
 import { notifyMany } from '../../src/services/notification.service.js';
+import { notifyNewPost } from '../../src/services/postNotification.service.js';
 
 const mockedComment = vi.mocked(prisma.comment);
 const mockedNotifyMany = vi.mocked(notifyMany);
+const mockedNotifyNewPost = vi.mocked(notifyNewPost);
 
 const mockedPost = vi.mocked(prisma.post);
 const mockedDeleteObjectByUrl = vi.mocked(deleteObjectByUrl);
@@ -254,6 +262,80 @@ describe('POST /api/posts — events', () => {
     const createArg = (mockedPost.create.mock.calls[0] as [{ data: { type: string; startAt: unknown } }])[0].data;
     expect(createArg.type).toBe('EVENT');
     expect(createArg.startAt).toBeTruthy();
+  });
+});
+
+describe('POST /api/posts — new-post notifications', () => {
+  const body = {
+    type: 'REQUEST',
+    title: 'Need help',
+    description: 'Some description',
+    category: 'Food',
+    urgency: 'HIGH',
+  };
+
+  it('fans out notifyNewPost with the created post and its audience', async () => {
+    mockedPost.create.mockResolvedValueOnce({ id: 'p1' } as never);
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({ urgency: 'HIGH', sharedWithFriends: true }) as never,
+    );
+
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send({ ...body, sharedWithFriends: true });
+
+    expect(res.status).toBe(201);
+    expect(mockedNotifyNewPost).toHaveBeenCalledWith({
+      postId: 'p1',
+      postTitle: 'Need help',
+      urgency: 'HIGH',
+      authorId: USER_ID,
+      authorName: 'Alice',
+      sharedWithFriends: true,
+      communityIds: [],
+    });
+  });
+
+  it('passes the deduplicated community ids through to the fan-out', async () => {
+    vi.mocked(prisma.communityMember.findMany).mockResolvedValueOnce([
+      { communityId: COMMUNITY_ID_1 },
+      { communityId: COMMUNITY_ID_2 },
+    ] as never);
+    mockedPost.create.mockResolvedValueOnce({ id: 'p1' } as never);
+    mockedPost.findUnique.mockResolvedValueOnce(
+      dbPost({
+        communities: [
+          { community: { id: COMMUNITY_ID_1, name: 'C1' } },
+          { community: { id: COMMUNITY_ID_2, name: 'C2' } },
+        ],
+      }) as never,
+    );
+
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send({
+        ...body,
+        communityIds: [COMMUNITY_ID_1, COMMUNITY_ID_2, COMMUNITY_ID_1],
+      });
+
+    expect(res.status).toBe(201);
+    expect(mockedNotifyNewPost).toHaveBeenCalledWith(
+      expect.objectContaining({
+        communityIds: [COMMUNITY_ID_1, COMMUNITY_ID_2],
+      }),
+    );
+  });
+
+  it('does not fan out when creation fails validation', async () => {
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send({ type: 'REQUEST' });
+
+    expect(res.status).toBe(400);
+    expect(mockedNotifyNewPost).not.toHaveBeenCalled();
   });
 });
 

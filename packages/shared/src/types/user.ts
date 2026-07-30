@@ -1,5 +1,6 @@
 import type { ProfileLink } from './api.js';
 import type { FriendStatus } from './friendship.js';
+import type { NotificationCategory } from './notification.js';
 
 export type Role = 'USER' | 'ADMIN';
 
@@ -16,8 +17,9 @@ export interface User {
   links: ProfileLink[] | null;
   role: Role;
   isBanned: boolean;
-  emailNotificationsEnabled: boolean;
   pushNotificationsEnabled: boolean;
+  mutedEmailCategories: NotificationCategory[];
+  mutedPushCategories: NotificationCategory[];
   createdAt: string;
   updatedAt: string;
 }

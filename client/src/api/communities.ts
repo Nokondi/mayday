@@ -53,6 +53,14 @@ export async function deleteCommunity(id: string): Promise<void> {
   await api.delete(`/communities/${id}`);
 }
 
+export async function updateCommunityNotifications(
+  id: string,
+  notifyNewPosts: boolean,
+): Promise<{ communityId: string; notifyNewPosts: boolean }> {
+  const res = await api.put(`/communities/${id}/notifications`, { notifyNewPosts });
+  return res.data;
+}
+
 // Members
 export async function getCommunityMembers(id: string): Promise<CommunityMember[]> {
   const res = await api.get(`/communities/${id}/members`);

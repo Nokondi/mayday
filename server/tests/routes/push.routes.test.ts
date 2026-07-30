@@ -7,10 +7,12 @@ vi.mock('../../src/config/database.js', () => ({
     pushSubscription: {
       upsert: vi.fn(),
       deleteMany: vi.fn(),
+      findUnique: vi.fn(),
     },
     user: {
       findUnique: vi.fn(),
     },
+    $transaction: vi.fn(async (ops: unknown[]) => Promise.all(ops)),
   },
 }));
 
@@ -216,5 +218,72 @@ describe('DELETE /api/push/unsubscribe', () => {
       .send({ endpoint: VALID_BODY.endpoint });
 
     expect(res.status).toBe(204);
+  });
+});
+
+describe('POST /api/push/resubscribe', () => {
+  const NEW_ENDPOINT = 'https://fcm.example.com/rotated';
+  const RESUB_BODY = {
+    oldEndpoint: VALID_BODY.endpoint,
+    subscription: {
+      endpoint: NEW_ENDPOINT,
+      keys: { p256dh: 'new-p256dh', auth: 'new-auth' },
+    },
+  };
+
+  it('rotates the endpoint in place, keeping the original userId — no JWT required', async () => {
+    mockedSub.findUnique.mockResolvedValueOnce({ userId: USER_ID } as never);
+
+    const app = makeApp();
+    const res = await request(app)
+      .post('/api/push/resubscribe')
+      .send(RESUB_BODY);
+
+    expect(res.status).toBe(204);
+    expect(mockedSub.findUnique).toHaveBeenCalledWith({
+      where: { endpoint: VALID_BODY.endpoint },
+      select: { userId: true },
+    });
+    expect(mockedSub.deleteMany).toHaveBeenCalledWith({
+      where: { endpoint: VALID_BODY.endpoint },
+    });
+    expect(mockedSub.upsert).toHaveBeenCalledWith({
+      where: { endpoint: NEW_ENDPOINT },
+      create: {
+        userId: USER_ID,
+        endpoint: NEW_ENDPOINT,
+        p256dh: 'new-p256dh',
+        auth: 'new-auth',
+        userAgent: null,
+      },
+      update: {
+        userId: USER_ID,
+        p256dh: 'new-p256dh',
+        auth: 'new-auth',
+      },
+    });
+  });
+
+  it('returns 404 when the old endpoint is unknown — possession of it is the credential', async () => {
+    mockedSub.findUnique.mockResolvedValueOnce(null as never);
+
+    const app = makeApp();
+    const res = await request(app)
+      .post('/api/push/resubscribe')
+      .send(RESUB_BODY);
+
+    expect(res.status).toBe(404);
+    expect(mockedSub.deleteMany).not.toHaveBeenCalled();
+    expect(mockedSub.upsert).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 for a malformed body', async () => {
+    const app = makeApp();
+    const res = await request(app)
+      .post('/api/push/resubscribe')
+      .send({ oldEndpoint: 'not-a-url', subscription: { endpoint: NEW_ENDPOINT } });
+
+    expect(res.status).toBe(400);
+    expect(mockedSub.findUnique).not.toHaveBeenCalled();
   });
 });

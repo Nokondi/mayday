@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router";
 import { WebSocketProvider } from "./context/WebSocketContext.js";
 import { Layout } from "./components/layout/Layout.js";
 import { RescueListener } from "./components/e2ee/RescueListener.js";
+import { PushBootstrap } from "./components/common/PushBootstrap.js";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute.js";
 import { LoadingSpinner } from "./components/common/LoadingSpinner.js";
 import { useAuth } from "./context/AuthContext.js";
@@ -88,6 +89,7 @@ export function App() {
   return (
     <WebSocketProvider>
       <RescueListener />
+      <PushBootstrap />
       <Suspense fallback={<LoadingSpinner className="min-h-[50vh]" />}>
       <Routes>
         <Route element={<Layout />}>
