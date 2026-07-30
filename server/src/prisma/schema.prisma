@@ -43,15 +43,18 @@ enum PostNotificationFrequency {
 }
 
 // User-facing notification groupings for per-category channel muting. Admin
-// operational notifications (bug/user reports) have no category and always send.
+// operational notifications (bug/user reports) have no category and always
+// send. New posts are split by audience — friends' posts and community posts
+// mute independently; the weekly digest belongs to both.
 enum NotificationCategory {
   INVITES
   JOIN_REQUESTS
   MESSAGES
   COMMENTS
-  NEW_POSTS
   FRIEND_REQUESTS
   ANNOUNCEMENTS
+  FRIEND_POSTS
+  COMMUNITY_POSTS
 }
 
 enum ReportStatus {
@@ -110,13 +113,10 @@ model User {
   // device-level master tied to the browser subscription).
   mutedEmailCategories NotificationCategory[] @default([])
   mutedPushCategories  NotificationCategory[] @default([])
-  // New-post notification preferences. Friends' posts can be muted entirely;
-  // urgency below the minimum is filtered out for both friend and community
-  // post notifications (LOW = notify for everything).
-  notifyFriendPosts          Boolean      @default(true)
-  // Master toggle for community-post notifications; per-community muting
-  // lives on CommunityMember.notifyNewPosts.
-  notifyCommunityPosts       Boolean      @default(true)
+  // New-post notification preferences. Friend/community post audiences mute
+  // per channel via the category arrays above; urgency below the minimum is
+  // filtered out for both audiences (LOW = notify for everything). Per-
+  // community muting lives on CommunityMember.notifyNewPosts.
   minPostNotificationUrgency UrgencyLevel @default(LOW)
   // IMMEDIATE = notify on every post; WEEKLY = roll new posts into a digest.
   postNotificationFrequency  PostNotificationFrequency @default(IMMEDIATE)

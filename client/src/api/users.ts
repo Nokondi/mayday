@@ -61,8 +61,6 @@ export async function updateUserSettings(
   pushNotificationsEnabled: boolean;
   mutedEmailCategories: NotificationCategory[];
   mutedPushCategories: NotificationCategory[];
-  notifyFriendPosts: boolean;
-  notifyCommunityPosts: boolean;
   minPostNotificationUrgency: UrgencyLevel;
   postNotificationFrequency: 'IMMEDIATE' | 'WEEKLY';
 }> {

@@ -77,9 +77,20 @@ describe('notifyNewPost — friend audience', () => {
     expect(userFindMany).toHaveBeenCalledWith({
       where: {
         id: { in: ['f1'] },
-        notifyFriendPosts: true,
         minPostNotificationUrgency: { in: ['LOW', 'MEDIUM'] },
         postNotificationFrequency: 'IMMEDIATE',
+        // Reachable on at least one channel for FRIEND_POSTS.
+        NOT: {
+          AND: [
+            { mutedEmailCategories: { has: 'FRIEND_POSTS' } },
+            {
+              OR: [
+                { pushNotificationsEnabled: false },
+                { mutedPushCategories: { has: 'FRIEND_POSTS' } },
+              ],
+            },
+          ],
+        },
       },
       select: { id: true },
     });
@@ -145,9 +156,20 @@ describe('notifyNewPost — community audience', () => {
         userId: { not: AUTHOR_ID },
         notifyNewPosts: true,
         user: {
-          notifyCommunityPosts: true,
           minPostNotificationUrgency: { in: ['LOW', 'MEDIUM'] },
           postNotificationFrequency: 'IMMEDIATE',
+          // Reachable on at least one channel for COMMUNITY_POSTS.
+          NOT: {
+            AND: [
+              { mutedEmailCategories: { has: 'COMMUNITY_POSTS' } },
+              {
+                OR: [
+                  { pushNotificationsEnabled: false },
+                  { mutedPushCategories: { has: 'COMMUNITY_POSTS' } },
+                ],
+              },
+            ],
+          },
         },
       },
       select: { userId: true, communityId: true },

@@ -1,14 +1,17 @@
 // User-facing notification groupings for per-category channel muting. Admin
 // operational notifications (bug/user reports) have no category and always
-// send. Mirrors the Prisma NotificationCategory enum.
+// send. Mirrors the Prisma NotificationCategory enum. Order matters: the
+// settings matrix renders rows in this order, with the post audiences last so
+// the post-specific controls (urgency, communities, frequency) follow them.
 export const NOTIFICATION_CATEGORIES = [
   'INVITES',
   'JOIN_REQUESTS',
   'MESSAGES',
   'COMMENTS',
-  'NEW_POSTS',
   'FRIEND_REQUESTS',
   'ANNOUNCEMENTS',
+  'FRIEND_POSTS',
+  'COMMUNITY_POSTS',
 ] as const;
 
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];

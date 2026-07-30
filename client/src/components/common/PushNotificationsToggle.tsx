@@ -13,6 +13,12 @@ import { useToastMutation } from '../../hooks/useToastMutation.js';
 
 interface PushNotificationsToggleProps {
   initialEnabled: boolean;
+  /**
+   * Fires whenever the toggle's effective state changes — the stored pref
+   * combined with browser reality (unsupported/denied force it off). Lets the
+   * parent grey out controls that depend on push actually being deliverable.
+   */
+  onEffectiveEnabledChange?: (enabled: boolean) => void;
 }
 
 type BrowserState =
@@ -26,6 +32,7 @@ function readBrowserState(): BrowserState {
 
 export function PushNotificationsToggle({
   initialEnabled,
+  onEffectiveEnabledChange,
 }: PushNotificationsToggleProps) {
   const intl = useIntl();
   const [enabled, setEnabled] = useState(initialEnabled);
@@ -89,6 +96,10 @@ export function PushNotificationsToggle({
   // If the browser blocked it, force the visual state to off — the pref stored
   // server-side may still say true, but no pushes can possibly be delivered.
   const checked = enabled && !unsupported && !denied;
+
+  useEffect(() => {
+    onEffectiveEnabledChange?.(checked);
+  }, [checked, onEffectiveEnabledChange]);
 
   let helper: string;
   if (unsupported) {

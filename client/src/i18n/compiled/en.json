@@ -1827,6 +1827,18 @@
       "value": "Comments on posts"
     }
   ],
+  "common.settingsModal.category.communityPosts": [
+    {
+      "type": 0,
+      "value": "Community posts"
+    }
+  ],
+  "common.settingsModal.category.friendPosts": [
+    {
+      "type": 0,
+      "value": "Friends' posts"
+    }
+  ],
   "common.settingsModal.category.friendRequests": [
     {
       "type": 0,
@@ -1851,12 +1863,6 @@
       "value": "Messages"
     }
   ],
-  "common.settingsModal.category.newPosts": [
-    {
-      "type": 0,
-      "value": "New posts"
-    }
-  ],
   "common.settingsModal.closeAriaLabel": [
     {
       "type": 0,
@@ -1873,18 +1879,6 @@
     {
       "type": 0,
       "value": "Communities"
-    }
-  ],
-  "common.settingsModal.communityPostsToggleDescription": [
-    {
-      "type": 0,
-      "value": "Notify me when a post is shared in my communities."
-    }
-  ],
-  "common.settingsModal.communityPostsToggleLabel": [
-    {
-      "type": 0,
-      "value": "Community posts"
     }
   ],
   "common.settingsModal.doneButton": [
@@ -1933,18 +1927,6 @@
       "value": "Weekly summary"
     }
   ],
-  "common.settingsModal.friendPostsToggleDescription": [
-    {
-      "type": 0,
-      "value": "Notify me when a friend shares a new post."
-    }
-  ],
-  "common.settingsModal.friendPostsToggleLabel": [
-    {
-      "type": 0,
-      "value": "Friends' posts"
-    }
-  ],
   "common.settingsModal.loadFailedToast": [
     {
       "type": 0,
@@ -1966,7 +1948,7 @@
   "common.settingsModal.notificationsDescription": [
     {
       "type": 0,
-      "value": "Choose how to be notified about each kind of activity. Push also requires push notifications to be enabled on this device below."
+      "value": "Choose how to be notified about each kind of activity. Push requires push notifications to be enabled above."
     }
   ],
   "common.settingsModal.notificationsHeading": [

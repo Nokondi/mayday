@@ -34,8 +34,9 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 function digestUser(overrides: Record<string, unknown> = {}) {
   return {
     id: 'u1',
-    notifyFriendPosts: true,
-    notifyCommunityPosts: true,
+    pushNotificationsEnabled: true,
+    mutedEmailCategories: [],
+    mutedPushCategories: [],
     minPostNotificationUrgency: 'LOW',
     lastPostDigestAt: null,
     ...overrides,
@@ -78,8 +79,9 @@ describe('runPostDigestSweep — due-user selection', () => {
       },
       select: {
         id: true,
-        notifyFriendPosts: true,
-        notifyCommunityPosts: true,
+        pushNotificationsEnabled: true,
+        mutedEmailCategories: true,
+        mutedPushCategories: true,
         minPostNotificationUrgency: true,
         lastPostDigestAt: true,
       },
@@ -175,9 +177,12 @@ describe('runPostDigestSweep — digest contents', () => {
     ]);
   });
 
-  it('skips the community branch when notifyCommunityPosts is off', async () => {
+  it('skips the community branch when COMMUNITY_POSTS is muted on every channel', async () => {
     userFindMany.mockResolvedValue([
-      digestUser({ notifyCommunityPosts: false }),
+      digestUser({
+        mutedEmailCategories: ['COMMUNITY_POSTS'],
+        mutedPushCategories: ['COMMUNITY_POSTS'],
+      }),
     ] as never);
     getFriendIds.mockResolvedValue(['f1']);
 
@@ -188,9 +193,41 @@ describe('runPostDigestSweep — digest contents', () => {
     expect(where.OR).toHaveLength(1);
   });
 
+  it('keeps an audience whose email is muted but push is still reachable', async () => {
+    userFindMany.mockResolvedValue([
+      digestUser({ mutedEmailCategories: ['COMMUNITY_POSTS', 'FRIEND_POSTS'] }),
+    ] as never);
+    communityMemberFindMany.mockResolvedValue([{ communityId: 'c1' }] as never);
+    getFriendIds.mockResolvedValue(['f1']);
+
+    await runPostDigestSweep(NOW);
+
+    const where = (postFindMany.mock.calls[0] as [{ where: { OR: unknown[] } }])[0].where;
+    expect(where.OR).toHaveLength(2);
+  });
+
+  it('skips the friend branch when FRIEND_POSTS email is muted and push is disabled', async () => {
+    userFindMany.mockResolvedValue([
+      digestUser({
+        pushNotificationsEnabled: false,
+        mutedEmailCategories: ['FRIEND_POSTS'],
+      }),
+    ] as never);
+    communityMemberFindMany.mockResolvedValue([{ communityId: 'c1' }] as never);
+
+    await runPostDigestSweep(NOW);
+
+    expect(getFriendIds).not.toHaveBeenCalled();
+    const where = (postFindMany.mock.calls[0] as [{ where: { OR: unknown[] } }])[0].where;
+    expect(where.OR).toHaveLength(1);
+  });
+
   it('sends nothing but still advances the window when there is no audience at all', async () => {
     userFindMany.mockResolvedValue([
-      digestUser({ notifyFriendPosts: false, notifyCommunityPosts: false }),
+      digestUser({
+        mutedEmailCategories: ['FRIEND_POSTS', 'COMMUNITY_POSTS'],
+        mutedPushCategories: ['FRIEND_POSTS', 'COMMUNITY_POSTS'],
+      }),
     ] as never);
 
     await runPostDigestSweep(NOW);

@@ -543,26 +543,22 @@ describe('PUT /api/users/me/settings', () => {
     mockedUser.update.mockResolvedValueOnce({
       id: USER_ID,
       pushNotificationsEnabled: true,
-      notifyFriendPosts: false,
       minPostNotificationUrgency: 'HIGH',
     } as never);
 
     const res = await request(makeApp())
       .put('/api/users/me/settings')
       .set('Authorization', authHeader())
-      .send({ notifyFriendPosts: false, minPostNotificationUrgency: 'HIGH' });
+      .send({ minPostNotificationUrgency: 'HIGH' });
 
     expect(res.status).toBe(200);
-    expect(res.body.notifyFriendPosts).toBe(false);
     expect(res.body.minPostNotificationUrgency).toBe('HIGH');
     expect(mockedUser.update).toHaveBeenCalledWith({
       where: { id: USER_ID },
       data: expect.objectContaining({
-        notifyFriendPosts: false,
         minPostNotificationUrgency: 'HIGH',
       }),
       select: expect.objectContaining({
-        notifyFriendPosts: true,
         minPostNotificationUrgency: true,
       }),
     });
@@ -621,23 +617,19 @@ describe('PUT /api/users/me/settings', () => {
     expect(mockedUser.update).not.toHaveBeenCalled();
   });
 
-  it('updates the community master toggle', async () => {
-    mockedUser.update.mockResolvedValueOnce({
-      id: USER_ID,
-      notifyCommunityPosts: false,
-    } as never);
+  it('rejects the retired audience booleans (they became categories)', async () => {
+    mockedUser.update.mockResolvedValueOnce({ id: USER_ID } as never);
 
     const res = await request(makeApp())
       .put('/api/users/me/settings')
       .set('Authorization', authHeader())
-      .send({ notifyCommunityPosts: false });
+      .send({ notifyFriendPosts: false });
 
+    // Unknown fields are stripped by zod, so this succeeds but must not
+    // write anything for the removed column.
     expect(res.status).toBe(200);
-    expect(mockedUser.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ notifyCommunityPosts: false }),
-      }),
-    );
+    const data = (mockedUser.update.mock.calls[0] as [{ data: Record<string, unknown> }])[0].data;
+    expect('notifyFriendPosts' in data).toBe(false);
   });
 
   it('switching to WEEKLY stamps a fresh digest window', async () => {

@@ -298,8 +298,6 @@ authRoutes.get('/me', requireAuth, asyncHandler(async (req: AuthRequest, res) =>
       pushNotificationsEnabled: true,
       mutedEmailCategories: true,
       mutedPushCategories: true,
-      notifyFriendPosts: true,
-      notifyCommunityPosts: true,
       minPostNotificationUrgency: true,
       postNotificationFrequency: true,
     },

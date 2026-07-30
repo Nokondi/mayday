@@ -1,4 +1,4 @@
-import type { UrgencyLevel } from '@prisma/client';
+import type { Prisma, UrgencyLevel } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { getFriendIds } from './friend.service.js';
 import { notifyMany } from './notification.service.js';
@@ -12,6 +12,30 @@ export const URGENCY_ORDER: UrgencyLevel[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL
  */
 function satisfiedMinLevels(urgency: UrgencyLevel): UrgencyLevel[] {
   return URGENCY_ORDER.slice(0, URGENCY_ORDER.indexOf(urgency) + 1);
+}
+
+/**
+ * Recipient is reachable for a post category on at least one channel: email
+ * unmuted, or the push master on and push unmuted. dispatch() re-checks each
+ * channel exactly — this filter just avoids loading recipients who would
+ * receive nothing on any channel.
+ */
+export function reachableForCategory(
+  category: 'FRIEND_POSTS' | 'COMMUNITY_POSTS',
+): Prisma.UserWhereInput {
+  return {
+    NOT: {
+      AND: [
+        { mutedEmailCategories: { has: category } },
+        {
+          OR: [
+            { pushNotificationsEnabled: false },
+            { mutedPushCategories: { has: category } },
+          ],
+        },
+      ],
+    },
+  };
 }
 
 interface NewPostParams {
@@ -29,14 +53,14 @@ interface NewPostParams {
  *
  * Recipients:
  *  - the author's friends, when the post is visible to them (shared with
- *    friends, or public), unless they've muted friend posts
- *  - members of each attached community, unless they've muted that community
+ *    friends, or public), unless they've muted friends' posts on every channel
+ *  - members of each attached community, unless they've muted community posts
+ *    on every channel or muted that specific community
  *
  * Both sets are filtered by each recipient's minimum-urgency preference and
  * deduped — someone who qualifies as both friend and community member gets the
  * friend notification only. Recipients on a WEEKLY frequency are skipped here;
- * they pick the post up in their next digest (postDigest.service). Community
- * recipients also require the notifyCommunityPosts master toggle.
+ * they pick the post up in their next digest (postDigest.service).
  * Fire-and-forget: failures are logged, never thrown, so they can't break the
  * post creation.
  */
@@ -58,9 +82,9 @@ export async function notifyNewPost(params: NewPostParams): Promise<void> {
         const friends = await prisma.user.findMany({
           where: {
             id: { in: friendIds },
-            notifyFriendPosts: true,
             minPostNotificationUrgency: { in: allowedMinLevels },
             postNotificationFrequency: 'IMMEDIATE',
+            ...reachableForCategory('FRIEND_POSTS'),
           },
           select: { id: true },
         });
@@ -94,9 +118,9 @@ export async function notifyNewPost(params: NewPostParams): Promise<void> {
           userId: { not: params.authorId },
           notifyNewPosts: true,
           user: {
-            notifyCommunityPosts: true,
             minPostNotificationUrgency: { in: allowedMinLevels },
             postNotificationFrequency: 'IMMEDIATE',
+            ...reachableForCategory('COMMUNITY_POSTS'),
           },
         },
         select: { userId: true, communityId: true },

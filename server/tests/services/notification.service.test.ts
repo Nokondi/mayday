@@ -208,7 +208,7 @@ describe('notify — channel gating', () => {
 
 describe('notify — event-to-category mapping', () => {
   const ALL_CATEGORIES = [
-    'INVITES', 'JOIN_REQUESTS', 'MESSAGES', 'COMMENTS', 'NEW_POSTS', 'FRIEND_REQUESTS', 'ANNOUNCEMENTS',
+    'INVITES', 'JOIN_REQUESTS', 'MESSAGES', 'COMMENTS', 'FRIEND_REQUESTS', 'ANNOUNCEMENTS', 'FRIEND_POSTS', 'COMMUNITY_POSTS',
   ];
 
   const CASES: Array<{ category: string; event: NotificationEvent }> = [
@@ -231,12 +231,12 @@ describe('notify — event-to-category mapping', () => {
     { category: 'MESSAGES', event: NEW_MESSAGE_EVENT },
     { category: 'COMMENTS', event: NEW_COMMENT_EVENT },
     {
-      category: 'NEW_POSTS',
+      category: 'FRIEND_POSTS',
       event: { type: 'NEW_POST', postId: 'p-1', postTitle: 'T', authorId: 'user-2', authorName: 'Bob', audience: 'friend' },
     },
     {
-      category: 'NEW_POSTS',
-      event: { type: 'POST_DIGEST', count: 1, posts: [{ id: 'p-1', title: 'T', authorName: 'Bob', communityName: null }] },
+      category: 'COMMUNITY_POSTS',
+      event: { type: 'NEW_POST', postId: 'p-1', postTitle: 'T', authorId: 'user-2', authorName: 'Bob', audience: 'community', communityId: 'c-1', communityName: 'Coders' },
     },
     { category: 'FRIEND_REQUESTS', event: { type: 'FRIEND_REQUEST', senderId: 'user-2', senderName: 'Bob' } },
     { category: 'FRIEND_REQUESTS', event: { type: 'FRIEND_REQUEST_ACCEPTED', accepterId: 'user-2', accepterName: 'Bob' } },
@@ -249,6 +249,38 @@ describe('notify — event-to-category mapping', () => {
     );
     const { notify } = await import('../../src/services/notification.service.js');
     await notify('user-1', event);
+    expect(sendPushToUser).not.toHaveBeenCalled();
+  });
+
+  const DIGEST_EVENT: NotificationEvent = {
+    type: 'POST_DIGEST',
+    count: 1,
+    posts: [{ id: 'p-1', title: 'T', authorName: 'Bob', communityName: null }],
+  };
+
+  it('POST_DIGEST spans both post audiences — suppressed only when both are muted', async () => {
+    findUniqueMock.mockResolvedValue(
+      makeUser({
+        mutedEmailCategories: ['FRIEND_POSTS', 'COMMUNITY_POSTS'],
+        mutedPushCategories: ['FRIEND_POSTS', 'COMMUNITY_POSTS'],
+      }),
+    );
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', DIGEST_EVENT);
+    expect(sendPushToUser).not.toHaveBeenCalled();
+    expect(sendPostDigestEmail).not.toHaveBeenCalled();
+  });
+
+  it('POST_DIGEST still delivers on a channel while either post audience is unmuted there', async () => {
+    findUniqueMock.mockResolvedValue(
+      makeUser({
+        mutedEmailCategories: ['FRIEND_POSTS'],
+        mutedPushCategories: ['FRIEND_POSTS', 'COMMUNITY_POSTS'],
+      }),
+    );
+    const { notify } = await import('../../src/services/notification.service.js');
+    await notify('user-1', DIGEST_EVENT);
+    expect(sendPostDigestEmail).toHaveBeenCalledTimes(1);
     expect(sendPushToUser).not.toHaveBeenCalled();
   });
 

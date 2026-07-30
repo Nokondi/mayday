@@ -713,6 +713,12 @@
   "common.settingsModal.category.comments": {
     "defaultMessage": "Comments on posts"
   },
+  "common.settingsModal.category.communityPosts": {
+    "defaultMessage": "Community posts"
+  },
+  "common.settingsModal.category.friendPosts": {
+    "defaultMessage": "Friends' posts"
+  },
   "common.settingsModal.category.friendRequests": {
     "defaultMessage": "Friend requests"
   },
@@ -725,9 +731,6 @@
   "common.settingsModal.category.messages": {
     "defaultMessage": "Messages"
   },
-  "common.settingsModal.category.newPosts": {
-    "defaultMessage": "New posts"
-  },
   "common.settingsModal.closeAriaLabel": {
     "defaultMessage": "Close settings"
   },
@@ -736,12 +739,6 @@
   },
   "common.settingsModal.communityPostsLegend": {
     "defaultMessage": "Communities"
-  },
-  "common.settingsModal.communityPostsToggleDescription": {
-    "defaultMessage": "Notify me when a post is shared in my communities."
-  },
-  "common.settingsModal.communityPostsToggleLabel": {
-    "defaultMessage": "Community posts"
   },
   "common.settingsModal.doneButton": {
     "defaultMessage": "Done"
@@ -764,12 +761,6 @@
   "common.settingsModal.frequencyWeekly": {
     "defaultMessage": "Weekly summary"
   },
-  "common.settingsModal.friendPostsToggleDescription": {
-    "defaultMessage": "Notify me when a friend shares a new post."
-  },
-  "common.settingsModal.friendPostsToggleLabel": {
-    "defaultMessage": "Friends' posts"
-  },
   "common.settingsModal.loadFailedToast": {
     "defaultMessage": "Failed to load settings"
   },
@@ -780,7 +771,7 @@
     "defaultMessage": "Minimum urgency"
   },
   "common.settingsModal.notificationsDescription": {
-    "defaultMessage": "Choose how to be notified about each kind of activity. Push also requires push notifications to be enabled on this device below."
+    "defaultMessage": "Choose how to be notified about each kind of activity. Push requires push notifications to be enabled above."
   },
   "common.settingsModal.notificationsHeading": {
     "defaultMessage": "Notifications"

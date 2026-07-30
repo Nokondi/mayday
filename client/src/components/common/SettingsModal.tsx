@@ -37,9 +37,13 @@ const categoryMessages = defineMessages({
     id: 'common.settingsModal.category.comments',
     defaultMessage: 'Comments on posts',
   },
-  NEW_POSTS: {
-    id: 'common.settingsModal.category.newPosts',
-    defaultMessage: 'New posts',
+  FRIEND_POSTS: {
+    id: 'common.settingsModal.category.friendPosts',
+    defaultMessage: "Friends' posts",
+  },
+  COMMUNITY_POSTS: {
+    id: 'common.settingsModal.category.communityPosts',
+    defaultMessage: 'Community posts',
   },
   FRIEND_REQUESTS: {
     id: 'common.settingsModal.category.friendRequests',
@@ -74,10 +78,11 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
   const intl = useIntl();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState<boolean | null>(null);
+  // Live effective state of the push toggle (pref + browser support/permission),
+  // reported back by PushNotificationsToggle. Gates the matrix's push column.
+  const [pushActive, setPushActive] = useState(false);
   const [mutedEmail, setMutedEmail] = useState<NotificationCategory[] | null>(null);
   const [mutedPush, setMutedPush] = useState<NotificationCategory[] | null>(null);
-  const [notifyFriendPosts, setNotifyFriendPosts] = useState<boolean | null>(null);
-  const [notifyCommunityPosts, setNotifyCommunityPosts] = useState<boolean | null>(null);
   const [minUrgency, setMinUrgency] = useState<UrgencyLevel | null>(null);
   const [frequency, setFrequency] = useState<PostNotificationFrequency | null>(null);
   const [communities, setCommunities] = useState<CommunityWithMembership[] | null>(null);
@@ -106,10 +111,11 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
       .then(([me, mine]) => {
         if (cancelled) return;
         setPushNotificationsEnabled(Boolean(me.pushNotificationsEnabled));
+        // Seed from the stored pref; the toggle refines this on mount with
+        // browser reality (unsupported/denied force it off).
+        setPushActive(Boolean(me.pushNotificationsEnabled));
         setMutedEmail((me.mutedEmailCategories as NotificationCategory[]) ?? []);
         setMutedPush((me.mutedPushCategories as NotificationCategory[]) ?? []);
-        setNotifyFriendPosts(Boolean(me.notifyFriendPosts));
-        setNotifyCommunityPosts(Boolean(me.notifyCommunityPosts));
         setMinUrgency((me.minPostNotificationUrgency as UrgencyLevel) ?? 'LOW');
         setFrequency((me.postNotificationFrequency as PostNotificationFrequency) ?? 'IMMEDIATE');
         setCommunities(mine);
@@ -172,40 +178,6 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
     if (field === 'mutedEmailCategories') setMutedEmail(next);
     else setMutedPush(next);
     mutedMutation.mutate({ field, next, prev });
-  };
-
-  const friendPostsMutation = useToastMutation({
-    mutationFn: (next: boolean) => updateUserSettings({ notifyFriendPosts: next }),
-    successMessage: savedToast,
-    errorMessage: updateFailedToast,
-    onError: (_err, attemptedValue) => {
-      setNotifyFriendPosts(!attemptedValue);
-    },
-    onSuccess: (data) => {
-      setNotifyFriendPosts(data.notifyFriendPosts);
-    },
-  });
-
-  const handleFriendPostsToggle = (next: boolean) => {
-    setNotifyFriendPosts(next);
-    friendPostsMutation.mutate(next);
-  };
-
-  const communityPostsMutation = useToastMutation({
-    mutationFn: (next: boolean) => updateUserSettings({ notifyCommunityPosts: next }),
-    successMessage: savedToast,
-    errorMessage: updateFailedToast,
-    onError: (_err, attemptedValue) => {
-      setNotifyCommunityPosts(!attemptedValue);
-    },
-    onSuccess: (data) => {
-      setNotifyCommunityPosts(data.notifyCommunityPosts);
-    },
-  });
-
-  const handleCommunityPostsToggle = (next: boolean) => {
-    setNotifyCommunityPosts(next);
-    communityPostsMutation.mutate(next);
   };
 
   const frequencyMutation = useToastMutation({
@@ -298,8 +270,6 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
           || pushNotificationsEnabled === null
           || mutedEmail === null
           || mutedPush === null
-          || notifyFriendPosts === null
-          || notifyCommunityPosts === null
           || minUrgency === null
           || frequency === null
           || communities === null ? (
@@ -308,6 +278,11 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
           </div>
         ) : (
           <div className="space-y-6">
+            <PushNotificationsToggle
+              initialEnabled={pushNotificationsEnabled}
+              onEffectiveEnabledChange={setPushActive}
+            />
+
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">
                 <FormattedMessage
@@ -318,7 +293,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
               <p className="text-xs text-gray-500 mb-2">
                 <FormattedMessage
                   id="common.settingsModal.notificationsDescription"
-                  defaultMessage="Choose how to be notified about each kind of activity. Push also requires push notifications to be enabled on this device below."
+                  defaultMessage="Choose how to be notified about each kind of activity. Push requires push notifications to be enabled above."
                 />
               </p>
               <table className="w-full text-sm">
@@ -372,7 +347,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
                             onChange={(e) =>
                               handleCategoryToggle('mutedPushCategories', category, e.target.checked)
                             }
-                            disabled={mutedMutation.isPending}
+                            disabled={mutedMutation.isPending || !pushActive}
                             aria-label={intl.formatMessage(
                               {
                                 id: 'common.settingsModal.pushCategoryAriaLabel',
@@ -390,8 +365,6 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
               </table>
             </div>
 
-            <PushNotificationsToggle initialEnabled={pushNotificationsEnabled} />
-
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">
                 <FormattedMessage
@@ -400,69 +373,43 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
                 />
               </h3>
 
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={notifyFriendPosts}
-                  onChange={(e) => handleFriendPostsToggle(e.target.checked)}
-                  disabled={friendPostsMutation.isPending}
-                  className="mt-1 w-4 h-4 text-mayday-600 border-mayday-300 rounded focus:ring-mayday-500"
-                />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">
-                    <FormattedMessage
-                      id="common.settingsModal.friendPostsToggleLabel"
-                      defaultMessage="Friends' posts"
-                    />
-                  </div>
-                  <div className="text-xs text-gray-500 mt-0.5">
-                    <FormattedMessage
-                      id="common.settingsModal.friendPostsToggleDescription"
-                      defaultMessage="Notify me when a friend shares a new post."
-                    />
-                  </div>
-                </div>
-                {friendPostsMutation.isPending && (
-                  <Loader2 className="w-4 h-4 animate-spin text-gray-500 mt-1" />
-                )}
+              <label className="block">
+                <span className="text-sm font-medium text-gray-900">
+                  <FormattedMessage
+                    id="common.settingsModal.minUrgencyLabel"
+                    defaultMessage="Minimum urgency"
+                  />
+                </span>
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  <FormattedMessage
+                    id="common.settingsModal.minUrgencyDescription"
+                    defaultMessage="Only notify me about posts at or above this urgency."
+                  />
+                </span>
+                <select
+                  value={minUrgency}
+                  onChange={(e) => handleUrgencyChange(e.target.value as UrgencyLevel)}
+                  disabled={urgencyMutation.isPending}
+                  className="mt-2 block w-full rounded-lg border border-mayday-300 px-3 py-2 text-sm text-gray-900 focus:ring-mayday-500"
+                >
+                  {URGENCY_LEVELS.map((level) => (
+                    <option key={level} value={level}>
+                      {intl.formatMessage(urgencyOptionMessages[level])}
+                    </option>
+                  ))}
+                </select>
               </label>
 
-              <label className="flex items-start gap-3 cursor-pointer mt-4">
-                <input
-                  type="checkbox"
-                  checked={notifyCommunityPosts}
-                  onChange={(e) => handleCommunityPostsToggle(e.target.checked)}
-                  disabled={communityPostsMutation.isPending}
-                  className="mt-1 w-4 h-4 text-mayday-600 border-mayday-300 rounded focus:ring-mayday-500"
-                />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">
-                    <FormattedMessage
-                      id="common.settingsModal.communityPostsToggleLabel"
-                      defaultMessage="Community posts"
-                    />
-                  </div>
-                  <div className="text-xs text-gray-500 mt-0.5">
-                    <FormattedMessage
-                      id="common.settingsModal.communityPostsToggleDescription"
-                      defaultMessage="Notify me when a post is shared in my communities."
-                    />
-                  </div>
-                </div>
-                {communityPostsMutation.isPending && (
-                  <Loader2 className="w-4 h-4 animate-spin text-gray-500 mt-1" />
-                )}
-              </label>
-
-              {notifyCommunityPosts && communities.length > 0 && (
-                <fieldset className="mt-3 ml-7">
-                  <legend className="sr-only">
+              {communities.length > 0
+                && !(mutedEmail.includes('COMMUNITY_POSTS') && mutedPush.includes('COMMUNITY_POSTS')) && (
+                <fieldset className="mt-4">
+                  <legend className="text-sm font-medium text-gray-900">
                     <FormattedMessage
                       id="common.settingsModal.communityPostsLegend"
                       defaultMessage="Communities"
                     />
                   </legend>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 mt-0.5">
                     <FormattedMessage
                       id="common.settingsModal.communityPostsDescription"
                       defaultMessage="Choose which of your communities notify you about new posts."
@@ -492,33 +439,6 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
                   </div>
                 </fieldset>
               )}
-
-              <label className="block mt-4">
-                <span className="text-sm font-medium text-gray-900">
-                  <FormattedMessage
-                    id="common.settingsModal.minUrgencyLabel"
-                    defaultMessage="Minimum urgency"
-                  />
-                </span>
-                <span className="block text-xs text-gray-500 mt-0.5">
-                  <FormattedMessage
-                    id="common.settingsModal.minUrgencyDescription"
-                    defaultMessage="Only notify me about posts at or above this urgency."
-                  />
-                </span>
-                <select
-                  value={minUrgency}
-                  onChange={(e) => handleUrgencyChange(e.target.value as UrgencyLevel)}
-                  disabled={urgencyMutation.isPending}
-                  className="mt-2 block w-full rounded-lg border border-mayday-300 px-3 py-2 text-sm text-gray-900 focus:ring-mayday-500"
-                >
-                  {URGENCY_LEVELS.map((level) => (
-                    <option key={level} value={level}>
-                      {intl.formatMessage(urgencyOptionMessages[level])}
-                    </option>
-                  ))}
-                </select>
-              </label>
 
               <fieldset className="mt-4">
                 <legend className="text-sm font-medium text-gray-900">

@@ -161,18 +161,15 @@ describe('users api', () => {
         pushNotificationsEnabled: true,
         mutedEmailCategories: [],
         mutedPushCategories: [],
-        notifyFriendPosts: false,
         minPostNotificationUrgency: 'HIGH',
       };
       mockedApi.put.mockResolvedValueOnce({ data: response });
 
       const result = await updateUserSettings({
-        notifyFriendPosts: false,
         minPostNotificationUrgency: 'HIGH',
       });
 
       expect(mockedApi.put).toHaveBeenCalledWith('/users/me/settings', {
-        notifyFriendPosts: false,
         minPostNotificationUrgency: 'HIGH',
       });
       expect(result).toEqual(response);

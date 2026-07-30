@@ -40,29 +40,34 @@ const RECIPIENT_SELECT = {
 } as const;
 
 /**
- * The muting category an event belongs to, or null for admin operational
+ * The muting categories an event belongs to, or null for admin operational
  * notifications (bug/user reports), which cannot be muted per-category.
+ * Most events map to exactly one category; the weekly digest spans both post
+ * audiences, so it delivers on a channel while EITHER audience is unmuted
+ * there (a fully-muted audience is already excluded from the digest's
+ * contents by postDigest.service).
  */
-function categoryOf(event: NotificationEvent): NotificationCategory | null {
+function categoriesOf(event: NotificationEvent): NotificationCategory[] | null {
   switch (event.type) {
     case 'COMMUNITY_INVITE':
     case 'ORGANIZATION_INVITE':
-      return 'INVITES';
+      return ['INVITES'];
     case 'COMMUNITY_JOIN_REQUEST':
     case 'COMMUNITY_JOIN_APPROVED':
-      return 'JOIN_REQUESTS';
+      return ['JOIN_REQUESTS'];
     case 'NEW_MESSAGE':
-      return 'MESSAGES';
+      return ['MESSAGES'];
     case 'NEW_COMMENT':
-      return 'COMMENTS';
+      return ['COMMENTS'];
     case 'NEW_POST':
+      return event.audience === 'community' ? ['COMMUNITY_POSTS'] : ['FRIEND_POSTS'];
     case 'POST_DIGEST':
-      return 'NEW_POSTS';
+      return ['FRIEND_POSTS', 'COMMUNITY_POSTS'];
     case 'FRIEND_REQUEST':
     case 'FRIEND_REQUEST_ACCEPTED':
-      return 'FRIEND_REQUESTS';
+      return ['FRIEND_REQUESTS'];
     case 'ANNOUNCEMENT':
-      return 'ANNOUNCEMENTS';
+      return ['ANNOUNCEMENTS'];
     case 'BUG_REPORT_SUBMITTED':
     case 'USER_REPORT_SUBMITTED':
       return null;
@@ -308,14 +313,17 @@ async function dispatch(
   if (user.isBanned) return;
   if (!user.emailVerified) return;
 
-  // Per-category muting: a null category (admin ops) can't be muted. Push is
-  // additionally gated by the device-level master pref.
-  const category = categoryOf(event);
+  // Per-category muting: null categories (admin ops) can't be muted; a
+  // channel is allowed while ANY of the event's categories is unmuted there.
+  // Push is additionally gated by the device-level master pref.
+  const categories = categoriesOf(event);
   const emailAllowed =
-    category === null || !user.mutedEmailCategories.includes(category);
+    categories === null ||
+    categories.some((c) => !user.mutedEmailCategories.includes(c));
   const pushAllowed =
     user.pushNotificationsEnabled &&
-    (category === null || !user.mutedPushCategories.includes(category));
+    (categories === null ||
+      categories.some((c) => !user.mutedPushCategories.includes(c)));
 
   const tasks: Array<{ channel: 'email' | 'push'; promise: Promise<unknown> }> = [];
   if (emailAllowed) {

@@ -1,4 +1,4 @@
-import type { Prisma, UrgencyLevel } from '@prisma/client';
+import type { NotificationCategory, Prisma, UrgencyLevel } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { getFriendIds } from './friend.service.js';
 import { notify } from './notification.service.js';
@@ -18,10 +18,23 @@ function urgenciesAtOrAbove(min: UrgencyLevel): UrgencyLevel[] {
 
 interface DigestUser {
   id: string;
-  notifyFriendPosts: boolean;
-  notifyCommunityPosts: boolean;
+  pushNotificationsEnabled: boolean;
+  mutedEmailCategories: NotificationCategory[];
+  mutedPushCategories: NotificationCategory[];
   minPostNotificationUrgency: UrgencyLevel;
   lastPostDigestAt: Date | null;
+}
+
+/**
+ * An audience goes into the digest while the user can still receive it on at
+ * least one channel. dispatch() then drops whichever channels are muted for
+ * the digest as a whole.
+ */
+function audienceReachable(user: DigestUser, category: NotificationCategory): boolean {
+  return (
+    !user.mutedEmailCategories.includes(category) ||
+    (user.pushNotificationsEnabled && !user.mutedPushCategories.includes(category))
+  );
 }
 
 /**
@@ -38,7 +51,7 @@ async function sendDigestForUser(user: DigestUser, now: Date): Promise<void> {
   const audience: Prisma.PostWhereInput[] = [];
   const memberCommunityIds = new Set<string>();
 
-  if (user.notifyCommunityPosts) {
+  if (audienceReachable(user, 'COMMUNITY_POSTS')) {
     const memberships = await prisma.communityMember.findMany({
       where: { userId: user.id, notifyNewPosts: true },
       select: { communityId: true },
@@ -53,7 +66,7 @@ async function sendDigestForUser(user: DigestUser, now: Date): Promise<void> {
     }
   }
 
-  if (user.notifyFriendPosts) {
+  if (audienceReachable(user, 'FRIEND_POSTS')) {
     const friendIds = await getFriendIds(user.id);
     if (friendIds.length > 0) {
       // Friends' posts the user can see: explicitly shared with friends, or
@@ -130,8 +143,9 @@ export async function runPostDigestSweep(now = new Date()): Promise<void> {
       },
       select: {
         id: true,
-        notifyFriendPosts: true,
-        notifyCommunityPosts: true,
+        pushNotificationsEnabled: true,
+        mutedEmailCategories: true,
+        mutedPushCategories: true,
         minPostNotificationUrgency: true,
         lastPostDigestAt: true,
       },
