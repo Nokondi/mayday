@@ -1,8 +1,16 @@
 import axios from 'axios';
 
+// Axios defaults to no timeout, so a request that stalls at the network level
+// (e.g. a resumed mobile tab/PWA firing over a dead keep-alive connection)
+// hangs indefinitely and pins loading spinners until a manual refresh. The
+// timeout converts a hang into a catchable error while staying generous
+// enough for slow mobile networks.
+export const REQUEST_TIMEOUT_MS = 15_000;
+
 export const api = axios.create({
   baseURL: '/api',
   withCredentials: true,
+  timeout: REQUEST_TIMEOUT_MS,
 });
 
 let accessToken: string | null = null;
@@ -35,7 +43,11 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+        const { data } = await axios.post(
+          '/api/auth/refresh',
+          {},
+          { withCredentials: true, timeout: REQUEST_TIMEOUT_MS },
+        );
         setAccessToken(data.accessToken);
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         return api(originalRequest);

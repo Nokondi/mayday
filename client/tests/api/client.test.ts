@@ -1,6 +1,6 @@
 import axios, { type AxiosAdapter } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { api, getAccessToken, setAccessToken } from '../../src/api/client.js';
+import { api, getAccessToken, setAccessToken, REQUEST_TIMEOUT_MS } from '../../src/api/client.js';
 
 /**
  * The api instance's adapter is replaced in each test so that no real HTTP
@@ -41,6 +41,11 @@ describe('client — request interceptor', () => {
   it('is configured with baseURL "/api" and credentials', () => {
     expect(api.defaults.baseURL).toBe('/api');
     expect(api.defaults.withCredentials).toBe(true);
+  });
+
+  it('sets a request timeout so a stalled request cannot hang forever', () => {
+    expect(api.defaults.timeout).toBe(REQUEST_TIMEOUT_MS);
+    expect(REQUEST_TIMEOUT_MS).toBeGreaterThan(0);
   });
 
   it('attaches the Authorization header when a token is set', async () => {
@@ -111,7 +116,11 @@ describe('client — response interceptor (401 refresh flow)', () => {
     const res = await api.get('/protected');
 
     expect(postSpy).toHaveBeenCalledTimes(1);
-    expect(postSpy).toHaveBeenCalledWith('/api/auth/refresh', {}, { withCredentials: true });
+    expect(postSpy).toHaveBeenCalledWith(
+      '/api/auth/refresh',
+      {},
+      { withCredentials: true, timeout: REQUEST_TIMEOUT_MS },
+    );
     expect(callCount).toBe(2);
     expect(res.data).toBe('ok');
     expect(getAccessToken()).toBe('fresh-token');
