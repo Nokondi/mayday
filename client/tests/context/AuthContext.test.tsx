@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthProvider, useAuth } from '../../src/context/AuthContext.js';
 import * as authApi from '../../src/api/auth.js';
 import * as client from '../../src/api/client.js';
+import { reportClientError } from '../../src/utils/diagnostics.js';
 
 vi.mock('../../src/api/auth.js', () => ({
   login: vi.fn(),
@@ -17,14 +18,22 @@ vi.mock('../../src/api/auth.js', () => ({
 vi.mock('../../src/api/client.js', () => {
   let token: string | null = null;
   return {
+    REQUEST_TIMEOUT_MS: 15_000,
     setAccessToken: vi.fn((t: string | null) => { token = t; }),
     getAccessToken: vi.fn(() => token),
   };
 });
 
-vi.mock('axios', () => ({
-  default: { post: vi.fn() },
+vi.mock('../../src/utils/diagnostics.js', () => ({
+  reportClientError: vi.fn(),
 }));
+
+// Keep the real isAxiosError so the network-error classification in
+// AuthContext runs against genuine axios semantics.
+vi.mock('axios', async (importActual) => {
+  const actual = await importActual<typeof import('axios')>();
+  return { default: { post: vi.fn(), isAxiosError: actual.default.isAxiosError } };
+});
 
 const mockedAxios = vi.mocked(axios as unknown as { post: ReturnType<typeof vi.fn> });
 const mockedAuthApi = vi.mocked(authApi);
@@ -74,7 +83,11 @@ describe('AuthProvider init', () => {
     renderWithAuth();
 
     await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('done'));
-    expect(mockedAxios.post).toHaveBeenCalledWith('/api/auth/refresh', {}, { withCredentials: true });
+    expect(mockedAxios.post).toHaveBeenCalledWith(
+      '/api/auth/refresh',
+      {},
+      { withCredentials: true, timeout: 15_000 },
+    );
     expect(mockedClient.setAccessToken).toHaveBeenCalledWith('new-access');
     expect(screen.getByTestId('user')).toHaveTextContent('alice@example.com');
   });
@@ -98,6 +111,94 @@ describe('AuthProvider init', () => {
     await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('done'));
     expect(screen.getByTestId('user')).toHaveTextContent('none');
     expect(mockedClient.setAccessToken).toHaveBeenLastCalledWith(null);
+  });
+});
+
+describe('AuthProvider init — network resilience', () => {
+  // Shape axios.isAxiosError recognizes, with no `response` — what axios
+  // produces for a timeout (ECONNABORTED) or a dead connection.
+  function networkError(message = 'timeout of 15000ms exceeded') {
+    return { isAxiosError: true, code: 'ECONNABORTED', message, response: undefined };
+  }
+
+  it('retries the refresh once on a network-level failure and recovers', async () => {
+    mockedAxios.post
+      .mockRejectedValueOnce(networkError())
+      .mockResolvedValueOnce({ data: { accessToken: 'new-access' } });
+    mockedAuthApi.getMe.mockResolvedValueOnce({
+      id: 'u1', email: 'alice@example.com', name: 'Alice', role: 'USER', avatarUrl: null,
+    });
+
+    renderWithAuth();
+
+    await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('done'));
+    expect(mockedAxios.post).toHaveBeenCalledTimes(2);
+    expect(screen.getByTestId('user')).toHaveTextContent('alice@example.com');
+    expect(vi.mocked(reportClientError)).not.toHaveBeenCalled();
+  });
+
+  it('does not retry when the refresh fails with an HTTP response (401 = not logged in)', async () => {
+    mockedAxios.post.mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 401 },
+      message: 'Request failed with status code 401',
+    });
+
+    renderWithAuth();
+
+    await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('done'));
+    expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('user')).toHaveTextContent('none');
+    expect(vi.mocked(reportClientError)).not.toHaveBeenCalled();
+  });
+
+  it('gives up after the refresh retry also fails, renders logged-out, and beacons', async () => {
+    mockedAxios.post
+      .mockRejectedValueOnce(networkError())
+      .mockRejectedValueOnce(networkError());
+
+    renderWithAuth();
+
+    // The spinner must resolve (this is the stuck-spinner regression) …
+    await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('done'));
+    expect(screen.getByTestId('user')).toHaveTextContent('none');
+    expect(mockedAuthApi.getMe).not.toHaveBeenCalled();
+    // … and the failure must be visible in the server logs.
+    expect(vi.mocked(reportClientError)).toHaveBeenCalledWith({
+      kind: 'auth-init-network-error',
+      detail: expect.stringContaining('refresh'),
+    });
+  });
+
+  it('retries getMe once on a network-level failure and recovers', async () => {
+    mockedAxios.post.mockResolvedValueOnce({ data: { accessToken: 'tok' } });
+    mockedAuthApi.getMe
+      .mockRejectedValueOnce(networkError())
+      .mockResolvedValueOnce({
+        id: 'u1', email: 'alice@example.com', name: 'Alice', role: 'USER', avatarUrl: null,
+      });
+
+    renderWithAuth();
+
+    await waitFor(() => expect(screen.getByTestId('user')).toHaveTextContent('alice@example.com'));
+    expect(mockedAuthApi.getMe).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(reportClientError)).not.toHaveBeenCalled();
+  });
+
+  it('beacons when getMe fails at the network level after the retry', async () => {
+    mockedAxios.post.mockResolvedValueOnce({ data: { accessToken: 'tok' } });
+    mockedAuthApi.getMe
+      .mockRejectedValueOnce(networkError())
+      .mockRejectedValueOnce(networkError());
+
+    renderWithAuth();
+
+    await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('done'));
+    expect(screen.getByTestId('user')).toHaveTextContent('none');
+    expect(vi.mocked(reportClientError)).toHaveBeenCalledWith({
+      kind: 'auth-init-network-error',
+      detail: expect.stringContaining('getMe'),
+    });
   });
 });
 

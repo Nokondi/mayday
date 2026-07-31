@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { setAccessToken, getAccessToken } from '../api/client.js';
+import { setAccessToken, getAccessToken, REQUEST_TIMEOUT_MS } from '../api/client.js';
 import * as authApi from '../api/auth.js';
+import { reportClientError } from '../utils/diagnostics.js';
 import axios from 'axios';
 import type { RegisterRequest, LoginRequest } from '@mayday/shared';
 
@@ -27,6 +28,39 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// A failure with no HTTP response — timeout, dropped or dead connection — as
+// opposed to a server "no" (401 etc.). Before request timeouts were added,
+// these were the failures that could hang the boot spinner indefinitely.
+function isNetworkError(err: unknown): boolean {
+  return axios.isAxiosError(err) && !err.response;
+}
+
+// Retry a request once when it fails at the network level. A mobile
+// browser/PWA resuming from suspension often fires its first request over a
+// dead keep-alive connection; the second attempt goes out over a fresh one.
+// Server responses (401 = not logged in) are not retried.
+async function withOneRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (!isNetworkError(err)) throw err;
+    return fn();
+  }
+}
+
+// Boot-time network failures produce no error event, so without an explicit
+// beacon they are invisible in the server logs (unlike crashes, which
+// installDiagnostics catches).
+function beaconIfNetworkError(step: string, err: unknown): void {
+  if (!isNetworkError(err)) return;
+  const code = axios.isAxiosError(err) ? err.code ?? 'unknown' : 'unknown';
+  const message = err instanceof Error ? err.message : String(err);
+  reportClientError({
+    kind: 'auth-init-network-error',
+    detail: `${step}: ${code}: ${message}`,
+  });
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,10 +72,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // try to obtain one using the refresh token cookie.
       if (!getAccessToken()) {
         try {
-          const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+          const { data } = await withOneRetry(() =>
+            axios.post('/api/auth/refresh', {}, { withCredentials: true, timeout: REQUEST_TIMEOUT_MS }),
+          );
           setAccessToken(data.accessToken);
-        } catch {
-          // No valid refresh token — user is not logged in
+        } catch (err) {
+          // No valid refresh token — user is not logged in. On a network
+          // failure the user may actually have a session, but rendering the
+          // logged-out UI beats spinning forever; beacon it so we can see how
+          // often boot hits this path.
+          beaconIfNetworkError('refresh', err);
           setUser(null);
           setIsLoading(false);
           return;
@@ -49,9 +89,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const data = await authApi.getMe();
+        const data = await withOneRetry(() => authApi.getMe());
         setUser(data);
-      } catch {
+      } catch (err) {
+        beaconIfNetworkError('getMe', err);
         setUser(null);
         setAccessToken(null);
       } finally {
