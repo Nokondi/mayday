@@ -249,6 +249,39 @@ export function Header() {
                     defaultMessage="Browse"
                   />
                 </Link>
+                <Link to="/map" className="text-gray-600 hover:text-gray-900">
+                  <FormattedMessage
+                    id="layout.header.nav.map"
+                    defaultMessage="Map"
+                  />
+                </Link>
+                <Link
+                  to="/calendar"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <FormattedMessage
+                    id="layout.header.nav.calendar"
+                    defaultMessage="Calendar"
+                  />
+                </Link>
+                <Link
+                  to="/organizations"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <FormattedMessage
+                    id="layout.header.desktopNav.orgs"
+                    defaultMessage="Orgs"
+                  />
+                </Link>
+                <Link
+                  to="/communities"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <FormattedMessage
+                    id="layout.header.nav.communities"
+                    defaultMessage="Communities"
+                  />
+                </Link>
                 <Link to="/about" className="text-gray-600 hover:text-gray-900">
                   <FormattedMessage
                     id="layout.header.nav.about"
@@ -508,6 +541,46 @@ export function Header() {
                   <FormattedMessage
                     id="layout.header.nav.browse"
                     defaultMessage="Browse"
+                  />
+                </Link>
+                <Link
+                  to="/map"
+                  className="block px-3 py-2 rounded hover:bg-gray-100"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <FormattedMessage
+                    id="layout.header.nav.map"
+                    defaultMessage="Map"
+                  />
+                </Link>
+                <Link
+                  to="/calendar"
+                  className="block px-3 py-2 rounded hover:bg-gray-100"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <FormattedMessage
+                    id="layout.header.nav.calendar"
+                    defaultMessage="Calendar"
+                  />
+                </Link>
+                <Link
+                  to="/organizations"
+                  className="block px-3 py-2 rounded hover:bg-gray-100"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <FormattedMessage
+                    id="layout.header.mobileNav.organizations"
+                    defaultMessage="Organizations"
+                  />
+                </Link>
+                <Link
+                  to="/communities"
+                  className="block px-3 py-2 rounded hover:bg-gray-100"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <FormattedMessage
+                    id="layout.header.nav.communities"
+                    defaultMessage="Communities"
                   />
                 </Link>
                 <Link

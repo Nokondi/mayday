@@ -10,6 +10,7 @@ import {
 import { validate } from "../middleware/validate.middleware.js";
 import {
   requireAuth,
+  optionalAuth,
   rejectBanned,
   type AuthRequest,
 } from "../middleware/auth.middleware.js";
@@ -30,19 +31,21 @@ import type { Prisma } from "@prisma/client";
 
 export const organizationRoutes = Router();
 
-// All organization routes require authentication
-organizationRoutes.use(requireAuth);
-organizationRoutes.use(rejectBanned);
-
 // ----- Org listing & current-user invites -----
 
-// GET /api/organizations — list organizations (paginated, searchable)
+// GET /api/organizations — list organizations (paginated, searchable). The
+// directory is publicly browsable, so this route sits above the router-wide
+// requireAuth. Anonymous viewers get the same listing with no membership
+// state: the sentinel '' viewer id matches no membership rows, so myRole
+// comes back null. Organization detail stays login-gated.
 organizationRoutes.get(
   "/",
+  optionalAuth,
   asyncHandler(async (req: AuthRequest, res) => {
     const { q, page = "1", limit = "20" } = req.query;
     const pageNum = Math.max(1, parseInt(page as string));
     const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
+    const viewerId = req.user?.id ?? "";
 
     const where: Prisma.OrganizationWhereInput = {};
     if (q) {
@@ -57,7 +60,7 @@ organizationRoutes.get(
         where,
         include: {
           _count: { select: { members: true } },
-          members: { where: { userId: req.user!.id }, select: { role: true } },
+          members: { where: { userId: viewerId }, select: { role: true } },
         },
         orderBy: { createdAt: "desc" },
         skip: (pageNum - 1) * limitNum,
@@ -81,6 +84,10 @@ organizationRoutes.get(
     });
   }),
 );
+
+// Everything below requires an authenticated, non-banned user.
+organizationRoutes.use(requireAuth);
+organizationRoutes.use(rejectBanned);
 
 // GET /api/organizations/mine — list organizations the current user is a member of
 organizationRoutes.get(

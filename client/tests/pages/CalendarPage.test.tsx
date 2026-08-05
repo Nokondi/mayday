@@ -14,16 +14,20 @@ vi.mock('../../src/api/communities.js', () => ({
   listMyCommunities: vi.fn(),
 }));
 
+vi.mock('../../src/context/AuthContext.js', () => ({ useAuth: vi.fn() }));
+
 vi.mock('../../src/hooks/useDebounce.js', () => ({
   useDebounce: (value: string) => value,
 }));
 
 import { getPosts } from '../../src/api/posts.js';
 import { listMyCommunities } from '../../src/api/communities.js';
+import { useAuth } from '../../src/context/AuthContext.js';
 import { CalendarPage } from '../../src/pages/CalendarPage.js';
 
 const mockedGetPosts = vi.mocked(getPosts);
 const mockedListMyCommunities = vi.mocked(listMyCommunities);
+const mockedUseAuth = vi.mocked(useAuth);
 
 function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
   return {
@@ -87,6 +91,7 @@ beforeEach(() => {
   vi.setSystemTime(new Date('2026-04-15T12:00:00'));
 
   mockedListMyCommunities.mockResolvedValue([]);
+  mockedUseAuth.mockReturnValue({ user: { id: 'u1' }, isLoading: false } as never);
 
   // jsdom doesn't implement HTMLDialogElement.showModal / .close natively.
   HTMLDialogElement.prototype.showModal = vi.fn(function (this: HTMLDialogElement) {
@@ -293,6 +298,42 @@ describe('CalendarPage — collapsible search & filters', () => {
         expect.objectContaining({ type: undefined }),
       ),
     );
+  });
+});
+
+describe('CalendarPage — anonymous visitor', () => {
+  it('shows public events without fetching communities or offering the community filter', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    mockedUseAuth.mockReturnValue({ user: null, isLoading: false } as never);
+    mockedGetPosts.mockResolvedValue({
+      data: [makePost({ id: 'a', title: 'Community Cleanup', startAt: '2026-04-20T09:00:00' })],
+      total: 1,
+      limit: 200,
+      page: 1,
+      totalPages: 1,
+    });
+
+    renderCalendar();
+
+    expect(await screen.findByText('Community Cleanup')).toBeInTheDocument();
+    expect(mockedListMyCommunities).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: /search & filters/i }));
+    expect(
+      screen.queryByRole('combobox', { name: /filter by community/i }),
+    ).not.toBeInTheDocument();
+    // The other filters stay available to anonymous viewers.
+    expect(
+      screen.getByRole('combobox', { name: /filter by type/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('does not fetch events until the auth check settles', async () => {
+    mockedUseAuth.mockReturnValue({ user: null, isLoading: true } as never);
+    renderCalendar();
+
+    await waitFor(() => expect(screen.getByRole('status')).toBeInTheDocument());
+    expect(mockedGetPosts).not.toHaveBeenCalled();
   });
 });
 

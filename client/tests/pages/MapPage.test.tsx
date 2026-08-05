@@ -8,6 +8,7 @@ import type { PostWithAuthor } from '@mayday/shared';
 
 vi.mock('../../src/api/posts.js', () => ({ getPosts: vi.fn() }));
 vi.mock('../../src/api/communities.js', () => ({ listMyCommunities: vi.fn() }));
+vi.mock('../../src/context/AuthContext.js', () => ({ useAuth: vi.fn() }));
 vi.mock('../../src/hooks/useGeolocation.js', () => ({
   useGeolocation: () => ({ latitude: 1, longitude: 2, loading: false }),
 }));
@@ -24,10 +25,12 @@ vi.mock('../../src/components/map/MapView.js', () => ({
 
 import { getPosts } from '../../src/api/posts.js';
 import { listMyCommunities } from '../../src/api/communities.js';
+import { useAuth } from '../../src/context/AuthContext.js';
 import { MapPage } from '../../src/pages/MapPage.js';
 
 const mockedGetPosts = vi.mocked(getPosts);
 const mockedListMyCommunities = vi.mocked(listMyCommunities);
+const mockedUseAuth = vi.mocked(useAuth);
 
 function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
   return {
@@ -87,6 +90,7 @@ function renderPage() {
 beforeEach(() => {
   vi.clearAllMocks();
   mockedListMyCommunities.mockResolvedValue([]);
+  mockedUseAuth.mockReturnValue({ user: { id: 'u1' }, isLoading: false } as never);
 });
 
 describe('MapPage — selection panel', () => {
@@ -129,5 +133,35 @@ describe('MapPage — selection panel', () => {
     );
     expect(screen.queryByRole('link', { name: /spare blankets/i })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /need groceries/i })).toBeInTheDocument();
+  });
+});
+
+describe('MapPage — anonymous visitor', () => {
+  it('shows public posts without fetching communities or offering the community filter', async () => {
+    mockedUseAuth.mockReturnValue({ user: null, isLoading: false } as never);
+    mockedGetPosts.mockResolvedValue({
+      data: [makePost({ id: 'public', title: 'Free firewood' })],
+      total: 1,
+    } as never);
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: /select-all/i }));
+    expect(screen.getByRole('link', { name: /free firewood/i })).toBeInTheDocument();
+
+    expect(mockedListMyCommunities).not.toHaveBeenCalled();
+    expect(
+      screen.queryByRole('combobox', { name: /filter by community/i }),
+    ).not.toBeInTheDocument();
+    // The other filters stay available to anonymous viewers.
+    expect(screen.getByRole('combobox', { name: /filter by type/i })).toBeInTheDocument();
+  });
+
+  it('does not fetch posts until the auth check settles', async () => {
+    mockedUseAuth.mockReturnValue({ user: null, isLoading: true } as never);
+    renderPage();
+
+    await waitFor(() => expect(screen.getByRole('status')).toBeInTheDocument());
+    expect(mockedGetPosts).not.toHaveBeenCalled();
   });
 });

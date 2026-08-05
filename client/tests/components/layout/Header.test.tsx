@@ -105,11 +105,16 @@ describe('Header — logged-out state', () => {
     expect(brand).toHaveAttribute('href', '/');
   });
 
-  it('shows Browse, About, Support, Log in, and Sign up links in the desktop nav', () => {
+  it('shows the public browsing links plus Log in and Sign up in the desktop nav', () => {
     renderHeader();
     const nav = getDesktopNav();
     // Logged-out browsing lives at /posts (the home route stays the About landing).
     expect(within(nav).getByRole('link', { name: /browse/i })).toHaveAttribute('href', '/posts');
+    // Map, calendar, and the org/community directories are publicly browsable.
+    expect(within(nav).getByRole('link', { name: /^map$/i })).toHaveAttribute('href', '/map');
+    expect(within(nav).getByRole('link', { name: /^calendar$/i })).toHaveAttribute('href', '/calendar');
+    expect(within(nav).getByRole('link', { name: /orgs/i })).toHaveAttribute('href', '/organizations');
+    expect(within(nav).getByRole('link', { name: /communities/i })).toHaveAttribute('href', '/communities');
     expect(within(nav).getByRole('link', { name: /about/i })).toHaveAttribute('href', '/about');
     expect(within(nav).getByRole('link', { name: /support/i })).toHaveAttribute('href', '/support');
     expect(within(nav).getByRole('link', { name: /log in/i })).toHaveAttribute('href', '/login');
@@ -261,6 +266,11 @@ describe('Header — mobile menu toggle', () => {
     expect(mobileNav).not.toBeNull();
     const nav = mobileNav as HTMLElement;
     expect(within(nav).getByRole('link', { name: /browse/i })).toHaveAttribute('href', '/posts');
+    // Map, calendar, and the org/community directories are publicly browsable.
+    expect(within(nav).getByRole('link', { name: /^map$/i })).toHaveAttribute('href', '/map');
+    expect(within(nav).getByRole('link', { name: /^calendar$/i })).toHaveAttribute('href', '/calendar');
+    expect(within(nav).getByRole('link', { name: /organizations/i })).toHaveAttribute('href', '/organizations');
+    expect(within(nav).getByRole('link', { name: /communities/i })).toHaveAttribute('href', '/communities');
     expect(within(nav).getByRole('link', { name: /support/i })).toHaveAttribute('href', '/support');
     expect(within(nav).getByRole('link', { name: /log in/i })).toHaveAttribute('href', '/login');
     expect(within(nav).getByRole('link', { name: /sign up/i })).toHaveAttribute('href', '/register');
