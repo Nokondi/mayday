@@ -89,6 +89,17 @@ describe('CommunitiesPage — logged-in viewer', () => {
       '/communities/other',
     );
   });
+
+  it('shows the New Community button', async () => {
+    mockedListMyCommunities.mockResolvedValue([] as never);
+    mockedListCommunities.mockResolvedValue(paginated([]));
+
+    renderPage();
+
+    expect(
+      await screen.findByRole('link', { name: /new community/i }),
+    ).toHaveAttribute('href', '/communities/new');
+  });
 });
 
 describe('CommunitiesPage — anonymous visitor', () => {
@@ -112,6 +123,10 @@ describe('CommunitiesPage — anonymous visitor', () => {
     expect(mockedListMyCommunities).not.toHaveBeenCalled();
     expect(
       screen.queryByRole('heading', { name: /your communities/i }),
+    ).not.toBeInTheDocument();
+    // Creating a community requires an account, so the button is hidden.
+    expect(
+      screen.queryByRole('link', { name: /new community/i }),
     ).not.toBeInTheDocument();
   });
 

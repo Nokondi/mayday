@@ -74,6 +74,10 @@ describe('OrganizationsPage', () => {
       await screen.findByRole('link', { name: /helping hands/i }),
     ).toHaveAttribute('href', '/organizations/o1');
     expect(screen.getByText(/1 organization found/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /new organization/i })).toHaveAttribute(
+      'href',
+      '/organizations/new',
+    );
   });
 
   it('lists organizations for an anonymous visitor', async () => {
@@ -87,6 +91,10 @@ describe('OrganizationsPage', () => {
     expect(
       await screen.findByRole('link', { name: /helping hands/i }),
     ).toHaveAttribute('href', '/organizations/o1');
+    // Creating an organization requires an account, so the button is hidden.
+    expect(
+      screen.queryByRole('link', { name: /new organization/i }),
+    ).not.toBeInTheDocument();
   });
 
   it('does not fetch the directory until the auth check settles', async () => {

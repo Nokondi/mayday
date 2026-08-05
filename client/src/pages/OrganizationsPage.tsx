@@ -41,16 +41,18 @@ export function OrganizationsPage() {
             defaultMessage="Organizations"
           />
         </h1>
-        <Link
-          to="/organizations/new"
-          className="flex items-center gap-1 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800"
-        >
-          <Plus className="w-4 h-4" />
-          <FormattedMessage
-            id="orgs.browsePage.newButton"
-            defaultMessage="New Organization"
-          />
-        </Link>
+        {user && (
+          <Link
+            to="/organizations/new"
+            className="flex items-center gap-1 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800"
+          >
+            <Plus className="w-4 h-4" />
+            <FormattedMessage
+              id="orgs.browsePage.newButton"
+              defaultMessage="New Organization"
+            />
+          </Link>
+        )}
       </div>
 
       <div className="mb-6">
