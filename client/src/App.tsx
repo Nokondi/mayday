@@ -127,22 +127,11 @@ export function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/map"
-            element={
-              <ProtectedRoute>
-                <MapPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/calendar"
-            element={
-              <ProtectedRoute>
-                <CalendarPage />
-              </ProtectedRoute>
-            }
-          />
+          {/* Map and calendar browse the same public post set for logged-out
+              visitors; clicking through to a post still hits the protected
+              /posts/:id route and redirects to /login. */}
+          <Route path="/map" element={<MapPage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
           <Route
             path="/messages"
             element={
@@ -159,14 +148,10 @@ export function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/organizations"
-            element={
-              <ProtectedRoute>
-                <OrganizationsPage />
-              </ProtectedRoute>
-            }
-          />
+          {/* The org/community directories are public; the detail and manage
+              pages below stay login-gated, so clicking a card sends a
+              logged-out visitor to /login. */}
+          <Route path="/organizations" element={<OrganizationsPage />} />
           <Route
             path="/organizations/new"
             element={
@@ -191,14 +176,7 @@ export function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/communities"
-            element={
-              <ProtectedRoute>
-                <CommunitiesPage />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/communities" element={<CommunitiesPage />} />
           <Route
             path="/communities/new"
             element={

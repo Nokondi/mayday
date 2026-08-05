@@ -10,7 +10,7 @@ import {
   updateCommunityNotificationsSchema,
 } from '@mayday/shared';
 import { validate } from '../middleware/validate.middleware.js';
-import { requireAuth, rejectBanned, type AuthRequest } from '../middleware/auth.middleware.js';
+import { requireAuth, optionalAuth, rejectBanned, type AuthRequest } from '../middleware/auth.middleware.js';
 import { uploadAvatar } from '../middleware/upload.middleware.js';
 import { prisma } from '../config/database.js';
 import { deleteObjectByUrl } from '../config/storage.js';
@@ -65,16 +65,18 @@ async function notifyAdminsOfJoinRequest(params: {
 
 export const communityRoutes = Router();
 
-communityRoutes.use(requireAuth);
-communityRoutes.use(rejectBanned);
-
 // ----- Listing & current-user invites -----
 
-// GET /api/communities
-communityRoutes.get('/', asyncHandler(async (req: AuthRequest, res) => {
+// GET /api/communities — the directory is publicly browsable, so this route
+// sits above the router-wide requireAuth. Anonymous viewers get the same
+// listing with no membership state: the sentinel '' viewer id matches no
+// membership or join-request rows, so myRole/myJoinRequestStatus come back
+// null. Community detail stays login-gated.
+communityRoutes.get('/', optionalAuth, asyncHandler(async (req: AuthRequest, res) => {
   const { q, page = '1', limit = '20' } = req.query;
   const pageNum = Math.max(1, parseInt(page as string));
   const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
+  const viewerId = req.user?.id ?? '';
 
   const where: Prisma.CommunityWhereInput = {};
   if (q) {
@@ -89,8 +91,8 @@ communityRoutes.get('/', asyncHandler(async (req: AuthRequest, res) => {
       where,
       include: {
         _count: { select: { members: true } },
-        members: { where: { userId: req.user!.id }, select: { role: true } },
-        joinRequests: { where: { userId: req.user!.id, status: 'PENDING' }, select: { status: true }, take: 1 },
+        members: { where: { userId: viewerId }, select: { role: true } },
+        joinRequests: { where: { userId: viewerId, status: 'PENDING' }, select: { status: true }, take: 1 },
       },
       orderBy: { createdAt: 'desc' },
       skip: (pageNum - 1) * limitNum,
@@ -108,6 +110,10 @@ communityRoutes.get('/', asyncHandler(async (req: AuthRequest, res) => {
 
   res.json({ data, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) });
 }));
+
+// Everything below requires an authenticated, non-banned user.
+communityRoutes.use(requireAuth);
+communityRoutes.use(rejectBanned);
 
 // GET /api/communities/mine
 communityRoutes.get('/mine', asyncHandler(async (req: AuthRequest, res) => {

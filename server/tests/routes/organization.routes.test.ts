@@ -117,8 +117,25 @@ describe('GET /api/organizations', () => {
     expect(res.body.totalPages).toBe(1);
   });
 
-  it('requires auth', async () => {
+  it('serves anonymous requests with no membership state', async () => {
+    mockedOrg.findMany.mockResolvedValueOnce([
+      { ...dbOrg(), _count: { members: 4 }, members: [] },
+    ] as never);
+    mockedOrg.count.mockResolvedValueOnce(1 as never);
+
     const res = await request(makeApp()).get('/api/organizations');
+
+    expect(res.status).toBe(200);
+    expect(res.body.data[0]).toMatchObject({ id: ORG_ID, memberCount: 4, myRole: null });
+    // The membership lookup uses the '' sentinel, which matches no rows.
+    const args = mockedOrg.findMany.mock.calls[0][0] as {
+      include: { members: { where: { userId: string } } };
+    };
+    expect(args.include.members.where.userId).toBe('');
+  });
+
+  it('still requires auth for the member-scoped listing', async () => {
+    const res = await request(makeApp()).get('/api/organizations/mine');
     expect(res.status).toBe(401);
   });
 });

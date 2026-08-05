@@ -9,20 +9,32 @@ import { Pagination } from "../components/common/Pagination.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { EntityCard } from "../components/common/EntityCard.js";
 import { useDebounce } from "../hooks/useDebounce.js";
+import { useAuth } from "../context/AuthContext.js";
 
 export function CommunitiesPage() {
   const intl = useIntl();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 300);
 
+  // "Your Communities" only exists for logged-in viewers.
   const { data: myCommunities, isLoading: myLoading } = useQuery({
     queryKey: ["my-communities"],
     queryFn: () => listMyCommunities(),
+    enabled: !!user,
   });
 
+  // Wait for the auth check so the request carries the token when there is
+  // one (membership state comes back null for anonymous requests), and key
+  // on the viewer so login/logout refetches rather than serving the other
+  // audience's cached page.
   const { data, isLoading } = useQuery({
-    queryKey: ["communities", { q: debouncedSearch, page }],
+    queryKey: [
+      "communities",
+      { viewer: user?.id ?? null, q: debouncedSearch, page },
+    ],
+    enabled: !isAuthLoading,
     queryFn: () =>
       listCommunities({ q: debouncedSearch || undefined, page, limit: 20 }),
   });
@@ -66,7 +78,7 @@ export function CommunitiesPage() {
         />
       </div>
 
-      {isLoading || myLoading ? (
+      {isLoading || myLoading || isAuthLoading ? (
         <LoadingSpinner className="py-12" />
       ) : (
         <>

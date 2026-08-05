@@ -167,9 +167,31 @@ describe('GET /api/communities', () => {
     expect(args.take).toBe(10);
   });
 
-  it('requires authentication', async () => {
+  it('serves anonymous requests with no membership state', async () => {
+    mockedCommunity.findMany.mockResolvedValueOnce([
+      {
+        ...dbCommunity(),
+        _count: { members: 5 },
+        members: [],
+        joinRequests: [],
+      },
+    ] as never);
+    mockedCommunity.count.mockResolvedValueOnce(1 as never);
+
     const res = await request(makeApp()).get('/api/communities');
-    expect(res.status).toBe(401);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data[0]).toMatchObject({
+      id: COMMUNITY_ID,
+      memberCount: 5,
+      myRole: null,
+      myJoinRequestStatus: null,
+    });
+    // The membership lookups use the '' sentinel, which matches no rows.
+    const args = mockedCommunity.findMany.mock.calls[0][0] as {
+      include: { members: { where: { userId: string } } };
+    };
+    expect(args.include.members.where.userId).toBe('');
   });
 });
 
@@ -194,6 +216,11 @@ describe('GET /api/communities/mine', () => {
       myRole: 'OWNER',
       notifyNewPosts: false,
     });
+  });
+
+  it('still requires auth for the member-scoped listing', async () => {
+    const res = await request(makeApp()).get('/api/communities/mine');
+    expect(res.status).toBe(401);
   });
 });
 

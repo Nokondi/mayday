@@ -36,6 +36,7 @@ import { SearchBar } from "../components/common/SearchBar.js";
 import { postTypeStyles } from "../components/common/PostTypeBadge.js";
 import { useDebounce } from "../hooks/useDebounce.js";
 import { expandOccurrences, type Occurrence } from "../utils/recurrence.js";
+import { useAuth } from "../context/AuthContext.js";
 
 type CalendarView = "month" | "day";
 
@@ -67,6 +68,7 @@ const MAX_EVENTS_PER_CELL = 3;
 
 export function CalendarPage() {
   const intl = useIntl();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [view, setView] = useState<CalendarView>("month");
   const [cursor, setCursor] = useState(() => new Date());
   const [type, setType] = useState("");
@@ -93,17 +95,31 @@ export function CalendarPage() {
     [gridStart, gridEnd],
   );
 
+  // The community/friends filter only exists for logged-in viewers.
   const { data: myCommunities } = useQuery({
     queryKey: ["my-communities"],
     queryFn: listMyCommunities,
+    enabled: !!user,
   });
 
+  // Wait for the auth check so the request carries the token when there is
+  // one (the server returns public posts only for anonymous requests), and
+  // key on the viewer so login/logout refetches rather than serving the
+  // other audience's cached events.
   const { data, isLoading } = useQuery({
     queryKey: [
       "posts",
       "scheduled",
-      { type, category, urgency, community, q: debouncedSearch },
+      {
+        viewer: user?.id ?? null,
+        type,
+        category,
+        urgency,
+        community,
+        q: debouncedSearch,
+      },
     ],
+    enabled: !isAuthLoading,
     queryFn: () =>
       getPosts({
         scheduled: true,
@@ -249,7 +265,7 @@ export function CalendarPage() {
               onTypeChange={setType}
               onCategoryChange={setCategory}
               onUrgencyChange={setUrgency}
-              onCommunityChange={setCommunity}
+              onCommunityChange={user ? setCommunity : undefined}
             />
           </div>
         )}
@@ -273,7 +289,7 @@ export function CalendarPage() {
         onClose={() => setSelected(null)}
       />
 
-      {isLoading ? (
+      {isLoading || isAuthLoading ? (
         <LoadingSpinner className="py-12" />
       ) : view === "day" ? (
         <DayView

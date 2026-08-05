@@ -10,8 +10,10 @@ import { PostListPanel } from "../components/map/PostListPanel.js";
 import { PostFilters } from "../components/posts/PostFilters.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { useGeolocation } from "../hooks/useGeolocation.js";
+import { useAuth } from "../context/AuthContext.js";
 
 export function MapPage() {
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [searchParams] = useSearchParams();
   const geo = useGeolocation();
   const [type, setType] = useState("");
@@ -26,13 +28,24 @@ export function MapPage() {
   } | null>(null);
   const [selectedPosts, setSelectedPosts] = useState<PostWithAuthor[]>([]);
 
+  // The community/friends filter only exists for logged-in viewers.
   const { data: myCommunities } = useQuery({
     queryKey: ["my-communities"],
     queryFn: listMyCommunities,
+    enabled: !!user,
   });
 
+  // Wait for the auth check so the request carries the token when there is
+  // one (the server returns public posts only for anonymous requests), and
+  // key on the viewer so login/logout refetches rather than serving the
+  // other audience's cached posts.
   const { data, isLoading } = useQuery({
-    queryKey: ["posts", "map", { type, category, urgency, community, bounds }],
+    queryKey: [
+      "posts",
+      "map",
+      { viewer: user?.id ?? null, type, category, urgency, community, bounds },
+    ],
+    enabled: !isAuthLoading,
     queryFn: () =>
       getPosts({
         type: (type as any) || undefined,
@@ -95,7 +108,7 @@ export function MapPage() {
           onTypeChange={setType}
           onCategoryChange={setCategory}
           onUrgencyChange={setUrgency}
-          onCommunityChange={setCommunity}
+          onCommunityChange={user ? setCommunity : undefined}
         />
         {data && (
           <p className="text-xs text-gray-500 mt-2">
@@ -107,7 +120,7 @@ export function MapPage() {
           </p>
         )}
       </div>
-      {(isLoading && !data) || geo.loading ? (
+      {isAuthLoading || (isLoading && !data) || geo.loading ? (
         <LoadingSpinner className="h-full" />
       ) : (
         <MapView

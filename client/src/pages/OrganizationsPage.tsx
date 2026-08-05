@@ -9,15 +9,25 @@ import { Pagination } from "../components/common/Pagination.js";
 import { LoadingSpinner } from "../components/common/LoadingSpinner.js";
 import { EntityCard } from "../components/common/EntityCard.js";
 import { useDebounce } from "../hooks/useDebounce.js";
+import { useAuth } from "../context/AuthContext.js";
 
 export function OrganizationsPage() {
   const intl = useIntl();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 300);
 
+  // Wait for the auth check so the request carries the token when there is
+  // one (membership state comes back null for anonymous requests), and key
+  // on the viewer so login/logout refetches rather than serving the other
+  // audience's cached page.
   const { data, isLoading } = useQuery({
-    queryKey: ["organizations", { q: debouncedSearch, page }],
+    queryKey: [
+      "organizations",
+      { viewer: user?.id ?? null, q: debouncedSearch, page },
+    ],
+    enabled: !isAuthLoading,
     queryFn: () =>
       listOrganizations({ q: debouncedSearch || undefined, page, limit: 20 }),
   });
@@ -57,7 +67,7 @@ export function OrganizationsPage() {
         />
       </div>
 
-      {isLoading ? (
+      {isLoading || isAuthLoading ? (
         <LoadingSpinner className="py-12" />
       ) : data ? (
         <>
