@@ -52,16 +52,18 @@ export function CommunitiesPage() {
             defaultMessage="Communities"
           />
         </h1>
-        <Link
-          to="/communities/new"
-          className="flex items-center gap-1 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800"
-        >
-          <Plus className="w-4 h-4" />
-          <FormattedMessage
-            id="communities.browsePage.newButton"
-            defaultMessage="New Community"
-          />
-        </Link>
+        {user && (
+          <Link
+            to="/communities/new"
+            className="flex items-center gap-1 bg-mayday-700 text-white px-4 py-2 rounded-lg hover:bg-mayday-800"
+          >
+            <Plus className="w-4 h-4" />
+            <FormattedMessage
+              id="communities.browsePage.newButton"
+              defaultMessage="New Community"
+            />
+          </Link>
+        )}
       </div>
 
       <div className="mb-6">
