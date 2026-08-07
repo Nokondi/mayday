@@ -1430,6 +1430,9 @@
   "posts.filters.categoryAria": {
     "defaultMessage": "Filter by category"
   },
+  "posts.filters.comms": {
+    "defaultMessage": "Comms"
+  },
   "posts.filters.communityAria": {
     "defaultMessage": "Filter by community or friends"
   },
@@ -1472,8 +1475,11 @@
   "posts.form.clearLocationAria": {
     "defaultMessage": "Clear location"
   },
+  "posts.form.commsRadioLabel": {
+    "defaultMessage": "I'm sharing an update (Comms)"
+  },
   "posts.form.descriptionPlaceholder": {
-    "defaultMessage": "Provide details about your request, offer, or event..."
+    "defaultMessage": "Provide details about your request, offer, event, or update..."
   },
   "posts.form.endsLabel": {
     "defaultMessage": "Ends"
@@ -1566,7 +1572,7 @@
     "defaultMessage": "Title"
   },
   "posts.form.titlePlaceholder": {
-    "defaultMessage": "Brief description of what you need, can offer, or are organizing"
+    "defaultMessage": "Brief description of what you need, can offer, are organizing, or want to share"
   },
   "posts.form.typeLegend": {
     "defaultMessage": "Type"
@@ -1642,6 +1648,9 @@
   },
   "posts.typeAriaPrefix": {
     "defaultMessage": "Post type:"
+  },
+  "posts.types.comms": {
+    "defaultMessage": "Comms"
   },
   "posts.types.event": {
     "defaultMessage": "Event"

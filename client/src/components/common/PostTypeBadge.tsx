@@ -5,10 +5,12 @@ export const postTypeLabels = defineMessages({
   REQUEST: { id: "posts.types.request", defaultMessage: "Request" },
   OFFER: { id: "posts.types.offer", defaultMessage: "Offer" },
   EVENT: { id: "posts.types.event", defaultMessage: "Event" },
+  COMMS: { id: "posts.types.comms", defaultMessage: "Comms" },
 });
 
 // One place for the per-type color scheme: orange = request, green = offer,
-// purple = event. Blue and gray are taken by status/community badges.
+// purple = event, sky = comms. Darker blue and gray are taken by
+// status/community badges.
 export const postTypeStyles: Record<
   PostType,
   { chip: string; cardBorder: string; calendarChip: string }
@@ -30,6 +32,11 @@ export const postTypeStyles: Record<
     cardBorder: "border-l-purple-700",
     calendarChip:
       "bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100",
+  },
+  COMMS: {
+    chip: "bg-sky-100 text-sky-700",
+    cardBorder: "border-l-sky-700",
+    calendarChip: "bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100",
   },
 };
 

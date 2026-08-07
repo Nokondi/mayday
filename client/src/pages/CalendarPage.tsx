@@ -125,7 +125,7 @@ export function CalendarPage() {
         scheduled: true,
         status: "OPEN",
         limit: 200,
-        type: (type as "REQUEST" | "OFFER" | "EVENT") || undefined,
+        type: (type as "REQUEST" | "OFFER" | "EVENT" | "COMMS") || undefined,
         category: category || undefined,
         urgency:
           (urgency as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL") || undefined,

@@ -3932,6 +3932,12 @@
       "value": "Filter by category"
     }
   ],
+  "posts.filters.comms": [
+    {
+      "type": 0,
+      "value": "Comms"
+    }
+  ],
   "posts.filters.communityAria": [
     {
       "type": 0,
@@ -4016,10 +4022,16 @@
       "value": "Clear location"
     }
   ],
+  "posts.form.commsRadioLabel": [
+    {
+      "type": 0,
+      "value": "I'm sharing an update (Comms)"
+    }
+  ],
   "posts.form.descriptionPlaceholder": [
     {
       "type": 0,
-      "value": "Provide details about your request, offer, or event..."
+      "value": "Provide details about your request, offer, event, or update..."
     }
   ],
   "posts.form.endsLabel": [
@@ -4221,7 +4233,7 @@
   "posts.form.titlePlaceholder": [
     {
       "type": 0,
-      "value": "Brief description of what you need, can offer, or are organizing"
+      "value": "Brief description of what you need, can offer, are organizing, or want to share"
     }
   ],
   "posts.form.typeLegend": [
@@ -4499,6 +4511,12 @@
     {
       "type": 0,
       "value": "Post type:"
+    }
+  ],
+  "posts.types.comms": [
+    {
+      "type": 0,
+      "value": "Comms"
     }
   ],
   "posts.types.event": [

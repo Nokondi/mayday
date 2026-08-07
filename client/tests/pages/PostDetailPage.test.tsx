@@ -260,6 +260,20 @@ describe('PostDetailPage — comments / related tabs', () => {
     expect(screen.queryByRole('tab', { name: /matching/i })).not.toBeInTheDocument();
     expect(mockedGetPostMatches).not.toHaveBeenCalled();
   });
+
+  it('does not show a matching tab for comms posts and never fetches matches', async () => {
+    setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+    mockedGetPost.mockResolvedValueOnce(
+      makePost({ type: 'COMMS', title: 'Water main work downtown' }) as never,
+    );
+    renderPage();
+
+    await screen.findByRole('heading', { name: /water main work downtown/i });
+    // Only the Comments tab remains; comms posts have nothing to match against.
+    expect(screen.getAllByRole('tab')).toHaveLength(1);
+    expect(screen.queryByRole('tab', { name: /matching/i })).not.toBeInTheDocument();
+    expect(mockedGetPostMatches).not.toHaveBeenCalled();
+  });
 });
 
 describe('PostDetailPage — edit button', () => {

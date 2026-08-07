@@ -73,6 +73,11 @@ describe('ActiveFilterChips', () => {
     expect(screen.getByText('Events')).toBeInTheDocument();
   });
 
+  it('renders a "Comms" chip when the type filter is COMMS', () => {
+    renderChips({ type: 'COMMS' });
+    expect(screen.getByText('Comms')).toBeInTheDocument();
+  });
+
   it('does not render a sort chip when sort is the default chronological order', () => {
     renderChips({ type: 'OFFER', sort: 'recent' });
     expect(screen.getByText('Offers')).toBeInTheDocument();
