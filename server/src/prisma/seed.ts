@@ -1077,6 +1077,38 @@ async function main() {
     },
   });
 
+  // ---- Comms Posts ----
+  // General updates with no matching or fulfillment flow; dates are optional.
+
+  await prisma.post.create({
+    data: {
+      type: "COMMS",
+      title: "Water main work on Chester Street this week",
+      description:
+        "The city is replacing a water main between 7th and 9th. Expect lane closures and low water pressure in the area through Friday. We'll post here when the work wraps up.",
+      category: "Other",
+      location: neighborhoods.downtown.location,
+      latitude: neighborhoods.downtown.lat,
+      longitude: neighborhoods.downtown.lng,
+      urgency: "MEDIUM",
+      authorId: emma.id,
+      organizationId: littleRockMutualAid.id,
+    },
+  });
+
+  await prisma.post.create({
+    data: {
+      type: "COMMS",
+      title: "New little free pantry on Maple Street",
+      description:
+        "A weatherproof pantry box just went up outside the community center. Take what you need, leave what you can — non-perishables and hygiene items are always welcome.",
+      category: "Food",
+      urgency: "LOW",
+      authorId: peter.id,
+      communities: { create: { communityId: meadowbrookNeighbors.id } },
+    },
+  });
+
   console.log("Seed data created:");
   console.log(`  Admin: ${admin.email}`);
   console.log(

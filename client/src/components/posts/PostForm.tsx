@@ -298,6 +298,12 @@ export function PostForm({
               defaultMessage: "I'm organizing (Event)",
             })}
           </option>
+          <option value="COMMS">
+            {intl.formatMessage({
+              id: "posts.form.commsRadioLabel",
+              defaultMessage: "I'm sharing an update (Comms)",
+            })}
+          </option>
         </select>
       </div>
 
@@ -473,7 +479,7 @@ export function PostForm({
         placeholder={intl.formatMessage({
           id: "posts.form.titlePlaceholder",
           defaultMessage:
-            "Brief description of what you need, can offer, or are organizing",
+            "Brief description of what you need, can offer, are organizing, or want to share",
         })}
         {...register("title")}
       />
@@ -489,7 +495,8 @@ export function PostForm({
         rows={4}
         placeholder={intl.formatMessage({
           id: "posts.form.descriptionPlaceholder",
-          defaultMessage: "Provide details about your request, offer, or event...",
+          defaultMessage:
+            "Provide details about your request, offer, event, or update...",
         })}
         {...register("description")}
       />

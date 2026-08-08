@@ -53,7 +53,7 @@ const optionalDateTime = z
   .refine((v) => v === undefined || !Number.isNaN(Date.parse(v)), { message: 'Invalid date/time' });
 
 const postFields = {
-  type: z.enum(['REQUEST', 'OFFER', 'EVENT']),
+  type: z.enum(['REQUEST', 'OFFER', 'EVENT', 'COMMS']),
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().min(1, 'Description is required').max(5000),
   category: z.enum(CATEGORIES, { errorMap: () => ({ message: 'Select a category' }) }),
@@ -90,7 +90,7 @@ const postFields = {
 };
 
 type PostFieldsData = {
-  type?: 'REQUEST' | 'OFFER' | 'EVENT';
+  type?: 'REQUEST' | 'OFFER' | 'EVENT' | 'COMMS';
   startAt?: string;
   endAt?: string;
   recurrenceFreq?: 'DAY' | 'WEEK' | 'MONTH';
@@ -438,7 +438,7 @@ export interface PaginatedResponse<T> {
 
 // Post query params
 export interface PostQueryParams {
-  type?: 'REQUEST' | 'OFFER' | 'EVENT';
+  type?: 'REQUEST' | 'OFFER' | 'EVENT' | 'COMMS';
   category?: string;
   status?: 'OPEN' | 'FULFILLED' | 'CLOSED';
   urgency?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';

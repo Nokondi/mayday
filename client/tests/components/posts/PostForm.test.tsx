@@ -97,10 +97,11 @@ describe('PostForm — basic rendering & defaults', () => {
     const { container } = renderForm();
     const typeSelect = getField<HTMLSelectElement>(container, 'type');
     expect(typeSelect).toHaveValue('REQUEST');
-    // All three types are offered as options.
+    // All four types are offered as options.
     expect(within(typeSelect).getByRole('option', { name: /i need help/i })).toHaveValue('REQUEST');
     expect(within(typeSelect).getByRole('option', { name: /i can help/i })).toHaveValue('OFFER');
     expect(within(typeSelect).getByRole('option', { name: /i'm organizing/i })).toHaveValue('EVENT');
+    expect(within(typeSelect).getByRole('option', { name: /i'm sharing an update/i })).toHaveValue('COMMS');
   });
 
   it('defaults the urgency select to MEDIUM', () => {
@@ -108,11 +109,11 @@ describe('PostForm — basic rendering & defaults', () => {
     expect(getField(container, 'urgency')).toHaveValue('MEDIUM');
   });
 
-  it('title and description placeholders reference events alongside requests/offers', () => {
+  it('title and description placeholders reference all post types', () => {
     renderForm();
-    // Placeholders should not imply only two post types now that events exist.
-    expect(screen.getByPlaceholderText(/are organizing/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/request, offer, or event/i)).toBeInTheDocument();
+    // Placeholders should not imply a subset of post types now that events and comms exist.
+    expect(screen.getByPlaceholderText(/are organizing, or want to share/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/request, offer, event, or update/i)).toBeInTheDocument();
   });
 
   it('disables the submit button when isSubmitting is true', () => {
@@ -394,6 +395,23 @@ describe('PostForm — validation', () => {
     const [data] = onSubmit.mock.calls[0];
     expect(data).toMatchObject({ type: 'EVENT', title: 'Community potluck' });
     expect(data.startAt).toBeTruthy();
+  });
+
+  it('submits a comms post without requiring a start date', async () => {
+    const user = userEvent.setup();
+    const { onSubmit, container } = renderForm();
+
+    await user.selectOptions(getField<HTMLSelectElement>(container, 'type'), 'COMMS');
+    await user.type(getField(container, 'title'), 'Water main work downtown');
+    await user.type(getField(container, 'description'), 'Expect lane closures through Friday');
+    await user.selectOptions(getField<HTMLSelectElement>(container, 'category'), 'Other');
+
+    await user.click(screen.getByRole('button', { name: /create post/i }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    const [data] = onSubmit.mock.calls[0];
+    expect(data).toMatchObject({ type: 'COMMS', title: 'Water main work downtown' });
+    expect(data.startAt).toBeUndefined();
   });
 });
 

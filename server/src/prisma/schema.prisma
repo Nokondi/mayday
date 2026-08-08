@@ -16,6 +16,7 @@ enum PostType {
   REQUEST
   OFFER
   EVENT
+  COMMS
 }
 
 enum PostStatus {

@@ -209,8 +209,8 @@ postRoutes.get(
     const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
 
     const where: Prisma.PostWhereInput = {};
-    if (type && ["REQUEST", "OFFER", "EVENT"].includes(type as string))
-      where.type = type as "REQUEST" | "OFFER" | "EVENT";
+    if (type && ["REQUEST", "OFFER", "EVENT", "COMMS"].includes(type as string))
+      where.type = type as "REQUEST" | "OFFER" | "EVENT" | "COMMS";
     if (category) where.category = category as string;
     if (status && ["OPEN", "FULFILLED", "CLOSED"].includes(status as string))
       where.status = status as "OPEN" | "FULFILLED" | "CLOSED";
@@ -366,8 +366,8 @@ postRoutes.get(
       throw new AppError(403, "You don't have access to this post");
     }
 
-    // Events have no opposite type to pair with — no matches by design.
-    if (post.type === "EVENT") {
+    // Events and comms have no opposite type to pair with — no matches by design.
+    if (post.type === "EVENT" || post.type === "COMMS") {
       res.json([]);
       return;
     }

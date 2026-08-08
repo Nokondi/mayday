@@ -244,7 +244,8 @@ export function PostDetailPage() {
   const { data: matches } = useQuery({
     queryKey: ["postMatches", id],
     queryFn: () => getPostMatches(id!),
-    enabled: !!id && !!user && !!post && post.type !== "EVENT",
+    enabled:
+      !!id && !!user && !!post && post.type !== "EVENT" && post.type !== "COMMS",
   });
 
   const contactMutation = useToastMutation({
@@ -660,7 +661,7 @@ export function PostDetailPage() {
               values={{ count: post.commentCount }}
             />
           </button>
-          {post.type !== "EVENT" && (
+          {post.type !== "EVENT" && post.type !== "COMMS" && (
             <button
               type="button"
               role="tab"

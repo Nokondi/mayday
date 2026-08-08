@@ -282,6 +282,15 @@ describe('MapView — markers', () => {
     );
   });
 
+  it('uses the blue comms icon for COMMS posts', () => {
+    renderMap({
+      posts: [makePost({ id: 'p1', type: 'COMMS', latitude: 1, longitude: 2 })],
+    });
+    expect(screen.getByTestId('marker').getAttribute('data-icon')).toMatch(
+      /marker-icon-blue\.png$/,
+    );
+  });
+
   it('renders no markers when no posts are geolocated', () => {
     renderMap({ posts: [makePost({ latitude: null, longitude: null })] });
     expect(screen.queryByTestId('marker')).not.toBeInTheDocument();

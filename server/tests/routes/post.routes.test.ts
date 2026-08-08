@@ -214,6 +214,18 @@ describe('GET /api/posts — type filter', () => {
     expect(whereArg.type).toBe('EVENT');
   });
 
+  it('passes type=COMMS through to the prisma where clause', async () => {
+    mockedPost.findMany.mockResolvedValueOnce([] as never);
+    mockedPost.count.mockResolvedValueOnce(0 as never);
+
+    await request(makeApp())
+      .get('/api/posts?type=COMMS')
+      .set('Authorization', authHeader());
+
+    const whereArg = (mockedPost.findMany.mock.calls[0] as [{ where: Record<string, unknown> }])[0].where;
+    expect(whereArg.type).toBe('COMMS');
+  });
+
   it('ignores an unknown type value', async () => {
     mockedPost.findMany.mockResolvedValueOnce([] as never);
     mockedPost.count.mockResolvedValueOnce(0 as never);
@@ -262,6 +274,29 @@ describe('POST /api/posts — events', () => {
     const createArg = (mockedPost.create.mock.calls[0] as [{ data: { type: string; startAt: unknown } }])[0].data;
     expect(createArg.type).toBe('EVENT');
     expect(createArg.startAt).toBeTruthy();
+  });
+});
+
+describe('POST /api/posts — comms', () => {
+  it('creates a comms post without requiring a start date', async () => {
+    mockedPost.create.mockResolvedValueOnce({ id: 'p1' } as never);
+    mockedPost.findUnique.mockResolvedValueOnce(dbPost({ type: 'COMMS' }) as never);
+
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send({
+        type: 'COMMS',
+        title: 'Water main work downtown',
+        description: 'Expect lane closures through Friday',
+        category: 'Other',
+        urgency: 'MEDIUM',
+      });
+
+    expect(res.status).toBe(201);
+    const createArg = (mockedPost.create.mock.calls[0] as [{ data: { type: string; startAt: unknown } }])[0].data;
+    expect(createArg.type).toBe('COMMS');
+    expect(createArg.startAt).toBeUndefined();
   });
 });
 
@@ -359,6 +394,18 @@ describe('GET /api/posts/:id/matches', () => {
     mockedPost.findUnique.mockResolvedValueOnce(
       dbPost({ type: 'EVENT', startAt: new Date('2026-08-01T17:00:00Z') }) as never,
     );
+
+    const res = await request(makeApp())
+      .get('/api/posts/p1/matches')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+    expect(mockedPost.findMany).not.toHaveBeenCalled();
+  });
+
+  it('returns an empty list for a comms post without querying for matches', async () => {
+    mockedPost.findUnique.mockResolvedValueOnce(dbPost({ type: 'COMMS' }) as never);
 
     const res = await request(makeApp())
       .get('/api/posts/p1/matches')

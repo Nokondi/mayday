@@ -98,6 +98,20 @@ describe('GET /api/search', () => {
     expect(params).toContain('EVENT');
   });
 
+  it('accepts COMMS as a type filter', async () => {
+    mockedQueryRaw
+      .mockResolvedValueOnce([] as never)
+      .mockResolvedValueOnce([{ count: 0n }] as never);
+
+    await request(makeApp())
+      .get('/api/search?q=update&type=COMMS')
+      .set('Authorization', authHeader());
+
+    const [sql, ...params] = mockedQueryRaw.mock.calls[0];
+    expect(String(sql)).toContain('"type"');
+    expect(params).toContain('COMMS');
+  });
+
   it('ignores an invalid type value', async () => {
     mockedQueryRaw
       .mockResolvedValueOnce([] as never)
