@@ -1,8 +1,59 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { IntlProvider } from 'react-intl';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PostWithAuthor } from '@mayday/shared';
+
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock('../../../src/context/AuthContext.js', () => ({
+  useAuth: vi.fn(),
+}));
+
+vi.mock('../../../src/api/posts.js', () => ({
+  getPostMatches: vi.fn(),
+  deletePost: vi.fn(),
+  reopenPost: vi.fn(),
+  fulfillPost: vi.fn(),
+  searchFulfillers: vi.fn(),
+}));
+
+vi.mock('../../../src/api/messages.js', () => ({
+  startConversation: vi.fn(),
+}));
+
+vi.mock('../../../src/api/users.js', () => ({
+  createReport: vi.fn(),
+}));
+
+vi.mock('../../../src/api/comments.js', () => ({
+  getComments: vi.fn(),
+  createComment: vi.fn(),
+  updateComment: vi.fn(),
+  deleteComment: vi.fn(),
+}));
+
+import { useAuth } from '../../../src/context/AuthContext.js';
 import { PostList } from '../../../src/components/posts/PostList.js';
+
+const mockedUseAuth = vi.mocked(useAuth);
+
+function setAuth(
+  user: { id: string; email: string; name: string; role: string; avatarUrl: string | null } | null,
+) {
+  mockedUseAuth.mockReturnValue({
+    user,
+    isLoading: false,
+    login: vi.fn(),
+    register: vi.fn(),
+    logout: vi.fn(),
+    refreshUser: vi.fn(),
+  } as ReturnType<typeof useAuth>);
+}
 
 function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
   return {
@@ -45,14 +96,24 @@ function makePost(overrides: Partial<PostWithAuthor> = {}): PostWithAuthor {
 }
 
 function renderList(posts: PostWithAuthor[]) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
     <IntlProvider locale="en" defaultLocale="en">
-      <MemoryRouter>
-        <PostList posts={posts} />
-      </MemoryRouter>
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <PostList posts={posts} />
+        </MemoryRouter>
+      </QueryClientProvider>
     </IntlProvider>,
   );
 }
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  setAuth({ id: 'u2', email: 'b@b.com', name: 'Bob', role: 'USER', avatarUrl: null });
+});
 
 describe('PostList', () => {
   it('renders an empty-state message when there are no posts', () => {
@@ -62,7 +123,7 @@ describe('PostList', () => {
 
   it('does not render any post cards when empty', () => {
     renderList([]);
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('renders one PostCard per post when posts are provided', () => {
@@ -77,19 +138,80 @@ describe('PostList', () => {
     expect(screen.getByRole('heading', { name: 'Third' })).toBeInTheDocument();
   });
 
-  it('each rendered post card links to its detail page', () => {
-    renderList([
-      makePost({ id: 'p1', title: 'First' }),
-      makePost({ id: 'p2', title: 'Second' }),
-    ]);
-    const links = screen.getAllByRole('link');
-    // The outer card is a link; each heading is inside its own link.
-    expect(links.some((a) => a.getAttribute('href') === '/posts/p1')).toBe(true);
-    expect(links.some((a) => a.getAttribute('href') === '/posts/p2')).toBe(true);
+  it('renders each card as a collapsed expandable button, not a link', () => {
+    renderList([makePost({ id: 'p1', title: 'First' })]);
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { expanded: false })).toBeInTheDocument();
   });
 
   it('does not render the empty-state message when posts are present', () => {
     renderList([makePost()]);
     expect(screen.queryByText(/no posts found/i)).not.toBeInTheDocument();
+  });
+});
+
+describe('PostList — in-place expansion', () => {
+  it('expands a post in place when its card is clicked', async () => {
+    const user = userEvent.setup();
+    renderList([
+      makePost({ id: 'p1', title: 'First', description: 'First description' }),
+      makePost({ id: 'p2', title: 'Second' }),
+    ]);
+
+    await user.click(screen.getByRole('button', { name: /first/i }));
+
+    // Detail-only affordances appear (Contact + collapse), still on the page.
+    expect(screen.getByRole('button', { name: /contact/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /collapse post/i })).toBeInTheDocument();
+    // The other card stays compact.
+    expect(screen.getByRole('button', { name: /second/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  });
+
+  it('keeps comments and matching posts hidden until requested', async () => {
+    const user = userEvent.setup();
+    renderList([makePost({ id: 'p1', title: 'First', commentCount: 2 })]);
+
+    await user.click(screen.getByRole('button', { name: /first/i }));
+
+    const commentsToggle = screen.getByRole('button', { name: /comments \(2\)/i });
+    const matchesToggle = screen.getByRole('button', { name: /matching offers/i });
+    expect(commentsToggle).toHaveAttribute('aria-expanded', 'false');
+    expect(matchesToggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByPlaceholderText(/add a comment/i)).not.toBeInTheDocument();
+  });
+
+  it('collapses the post back to a compact card', async () => {
+    const user = userEvent.setup();
+    renderList([makePost({ id: 'p1', title: 'First' })]);
+
+    await user.click(screen.getByRole('button', { name: /first/i }));
+    await user.click(screen.getByRole('button', { name: /collapse post/i }));
+
+    expect(screen.queryByRole('button', { name: /collapse post/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /first/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  });
+
+  it('expanding a second post collapses the first', async () => {
+    const user = userEvent.setup();
+    renderList([
+      makePost({ id: 'p1', title: 'First' }),
+      makePost({ id: 'p2', title: 'Second' }),
+    ]);
+
+    await user.click(screen.getByRole('button', { name: /first/i }));
+    await user.click(screen.getByRole('button', { name: /second/i }));
+
+    // Only one collapse control exists: the newly expanded card's.
+    expect(screen.getAllByRole('button', { name: /collapse post/i })).toHaveLength(1);
+    expect(screen.getByRole('button', { name: /first/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
   });
 });

@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import { IntlProvider } from "react-intl";
+import { vi } from "vitest";
 import type { PostWithAuthor } from "@mayday/shared";
 import { PostCard } from "../../../src/components/posts/PostCard.js";
 
@@ -437,5 +438,33 @@ describe("PostCard — recurrence rendering", () => {
       }),
     );
     expect(screen.queryByText(/every /)).toBeNull();
+  });
+});
+
+describe("PostCard — expandable mode", () => {
+  it("renders as a collapsed button instead of a link and calls onExpand on click", async () => {
+    const user = userEvent.setup();
+    const onExpand = vi.fn();
+    render(
+      <IntlProvider locale="en" defaultLocale="en">
+        <MemoryRouter>
+          <PostCard post={makePost()} onExpand={onExpand} />
+        </MemoryRouter>
+      </IntlProvider>,
+    );
+
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    const card = screen.getByRole("button", { expanded: false });
+    await user.click(card);
+    expect(onExpand).toHaveBeenCalledTimes(1);
+  });
+
+  it("still renders as a detail-page link when onExpand is not provided", () => {
+    renderCard(makePost({ id: "abc123" }));
+    expect(screen.getAllByRole("link")[0]).toHaveAttribute(
+      "href",
+      "/posts/abc123",
+    );
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });

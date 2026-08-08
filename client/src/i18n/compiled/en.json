@@ -3720,6 +3720,12 @@
       "value": "Search & filters"
     }
   ],
+  "posts.card.collapseAria": [
+    {
+      "type": 0,
+      "value": "Collapse post"
+    }
+  ],
   "posts.card.commentCountAria": [
     {
       "offset": 0,
