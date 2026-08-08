@@ -132,7 +132,7 @@ function CommentItem({
   });
 
   return (
-    <div className="border border-mayday-200 rounded-lg p-3">
+    <div>
       <div className="flex items-center justify-between gap-2">
         <Link
           to={`/profile/${comment.author.id}`}
