@@ -72,15 +72,22 @@ export function formatRecurrence(
   );
 }
 
-export function PostCard({ post }: { post: PostWithAuthor }) {
+export function PostCard({
+  post,
+  onExpand,
+}: {
+  post: PostWithAuthor;
+  /**
+   * When provided, clicking the card calls this instead of navigating to the
+   * post's detail page — used by PostList to expand the post in place.
+   */
+  onExpand?: () => void;
+}) {
   const intl = useIntl();
   const typeColor = postTypeStyles[post.type].cardBorder;
+  const cardClass = `block w-full text-left bg-white rounded-lg border border-mayday-200 border-l-4 ${typeColor} p-4 hover:shadow-md transition-shadow`;
 
-  return (
-    <Link
-      to={`/posts/${post.id}`}
-      className={`block bg-white rounded-lg border border-mayday-200 border-l-4 ${typeColor} p-4 hover:shadow-md transition-shadow`}
-    >
+  const body = (
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex flex-col">
@@ -219,6 +226,24 @@ export function PostCard({ post }: { post: PostWithAuthor }) {
           </div>
         </div>
       </div>
+  );
+
+  if (onExpand) {
+    return (
+      <button
+        type="button"
+        onClick={onExpand}
+        aria-expanded={false}
+        className={cardClass}
+      >
+        {body}
+      </button>
+    );
+  }
+
+  return (
+    <Link to={`/posts/${post.id}`} className={cardClass}>
+      {body}
     </Link>
   );
 }

@@ -1343,6 +1343,9 @@
   "posts.browsePage.toggleFilters": {
     "defaultMessage": "Search & filters"
   },
+  "posts.card.collapseAria": {
+    "defaultMessage": "Collapse post"
+  },
   "posts.card.commentCountAria": {
     "defaultMessage": "{count, plural, one {# comment} other {# comments}}"
   },
