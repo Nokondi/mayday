@@ -54,14 +54,14 @@ describe('PostFilters — rendering', () => {
     expect(screen.getAllByRole('combobox')).toHaveLength(4);
   });
 
-  it('renders the type options (All / Requests / Offers / Events / Comms)', () => {
+  it('renders the type options (All / Requests / Offers / Events / Updates)', () => {
     renderFilters();
     const typeSelect = selectByDefaultOption('All Types');
     expect(within(typeSelect).getByRole('option', { name: 'All Types' })).toHaveValue('');
     expect(within(typeSelect).getByRole('option', { name: 'Requests' })).toHaveValue('REQUEST');
     expect(within(typeSelect).getByRole('option', { name: 'Offers' })).toHaveValue('OFFER');
     expect(within(typeSelect).getByRole('option', { name: 'Events' })).toHaveValue('EVENT');
-    expect(within(typeSelect).getByRole('option', { name: 'Comms' })).toHaveValue('COMMS');
+    expect(within(typeSelect).getByRole('option', { name: 'Updates' })).toHaveValue('COMMS');
   });
 
   it('renders every shared CATEGORIES entry in the category select', () => {
@@ -153,7 +153,7 @@ describe('PostFilters — change handlers', () => {
     expect(handlers.onTypeChange).toHaveBeenCalledWith('EVENT');
   });
 
-  it('calls onTypeChange with COMMS when Comms is selected', async () => {
+  it('calls onTypeChange with COMMS when Updates is selected', async () => {
     const user = userEvent.setup();
     const handlers = renderFilters();
     await user.selectOptions(selectByDefaultOption('All Types'), 'COMMS');

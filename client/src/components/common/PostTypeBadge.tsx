@@ -5,7 +5,7 @@ export const postTypeLabels = defineMessages({
   REQUEST: { id: "posts.types.request", defaultMessage: "Request" },
   OFFER: { id: "posts.types.offer", defaultMessage: "Offer" },
   EVENT: { id: "posts.types.event", defaultMessage: "Event" },
-  COMMS: { id: "posts.types.comms", defaultMessage: "Comms" },
+  COMMS: { id: "posts.types.update", defaultMessage: "Update" },
 });
 
 // One place for the per-type color scheme: orange = request, green = offer,

@@ -30,7 +30,7 @@ const TYPE_LABELS: Record<string, MessageDescriptor> = {
   REQUEST: { id: "posts.filters.requests", defaultMessage: "Requests" },
   OFFER: { id: "posts.filters.offers", defaultMessage: "Offers" },
   EVENT: { id: "posts.filters.events", defaultMessage: "Events" },
-  COMMS: { id: "posts.filters.comms", defaultMessage: "Comms" },
+  COMMS: { id: "posts.filters.updates", defaultMessage: "Updates" },
 };
 
 const URGENCY_LABELS: Record<string, MessageDescriptor> = {

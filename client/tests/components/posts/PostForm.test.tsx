@@ -38,7 +38,6 @@ function renderForm(
   overrides: Partial<Parameters<typeof PostForm>[0]> = {},
 ): {
   onSubmit: ReturnType<typeof vi.fn>;
-  fileInput: HTMLInputElement;
   container: HTMLElement;
 } {
   const onSubmit = vi.fn().mockResolvedValue(undefined);
@@ -52,10 +51,7 @@ function renderForm(
       </QueryClientProvider>
     </IntlProvider>,
   );
-  const fileInput = document.querySelector(
-    'input[type="file"]',
-  ) as HTMLInputElement;
-  return { onSubmit, fileInput, container: utils.container };
+  return { onSubmit, container: utils.container };
 }
 
 // react-hook-form registers inputs with `name=` but the PostForm's <label>s
@@ -65,6 +61,14 @@ function getField<T extends HTMLElement>(container: HTMLElement, name: string): 
   const el = container.querySelector(`[name="${name}"]`) as T | null;
   if (!el) throw new Error(`No form control found with name="${name}"`);
   return el;
+}
+
+// The form starts with only the type select and title input; every other
+// field is hidden until a type is chosen. Most tests pick one up front.
+function chooseType(container: HTMLElement, type = 'REQUEST') {
+  fireEvent.change(getField<HTMLSelectElement>(container, 'type'), {
+    target: { value: type },
+  });
 }
 
 beforeEach(() => {
@@ -84,40 +88,55 @@ afterEach(() => {
 });
 
 describe('PostForm — basic rendering & defaults', () => {
-  it('renders the main fields', () => {
+  it('initially renders only the type select and title input', () => {
     const { container } = renderForm();
+    expect(getField(container, 'type')).toBeInTheDocument();
     expect(getField(container, 'title')).toBeInTheDocument();
+    // Everything else stays hidden until a type is chosen.
+    expect(container.querySelector('[name="description"]')).toBeNull();
+    expect(container.querySelector('[name="category"]')).toBeNull();
+    expect(container.querySelector('[name="urgency"]')).toBeNull();
+    expect(screen.queryByRole('button', { name: /create post/i })).not.toBeInTheDocument();
+  });
+
+  it('reveals the remaining fields once a type is selected', () => {
+    const { container } = renderForm();
+    chooseType(container);
     expect(getField(container, 'description')).toBeInTheDocument();
     expect(getField(container, 'category')).toBeInTheDocument();
     expect(getField(container, 'urgency')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /create post/i })).toBeInTheDocument();
   });
 
-  it('defaults the type select to "REQUEST"', () => {
+  it('starts with no type selected and offers all four types', () => {
     const { container } = renderForm();
     const typeSelect = getField<HTMLSelectElement>(container, 'type');
-    expect(typeSelect).toHaveValue('REQUEST');
+    expect(typeSelect).toHaveValue('');
+    expect(within(typeSelect).getByRole('option', { name: /select a type/i })).toBeDisabled();
     // All four types are offered as options.
-    expect(within(typeSelect).getByRole('option', { name: /i need help/i })).toHaveValue('REQUEST');
-    expect(within(typeSelect).getByRole('option', { name: /i can help/i })).toHaveValue('OFFER');
-    expect(within(typeSelect).getByRole('option', { name: /i'm organizing/i })).toHaveValue('EVENT');
-    expect(within(typeSelect).getByRole('option', { name: /i'm sharing an update/i })).toHaveValue('COMMS');
+    expect(within(typeSelect).getByRole('option', { name: 'Request' })).toHaveValue('REQUEST');
+    expect(within(typeSelect).getByRole('option', { name: 'Offer' })).toHaveValue('OFFER');
+    expect(within(typeSelect).getByRole('option', { name: 'Event' })).toHaveValue('EVENT');
+    expect(within(typeSelect).getByRole('option', { name: 'Update' })).toHaveValue('COMMS');
   });
 
   it('defaults the urgency select to MEDIUM', () => {
     const { container } = renderForm();
+    chooseType(container);
     expect(getField(container, 'urgency')).toHaveValue('MEDIUM');
   });
 
   it('title and description placeholders reference all post types', () => {
-    renderForm();
+    const { container } = renderForm();
+    chooseType(container);
     // Placeholders should not imply a subset of post types now that events and comms exist.
     expect(screen.getByPlaceholderText(/are organizing, or want to share/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/request, offer, event, or update/i)).toBeInTheDocument();
   });
 
   it('disables the submit button when isSubmitting is true', () => {
-    renderForm({ isSubmitting: true });
+    const { container } = renderForm({ isSubmitting: true });
+    chooseType(container);
     const submit = screen.getByRole('button', { name: /creating/i });
     expect(submit).toBeDisabled();
   });
@@ -127,6 +146,7 @@ describe('PostForm — organization and community selects', () => {
   it('does not render the "Post as" select when the user has no organizations', async () => {
     mockedListMyOrganizations.mockResolvedValue([]);
     const { container } = renderForm();
+    chooseType(container);
     await waitFor(() => expect(mockedListMyOrganizations).toHaveBeenCalled());
     expect(container.querySelector('select[name="organizationId"]')).toBeNull();
   });
@@ -136,6 +156,7 @@ describe('PostForm — organization and community selects', () => {
       { id: 'o1', name: 'Red Cross' } as never,
     ]);
     const { container } = renderForm();
+    chooseType(container);
     await waitFor(() => {
       expect(container.querySelector('select[name="organizationId"]')).not.toBeNull();
     });
@@ -151,6 +172,7 @@ describe('PostForm — organization and community selects', () => {
       { id: 'o1', name: 'Red Cross' } as never,
     ]);
     const { container } = renderForm();
+    chooseType(container);
     await waitFor(() => {
       expect(container.querySelector('select[name="organizationId"]')).not.toBeNull();
     });
@@ -160,6 +182,7 @@ describe('PostForm — organization and community selects', () => {
 
   it('always renders the audience dropdown with a Friends option, even with no communities', async () => {
     const { container } = renderForm();
+    chooseType(container);
     await waitFor(() => expect(mockedListMyCommunities).toHaveBeenCalled());
     const select = container.querySelector('#post-community') as HTMLSelectElement;
     expect(select).not.toBeNull();
@@ -173,6 +196,7 @@ describe('PostForm — organization and community selects', () => {
       { id: 'c1', name: 'Neighbors' } as never,
     ]);
     const { container } = renderForm();
+    chooseType(container);
     await waitFor(() => {
       const select = container.querySelector('#post-community') as HTMLSelectElement;
       expect(within(select).queryByRole('option', { name: 'Neighbors' })).not.toBeNull();
@@ -185,6 +209,7 @@ describe('PostForm — organization and community selects', () => {
   it('selecting Friends adds a chip and submits sharedWithFriends=true', async () => {
     const user = userEvent.setup();
     const { onSubmit, container } = renderForm();
+    chooseType(container);
     await waitFor(() => expect(mockedListMyCommunities).toHaveBeenCalled());
     const select = container.querySelector('#post-community') as HTMLSelectElement;
     await user.selectOptions(select, '__friends__');
@@ -211,6 +236,7 @@ describe('PostForm — organization and community selects', () => {
       { id: NEIGHBORS_ID, name: 'Neighbors' } as never,
     ]);
     const { onSubmit, container } = renderForm();
+    chooseType(container);
     await waitFor(() => {
       const select = container.querySelector('#post-community') as HTMLSelectElement;
       expect(within(select).queryByRole('option', { name: 'Neighbors' })).not.toBeNull();
@@ -240,6 +266,7 @@ describe('PostForm — organization and community selects', () => {
       { id: NEIGHBORS_ID, name: 'Neighbors' } as never,
     ]);
     const { container } = renderForm();
+    chooseType(container);
     await waitFor(() => {
       const select = container.querySelector('#post-community') as HTMLSelectElement;
       expect(within(select).queryByRole('option', { name: 'Neighbors' })).not.toBeNull();
@@ -328,7 +355,8 @@ describe('PostForm — edit mode', () => {
 describe('PostForm — validation', () => {
   it('does not call onSubmit when required fields are missing', async () => {
     const user = userEvent.setup();
-    const { onSubmit } = renderForm();
+    const { onSubmit, container } = renderForm();
+    chooseType(container);
 
     await user.click(screen.getByRole('button', { name: /create post/i }));
 
@@ -340,6 +368,7 @@ describe('PostForm — validation', () => {
   it('submits cleaned data and image files when all required fields are valid', async () => {
     const user = userEvent.setup();
     const { onSubmit, container } = renderForm();
+    chooseType(container);
 
     await user.type(getField(container, 'title'), 'Need food');
     await user.type(getField(container, 'description'), 'Short on supplies today');
@@ -417,7 +446,8 @@ describe('PostForm — validation', () => {
 
 describe('PostForm — image uploads', () => {
   it('renders a preview for each selected image with a remove button', async () => {
-    renderForm();
+    const { container } = renderForm();
+    chooseType(container);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     const img1 = new File(['a'], 'a.png', { type: 'image/png' });
@@ -434,7 +464,8 @@ describe('PostForm — image uploads', () => {
 
   it('removes a preview when its remove button is clicked', async () => {
     const user = userEvent.setup();
-    renderForm();
+    const { container } = renderForm();
+    chooseType(container);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     fireEvent.change(fileInput, {
@@ -449,7 +480,8 @@ describe('PostForm — image uploads', () => {
   });
 
   it('caps the number of images at 5 and hides the "Add images" button when full', async () => {
-    renderForm();
+    const { container } = renderForm();
+    chooseType(container);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     const files = Array.from({ length: 7 }, (_, i) =>
@@ -467,6 +499,7 @@ describe('PostForm — image uploads', () => {
   it('passes selected images to onSubmit on valid form submission', async () => {
     const user = userEvent.setup();
     const { onSubmit, container } = renderForm();
+    chooseType(container);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const img = new File(['a'], 'a.png', { type: 'image/png' });
     fireEvent.change(fileInput, { target: { files: [img] } });

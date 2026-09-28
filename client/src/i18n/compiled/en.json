@@ -3938,12 +3938,6 @@
       "value": "Filter by category"
     }
   ],
-  "posts.filters.comms": [
-    {
-      "type": 0,
-      "value": "Comms"
-    }
-  ],
   "posts.filters.communityAria": [
     {
       "type": 0,
@@ -3998,6 +3992,12 @@
       "value": "Filter by type"
     }
   ],
+  "posts.filters.updates": [
+    {
+      "type": 0,
+      "value": "Updates"
+    }
+  ],
   "posts.filters.urgencyAria": [
     {
       "type": 0,
@@ -4028,12 +4028,6 @@
       "value": "Clear location"
     }
   ],
-  "posts.form.commsRadioLabel": [
-    {
-      "type": 0,
-      "value": "I'm sharing an update (Comms)"
-    }
-  ],
   "posts.form.descriptionPlaceholder": [
     {
       "type": 0,
@@ -4044,12 +4038,6 @@
     {
       "type": 0,
       "value": "Ends"
-    }
-  ],
-  "posts.form.eventRadioLabel": [
-    {
-      "type": 0,
-      "value": "I'm organizing (Event)"
     }
   ],
   "posts.form.existingImageAlt": [
@@ -4100,12 +4088,6 @@
     {
       "type": 0,
       "value": "Location suggestions"
-    }
-  ],
-  "posts.form.offerRadioLabel": [
-    {
-      "type": 0,
-      "value": "I can help (Offer)"
     }
   ],
   "posts.form.postAsLabel": [
@@ -4188,12 +4170,6 @@
       "value": "Repeats"
     }
   ],
-  "posts.form.requestRadioLabel": [
-    {
-      "type": 0,
-      "value": "I need help (Request)"
-    }
-  ],
   "posts.form.saveButton": [
     {
       "type": 0,
@@ -4210,6 +4186,12 @@
     {
       "type": 0,
       "value": "Select a category"
+    }
+  ],
+  "posts.form.selectTypePlaceholder": [
+    {
+      "type": 0,
+      "value": "Select a type…"
     }
   ],
   "posts.form.startsLabel": [
@@ -4519,12 +4501,6 @@
       "value": "Post type:"
     }
   ],
-  "posts.types.comms": [
-    {
-      "type": 0,
-      "value": "Comms"
-    }
-  ],
   "posts.types.event": [
     {
       "type": 0,
@@ -4541,6 +4517,12 @@
     {
       "type": 0,
       "value": "Request"
+    }
+  ],
+  "posts.types.update": [
+    {
+      "type": 0,
+      "value": "Update"
     }
   ],
   "profile.bioLabel": [

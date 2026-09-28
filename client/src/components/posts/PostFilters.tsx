@@ -67,8 +67,8 @@ export function PostFilters({
         </option>
         <option value="COMMS">
           {intl.formatMessage({
-            id: "posts.filters.comms",
-            defaultMessage: "Comms",
+            id: "posts.filters.updates",
+            defaultMessage: "Updates",
           })}
         </option>
       </select>

@@ -1433,9 +1433,6 @@
   "posts.filters.categoryAria": {
     "defaultMessage": "Filter by category"
   },
-  "posts.filters.comms": {
-    "defaultMessage": "Comms"
-  },
   "posts.filters.communityAria": {
     "defaultMessage": "Filter by community or friends"
   },
@@ -1463,6 +1460,9 @@
   "posts.filters.typeAria": {
     "defaultMessage": "Filter by type"
   },
+  "posts.filters.updates": {
+    "defaultMessage": "Updates"
+  },
   "posts.filters.urgencyAria": {
     "defaultMessage": "Filter by urgency"
   },
@@ -1478,17 +1478,11 @@
   "posts.form.clearLocationAria": {
     "defaultMessage": "Clear location"
   },
-  "posts.form.commsRadioLabel": {
-    "defaultMessage": "I'm sharing an update (Comms)"
-  },
   "posts.form.descriptionPlaceholder": {
     "defaultMessage": "Provide details about your request, offer, event, or update..."
   },
   "posts.form.endsLabel": {
     "defaultMessage": "Ends"
-  },
-  "posts.form.eventRadioLabel": {
-    "defaultMessage": "I'm organizing (Event)"
   },
   "posts.form.existingImageAlt": {
     "defaultMessage": "Current image {n}"
@@ -1510,9 +1504,6 @@
   },
   "posts.form.locationSuggestionsAria": {
     "defaultMessage": "Location suggestions"
-  },
-  "posts.form.offerRadioLabel": {
-    "defaultMessage": "I can help (Offer)"
   },
   "posts.form.postAsLabel": {
     "defaultMessage": "Post as"
@@ -1550,9 +1541,6 @@
   "posts.form.repeatsLegend": {
     "defaultMessage": "Repeats"
   },
-  "posts.form.requestRadioLabel": {
-    "defaultMessage": "I need help (Request)"
-  },
   "posts.form.saveButton": {
     "defaultMessage": "Save Changes"
   },
@@ -1561,6 +1549,9 @@
   },
   "posts.form.selectCategoryPlaceholder": {
     "defaultMessage": "Select a category"
+  },
+  "posts.form.selectTypePlaceholder": {
+    "defaultMessage": "Select a type…"
   },
   "posts.form.startsLabel": {
     "defaultMessage": "Starts"
@@ -1652,9 +1643,6 @@
   "posts.typeAriaPrefix": {
     "defaultMessage": "Post type:"
   },
-  "posts.types.comms": {
-    "defaultMessage": "Comms"
-  },
   "posts.types.event": {
     "defaultMessage": "Event"
   },
@@ -1663,6 +1651,9 @@
   },
   "posts.types.request": {
     "defaultMessage": "Request"
+  },
+  "posts.types.update": {
+    "defaultMessage": "Update"
   },
   "profile.bioLabel": {
     "defaultMessage": "Bio"

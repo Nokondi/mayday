@@ -20,7 +20,7 @@ describe("PostTypeBadge", () => {
     ["REQUEST", "Request", "bg-orange-100", "text-orange-700"],
     ["OFFER", "Offer", "bg-green-100", "text-green-700"],
     ["EVENT", "Event", "bg-purple-100", "text-purple-700"],
-    ["COMMS", "Comms", "bg-sky-100", "text-sky-700"],
+    ["COMMS", "Update", "bg-sky-100", "text-sky-700"],
   ] as const)(
     "renders a %s post as a colored %s chip",
     (type, label, bg, text) => {
