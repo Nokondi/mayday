@@ -56,5 +56,9 @@ export default defineConfig(async () => ({
     globals: true,
     setupFiles: ['./tests/setup.ts'],
     css: false,
+    // The full suite runs ~one jsdom worker per core, which slows each test
+    // 3-5x. Cold first renders and userEvent typing tests take ~1-2s even in
+    // isolation, so the 5s default flakes under load.
+    testTimeout: 20_000,
   },
 }));
