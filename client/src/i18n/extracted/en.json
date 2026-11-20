@@ -1551,7 +1551,7 @@
     "defaultMessage": "Select a category"
   },
   "posts.form.selectTypePlaceholder": {
-    "defaultMessage": "Select a type…"
+    "defaultMessage": "Select a type"
   },
   "posts.form.startsLabel": {
     "defaultMessage": "Starts"

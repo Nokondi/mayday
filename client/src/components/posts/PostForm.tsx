@@ -287,7 +287,7 @@ export function PostForm({
             <option value="" disabled>
               {intl.formatMessage({
                 id: "posts.form.selectTypePlaceholder",
-                defaultMessage: "Select a type…",
+                defaultMessage: "Select a type",
               })}
             </option>
             <option value="REQUEST">
