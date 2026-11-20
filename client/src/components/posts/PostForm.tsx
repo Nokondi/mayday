@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 import {
   createPostSchema,
@@ -28,6 +29,15 @@ interface PostFormProps {
   initialPost?: PostWithAuthor;
 }
 
+/**
+ * Raw form values. zod 4 types a `z.preprocess` field's input as `unknown`, so
+ * narrow the preprocessed fields to what the form actually holds.
+ */
+type PostFormValues = z.input<typeof createPostSchema> & {
+  communityIds?: string[];
+  recurrenceInterval?: number;
+};
+
 /** Format an ISO timestamp for a `datetime-local` input, or undefined. */
 function toDateTimeLocal(iso: string | null | undefined): string | undefined {
   return iso ? format(new Date(iso), "yyyy-MM-dd'T'HH:mm") : undefined;
@@ -47,8 +57,13 @@ export function PostForm({
     setValue,
     watch,
     formState: { errors },
-  } = useForm<CreatePostRequest>({
-    resolver: zodResolver(createPostSchema),
+  } = useForm<PostFormValues, unknown, CreatePostRequest>({
+    // Same runtime schema; the cast only narrows the static input type.
+    resolver: zodResolver(createPostSchema) as Resolver<
+      PostFormValues,
+      unknown,
+      CreatePostRequest
+    >,
     defaultValues: initialPost
       ? {
           type: initialPost.type,

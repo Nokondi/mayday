@@ -26,6 +26,10 @@
   "overrides": {
     "eslint-plugin-jsx-a11y": {
       "eslint": "^10.8.0"
+    },
+    "@prisma/config": {
+      "deepmerge-ts": "^8.0.2",
+      "effect": "^3.22.5"
     }
   }
 }
