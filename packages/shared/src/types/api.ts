@@ -56,7 +56,7 @@ const postFields = {
   type: z.enum(['REQUEST', 'OFFER', 'EVENT', 'COMMS']),
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().min(1, 'Description is required').max(5000),
-  category: z.enum(CATEGORIES, { errorMap: () => ({ message: 'Select a category' }) }),
+  category: z.enum(CATEGORIES, { error: 'Select a category' }),
   location: z.string().max(200).optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
@@ -71,12 +71,12 @@ const postFields = {
   // Communities the post is scoped to. Members of ANY listed community can see
   // it. Accepts a single id (multipart sends one field as a string) or an array,
   // and drops empties. No communities and sharedWithFriends=false ⇒ public.
-  communityIds: z
-    .preprocess(
-      (v) => (v === '' || v == null ? undefined : Array.isArray(v) ? v : [v]),
-      z.array(z.string().uuid()).max(20),
-    )
-    .optional(),
+  // `.optional()` must sit inside the preprocess: in zod 4 a preprocess that
+  // maps "" to undefined hands undefined to the inner schema.
+  communityIds: z.preprocess(
+    (v) => (v === '' || v == null ? undefined : Array.isArray(v) ? v : [v]),
+    z.array(z.string().uuid()).max(20).optional(),
+  ),
   startAt: optionalDateTime,
   endAt: optionalDateTime,
   recurrenceFreq: z
@@ -99,22 +99,22 @@ type PostFieldsData = {
 
 function checkPostFields(data: PostFieldsData, ctx: z.RefinementCtx) {
   if (data.startAt && data.endAt && new Date(data.endAt) < new Date(data.startAt)) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'End must be after start', path: ['endAt'] });
+    ctx.addIssue({ code: 'custom', message: 'End must be after start', path: ['endAt'] });
   }
   // Events must be schedulable — a start date is what makes them events. Only
   // enforced when `type` is present so partial updates that don't touch the
   // type stay valid.
   if (data.type === 'EVENT' && !data.startAt) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Events need a start date', path: ['startAt'] });
+    ctx.addIssue({ code: 'custom', message: 'Events need a start date', path: ['startAt'] });
   }
   if (data.recurrenceFreq && data.recurrenceInterval == null) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Interval is required for recurring posts', path: ['recurrenceInterval'] });
+    ctx.addIssue({ code: 'custom', message: 'Interval is required for recurring posts', path: ['recurrenceInterval'] });
   }
   if (data.recurrenceInterval != null && !data.recurrenceFreq) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Frequency is required for recurring posts', path: ['recurrenceFreq'] });
+    ctx.addIssue({ code: 'custom', message: 'Frequency is required for recurring posts', path: ['recurrenceFreq'] });
   }
   if (data.recurrenceFreq && !data.startAt) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Recurring posts need a start date', path: ['startAt'] });
+    ctx.addIssue({ code: 'custom', message: 'Recurring posts need a start date', path: ['startAt'] });
   }
 }
 
@@ -123,7 +123,12 @@ export const createPostSchema = z.object(postFields).superRefine(checkPostFields
 export const updatePostSchema = z
   .object(postFields)
   .partial()
-  .extend({ status: z.enum(['OPEN', 'FULFILLED', 'CLOSED']).optional() })
+  .extend({
+    // zod 4 applies .default() even inside optional fields, so without this the
+    // partial would inject urgency=MEDIUM on every edit that omits it.
+    urgency: postFields.urgency.removeDefault().optional(),
+    status: z.enum(['OPEN', 'FULFILLED', 'CLOSED']).optional(),
+  })
   .superRefine(checkPostFields);
 
 export const fulfillPostSchema = z.object({

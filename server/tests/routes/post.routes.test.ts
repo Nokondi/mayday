@@ -619,6 +619,20 @@ describe('POST /api/posts — multiple communities', () => {
     expect(prisma.communityMember.findMany).not.toHaveBeenCalled();
   });
 
+  it('treats an empty communityIds field (multipart with nothing selected) as public', async () => {
+    mockedPost.create.mockResolvedValueOnce({ id: 'p1' } as never);
+    mockedPost.findUnique.mockResolvedValueOnce(dbPost() as never);
+
+    const res = await request(makeApp())
+      .post('/api/posts')
+      .set('Authorization', authHeader())
+      .send({ ...validBody, communityIds: '' });
+
+    expect(res.status).toBe(201);
+    const createArg = (mockedPost.create.mock.calls[0] as [{ data: { communities?: unknown } }])[0].data;
+    expect(createArg.communities).toBeUndefined();
+  });
+
   it('creates a friends-shared post with sharedWithFriends=true and no communities', async () => {
     mockedPost.create.mockResolvedValueOnce({ id: 'p1' } as never);
     mockedPost.findUnique.mockResolvedValueOnce(
@@ -861,6 +875,23 @@ describe('PUT /api/posts/:id', () => {
     expect(dataArg.organizationId).toBeUndefined();
     expect(dataArg.sharedWithFriends).toBeUndefined();
     expect(dataArg.communityIds).toBeUndefined();
+  });
+
+  it('does not reset urgency when an edit omits it', async () => {
+    // Regression: zod 4 applies .default() inside .partial() fields, which
+    // would inject urgency=MEDIUM into every update that leaves it out.
+    mockedPost.findUnique.mockResolvedValueOnce(dbPost() as never);
+    const update = vi.fn();
+    mockUpdateTransaction(dbPost(), { update });
+
+    const res = await request(makeApp())
+      .put('/api/posts/p1')
+      .set('Authorization', authHeader())
+      .send({ title: 'Edited' });
+
+    expect(res.status).toBe(200);
+    const dataArg = (update.mock.calls[0] as [{ data: Record<string, unknown> }])[0].data;
+    expect(dataArg).not.toHaveProperty('urgency');
   });
 
   it('deletes only images that belong to the post (ignores foreign ids)', async () => {

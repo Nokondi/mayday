@@ -610,7 +610,7 @@ postRoutes.post(
     // Validate the parsed body
     const parsed = createPostSchema.safeParse(body);
     if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join(", ");
+      const message = parsed.error.issues.map((e) => e.message).join(", ");
       throw new AppError(400, message);
     }
 
@@ -743,7 +743,7 @@ postRoutes.put(
     const parsed = updatePostSchema.safeParse(body);
     if (!parsed.success) {
       await cleanupUploads();
-      const message = parsed.error.errors.map((e) => e.message).join(", ");
+      const message = parsed.error.issues.map((e) => e.message).join(", ");
       throw new AppError(400, message);
     }
 
